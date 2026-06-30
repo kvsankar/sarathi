@@ -1,12 +1,13 @@
 ---
-description: Critically review a work plan with a deterministic mechanical pass and a qualitative pass, checking PR size, TDD, and full spec/design coverage, then report findings.
+description: Critically review a work plan with a deterministic mechanical pass and a qualitative pass, checking PR size, TDD, docs/build/deploy allocation, and full spec/design coverage.
 agent: agent
 ---
 
 # Plan Review
 
 Review a Work Plan against its principles: small reviewable PRs (≤300 LOC), Red/Green TDD,
-full coverage of spec and design, explicit Planned Touch Sets, and always-shippable ordering.
+full coverage of spec and design, explicit Planned Touch Sets, planned build/deployment
+work, planned user/developer documentation work, and always-shippable ordering.
 Produce the verification sequence below.
 
 Do not stop after checker JSON. This review must include:
@@ -53,7 +54,8 @@ Then read enough of `spec.md` and `design.md` to detect latent upstream issues e
 the plan, including ambiguous or conflicting requirements, missing acceptance criteria,
 unmeasurable NFRs, component boundaries that do not realize requirements, missing interfaces,
 untestable design choices, unresolved dependencies, unclear migration/rollout constraints,
-or scope that cannot be sliced into reviewable PRs.
+missing build/release/deployment strategy, missing documentation strategy, or scope that
+cannot be sliced into reviewable PRs.
 
 If either upstream checker fails, or if plan review reveals that the spec or design must
 change before the plan can be judged fairly, **stop the plan review**. Report an
@@ -107,11 +109,13 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   Implementation plans with concrete `PR-` items may be Code-ready for `/code-create`.
 - **Scope-specific content completeness** — product/system plans carry milestones, child
   feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research
-  or decision needs, sequencing, parallel tracks, risks, and readiness targets;
+  or decision needs, build/release/deployment tracks, documentation tracks, sequencing,
+  parallel tracks, risks, and readiness targets;
   feature/component plans carry child slice/change work or code-ready PRs, child artifact
-  needs, integration order, test allocation, and touch-scope risks; slice/change plans carry
-  concrete `PR-` items, Planned Touch Sets, Red/Green steps, test levels, LOC estimates,
-  quality gates, rollback, dependencies, and worktree guidance.
+  needs, integration order, test allocation, build/deployment impacts, documentation impacts,
+  and touch-scope risks; slice/change plans carry concrete `PR-` items, Planned Touch Sets,
+  Red/Green steps, test levels, LOC estimates, quality gates, build/deployment verification,
+  documentation updates/checks, rollback, dependencies, and worktree guidance.
 - **TDD discipline** — planned Red steps precede Green steps and are meaningful, not coverage
   theater. The structural checker only verifies Red/Green step text; use judgment here.
 - **Coverage** — no requirement/component silently skipped; NFRs scheduled.
@@ -119,6 +123,15 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   test PR or justified non-code verification, while unit/pure-core, component, contract,
   integration, UI/accessibility/visual, quality-attribute, migration, and operational tests
   from the design are scheduled near the code they protect.
+- **Build/deployment allocation** — artifact creation, packaging, generated outputs, CI/CD
+  config, deployment scripts/manifests/IaC, migration validation, dry-run/plan/lint commands,
+  smoke checks, rollback checks, and release docs are assigned to PRs when the upstream
+  artifacts call for them, or explicitly marked out of scope with a defensible reason.
+- **Documentation allocation** — user docs, developer docs, README/API/reference output,
+  examples, tutorials, diagrams, runbooks, troubleshooting, release/migration notes, doc
+  generation, link checks, accessibility/readability, and freshness/versioning checks are
+  assigned to PRs when the upstream artifacts call for them, or explicitly marked out of
+  scope with a defensible reason.
 - **Planned Touch Sets** — every PR names the files/directories/modules/config/docs/generated
   artifacts and spec/design/plan sections it may touch, with narrow enough scope for
   `/code-create` to detect out-of-scope edits.
@@ -128,6 +141,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   shared-file conflicts or identify them through touch-set overlaps; independent branches say
   whether separate Git worktrees are recommended and how they rejoin.
 - **Production quality** — error handling, NFR validation, rollback per PR.
+- **Shippability** — the plan introduces build, deployment, and documentation capability
+  before dependent feature work, keeps each PR independently buildable and explainable, and
+  avoids late integration or documentation surprises.
 
 If a `plan.html` companion exists, confirm its dependency graph and wave/Gantt view match
 `plan.md` (same PR-IDs, same depends-on edges); flag any divergence.

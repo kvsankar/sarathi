@@ -1,5 +1,5 @@
 ---
-description: Critically review a Software Design Document with a deterministic mechanical pass and a qualitative pass against requirements, stakeholder concerns, quality attributes, architecture views, interfaces, decisions, risks, and testability.
+description: Critically review a Software Design Document with a deterministic mechanical pass and a qualitative pass against requirements, stakeholder concerns, quality attributes, architecture/documentation/build/deploy views, interfaces, decisions, risks, and testability.
 agent: agent
 ---
 
@@ -35,12 +35,15 @@ quality attributes, and likely change scenarios.
 
 Also judge whether the design uses the right profile-specific artifacts. Backend/API/service
 designs should include context, service/container, component/module, API/event contract,
-data/state, runtime flow, deployment/operations, and test views. Web frontend designs should
+data/state, runtime flow, build/release, deployment/operations, developer documentation,
+and test views. Web frontend designs should
 include route/page structure, component hierarchy, UX interaction states, state management,
-data-fetch/API contracts, accessibility, responsive behavior, performance/security, and tests.
+data-fetch/API contracts, accessibility, responsive behavior, performance/security,
+build/release, user/developer documentation, and tests.
 Mobile designs should include platform scope, navigation, screen contracts, state/data flow,
 offline/sync where applicable, permissions/capabilities, lifecycle/background behavior,
-performance/battery budgets, release/observability, and tests. OO/UML-heavy designs should
+performance/battery budgets, build/release, user/developer documentation,
+release/observability, and tests. OO/UML-heavy designs should
 include logical components/packages, class/domain model, sequence diagrams, state diagrams
 where relevant, and interface contracts.
 
@@ -71,8 +74,9 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 
 Then read the spec enough to detect latent upstream issues exposed by the design, including
 ambiguous requirements, contradictory requirements, missing acceptance criteria, missing or
-unmeasurable NFRs, unclear actors/use cases, unresolved scope boundaries, or requirements
-that already dictate implementation without justification.
+unmeasurable NFRs, missing build/release/deployment requirements, missing documentation
+requirements, unclear actors/use cases, unresolved scope boundaries, or requirements that
+already dictate implementation without justification.
 
 If the spec checker fails, or if design review reveals that the spec must change before the
 design can be judged fairly, **stop the design review**. Report an **Upstream spec blocker**
@@ -121,12 +125,13 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Requirements and stakeholder fit** — design choices trace to FRs/NFRs/UCs, stakeholder
   concerns, constraints, risks, or operational realities.
 - **Context and scope** — system boundary, external systems, actors, trust boundaries,
-  deployment environment, and ownership are understandable before internals.
+  build/release boundary, deployment environment, and ownership are understandable before internals.
 - **Quality attribute design** — performance, availability, modifiability, security, privacy,
   usability, accessibility, observability, deployability, interoperability, scalability, and
   cost are addressed with concrete scenarios, tactics, or explicit trade-offs.
-- **Architecture views** — static structure, runtime behavior, data, deployment/operations,
-  and cross-cutting concepts are documented at the right level of detail.
+- **Architecture views** — static structure, runtime behavior, data, build/release,
+  deployment/operations, documentation, and cross-cutting concepts are documented at the
+  right level of detail.
 - **Profile-specific completeness** — the selected design kind has the expected minimum
   artifacts, such as backend service/API views, frontend route/component/state views, mobile
   navigation/screen/offline/permission/lifecycle views, or OO/UML logical/class/sequence views.
@@ -136,11 +141,14 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   be marked Code-ready.
 - **Scope-specific content completeness** — product/system HLDs carry context, major
   containers/services/modules, drivers, boundaries, data ownership, quality tactics,
-  deployment/operations strategy, ADRs, risks, decomposition candidates, and system test
-  strategy; feature/component designs carry responsibilities, contracts, local state, flows,
-  core/shell partition, dependencies, decisions, risks, and test matrix; slice/change LLDs
-  carry exact local changes, API/schema/data deltas, failure paths, validation/policy logic,
-  migration/rollback, side effects, test doubles/levels, and likely touch candidates.
+  build/package/release strategy, deployment/operations strategy, ADRs, risks,
+  documentation strategy, decomposition candidates, and system test strategy;
+  feature/component designs carry responsibilities, contracts, local state, flows,
+  core/shell partition, dependencies, build/deployment impacts, documentation impacts,
+  decisions, risks, and test matrix; slice/change LLDs carry exact local changes,
+  API/schema/data deltas, failure paths, validation/policy logic, build/deployment script or
+  artifact changes, documentation changes, migration/rollback, side effects, test
+  doubles/levels, and likely touch candidates.
 - **Cohesion and coupling** — components have focused responsibilities, stable interfaces,
   explicit dependencies, and no unintentional cycles or boundary leaks.
 - **Design heuristics** — single responsibility, information hiding, separation of concerns,
@@ -161,6 +169,14 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   contract, integration, UI/accessibility/visual, quality-attribute, migration, and
   operational checks as applicable; observability, failure handling, rollout/rollback, and
   operational checks exist.
+- **Build and deployment design** — deployable artifacts, package boundaries, build commands,
+  CI/CD or release workflow, artifact storage, environment promotion, configuration/secrets,
+  migrations, rollout/rollback, dry-run/validation, smoke checks, and ownership are explicit
+  where relevant.
+- **User and developer documentation design** — documentation audiences, information
+  architecture, source locations, generated/reference docs, examples, diagrams, runbooks,
+  publishing/versioning, ownership, review triggers, and doc validation checks are explicit
+  where relevant.
 - **Decision quality** — decisions include alternatives, rationale, consequences, quality
   attributes affected, user input or recorded assumptions, reversibility, ADR links for
   material decisions, and revisit triggers.

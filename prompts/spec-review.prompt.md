@@ -1,5 +1,5 @@
 ---
-description: Critically review a Software Requirements Specification with a deterministic mechanical pass and a qualitative pass grounded in stakeholder needs, use cases, supplementary requirements, scope, and traceability.
+description: Critically review a Software Requirements Specification with a deterministic mechanical pass and a qualitative pass grounded in stakeholder needs, use cases, supplementary requirements, documentation/build/deploy needs, scope, and traceability.
 agent: agent
 ---
 
@@ -91,17 +91,27 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   marked Code-ready.
 - **Scope-specific content completeness** — product/system specs carry mission,
   stakeholders, boundaries, product needs, non-goals, capabilities, representative use
-  cases, major NFRs, broad acceptance intent, and child-artifact needs; feature/component
+  cases, major NFRs, build/release/deployment expectations, broad acceptance intent, and
+  user/developer documentation expectations, and child-artifact needs; feature/component
   specs carry parent references, local behavior, FR/NFR/AT coverage, dependencies, edge
-  cases, and non-goals; slice/change specs carry the exact requirement delta, parent IDs,
-  changed/unchanged behavior, and code-ready acceptance criteria.
+  cases, build/deployment constraints, documentation constraints, and non-goals;
+  slice/change specs carry the exact requirement delta, parent IDs, changed/unchanged
+  behavior, build/deployment and documentation deltas when relevant, and code-ready
+  acceptance criteria.
 - **Use-case quality** — actors, goals, preconditions, main flow, alternatives/exceptions,
   postconditions, and actor value are complete and behavior-focused.
 - **Requirement quality** — FRs are necessary, atomic, feasible, verifiable, unambiguous,
   design-free, and use "shall" consistently.
 - **Supplementary/NFR coverage** — performance, security, privacy, reliability, usability,
-  accessibility, interoperability, compliance, data, platform, and operational constraints are
-  considered and measurable where applicable.
+  accessibility, interoperability, compliance, data, platform, build/release/deployment, and
+  operational constraints are considered and measurable where applicable.
+- **Release/deployment acceptance** — externally relevant artifact, environment, promotion,
+  rollout, migration, rollback, smoke-check, operator-facing, or uptime constraints are
+  either expressed as requirements/acceptance criteria or explicitly scoped out.
+- **Documentation acceptance** — externally relevant user guidance, onboarding, help,
+  API/developer reference, examples, runbooks, troubleshooting, release notes, migration
+  notes, accessibility, freshness, or discoverability needs are either expressed as
+  requirements/acceptance criteria or explicitly scoped out.
 - **Acceptance quality** — tests are black-box, scenario-based, and verify the linked UC/FR/NFR
   rather than restating the requirement. They are requirements-level acceptance criteria,
   not unit/component/integration test designs.

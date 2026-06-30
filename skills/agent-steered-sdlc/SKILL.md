@@ -20,7 +20,8 @@ Select the narrowest command that matches the user's current artifact:
 - `/design-review`: review design and stop if upstream spec ambiguity or design risk blocks safe progress.
 - `/plan-create`: create `plan.md`, planned touch sets, PR slices, TDD order, and worktree/parallel-work guidance.
 - `/plan-review`: review plan and stop if spec/design issues or planned scope issues block implementation.
-- `/code-create`: implement within the planned touch set using Red/Green/Refactor TDD and configured quality gates.
+- `/code-create`: implement within the planned touch set using Red/Green/Refactor TDD,
+  configured quality gates, and planned documentation/build/deployment verification.
 - `/code-review`: review implementation, tests, traceability, pre-commit quality gates, and upstream consistency.
 
 When the user invokes this skill generally instead of naming a specific slash command,
@@ -58,27 +59,43 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   slice/change. Ask only when the mapping is ambiguous or materially changes the artifact.
 - Apply the artifact matrix:
   - Product/system spec carries mission, stakeholders, boundary, product needs, non-goals,
-    major capabilities, representative use cases, major NFRs, broad acceptance intent, and
+    major capabilities, representative use cases, major NFRs, build/release/deployment
+    expectations, user/developer documentation expectations, broad acceptance intent, and
     child-artifact needs; design carries HLD context, major containers/services/modules,
-    drivers, boundaries, data ownership, quality tactics, deployment/operations, ADRs,
-    risks, and decomposition candidates; plan is normally a Breakdown plan with
-    feature/component `WORK-` items, dependencies, child artifact needs, parallel tracks,
-    and readiness targets.
+    drivers, boundaries, data ownership, quality tactics, build/package/release strategy,
+    deployment/operations, documentation strategy, ADRs, risks, and decomposition
+    candidates; plan is normally a Breakdown plan with feature/component `WORK-` items,
+    dependencies, child artifact needs, build/deployment tracks, documentation tracks,
+    parallel tracks, and readiness targets.
   - Feature/component spec carries parent references, local behavior, FR/NFR/AT coverage,
-    edge cases, dependencies, and non-goals; design carries responsibilities, contracts,
-    local state/data, runtime flows, core/shell split, dependencies, decisions, risks, and
-    test matrix; plan carries child slice/change work or PRs, integration order, test
+    edge cases, build/deployment constraints, documentation constraints, dependencies, and
+    non-goals; design carries responsibilities, contracts, local state/data, runtime flows,
+    core/shell split, dependencies, build/deployment impacts, documentation impacts,
+    decisions, risks, and test matrix; plan carries child slice/change work or PRs,
+    integration order, test allocation, build/deployment allocation, documentation
     allocation, and touch-scope risks.
   - Slice/change spec carries the exact requirement delta, parent IDs refined/preserved,
-    changed/unchanged behavior, and acceptance criteria; design carries LLD-level local
-    changes, API/schema/data deltas, failure paths, validation/policy logic,
-    migration/rollback, side effects, test levels/doubles, and likely touch candidates;
+    changed/unchanged behavior, documentation deltas, and acceptance criteria; design
+    carries LLD-level local changes, API/schema/data deltas, failure paths,
+    validation/policy logic, build/deployment script or artifact changes, documentation
+    changes, migration/rollback, side effects, test levels/doubles, and likely touch candidates;
     plan carries concrete `PR-` items, Planned Touch Sets, Red/Green steps, test levels,
-    LOC estimates, quality gates, rollback, dependencies, and worktree guidance.
+    LOC estimates, quality gates, build/deployment verification, documentation checks,
+    rollback, dependencies, and worktree guidance.
 - Treat test ownership as part of artifact ownership: specs define `AT-` acceptance
   criteria; designs define the test architecture and lower-level test mix; plans assign
   executable test levels to PRs; code writes acceptance tests plus the planned lower-level
   tests using TDD.
+- Treat build and deployment ownership as part of artifact ownership: specs define
+  externally relevant build/release/deployment needs or non-goals; designs define artifact,
+  package, release, environment, deployment, validation, smoke, and rollback strategy; plans
+  assign build/deployment files and checks to work items or PRs; code runs the planned build
+  and deployment validation, without live production deployment unless explicitly requested.
+- Treat user and developer documentation ownership as part of artifact ownership: specs
+  define documentation audiences, needs, acceptance criteria, or non-goals; designs define
+  documentation architecture, source locations, generated/reference docs, publishing,
+  ownership, and validation checks; plans assign documentation files and checks to work
+  items or PRs; code updates docs with implementation and validates them where practical.
 - Treat downstream review as an upstream validation point. If design, plan, or code
   review reveals a latent issue in an earlier artifact, stop and tell the user which
   upstream artifact needs revision.
@@ -126,7 +143,9 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   history. Qualitative review must judge those from artifact content, code, tests, and
   available review/git evidence.
 - Configure and run language-appropriate local quality gates for code work. Prefer
-  repository-native tooling and pre-commit hooks where practical.
+  repository-native tooling and pre-commit hooks where practical. For code-ready work, also
+  run planned build/package commands and deployment dry-run/lint/plan/smoke/rollback checks
+  where available, plus planned documentation build/generation/link/readability checks.
 
 ## Checkers
 

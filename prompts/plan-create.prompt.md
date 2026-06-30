@@ -1,5 +1,5 @@
 ---
-description: Interview the user, then author a work plan that translates the spec and design into reviewable, test-first PRs (≤300 LOC each) using Red/Green TDD.
+description: Interview the user, then author a work plan that translates the spec and design into reviewable, test-first PRs (≤300 LOC each), including planned docs/build/deploy work.
 agent: agent
 ---
 
@@ -15,13 +15,21 @@ nothing to fix.
 1. **Small reviewable PRs** — each PR changes **≤300 LOC** (prod + test), one focused concern.
 2. **Red/Green TDD** — every PR writes failing tests first (Red), then minimal code to pass
    (Green), then refactor. The plan states both Red and Green steps per PR.
-3. **Full coverage** — every `FR-`/`UC-`, every `NFR-`, every `AT-`, and every design
-   `COMP-` is delivered by at least one PR. Nothing in spec/design is left unbuilt.
+3. **Full coverage** — every `FR-`/`UC-`, every `NFR-`, every `AT-`, every design
+   `COMP-`, and every required docs/build/deploy concern is delivered by at least one PR.
+   Nothing in spec/design is left unbuilt, undocumented, or unverifiable.
 4. **Always shippable** — order PRs so each merges green, behind a flag if needed; no PR
-   depends on a later one.
+   depends on a later one, and build/deployment capability is introduced before code that
+   depends on it.
 5. **Production quality** — each PR includes tests, error handling, and meets its NFRs.
 6. **Explicit touch scope** — each PR declares the files, directories, modules, config files,
    docs, generated artifacts, and spec/design/plan sections it is expected to touch.
+7. **Build and deployment are planned work** — build scripts, package manifests, generated
+   artifacts, CI/CD config, infrastructure/deployment manifests, migration scripts,
+   release notes, smoke checks, and rollback steps are assigned to explicit work items or PRs.
+8. **User and developer docs are planned work** — user guides, in-product help, README/API
+   docs, examples, runbooks, troubleshooting, migration notes, release notes, generated
+   reference docs, and doc validation checks are assigned to explicit work items or PRs.
 
 ## Work scope, plan type, and readiness
 
@@ -91,15 +99,18 @@ Use the same section order for every plan, but tune the content to the declared 
 
 - **Product/system plan** is normally a Breakdown plan. It carries milestones, child
   feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research
-  or decision needs, sequencing, parallel tracks, major risks, and readiness targets. It
-  should not list implementation PRs unless the system is trivially small.
+  or decision needs, build/release/deployment tracks, documentation tracks, sequencing,
+  parallel tracks, major risks, and readiness targets. It should not list implementation PRs
+  unless the system is trivially small.
 - **Feature/component plan** carries either child slice/change `WORK-` items or concrete
   implementation PRs when the feature/component is already code-ready. It identifies child
   spec/LLD needs, dependencies, integration order, test strategy allocation, touch-scope
-  risks, and the point where work becomes PR-ready.
+  risks, build/deployment impacts, documentation impacts, and the point where work becomes
+  PR-ready.
 - **Slice/change plan** is an Implementation plan. It carries `PR-` items, Planned Touch
   Sets, Red/Green steps, test levels, LOC estimates, quality gates, rollback notes,
-  dependencies, parallel/worktree guidance, and traceability to the exact FR/AT/COMP items.
+  build/deployment verification, documentation updates/checks, dependencies,
+  parallel/worktree guidance, and traceability to the exact FR/AT/COMP items.
 
 ## Test responsibility in this command
 
@@ -120,6 +131,12 @@ For each PR, list the test levels it will add or update:
   keyboard/touch behavior, semantics, contrast, and visual regressions.
 - **Quality-attribute checks** for performance, reliability, security, privacy, resilience,
   observability, offline/sync, rollout/rollback, and operational behavior.
+- **Build/deployment checks** for reproducible artifact creation, package metadata,
+  container/image/static/mobile build output, migration validation, deployment dry runs,
+  infrastructure/deployment manifest validation, smoke checks, and rollback verification.
+- **Documentation checks** for user/developer docs, README/API/reference output, examples,
+  tutorials, diagrams, runbooks, troubleshooting, release/migration notes, doc generation,
+  link checks, accessibility/readability, and freshness/versioning.
 
 Do not push all coverage to end-to-end tests. Prefer many fast lower-level tests for logic
 and contracts, focused integration tests for wiring and infrastructure, and a smaller set of
@@ -143,6 +160,12 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
   scope? Should this be a Breakdown plan or Implementation plan? Is the work Exploratory,
   Decomposable, or Code-ready?
 - **Stack & tooling**: language, test framework, CI, branch/merge model.
+- **Build/release/deployment tooling**: build command, artifact type/path, packaging or
+  image strategy, artifact registry, deployment scripts/manifests/IaC, target environments,
+  promotion model, dry-run/validation command, smoke checks, rollback, and who operates it.
+- **Documentation tooling and ownership**: doc source locations, user/developer doc
+  audiences, generated reference docs, doc build command, link checker, publishing path,
+  owner/reviewer, and freshness/versioning expectations.
 - **Done definition**: coverage bar, lint/format gates, review rules.
 - **Test mix**: which acceptance, unit, component, contract, integration, UI/accessibility,
   quality-attribute, migration, and operational checks are required by the spec/design.
@@ -150,7 +173,9 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
 - **Parallel execution**: which PRs can be built concurrently, whether Git worktrees should
   be used for independent branches, and which files/modules are likely to conflict.
 - **Touch scope**: which files, directories, modules, generated artifacts, config files,
-  migrations, docs, and spec/design/plan sections each PR is allowed or expected to touch.
+  migrations, build/deployment scripts, CI/CD/IaC/manifests, user/developer docs, examples,
+  runbooks, release notes, generated reference docs, and spec/design/plan sections each PR
+  is allowed or expected to touch.
 - **Slicing limits**: anything that must not exceed the 300-LOC PR ceiling.
 
 State assumptions explicitly and list them. Keep asking until slicing is unambiguous. In
@@ -170,8 +195,9 @@ work.
    useful, and done-definition in one paragraph. Include explicit `Work Scope:`,
    `Plan Type: Breakdown | Implementation`, and `Implementation Readiness:` lines.
 2. **Strategy** — Red/Green TDD loop, the ≤300-LOC PR rule, flags, always-green ordering,
-   branch/worktree isolation, integration cadence, and whether this plan decomposes parent
-   work or implements code-ready work.
+   branch/worktree isolation, integration cadence, build artifact strategy, deployment
+   strategy, documentation strategy, and whether this plan decomposes parent work or
+   implements code-ready work.
 3. **Milestones** — numbered (`MILE-<SLUG>-<n>`); each groups child work or PRs toward a
    coherent delivery slice.
 4. **Pull Requests / Child Work Items** — for a Breakdown plan, list numbered
@@ -179,17 +205,24 @@ work.
    dependencies, readiness target, risks, and done signal. For an Implementation plan, list
    numbered `PR-<SLUG>-<n>` items; for each: scope; **Planned Touch Set**
    (files/directories/modules/config/docs/generated artifacts plus any spec/design/plan
-   sections allowed to change); **Test Levels** (acceptance/e2e, unit, component, contract,
-   integration, UI/accessibility/visual, quality/NFR, migration/ops as applicable); **Red**
-   (failing tests, naming the level and linked IDs); **Green** (impl); est LOC (≤300);
-   `COMP-` built; `FR-`/`AT-` delivered; depends-on PRs.
+   sections allowed to change, including build/deployment/CI/IaC files when relevant);
+   **Build/Deploy Work** (artifact, script, pipeline, manifest, migration, dry-run, smoke,
+   or rollback work owned by this PR, or `None` with rationale); **Documentation Work**
+   (user docs, developer docs, API/reference docs, examples, runbooks, troubleshooting,
+   release/migration notes, generated docs, or `None` with rationale); **Test Levels**
+   (acceptance/e2e, unit, component, contract, integration, UI/accessibility/visual,
+   quality/NFR, build/deploy, docs, migration/ops as applicable); **Red** (failing tests,
+   naming the level and linked IDs); **Green** (impl); est LOC (≤300); `COMP-` built;
+   `FR-`/`AT-` delivered; depends-on PRs.
 5. **Coverage Map** — for a Breakdown plan, map each `FR-`/`UC-`/`NFR-`/`AT-`/`COMP-` to
    child `WORK-` items and required child artifacts. For an Implementation plan, map each
    `FR-`/`UC-`/`NFR-`/`AT-`/`COMP-` to the PR delivering it.
-6. **Sequencing & Risks** — merge order, parallelizable PRs, rollback per PR, likely merge
-   conflicts/shared files, planned touch-set overlaps, and worktree recommendations. State
-   the parallel **waves** (sets of PRs runnable at once), which waves are suitable for
-   separate Git worktrees, and the critical path explicitly.
+6. **Sequencing & Risks** — merge order, parallelizable PRs, build before deployment
+   dependencies, documentation before/with behavior dependencies, environment promotion
+   order, rollback per PR, likely merge conflicts/shared files, planned touch-set overlaps,
+   and worktree recommendations. State the parallel **waves** (sets of PRs runnable at
+   once), which waves are suitable for separate Git worktrees, and the critical path
+   explicitly.
 
 ## Step 4 — Render an HTML companion
 
@@ -206,7 +239,7 @@ makes task progression obvious. Load Mermaid from a CDN and include:
   separate Git worktrees.
 - ID-keyed PR and coverage tables, same section order as the markdown.
 - Planned touch-set tables so implementers and reviewers can see file/module ownership and
-  allowed documentation/config changes per PR.
+  allowed user-doc/developer-doc/config/build/deployment changes per PR.
 
 Keep both files in sync; never put IDs only in the HTML. Each diagram node uses the scope
 name for the label and the PR-ID as its key so it maps back to `plan.md`.
@@ -228,9 +261,10 @@ Then run or perform the corresponding `/plan-review` against the completed plan.
 sub-agents are available, use fresh-context Mechanical Reviewer and Qualitative Reviewer
 sub-agents as described in `/plan-review`; otherwise state that review is not independent and
 use the adversarial posture. Treat any upstream spec/design blocker, qualitative finding,
-missing coverage, weak PR slicing, TDD gap, sequencing/worktree issue, rollback gap, or
-production-quality concern as a defect in the created plan or its upstream inputs. Revise
-upstream artifacts if the review says they must change; otherwise revise `plan.md`/`plan.html`.
+missing coverage, weak PR slicing, TDD gap, build/deployment gap, documentation gap,
+sequencing/worktree issue, rollback gap, or production-quality concern as a defect in the
+created plan or its upstream inputs. Revise upstream artifacts if the review says they must
+change; otherwise revise `plan.md`/`plan.html`.
 Repeat checker + review until `/plan-review` would return Pass or an explicitly accepted
 Pass-with-fixes.
 
@@ -246,6 +280,12 @@ Pass-with-fixes.
 - Every `AT-` maps to an executable acceptance/e2e/API workflow test PR or to a justified
   non-code verification PR/check; lower-level tests from the design are scheduled near the
   code they protect.
+- Build artifact creation, packaging, deployment scripts/manifests/IaC, deployment dry runs,
+  smoke checks, and rollback verification are assigned to PRs whenever the spec/design calls
+  for them; otherwise the plan states why they are out of scope.
+- User/developer documentation updates, generated reference docs, examples, runbooks,
+  troubleshooting, release/migration notes, and doc validation checks are assigned to PRs
+  whenever the spec/design calls for them; otherwise the plan states why they are out of scope.
 - Each PR is independently testable and shippable.
 - Each PR has a Planned Touch Set precise enough for `/code-create` to know whether an
   intended edit is in scope. Use globs only when necessary and keep them narrow.

@@ -42,17 +42,20 @@ Eight source command prompts live in [prompts](prompts):
 - **`/plan-create`** — [prompts/plan-create.prompt.md](prompts/plan-create.prompt.md)
   Interviews the user one question per turn, then writes a work plan that slices spec +
   design into reviewable, Red/Green TDD pull requests of ≤300 LOC each, including Planned
-  Touch Sets and parallel/worktree guidance. Writes `plan.md` in the target product workspace.
+  Touch Sets, documentation/build/deployment work, and parallel/worktree guidance. Writes
+  `plan.md` in the target product workspace.
 - **`/plan-review`** — [prompts/plan-review.prompt.md](prompts/plan-review.prompt.md)
   Critically reviews a plan in two passes: a deterministic mechanical check plus a
   qualitative 1–5 assessment, ending in a verdict.
 - **`/code-create`** — [prompts/code-create.prompt.md](prompts/code-create.prompt.md)
   Implements the plan PR-by-PR with strict Red/Green/Refactor TDD; tests reference the
   FR/AT/COMP and PR they cover, suite stays green at each PR boundary, and language-aware
-  pre-commit/local quality gates are configured and run.
+  pre-commit/local quality gates plus planned documentation/build/deployment checks are
+  configured and run.
 - **`/code-review`** — [prompts/code-review.prompt.md](prompts/code-review.prompt.md)
-  Critically reviews the implementation with upstream checks, structural code gates,
-  pre-commit/local quality-gate verification, and a qualitative 1–5 assessment.
+  Critically reviews the implementation, documentation, build/deployment work, upstream
+  checks, structural code gates, pre-commit/local quality-gate verification, and a
+  qualitative 1–5 assessment.
 
 ## Test responsibility by command
 
@@ -68,6 +71,49 @@ Eight source command prompts live in [prompts](prompts):
   assigned `AT-` items plus the planned lower-level tests.
 - Review commands verify the same ownership chain and stop if a downstream artifact exposes
   missing or incorrect upstream test intent.
+
+## Build and deployment responsibility by command
+
+Build artifacts and deployment are first-class SDLC concerns. Do not defer them to the end
+unless the artifact explicitly scopes them out.
+
+- `/spec-create` captures externally relevant build, release, deployment, environment,
+  rollout, rollback, migration, smoke-check, and operational acceptance needs as requirements
+  or non-goals.
+- `/design-create` defines the build/package/release architecture: deployable artifacts,
+  CI/CD or release workflow, artifact storage, environments, configuration/secrets,
+  promotion, deployment topology, migrations, rollout/rollback, validation, smoke checks,
+  and ownership.
+- `/plan-create` assigns build/deployment work to child `WORK-` items or PRs: build scripts,
+  package manifests, generated outputs, CI/CD config, IaC/manifests, migration scripts,
+  deployment dry runs, smoke checks, rollback checks, and release docs.
+- `/code-create` implements and verifies the planned build/deployment work. It runs the
+  build/package command, verifies the expected artifact, validates deployment scripts or
+  manifests with dry-run/plan/lint/smoke checks where possible, and avoids live production
+  deployment unless explicitly requested.
+- Review commands check the same chain and stop with an upstream blocker when build or
+  deployment intent is missing from the artifact that should own it.
+
+## User and developer documentation responsibility by command
+
+User and developer documentation are also first-class SDLC concerns. Do not leave them as a
+last-minute README cleanup when users, developers, operators, support, auditors, or
+integrators depend on them.
+
+- `/spec-create` captures documentation audiences, tasks, discoverability,
+  localization/accessibility, onboarding, API/reference, support, runbook, release-note, and
+  acceptance needs as requirements or non-goals.
+- `/design-create` defines the documentation architecture: information architecture, source
+  locations, generated vs. hand-written docs, API/reference generation, examples, diagrams,
+  publishing/versioning, ownership, review triggers, and validation checks.
+- `/plan-create` assigns documentation work to child `WORK-` items or PRs: user guides,
+  in-product help, README/API docs, examples, runbooks, troubleshooting, migration notes,
+  release notes, generated reference docs, and doc build/link/accessibility checks.
+- `/code-create` implements and verifies planned documentation work. It updates docs with
+  the code, validates generated/reference docs and examples where practical, and avoids
+  documenting unimplemented future behavior as current behavior.
+- Review commands check the same chain and stop with an upstream blocker when documentation
+  intent is missing from the artifact that should own it.
 
 ## Work scope and readiness
 
@@ -127,10 +173,10 @@ canonical checklist is
 
 | Review | Mechanical/structural evidence | Qualitative assessment |
 | --- | --- | --- |
-| `/spec-review` | `check_spec.py` on the target spec. | Spec quality: problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, traceability. |
-| `/design-review` | `check_spec.py` on upstream spec, then `check_design.py` on design. | First judge upstream spec fitness; then judge design quality, decisions, risks, testability, and traceability. |
-| `/plan-review` | `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | First judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, sequencing, and worktrees. |
-| `/code-review` | `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, and pre-commit/equivalent gate. | First judge upstream code-readiness; then judge implementation correctness, test quality, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
+| `/spec-review` | `check_spec.py` on the target spec. | Spec quality: problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, build/deployment intent, documentation intent, traceability. |
+| `/design-review` | `check_spec.py` on upstream spec, then `check_design.py` on design. | First judge upstream spec fitness; then judge design quality, build/deployment design, documentation design, decisions, risks, testability, and traceability. |
+| `/plan-review` | `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | First judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
+| `/code-review` | `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, and pre-commit/equivalent gate. | First judge upstream code-readiness; then judge implementation correctness, test quality, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
 
 Agents should infer the likely scope from the user's request and state it explicitly:
 broad product/platform/app requests map to Product/system, one capability/subsystem maps to
@@ -163,9 +209,9 @@ for end-to-end continuation.
 
 | Scope | Spec carries | Design carries | Plan carries |
 | --- | --- | --- | --- |
-| Product/system | Mission, stakeholders, boundary, product needs, non-goals, major capabilities, representative use cases, major NFRs, broad acceptance intent, child-artifact needs. | HLD: context, major containers/services/modules, drivers, boundaries, data ownership, quality tactics, deployment/operations strategy, ADRs, risks, decomposition candidates. | Breakdown plan: milestones, feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research/decision needs, parallel tracks, readiness targets. |
-| Feature/component | Parent refs, local goal, actors, concrete behavior, FR/NFR/AT coverage, edge cases, integration/business rules, dependencies, non-goals. | Feature/component design: responsibilities, contracts, local state/data, runtime flows, core/shell split, dependencies, UX/API contracts, decisions, risks, test matrix. | Breakdown or implementation plan: child slice/change work or PRs, child artifact needs, integration order, test allocation, touch-scope risks. |
-| Slice/change | Exact requirement delta, parent IDs refined/preserved, changed and unchanged behavior, edge cases, executable or justified non-code acceptance criteria. | LLD: touched components/modules, API/schema/data deltas, failure paths, validation/policy logic, migration/rollback, side effects, test levels/doubles, likely touch candidates. | Implementation plan: `PR-` items, Planned Touch Sets, Red/Green steps, test levels, LOC estimates, quality gates, rollback, dependencies, worktree guidance. |
+| Product/system | Mission, stakeholders, boundary, product needs, non-goals, major capabilities, representative use cases, major NFRs, build/release/deployment expectations, user/developer documentation expectations, broad acceptance intent, child-artifact needs. | HLD: context, major containers/services/modules, drivers, boundaries, data ownership, quality tactics, build/package/release strategy, deployment/operations strategy, documentation strategy, ADRs, risks, decomposition candidates. | Breakdown plan: milestones, feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research/decision needs, build/deployment tracks, documentation tracks, parallel tracks, readiness targets. |
+| Feature/component | Parent refs, local goal, actors, concrete behavior, FR/NFR/AT coverage, edge cases, integration/business rules, build/deployment constraints, documentation constraints, dependencies, non-goals. | Feature/component design: responsibilities, contracts, local state/data, runtime flows, core/shell split, dependencies, UX/API contracts, build/deployment impacts, documentation impacts, decisions, risks, test matrix. | Breakdown or implementation plan: child slice/change work or PRs, child artifact needs, integration order, test allocation, build/deployment allocation, documentation allocation, touch-scope risks. |
+| Slice/change | Exact requirement delta, parent IDs refined/preserved, changed and unchanged behavior, edge cases, build/deployment delta, documentation delta, executable or justified non-code acceptance criteria. | LLD: touched components/modules, API/schema/data deltas, failure paths, validation/policy logic, build/deployment script or artifact changes, documentation changes, migration/rollback, side effects, test levels/doubles, likely touch candidates. | Implementation plan: `PR-` items, Planned Touch Sets, Red/Green steps, test levels, LOC estimates, quality gates, build/deployment verification, documentation checks, rollback, dependencies, worktree guidance. |
 
 ## Local quality gates
 

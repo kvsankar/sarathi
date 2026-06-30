@@ -1,13 +1,13 @@
 ---
-description: Implement a work plan PR-by-PR with strict Red/Green/Refactor TDD, keeping every step shippable, tested, and traceable to the spec, design, and plan.
+description: Implement a work plan PR-by-PR with strict Red/Green/Refactor TDD, keeping every step shippable, tested, documented, and traceable to the spec, design, and plan.
 agent: agent
 ---
 
 # Code Create
 
 Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
-tested, production code. Build **one PR at a time**, in plan order, using TDD. Optimize so
-`/code-review` finds nothing to fix.
+tested, documented, production code. Build **one PR at a time**, in plan order, using TDD.
+Optimize so `/code-review` finds nothing to fix.
 
 ## Core principles (the code is judged against these)
 
@@ -16,7 +16,9 @@ tested, production code. Build **one PR at a time**, in plan order, using TDD. O
 2. **One PR at a time** — implement the lowest unbuilt PR whose deps are met; keep ≤300 LOC.
 3. **Always green** — the full suite passes before a PR is done; never leave red on trunk.
 4. **Traceable** — tests name the FR/AT/COMP and PR they cover; nothing built off-plan.
-5. **Production quality** — error handling, input validation, no dead code, lint clean.
+5. **Production quality** — error handling, input validation, reproducible build artifacts,
+   deployable configuration/scripts when planned, accurate user/developer documentation when
+   planned, no dead code, lint clean.
 6. **Planned scope only** — edit only the files, directories, modules, config, docs,
    generated artifacts, and spec/design/plan sections listed in the PR's Planned Touch Set.
 
@@ -35,7 +37,9 @@ Before writing tests or code, confirm all of the following:
   design explicitly says no additional LLD is needed for this slice/change.
 - `plan.md` declares `Plan Type: Implementation` and `Implementation Readiness: Code-ready`.
 - The plan contains concrete `PR-` items, Planned Touch Sets, Test Levels, Red steps,
-  Green steps, dependencies, and quality gates.
+  Green steps, dependencies, quality gates, and build/deployment work or an explicit
+  rationale that no build/deployment change is required, plus documentation work or an
+  explicit rationale that no documentation change is required.
 
 If any item is missing, **stop** and tell the user which artifact is not code-ready and what
 is needed next: breakdown plan, child spec, HLD, LLD, ADR, interface contract, test
@@ -45,8 +49,9 @@ strategy, or implementation plan. This is a normal workflow outcome, not a codin
 
 Default behavior is input-gated: pause and ask one focused question at a time when missing
 information would materially change implementation behavior, test intent, quality gates,
-data migration, rollout/rollback, security/privacy posture, or planned touch scope. Do not
-silently invent behavior outside the spec/design/plan.
+build artifact shape, deployment scripts/manifests, data migration, rollout/rollback,
+documentation content, security/privacy posture, or planned touch scope. Do not silently
+invent behavior outside the spec/design/plan.
 
 The user may opt into **YOLO mode** with phrases such as "yolo", "use your judgment", "make
 reasonable assumptions", or "proceed without questions". In YOLO mode, make the narrowest
@@ -77,6 +82,13 @@ test levels before or alongside the production code using Red/Green/Refactor:
 - Write **quality-attribute checks** for performance, reliability, security, privacy,
   resilience, observability, offline/sync, rollout/rollback, and operational behavior when
   planned.
+- Write or run **build/deployment checks** when planned: reproducible package/image/static
+  bundle/mobile build output, generated artifact validation, migration validation,
+  deployment dry-run/plan/lint, manifest/IaC validation, smoke checks, and rollback checks.
+- Write or run **documentation checks** when planned: user/developer docs, README/API docs,
+  generated reference docs, examples, tutorials, diagrams, runbooks, troubleshooting,
+  release/migration notes, doc build, link checks, accessibility/readability, and freshness
+  or version checks.
 
 Follow the plan's test mix. If the planned tests are insufficient to prove the linked
 `FR-`/`AT-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather than silently
@@ -116,6 +128,11 @@ Select tools by ecosystem, using the repo's established stack where available:
   `actionlint`, `markdownlint`, `prettier`, `tflint`, `terraform fmt/validate`, `checkov`.
 - **Cross-language complexity/duplication/security**: `lizard`, Sonar-compatible reports,
   CodeQL where configured, dependency audit tools, secret scanning such as `gitleaks`.
+- **Build/deployment validation**: repo-native build commands, Docker/BuildKit image builds
+  or `docker compose config`, Kubernetes `kubectl --dry-run=server/client` or `kubeconform`,
+  Helm lint/template, Terraform/OpenTofu plan/validate, Bicep/ARM validation, CloudFormation
+  validate, serverless/SAM/CDK synth, package publish dry runs, mobile archive/export
+  validation, and environment smoke-test commands where available.
 
 Set explicit thresholds in the plan, pre-commit config, tool config, or test command. If the
 repo lacks thresholds, use these defaults unless the user chooses different standards:
@@ -129,13 +146,24 @@ repo lacks thresholds, use these defaults unless the user chooses different stan
 - Module size: stay within the checker's `--max-loc` or a stricter repo standard.
 - Security/dependency scans: no critical/high findings; medium findings need documented
   acceptance, mitigation, or follow-up.
+- Build/deployment: planned build command succeeds, expected artifact path/name/version is
+  produced or validated, deployment manifests/scripts pass lint/dry-run/plan checks, and
+  no real production deployment is performed unless explicitly requested by the user.
+- Documentation: planned doc build/generation/link/readability/accessibility checks pass;
+  examples or snippets are runnable where practical; public API/reference docs match the
+  implemented contract; no user/developer-facing behavior change ships undocumented unless
+  the plan explicitly says docs are out of scope.
 
 ## Step 1 — Confirm context
 
 Read `plan.md`, `design.md`, `spec.md`. Apply the Code-ready scope gate above. Then identify
 the next PR (lowest number, deps merged, not yet built). State the PR, its Red tests, Green
 scope, Planned Touch Set, the COMP/FR/AT it covers, the planned test levels, and the
-quality-gate command(s) that must pass at the PR boundary.
+quality-gate command(s) that must pass at the PR boundary. Also state any planned
+build/deployment work: build command, expected artifact, deployment validation command,
+smoke check, rollback check, or `None` with the plan's rationale. Also state planned
+documentation work: user docs, developer docs, API/reference docs, examples, runbooks,
+release/migration notes, doc validation command, or `None` with the plan's rationale.
 
 Before editing, compare every intended file/section change against the PR's Planned Touch
 Set. If the plan does not include a Planned Touch Set, or if the implementation requires
@@ -151,6 +179,14 @@ document the split.
 
 If quality-gate configuration is not in the Planned Touch Set, stop and ask for a plan update
 unless the current PR explicitly exists to configure quality gates.
+
+If build/deployment files, generated artifacts, scripts, pipeline config, IaC, manifests,
+or release documentation are required but absent from the Planned Touch Set, stop and ask
+for a plan/design update before editing them.
+
+If user/developer docs, README/API docs, examples, generated reference docs, runbooks,
+troubleshooting, migration notes, or release notes are required but absent from the Planned
+Touch Set, stop and ask for a plan/design/spec update before editing them.
 
 ## Step 2 — Red
 
@@ -168,11 +204,25 @@ unit edge case at the top level.
 
 Write the minimum code to pass. Run the suite; show all green. No extra scope.
 
+When the PR owns build/deployment work, implement only the planned build scripts,
+package/config changes, deployment manifests, migration scripts, smoke checks, or rollback
+hooks needed for the PR. Do not perform a live deployment unless the plan and the user
+explicitly call for it; prefer dry-run, validate, synth, plan, lint, or local/staging smoke
+commands.
+
+When the PR owns documentation work, update only the planned user/developer docs, examples,
+generated reference docs, runbooks, troubleshooting, release/migration notes, or help text.
+Keep docs aligned with actual behavior and contracts; do not document unimplemented future
+behavior as if it exists.
+
 ## Step 4 — Refactor
 
 Improve names/structure with tests staying green. Run formatters, linters, type checks,
 complexity checks, security/dependency scans, coverage, and the suite again through the
-configured local quality gate where possible.
+configured local quality gate where possible. Re-run planned build/package and
+deployment-validation commands after refactoring when touched files can affect them. Re-run
+planned documentation build/generation/link/readability checks when touched files can affect
+them.
 
 ## Step 5 — Verify the PR
 
@@ -200,6 +250,16 @@ If the project uses an equivalent command, run that command instead and name it 
 handoff. Fix formatter, lint, type, complexity, dependency/security, coverage, and test
 failures until the local gate passes. Do not bypass hooks to finish a PR.
 
+Then run the planned build/package command and verify the expected deployable artifact is
+created or validated. If the PR touches deployment scripts, CI/CD, manifests, IaC,
+migrations, environment config, or release docs, run the planned validation/dry-run/plan,
+smoke, and rollback checks. Record any check that cannot run locally and why.
+
+Then run the planned documentation checks. If the PR touches user/developer docs, API
+contracts, examples, generated reference docs, runbooks, troubleshooting, release notes, or
+migration notes, run the planned doc build/generation/link/readability/accessibility checks
+and verify examples/snippets where practical. Record any check that cannot run locally and why.
+
 Then run or perform the corresponding `/code-review` for the completed PR boundary. When
 sub-agents are available, use fresh-context Mechanical Reviewer and Qualitative Reviewer
 sub-agents as described in `/code-review`; otherwise state that review is not independent and
@@ -219,6 +279,12 @@ review-clean.
 - Each PR implements the test levels assigned in the plan, including executable acceptance
   coverage for assigned `AT-` items and lower-level tests for the affected core, component,
   contract, integration, UI, quality, migration, or operational behavior.
+- Each PR implements the build/deployment work assigned in the plan, verifies the expected
+  artifact or deployment validation outcome, and avoids live deployment unless explicitly
+  requested.
+- Each PR implements the user/developer documentation work assigned in the plan, verifies doc
+  build/generation/link/readability checks where practical, and keeps public docs aligned
+  with implemented behavior and contracts.
 - Every edit stays within the PR's Planned Touch Set. Out-of-scope needs stop work and trigger
   a user-visible plan/spec/design update request.
 - No prod line lands without a prior failing test. Suite is green at each PR boundary.

@@ -1,5 +1,5 @@
 ---
-description: Interview the user, then author a high-quality Software Design Document grounded in requirements, stakeholder concerns, quality attributes, architecture views, interfaces, decisions, risks, and testability.
+description: Interview the user, then author a high-quality Software Design Document grounded in requirements, stakeholder concerns, quality attributes, architecture/documentation/build/deploy views, interfaces, decisions, risks, and testability.
 agent: agent
 ---
 
@@ -24,8 +24,8 @@ such as arc42, C4-style views, and SEI quality-attribute/attribute-driven design
    scalability, interoperability, and cost should be expressed as concrete scenarios and
    addressed with explicit tactics or trade-offs.
 4. **Appropriate views, appropriate detail** — include static structure, runtime flows, data,
-   deployment/infrastructure, and operational views only to the depth needed for the system's
-   risk and complexity.
+   build/package, deployment/infrastructure, documentation, and operational views only to
+   the depth needed for the system's risk and complexity.
 5. **High cohesion and low coupling** — components should have clear responsibilities,
    stable contracts, explicit dependencies, and minimal knowledge of each other's internals.
 6. **Functional core, imperative shell** — identify pure decision logic, business rules,
@@ -37,8 +37,10 @@ such as arc42, C4-style views, and SEI quality-attribute/attribute-driven design
    are part of the design, not afterthoughts.
 8. **Data and lifecycle awareness** — model data ownership, identity, consistency, retention,
    migrations, privacy/security classification, and failure/recovery behavior where relevant.
-9. **Testability and operability by design** — each component should have an isolation
-   strategy, contract/integration test approach, observability hooks, and operational checks.
+9. **Buildability, documentability, testability, and operability by design** — each
+   component should have an isolation strategy, contract/integration test approach,
+   build/package path, documentation owner and audience where relevant, observability hooks,
+   deployment checks, and operational checks.
 10. **Decisions carry rationale and consequences** — record alternatives considered,
     why the chosen option fits now, rejected options, trade-offs, and expected change points.
 
@@ -134,7 +136,11 @@ that do not appear in the spec but are needed for safe implementation:
 - **End-to-end or acceptance tests** for critical user journeys and `AT-` scenarios, kept
   focused enough to avoid duplicating all lower-level coverage.
 - **Quality-attribute tests/checks** for performance, reliability, security, privacy,
-  accessibility, observability, resilience, offline/sync, migration/rollback, and operations.
+  accessibility, observability, resilience, offline/sync, build/package reproducibility,
+  deployment validation, migration/rollback, and operations.
+- **Documentation checks** for user guidance, developer onboarding, API/reference output,
+  examples, diagrams, runbooks, troubleshooting, accessibility/readability, links, generated
+  docs, and versioned release/migration notes.
 
 Document this as a test matrix in **Test Strategy**. For each test level, state purpose,
 owner/component, linked `FR-`/`NFR-`/`UC-`/`AT-`/`COMP-`, required doubles or environments,
@@ -205,17 +211,20 @@ Use the same section order for every design, but tune the content to the declare
 
 - **Product/system design (HLD)** carries system context, major containers/services/modules,
   architectural drivers, key quality-attribute tactics, system and trust boundaries, major
-  data ownership, integration and deployment/operations strategy, material decisions/ADRs,
-  risks, decomposition candidates, and a system-level test strategy. It should explain how
-  the system will be divided, not specify every local algorithm or file.
+  data ownership, integration strategy, build/package/release strategy,
+  deployment/operations strategy, documentation strategy, material decisions/ADRs, risks,
+  decomposition candidates, and a system-level test strategy. It should explain how the
+  system will be divided, not specify every local algorithm or file.
 - **Feature/component design** carries component responsibilities, interfaces/contracts,
   local data/state ownership, runtime flows, functional-core/imperative-shell partition,
-  dependencies, UX/API contracts, feature-level decisions/ADRs, risks, and a test matrix for
-  that feature/component. It should identify any child slice/change LLDs still required.
+  dependencies, UX/API contracts, build/release/deployment impacts, feature-level
+  documentation impacts, decisions/ADRs, risks, and a test matrix for that
+  feature/component. It should identify any child slice/change LLDs still required.
 - **Slice/change design (LLD)** carries the exact local design needed for implementation:
   touched components/modules, API/schema/data changes, detailed happy and failure flows,
   validation/policy logic, core-vs-shell placement, migration/rollback concerns, side
-  effects, planned test levels/doubles, and likely file/module touch candidates.
+  effects, build/deployment script or artifact changes, documentation changes, planned test
+  levels/doubles, and likely file/module touch candidates.
 
 ## Design profiles and candidate sections
 
@@ -237,6 +246,12 @@ Every non-trivial design should include:
 - **Functional-core/imperative-shell map** — pure logic vs. side-effecting adapters, with
   test strategy for each.
 - **Quality-attribute tactics** — how the design meets the important NFRs and constraints.
+- **Build/release/deployment view** — deployable artifacts, package boundaries, CI/CD or
+  release workflow, environment promotion, configuration/secrets, migrations, rollout,
+  rollback, smoke checks, and ownership.
+- **Documentation view** — user docs, developer docs, API/reference docs, examples,
+  tutorials, diagrams, runbooks, troubleshooting, doc generation, versioning, publishing
+  path, ownership, and review/update triggers.
 - **Traceability and tests** — requirements to components/interfaces/decisions/tests.
 
 ### Backend / API / service design
@@ -259,12 +274,19 @@ Candidate design contents:
   flows, background jobs, and cross-service interactions.
 - **Deployment and operations**: environments, configuration, secrets, health checks,
   observability, alerts, backups, scaling, rollout/rollback, and runbooks.
+- **Build/release pipeline**: container images, packages, generated clients, database
+  migration bundles, artifact registry, versioning, SBOM/provenance where needed, CI/CD
+  stages, environment promotion, and deploy validation.
+- **Developer documentation**: API reference/OpenAPI/AsyncAPI, SDK/client examples,
+  local-dev setup, configuration reference, architecture notes, runbooks, troubleshooting,
+  and compatibility/migration guidance.
 - **Backend test strategy**: core unit tests, contract tests, integration tests, migration tests,
   performance/security/resilience tests, and end-to-end tests.
 
 Minimum backend artifacts: context diagram, container/service diagram, component/module
 diagram, API/event contract table or formal spec reference, data model diagram/table,
-sequence/runtime diagrams, deployment/ops view, and component-to-test matrix.
+sequence/runtime diagrams, build/release view, deployment/ops view, developer-docs view,
+and component-to-test matrix.
 
 ### Web frontend / SPA design
 
@@ -289,12 +311,19 @@ Candidate design contents:
   target size, breakpoints, touch behavior, and content priority.
 - **Frontend performance and security**: bundle boundaries, lazy loading, rendering hotspots,
   image/media strategy, token/storage policy, sensitive data handling, and privacy events.
+- **Frontend build and release**: build tool command, static/server-rendered artifact,
+  environment injection, feature flags, CDN/cache invalidation, asset fingerprinting,
+  preview/staging deployment, release promotion, rollback, and smoke checks.
+- **User and developer documentation**: in-product help, error/empty-state guidance,
+  user guide/tutorial changes, design-system/component usage docs, route behavior notes,
+  integration examples, accessibility notes, analytics event docs, and release notes.
 - **Frontend test strategy**: pure function tests, component tests, accessibility checks,
   API-mocked integration tests, visual tests where useful, and E2E tests for critical journeys.
 
 Minimum web frontend artifacts: route map, component hierarchy diagram, UX flow diagram,
 state model/table, data/API contract table, loading/error/empty state matrix, accessibility
-checklist, responsive behavior matrix, and test traceability matrix.
+checklist, responsive behavior matrix, build/release notes, documentation notes, and test
+traceability matrix.
 
 ### Mobile app design
 
@@ -320,13 +349,20 @@ Candidate design contents:
   interruptions, resume, token refresh, background execution, notification taps, and recovery.
 - **Performance, battery, and resource budgets**: startup, frame/rendering budget, memory,
   network use, background work, and battery-sensitive scheduling.
+- **Mobile build and release**: signing, build flavors/schemes, app identifiers, store or
+  enterprise distribution, OTA/update policy if applicable, environment configuration,
+  feature flags, staged rollout, rollback/kill-switch strategy, and release smoke checks.
+- **Mobile user/developer documentation**: onboarding/help copy, permission rationale,
+  troubleshooting, support articles, deep-link/API integration notes, platform variation
+  notes, store release notes, and operator/support runbooks.
 - **Mobile test strategy**: core unit tests, widget/component tests, navigation/data-flow
   integration tests, device/emulator tests, accessibility tests, permission-denied tests,
   offline/sync tests, lifecycle/background tests, and release-health checks.
 
 Minimum mobile artifacts: core/adapters component diagram, navigation graph, screen/state
 table, offline/sync diagram when remote data exists, permission/capability matrix,
-lifecycle/background table, performance budget, and test strategy matrix.
+lifecycle/background table, performance budget, build/release plan, documentation plan, and
+test strategy matrix.
 
 ### OO / UML-heavy design
 
@@ -386,12 +422,19 @@ Interview the user **one question at a time**: ask, wait, then ask the next. Cov
   infrastructure, third-party services/libraries, versions, licensing, and organizational constraints.
 - **Decomposition and views**: layers, components, containers/services/modules, deployment
   units, runtime flows, data model, and cross-cutting concepts.
+- **Build, release, and deployment architecture**: build commands, artifact/package types,
+  artifact storage, CI/CD or release workflow, environments, promotion rules,
+  configuration/secrets, migrations, rollout/rollback, smoke checks, and ownership.
+- **User and developer documentation architecture**: doc audiences, information architecture,
+  source locations, generated vs. hand-written docs, API/reference generation, examples,
+  diagrams, publishing/versioning, ownership, review triggers, and doc validation checks.
 - **State and side effects**: pure decision logic, persistence, I/O, external calls, time,
   randomness, transactions, concurrency, retries, idempotency, and consistency boundaries.
 - **Interfaces and contracts**: APIs, events, commands, schemas, protocols, auth, errors,
   compatibility/versioning, and ownership.
 - **Quality tactics and trade-offs**: how the design meets performance, reliability,
-  security, modifiability, usability, observability, deployment, and cost goals.
+  security, modifiability, usability, observability, deployability, build reproducibility,
+  deployment, and cost goals.
 - **Decision points**: what trade-offs require user input, what options are viable, which
   option is recommended, and whether an ADR is needed.
 - **Test and verification strategy**: how components, contracts, quality attributes, data
@@ -421,9 +464,11 @@ Use **prefix + slug**, no numeric suffix — numbers belong to the spec, not the
    lines.
 2. **Tech Stack** — chosen language(s), runtime, frameworks, datastore, and key libraries,
    infrastructure/services, external dependencies, and rationale tied to drivers/NFRs. Note
-   versions, licensing, hosting, or organizational constraints where they matter.
+   versions, licensing, build tooling, package/artifact formats, documentation tooling,
+   hosting, or organizational constraints where they matter.
 3. **Drivers & Constraints** — the FRs/NFRs/use cases, quality-attribute scenarios,
-   stakeholder concerns, external constraints, risks, and assumptions that shape the design.
+   stakeholder concerns, build/release/deployment constraints, documentation constraints,
+   external constraints, risks, and assumptions that shape the design.
 4. **Layers** — (`LAYER-<SLUG>`); each names its responsibility, allowed dependencies,
    boundary rules, ownership, and whether it belongs to core policy, application orchestration,
    adapter/shell, presentation, data, or infrastructure. Dependencies should be acyclic and justified.
@@ -455,10 +500,13 @@ Use **prefix + slug**, no numeric suffix — numbers belong to the spec, not the
    reversibility, ADR link/path when applicable, and expected revisit triggers.
 11. **Test Strategy** — a test-level matrix covering acceptance/e2e, integration, contract,
    component/module, unit/pure-core, UI/accessibility/visual, migration, operational, and
-   quality-attribute checks as applicable. Explain how each `COMP-`, `IFACE-`, critical flow,
-   `AT-`, and important `NFR-` is tested in isolation and in collaboration, including test
-   data, doubles, environments, observability, failure injection, and migration/rollback
-   checks where relevant.
+   quality-attribute checks as applicable. Include build/package verification and deployment
+   validation/smoke checks where relevant, plus documentation checks such as doc build,
+   generated API/reference output, examples, link checks, accessibility/readability, and
+   freshness/version checks. Explain how each `COMP-`, `IFACE-`, critical flow, `AT-`, and
+   important `NFR-` is tested in isolation and in collaboration, including test data,
+   doubles, environments, observability, failure injection, and migration/rollback checks
+   where relevant.
 12. **Risks & Trade-offs** — (`RISK-<SLUG>`); risk or technical debt, impact, likelihood,
    mitigation, owner, trigger, and residual risk.
 13. **Traceability Matrix** — requirements (`FR-`/`NFR-`/`UC-`) → components → interfaces →
@@ -504,8 +552,9 @@ Pass-with-fixes.
 - No unintentional cyclic dependencies; dependency direction, ownership, and boundary crossings are explicit.
 - Each component has cohesive responsibility, clear state/side-effect boundaries, and a named lifecycle.
 - Quality attributes are addressed by concrete tactics, flows, constraints, or tests rather than adjectives.
-- Every component, interface, critical `AT-`, and important `NFR-` has a named test level
-  and relevant observability/operational checks.
+- Every component, interface, deployable artifact, documentation artifact, critical `AT-`,
+  and important `NFR-` has a named test/check level and relevant build, deployment,
+  documentation, observability, or operational checks.
 - Every diagram uses IDs as node/entity labels so it maps back to the spec and tables.
 - Record important alternatives, trade-offs, assumptions, risks, and technical debt. No vague verbs, no "etc.".
 - Create/update ADRs for material decisions and keep ADRs synchronized with `DEC-` entries.

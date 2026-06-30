@@ -540,21 +540,21 @@
         <tbody>
           <tr>
             <td class="scope">Product/System</td>
-            <td>Mission, stakeholders, boundary, needs, non-goals, capabilities, major NFRs, broad ATs.</td>
-            <td>HLD: context, major services/modules, drivers, boundaries, data ownership, ADRs, risks.</td>
-            <td>Breakdown: milestones, feature/component work, dependencies, child artifacts, parallel tracks.</td>
+            <td>Mission, stakeholders, boundary, needs, non-goals, capabilities, docs/build/deploy expectations, major NFRs, broad ATs.</td>
+            <td>HLD: context, major services/modules, drivers, boundaries, data ownership, docs/build/release/deploy strategy, ADRs, risks.</td>
+            <td>Breakdown: milestones, feature/component work, dependencies, child artifacts, docs/build/deploy tracks, parallel tracks.</td>
           </tr>
           <tr>
             <td class="scope">Feature/Component</td>
-            <td>Parent refs, local behavior, FR/NFR/ATs, edge cases, rules, dependencies, non-goals.</td>
-            <td>Responsibilities, contracts, local state/flows, core/shell split, decisions, test matrix.</td>
-            <td>Child slices or PRs, integration order, test allocation, touch-scope risks.</td>
+            <td>Parent refs, local behavior, FR/NFR/ATs, edge cases, rules, docs/build/deploy constraints, dependencies, non-goals.</td>
+            <td>Responsibilities, contracts, local state/flows, core/shell split, docs/build/deploy impacts, decisions, test matrix.</td>
+            <td>Child slices or PRs, integration order, test allocation, docs/build/deploy allocation, touch-scope risks.</td>
           </tr>
           <tr>
             <td class="scope">Slice/Change</td>
-            <td>Exact requirement delta, refined parent IDs, changed/unchanged behavior, code-ready ATs.</td>
-            <td>LLD: local changes, API/schema/data deltas, failure paths, migration/rollback, test levels.</td>
-            <td>Implementation PRs, Planned Touch Sets, Red/Green steps, LOC, quality gates, worktrees.</td>
+            <td>Exact requirement delta, refined parent IDs, changed/unchanged behavior, docs/build/deploy delta, code-ready ATs.</td>
+            <td>LLD: local changes, API/schema/data deltas, failure paths, docs/build/deploy scripts or artifacts, migration/rollback, test levels.</td>
+            <td>Implementation PRs, Planned Touch Sets, Red/Green steps, LOC, docs/build/deploy verification, quality gates, worktrees.</td>
           </tr>
         </tbody>
       </table>

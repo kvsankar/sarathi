@@ -1,5 +1,5 @@
 ---
-description: Critically review implemented code against its plan with upstream checks, structural code gates, pre-commit/local quality gates, and a qualitative pass, then report.
+description: Critically review implemented code/docs/build/deploy work against its plan with upstream checks, structural code gates, pre-commit/local quality gates, and a qualitative pass.
 agent: agent
 ---
 
@@ -52,7 +52,8 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 Then read enough of the upstream artifacts to detect latent issues exposed by the code,
 including ambiguous requirements, missing acceptance criteria, untestable design choices,
 incorrect component boundaries, plan slices that cannot be built independently, missing NFR
-validation, missing/incorrect Planned Touch Sets, traceability gaps, or implementation behavior
+validation, missing build/release/deployment intent, missing/incorrect Planned Touch Sets,
+missing user/developer documentation intent, traceability gaps, or implementation behavior
 that suggests the upstream artifact specified the wrong thing.
 
 Also verify the upstream artifacts were code-ready for this implementation. If `spec.md`,
@@ -151,6 +152,11 @@ available. Examples include:
   `actionlint`, `markdownlint`, `prettier`, `tflint`, `terraform fmt/validate`, `checkov`.
 - **Cross-language**: `lizard`, Sonar-compatible reports, CodeQL where configured,
   dependency audits, `gitleaks` or equivalent secret scanning.
+- **Build/deployment validation**: repo-native build commands, Docker/BuildKit or
+  `docker compose config`, Kubernetes dry-run or `kubeconform`, Helm lint/template,
+  Terraform/OpenTofu validate/plan, Bicep/ARM validation, CloudFormation validate,
+  serverless/SAM/CDK synth, package publish dry runs, mobile archive/export validation, and
+  environment smoke-test commands where available.
 
 Verify thresholds are explicit and met. If the repo does not define thresholds, use these
 minimum review expectations:
@@ -164,6 +170,14 @@ minimum review expectations:
 - Security/dependency scans: no critical/high findings; medium findings require accepted
   mitigation or follow-up.
 - Module size: within the checker's `--max-loc` or stricter repo standard.
+- Build/deployment: planned build command succeeds, expected artifact path/name/version is
+  produced or validated, deployment manifests/scripts pass lint/dry-run/plan checks, smoke
+  and rollback checks are run where planned, and no production deploy happened without
+  explicit approval.
+- Documentation: planned doc build/generation/link/readability/accessibility checks pass;
+  examples or snippets are runnable where practical; public API/reference docs match the
+  implemented contract; no user/developer-facing behavior change ships undocumented unless
+  the plan explicitly says docs are out of scope.
 
 ## Verification B — Qualitative
 
@@ -177,13 +191,21 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   `AT-` items, and planned lower-level tests cover unit/pure-core logic, components,
   contracts, integrations, UI/accessibility/visual behavior, quality attributes, migrations,
   or operations as applicable.
+- **Build/deployment completeness** — assigned build/package work produces or validates the
+  expected artifact; deployment scripts, manifests, IaC, migrations, smoke checks, rollback
+  checks, and release docs are implemented and verified where planned.
+- **Documentation completeness** — assigned user/developer docs, README/API/reference output,
+  examples, tutorials, diagrams, runbooks, troubleshooting, release/migration notes, and doc
+  generation are implemented and verified where planned.
 - **Correctness** — code satisfies its FR/AT; edge cases handled at the lowest useful test
   level and not only through broad end-to-end tests.
 - **Design fidelity** — matches COMP boundaries; pure core stays pure; no layering breaks.
 - **Planned scope fidelity** — changed files/sections stay within each PR's Planned Touch Set;
   any out-of-scope edit is flagged as a plan/design/spec revision need, not accepted silently.
 - **Readability** — plain test names (IDs in docstrings, not crammed into names), clear structure, no dead code.
-- **Production quality** — error handling, validation, NFRs met.
+- **Production quality** — error handling, validation, NFRs met, artifacts are reproducible,
+  config/secrets are handled safely, documentation matches behavior, and deployment/rollback
+  behavior is credible.
 - **Quality gate fitness** — pre-commit/equivalent gates are language-appropriate,
   enforce thresholds, are not trivially bypassed, and align with CI.
 

@@ -1,5 +1,5 @@
 ---
-description: Interview the user, then author a high-quality Software Requirements Specification grounded in stakeholder needs, use cases, supplementary requirements, scope, and traceability.
+description: Interview the user, then author a high-quality Software Requirements Specification grounded in stakeholder needs, use cases, supplementary requirements, documentation/build/deploy needs, scope, and traceability.
 agent: agent
 ---
 
@@ -27,8 +27,13 @@ management and the requirements pyramid:
   success flow, alternatives/exceptions, and postconditions. They should describe observable
   interactions and value, not internal design.
 - **Supplementary requirements for qualities and constraints** — performance, security,
-  reliability, usability, interoperability, compliance, data retention, deployment, and other
-  cross-cutting constraints belong in measurable NFRs unless they are specific to one use case.
+  reliability, usability, interoperability, compliance, data retention, build/release,
+  deployment, operability, and other cross-cutting constraints belong in measurable NFRs
+  unless they are specific to one use case.
+- **Documentation is a requirement when people depend on it** — user guidance, onboarding,
+  help content, API/developer docs, examples, runbooks, troubleshooting, migration notes,
+  and release notes belong in the spec when they affect adoption, safe use, support,
+  operation, or integration.
 - **Requirements state what, not how** — avoid architecture, UI layout, algorithms, database
   schema, and implementation choices unless they are true external constraints.
 - **Manage scope deliberately** — record in-scope, out-of-scope, assumptions, open questions,
@@ -56,6 +61,43 @@ or other lower-level implementation tests here. Those belong downstream:
 - `/code-create` writes the executable tests: acceptance/e2e tests for `AT-` coverage and
   lower-level tests such as unit, component, contract, integration, accessibility,
   performance, security, migration, or operational checks as required by the design and plan.
+
+## Build, release, and deployment responsibility in this command
+
+`/spec-create` captures externally relevant build, release, and deployment requirements, but
+does not design the pipeline or write scripts. Treat build/deployment needs as requirements
+when stakeholders care about them or when they constrain the product:
+
+- Product/system specs state expected deployable artifact types, target environments,
+  release/promotion model, rollout constraints, operational acceptance, and high-level
+  deployability NFRs.
+- Feature/component specs state feature-specific deployability, compatibility, migration,
+  rollout, enablement/flagging, data-backfill, or environment constraints.
+- Slice/change specs state the exact build/release/deployment delta, including any changed
+  artifact, migration, configuration, rollout, rollback, smoke-check, or operator-visible
+  behavior.
+
+If deployment is intentionally out of scope, record that in **Non-Goals** or
+**Assumptions & Open Questions** rather than leaving it implicit.
+
+## User and developer documentation responsibility in this command
+
+`/spec-create` captures documentation needs from the audience's point of view, but does not
+design the documentation system or write final docs. Treat documentation as product scope
+when users, developers, operators, support, auditors, or integrators need it to succeed:
+
+- Product/system specs state documentation audiences, journeys, formats/channels,
+  discoverability, localization/accessibility needs, developer onboarding expectations,
+  API/reference needs, support/operations needs, and documentation acceptance criteria.
+- Feature/component specs state feature-specific user guidance, help/error copy,
+  developer/API examples, integration notes, configuration docs, runbooks, and migration or
+  compatibility notes.
+- Slice/change specs state the exact documentation delta: changed user behavior to explain,
+  developer/API contract changes, README/tutorial updates, examples, release notes, runbook
+  changes, troubleshooting notes, or explicitly unchanged documentation.
+
+If user or developer documentation is intentionally out of scope, record that in
+**Non-Goals** or **Assumptions & Open Questions** rather than leaving it implicit.
 
 ## Work scope and readiness model
 
@@ -118,18 +160,21 @@ Use the same section order for every spec, but tune the content to the declared 
 
 - **Product/system spec** carries the product mission, stakeholders, system boundary,
   product-level needs, non-goals, major capabilities/features, representative use cases,
-  major NFRs and external constraints, broad acceptance intent, assumptions, risks, and a
-  traceability map from needs to capabilities. It should usually be Exploratory or
+  major NFRs and external constraints, build/release/deployment expectations,
+  user/developer documentation expectations, broad acceptance intent, assumptions, risks,
+  and a traceability map from needs to capabilities. It should usually be Exploratory or
   Decomposable and should identify child feature/component specs needed next.
 - **Feature/component spec** carries the parent product references, feature/component goal,
   actors and users, concrete behavior/use cases, FRs/NFRs local to the feature/component,
-  edge cases, integration or business rules, acceptance criteria, dependencies, non-goals,
-  and traceability back to parent needs/features. It may be Decomposable or Code-ready
-  depending on size and precision.
+  edge cases, integration or business rules, build/release/deployment constraints,
+  documentation constraints, acceptance criteria, dependencies, non-goals, and traceability
+  back to parent needs/features. It may be Decomposable or Code-ready depending on size and
+  precision.
 - **Slice/change spec** carries the precise requirement delta for one implementable change,
   parent IDs being refined or preserved, exact behavior and edge cases, changed FR/NFR/AT
-  items, externally visible acceptance criteria or justified non-code verification, and
-  explicitly unchanged behavior. It should normally be Code-ready before planning/code.
+  items, build/release/deployment deltas and documentation deltas when relevant, externally
+  visible acceptance criteria or justified non-code verification, and explicitly unchanged
+  behavior. It should normally be Code-ready before planning/code.
 
 ## Research and source grounding
 
@@ -200,6 +245,13 @@ answer, then ask the next. Never batch questions. Keep going until gaps close. C
   must be supported?
 - **Supplementary/NFR constraints**: Performance, security, privacy, reliability, usability,
   accessibility, interoperability, compliance, data, platform, operational, and budget limits.
+- **Build, release, and deployment needs**: What deployable artifact is expected; where it
+  runs; how environments, promotion, rollout, rollback, migrations, approvals, smoke checks,
+  and operator/user-visible release behavior should work; and which of those are in scope now.
+- **User and developer documentation needs**: Which audiences need docs; what tasks,
+  concepts, API/reference material, examples, onboarding, troubleshooting, release notes,
+  runbooks, or help content they need; where those docs live; and how correctness,
+  accessibility, freshness, and discoverability will be judged.
 - **Priorities and risks**: Which needs/features are must-have vs. optional, risky,
   architecturally significant, or likely to change?
 - **Acceptance criteria**: How will each important behavior and quality be verified?
@@ -236,7 +288,9 @@ Use **prefix slugs + zero-padded gap numbers** so items can be inserted later:
 6. **Functional Requirements** — numbered (`FR-<SLUG>-<n>`), atomic, testable system
    obligations that cite `UC-`/`FEAT-` and avoid design decisions.
 7. **Non-Functional Requirements** — numbered (`NFR-<SLUG>-<n>`), measurable supplementary
-   requirements and external constraints with thresholds, units, scope, and verification method.
+   requirements and external constraints with thresholds, units, scope, and verification
+   method, including build/release/deployment, documentation, and operational constraints
+   when externally relevant.
 8. **Acceptance Tests** — numbered (`AT-<SLUG>-<n>`), Given/When/Then or equivalent
    black-box acceptance criteria; each maps to a `UC-` and the `FR-`/`NFR-` it verifies.
    State the externally visible behavior or measurable quality to verify, not the internal
@@ -257,6 +311,10 @@ Use **prefix slugs + zero-padded gap numbers** so items can be inserted later:
 - User needs and use cases stay in the problem/behavior domain; functional requirements state
   externally observable obligations; NFRs state measurable quality or constraint obligations.
 - NFRs include numbers/units and a verification method where possible. No orphan or duplicate IDs.
+- Build/release/deployment expectations are either captured as requirements/acceptance
+  criteria or explicitly deferred as non-goals/open questions.
+- User/developer documentation expectations are either captured as requirements/acceptance
+  criteria or explicitly deferred as non-goals/open questions.
 - Avoid "etc.", "and/or", "TBD", "as appropriate", vague adjectives, hidden design decisions,
   unowned assumptions, and requirements that bundle multiple obligations.
 
