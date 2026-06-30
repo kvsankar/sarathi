@@ -5,10 +5,16 @@ description: End-to-end SDLC workflow for agent-steered creation, review, verifi
 
 # Agent-Steered SDLC
 
-Use the installed slash commands when they are available. If the commands are not
-installed, use this skill bundle's `prompts/*.prompt.md` files and follow the matching
-prompt exactly. If bundled prompts are unavailable, locate this repository's
+Use the installed stage command, prompt, or skill when the host supports one. If a stage is
+not directly invokable, use this skill bundle's `prompts/*.prompt.md` files and follow the
+matching prompt exactly. If bundled prompts are unavailable, locate this repository's
 `prompts/*.prompt.md` as a fallback.
+
+GitHub Copilot CLI note: prompt files do not become arbitrary built-in CLI slash commands.
+The installer creates direct stage skill aliases such as `spec-create`, `code-review`, and
+`code-assess` so Copilot CLI can invoke `/code-review` where skill slash invocation is
+supported. If the CLI surface rejects a stage slash name, ask in natural language instead:
+"Use the agent-steered-sdlc skill to run the code-review stage."
 
 Command verbs have distinct meanings:
 
@@ -42,7 +48,7 @@ Select the narrowest command that matches the user's current artifact:
   and upstream consistency.
 - `/code-assess`: run `/code-verify` plus `/code-review` as the full code gate.
 
-When the user invokes this skill generally instead of naming a specific slash command,
+When the user invokes this skill generally instead of naming a specific stage,
 operate in human-gated mode by default. Choose and run only the next appropriate SDLC stage.
 For creation stages, generate or revise the artifact, run the corresponding `*-assess` gate
 when practical, and then stop for human review. Report the artifact path, readiness/status,
@@ -63,7 +69,7 @@ These gates are mandatory execution stops, not suggestions.
 - The stop report must include: artifact path(s), readiness/status, review/check result,
   open questions or assumptions, and the exact recommended next command.
 - Continue past a gate only when the user's latest message explicitly approves the next
-  stage, for example "continue to design", "run /design-create", "approve spec", or
+  stage, for example "continue to design", "run design-create", "approve spec", or
   "continue end-to-end unattended".
 - YOLO mode only answers missing-input questions. It does **not** bypass human review gates.
 - Even if the matching `*-assess` command passes, stop for human review before downstream work.

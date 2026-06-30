@@ -149,10 +149,12 @@ function Write-DestinationSummary {
                 Write-Host "  GitHub Copilot prompts -> $(Get-CopilotPromptDestination)"
                 foreach ($skillDest in Get-CopilotSkillDestinations) {
                     Write-Host "  GitHub Copilot skill -> $skillDest"
+                    Write-Host "  GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
                 }
                 if ($Scope -eq "user") {
                     Write-Host "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
                 }
+                Write-Host "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
                 Write-Host "    Reload Copilot CLI skills with /skills reload, then check /skills info agent-steered-sdlc."
             }
             "claude-code" {
@@ -248,6 +250,60 @@ function Copy-SkillFolder {
     }
 }
 
+function Copy-CopilotStageSkills {
+    param([string]$MainSkillDestination)
+
+    $skillRoot = Split-Path -Parent $MainSkillDestination
+    Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
+        $stageName = Get-CommandName $_
+        $stageDest = Join-Path $skillRoot $stageName
+        $promptFileName = $_.Name
+        $description = (
+            "Agent-Steered SDLC direct stage skill for $stageName. " +
+            (Get-PromptDescription $_.FullName)
+        ).Replace('"', '\"')
+
+        New-Item -ItemType Directory -Force -Path $stageDest | Out-Null
+
+        $stageSkill = @"
+---
+name: $stageName
+description: "$description"
+---
+
+# Agent-Steered SDLC Stage: $stageName
+
+This is a direct GitHub Copilot CLI skill alias for the Agent-Steered SDLC
+$stageName stage.
+
+Follow the bundled prompt file prompts/$promptFileName exactly. Use bundled checker scripts
+from checkers/ when the prompt calls for deterministic verification.
+
+This stage is part of the broader agent-steered-sdlc workflow. Preserve input gates, human
+review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
+limits.
+"@
+        Set-Content -LiteralPath (Join-Path $stageDest "SKILL.md") -Value $stageSkill -NoNewline
+
+        $promptDest = Join-Path $stageDest "prompts"
+        if (Test-Path -LiteralPath $promptDest) {
+            Remove-Item -LiteralPath $promptDest -Recurse -Force
+        }
+        New-Item -ItemType Directory -Force -Path $promptDest | Out-Null
+        Copy-Item -LiteralPath $_.FullName -Destination $promptDest -Force
+
+        if (Test-Path -LiteralPath $CheckerSource) {
+            $checkerDest = Join-Path $stageDest "checkers"
+            if (Test-Path -LiteralPath $checkerDest) {
+                Remove-Item -LiteralPath $checkerDest -Recurse -Force
+            }
+            New-Item -ItemType Directory -Force -Path $checkerDest | Out-Null
+            Get-ChildItem -LiteralPath $CheckerSource -Filter "*.py" |
+                Copy-Item -Destination $checkerDest -Force
+        }
+    }
+}
+
 function Install-Copilot {
     $dest = Get-CopilotPromptDestination
     $skillDests = Get-CopilotSkillDestinations
@@ -255,6 +311,7 @@ function Install-Copilot {
         Write-Host "Would install GitHub Copilot prompts -> $dest"
         foreach ($skillDest in $skillDests) {
             Write-Host "Would install GitHub Copilot skill -> $skillDest"
+            Write-Host "Would install GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
         }
         return
     }
@@ -267,9 +324,12 @@ function Install-Copilot {
     foreach ($skillDest in $skillDests) {
         Copy-SkillFolder $skillDest
         Write-Host "Installed GitHub Copilot skill -> $skillDest"
+        Copy-CopilotStageSkills $skillDest
+        Write-Host "Installed GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
     }
     Write-Host "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
-    Write-Host "Copilot CLI can load the skill after a new session or /skills reload; check with /skills info agent-steered-sdlc."
+    Write-Host "Copilot CLI can load skills after a new session or /skills reload; check with /skills info agent-steered-sdlc."
+    Write-Host "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
 }
 
 function Install-Codex {

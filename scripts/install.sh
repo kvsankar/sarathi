@@ -226,10 +226,12 @@ write_destination_summary() {
         echo "  GitHub Copilot prompts -> $(copilot_prompt_dest)"
         while IFS= read -r skill_dest; do
           echo "  GitHub Copilot skill -> $skill_dest"
+          echo "  GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
         done < <(copilot_skill_dests)
         if [[ "$SCOPE" == "user" ]]; then
           echo "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
         fi
+        echo "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
         echo "    Reload Copilot CLI skills with /skills reload, then check /skills info agent-steered-sdlc."
         ;;
       claude-code)
@@ -317,6 +319,50 @@ copy_skill_folder() {
   fi
 }
 
+copy_copilot_stage_skills() {
+  local main_skill_dest="$1"
+  local skill_root
+  skill_root="$(dirname "$main_skill_dest")"
+
+  for file in "$PROMPT_SOURCE"/*.prompt.md; do
+    local stage_name stage_dest prompt_file_name description
+    stage_name="$(command_name "$file")"
+    stage_dest="$skill_root/$stage_name"
+    prompt_file_name="$(basename "$file")"
+    description="$(printf 'Agent-Steered SDLC direct stage skill for %s. %s' "$stage_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+
+    mkdir -p "$stage_dest"
+    cat > "$stage_dest/SKILL.md" <<EOF
+---
+name: $stage_name
+description: "$description"
+---
+
+# Agent-Steered SDLC Stage: $stage_name
+
+This is a direct GitHub Copilot CLI skill alias for the Agent-Steered SDLC
+$stage_name stage.
+
+Follow the bundled prompt file prompts/$prompt_file_name exactly. Use bundled checker scripts
+from checkers/ when the prompt calls for deterministic verification.
+
+This stage is part of the broader agent-steered-sdlc workflow. Preserve input gates, human
+review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
+limits.
+EOF
+
+    rm -rf "$stage_dest/prompts"
+    mkdir -p "$stage_dest/prompts"
+    cp "$file" "$stage_dest/prompts/"
+
+    if [[ -d "$CHECKER_SOURCE" ]]; then
+      rm -rf "$stage_dest/checkers"
+      mkdir -p "$stage_dest/checkers"
+      cp "$CHECKER_SOURCE"/*.py "$stage_dest/checkers"/
+    fi
+  done
+}
+
 install_copilot() {
   local dest skill_dest
   dest="$(copilot_prompt_dest)"
@@ -324,6 +370,7 @@ install_copilot() {
     echo "Would install GitHub Copilot prompts -> $dest"
     while IFS= read -r skill_dest; do
       echo "Would install GitHub Copilot skill -> $skill_dest"
+      echo "Would install GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
     done < <(copilot_skill_dests)
     return
   fi
@@ -335,9 +382,12 @@ install_copilot() {
   while IFS= read -r skill_dest; do
     copy_skill_folder "$skill_dest"
     echo "Installed GitHub Copilot skill -> $skill_dest"
+    copy_copilot_stage_skills "$skill_dest"
+    echo "Installed GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
   done < <(copilot_skill_dests)
   echo "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
-  echo "Copilot CLI can load the skill after a new session or /skills reload; check with /skills info agent-steered-sdlc."
+  echo "Copilot CLI can load skills after a new session or /skills reload; check with /skills info agent-steered-sdlc."
+  echo "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
 }
 
 install_codex() {

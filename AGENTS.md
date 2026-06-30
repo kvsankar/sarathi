@@ -10,7 +10,8 @@ This is a prompt, skill, and checker repository. Canonical source files live in:
 - [docs](docs): user-facing overview pages, including
   [agent-steered-sdlc.html](docs/agent-steered-sdlc.html) and
   [review-verification-checklist.md](docs/review-verification-checklist.md).
-- [prompts](prompts): reusable slash-command prompt definitions.
+- [prompts](prompts): reusable stage prompt definitions. Some host tools expose these as
+  slash commands; others expose them as prompt files, skills, or natural-language stages.
 - [skills](skills): native skill bundles such as `agent-steered-sdlc`.
 - [checkers](checkers): deterministic structural verification scripts used by the prompts.
   Shared checker section schemas live in [checkers/schemas.py](checkers/schemas.py).
@@ -19,7 +20,7 @@ This is a prompt, skill, and checker repository. Canonical source files live in:
 Do not treat `.github` as the source location in this repository. `.github/prompts`
 is only an installation target for GitHub Copilot inside product workspaces.
 
-## Slash commands
+## Stage prompts and commands
 
 Source command prompts live in [prompts](prompts). Command verbs are deliberately split:
 
@@ -203,7 +204,7 @@ Slice/change. Ask only when the mapping is ambiguous or materially changes the a
 
 ## Human-gated skill flow
 
-When the `agent-steered-sdlc` skill is invoked generally instead of a specific slash command,
+When the `agent-steered-sdlc` skill is invoked generally instead of a specific stage,
 agents should run only the next appropriate SDLC stage by default. After creating or
 materially revising any spec, design, ADR, plan, code slice, assessment report, or review
 report, stop for human review before starting the next downstream stage, even if mechanical
@@ -403,9 +404,12 @@ Install targets:
   `<target>/.github/skills/agent-steered-sdlc` plus
   `<target>/.agents/skills/agent-steered-sdlc`. Set `AGENT_SDLC_COPILOT_PROMPTS_DIR` to
   override the user prompt folder for another VS Code profile or distribution. Copilot
-  prompt exports are written with `mode: agent` and no `tools:` allowlist, so they are direct
-  slash prompts without restricting tool availability. After skill install, restart Copilot
-  CLI or run `/skills reload`, then verify with `/skills info agent-steered-sdlc`.
+  prompt exports are written with `mode: agent` and no `tools:` allowlist, but Copilot CLI
+  does not treat prompt files as arbitrary built-in slash commands. The installer therefore
+  also creates direct stage skill aliases such as `code-review`, `code-verify`, and
+  `code-assess` beside the main skill bundle. After skill install, restart Copilot CLI or
+  run `/skills reload`, then verify with `/skills info agent-steered-sdlc` and, where
+  supported, `/skills info code-review`.
 - Claude Code: `<target>/.claude/commands/*.md` or `~/.claude/commands/*.md`, plus
   the `agent-steered-sdlc` skill under `<target>/.claude/skills/` or `~/.claude/skills/`.
 - Gemini CLI: `<target>/.gemini/commands/*.toml` or `~/.gemini/commands/*.toml`.
@@ -415,9 +419,9 @@ Install targets:
 - Checkers: copied to `<target>/checkers` unless `--no-checkers` / `-NoCheckers` is used.
 
 Every installed `agent-steered-sdlc` skill bundle should be self-contained: `SKILL.md`,
-agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. The prompts and
-checkers are also installed separately where the host tool or target workspace expects
-direct access.
+agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. The prompts,
+stage skill aliases, and checkers are also installed separately where the host tool or
+target workspace expects direct access.
 
 If the target is this commands repository itself, the installer warns because project-local
 artifacts such as `.github/prompts` and `checkers` may be written into the source checkout;

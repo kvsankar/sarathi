@@ -82,7 +82,9 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
   prompt folder and skills under `~/.copilot/skills/agent-steered-sdlc` plus
   `~/.agents/skills/agent-steered-sdlc`. Project scope installs prompts to
   `<project>/.github/prompts` and skills to `<project>/.github/skills/agent-steered-sdlc`
-  plus `<project>/.agents/skills/agent-steered-sdlc`.
+  plus `<project>/.agents/skills/agent-steered-sdlc`. Copilot CLI does not treat prompt
+  files as custom built-in slash commands, so the installer also creates direct stage skill
+  aliases such as `code-review`, `code-verify`, and `code-assess` under the same skill roots.
 - **Claude Code**: installs slash commands and the skill.
 - **Gemini CLI**: installs command TOML files.
 - **Claude and Pi**: exports prompt packs under `.ai-prompts/` for manual import or use.
@@ -91,7 +93,8 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 
 Installed skill bundles are self-contained: each `agent-steered-sdlc` skill copy includes
 `SKILL.md`, agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. Prompt
-commands are also installed separately so host tools can expose them directly.
+commands or stage skill aliases are also installed separately where host tools can expose
+them directly.
 
 Every dry or real install prints the destination folders before doing work.
 
@@ -104,7 +107,7 @@ The prompt set uses four verbs:
 - `review`: make the qualitative adversarial judgment using available evidence.
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
-The core commands are:
+The core stage names are:
 
 | Command | Purpose |
 | --- | --- |
@@ -125,8 +128,16 @@ The core commands are:
 | `/code-review` | Qualitatively review code, tests, docs, build/deploy work, quality gates, and upstream consistency. |
 | `/code-assess` | Run `/code-verify` plus `/code-review`. |
 
-Exact invocation syntax depends on the host tool. For Codex direct prompts, use
-`/prompts:<name>`. For Claude Code and Gemini, use their native command mechanisms.
+Exact invocation syntax depends on the host tool:
+
+- Codex direct prompts: `/prompts:code-review`, `/prompts:code-assess`, and so on.
+- GitHub Copilot CLI: stage names are installed as skill aliases where supported, so try
+  `/code-review` or `/code-assess` after `/skills reload`. If the CLI surface rejects a
+  stage slash name, invoke by natural language: "Use the agent-steered-sdlc skill to run the
+  code-review stage."
+- VS Code Copilot Chat: use the installed prompt file from the prompt picker, or ask in
+  natural language with the stage name.
+- Claude Code and Gemini: use their native command mechanisms.
 
 ## Workflow Model
 
@@ -250,7 +261,7 @@ consistency.
 
 ```text
 docs/      user-facing documentation and review notes
-prompts/   source slash-command prompt definitions
+prompts/   source stage prompt definitions
 skills/    native skill bundles
 checkers/  structural verification scripts
 scripts/   installers for Windows, macOS, Linux, and WSL
