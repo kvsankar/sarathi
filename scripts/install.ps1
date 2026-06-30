@@ -194,6 +194,14 @@ function Copy-Checkers {
         Write-Host "Would install checkers -> $dest"
         return
     }
+    $sourceResolved = (Resolve-Path -LiteralPath $CheckerSource).Path.TrimEnd("\", "/")
+    if (Test-Path -LiteralPath $dest) {
+        $destResolved = (Resolve-Path -LiteralPath $dest).Path.TrimEnd("\", "/")
+        if ($sourceResolved -ieq $destResolved) {
+            Write-Host "Checker destination is source folder; skipping checker copy."
+            return
+        }
+    }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     Get-ChildItem -LiteralPath $CheckerSource -Filter "check_*.py" | Copy-Item -Destination $dest -Force
     Write-Host "Installed checkers -> $dest"
@@ -354,6 +362,40 @@ function ConvertTo-WslPath {
     return $converted.Trim()
 }
 
+function Invoke-WslInstallScript {
+    param(
+        [string]$ScriptPath,
+        [string]$TargetPath,
+        [string]$ScopeValue,
+        [string]$ToolsValue,
+        [bool]$SkipCheckers
+    )
+
+    $skipCheckersFlag = if ($SkipCheckers) { "1" } else { "0" }
+    $runner = @'
+script_path=$1
+target_path=$2
+scope_value=$3
+tools_value=$4
+skip_checkers=$5
+repo_root=$(cd "$(dirname "$script_path")/.." && pwd -P)
+
+tmp_script=$(mktemp)
+trap 'rm -f "$tmp_script"' EXIT
+tr -d '\r' < "$script_path" > "$tmp_script"
+chmod +x "$tmp_script"
+
+args=(--target "$target_path" --scope "$scope_value" --tools "$tools_value" --no-cross-install)
+if [ "$skip_checkers" = "1" ]; then
+  args=("${args[@]}" --no-checkers)
+fi
+
+AGENT_SDLC_REPO_ROOT="$repo_root" bash "$tmp_script" "${args[@]}"
+'@
+
+    & wsl.exe -e bash -lc $runner "agent-sdlc-install" $ScriptPath $TargetPath $ScopeValue $ToolsValue $skipCheckersFlag
+}
+
 function Install-WslCompanion {
     if ($NoCrossInstall) {
         return
@@ -371,13 +413,14 @@ function Install-WslCompanion {
     $targetWsl = ConvertTo-WslPath $TargetRoot
     $scriptWsl = "$repoWsl/scripts/install.sh"
     $toolList = $expandedTools -join ","
-    $args = @($scriptWsl, "--target", $targetWsl, "--scope", $Scope, "--tools", $toolList, "--no-cross-install")
-    if ($NoCheckers) {
-        $args += "--no-checkers"
-    }
 
     Write-Host "Installing WSL companion targets via $scriptWsl"
-    & wsl.exe bash @args
+    Invoke-WslInstallScript `
+        -ScriptPath $scriptWsl `
+        -TargetPath $targetWsl `
+        -ScopeValue $Scope `
+        -ToolsValue $toolList `
+        -SkipCheckers $NoCheckers
     if ($LASTEXITCODE -ne 0) {
         throw "WSL companion install failed with exit code $LASTEXITCODE"
     }

@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ -n "${AGENT_SDLC_REPO_ROOT:-}" ]]; then
+  REPO_ROOT="$(cd "$AGENT_SDLC_REPO_ROOT" && pwd -P)"
+  SCRIPT_DIR="$REPO_ROOT/scripts"
+else
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
 PROMPT_SOURCE="$REPO_ROOT/prompts"
 CHECKER_SOURCE="$REPO_ROOT/checkers"
 SKILL_SOURCE="$REPO_ROOT/skills/agent-steered-sdlc"
@@ -265,6 +270,15 @@ copy_checkers() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would install checkers -> $dest"
     return
+  fi
+  local source_resolved dest_resolved
+  source_resolved="$(cd "$CHECKER_SOURCE" && pwd -P)"
+  if [[ -d "$dest" ]]; then
+    dest_resolved="$(cd "$dest" && pwd -P)"
+    if [[ "$source_resolved" == "$dest_resolved" ]]; then
+      echo "Checker destination is source folder; skipping checker copy."
+      return
+    fi
   fi
   mkdir -p "$dest"
   cp "$CHECKER_SOURCE"/check_*.py "$dest"/
