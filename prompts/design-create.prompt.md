@@ -73,7 +73,8 @@ Architecture decisions are part of the deliverable, not side notes.
 - If the decision changes scope, cost, user experience, operational responsibility, security,
   privacy, reliability, data ownership, or future migration effort, ask the user for input
   **one question at a time** before finalizing it. Do not silently choose on the user's behalf
-  unless the user explicitly delegates the choice; if delegated, record the assumption.
+  unless the user explicitly delegates the choice or enables YOLO mode; if delegated, record
+  the assumption, rationale, risk, and revisit trigger.
 - Create or update Architecture Decision Records (ADRs) for material decisions. Use
   `docs/adr/ADR-<SLUG>.md` unless the repo already has an ADR location or naming convention.
   Each ADR should include: status, context, decision, options considered, consequences,
@@ -173,6 +174,21 @@ integration, service, screen family, or module normally maps to Feature/componen
 bug fix, PR-sized behavior change, local refactor, API/schema delta, or explicitly named PR
 normally maps to Slice/change LLD. Ask only when the mapping is ambiguous or materially
 changes the artifact to produce.
+
+## Clarification and YOLO mode
+
+Default behavior is input-gated: pause and ask one focused question at a time when missing
+information would materially change the system boundary, architectural drivers,
+quality-attribute trade-offs, interfaces, data ownership, runtime behavior, ADRs, test
+strategy, or readiness. Do not silently choose consequential design options.
+
+The user may opt into **YOLO mode** with phrases such as "yolo", "use your judgment", "make
+reasonable assumptions", or "proceed without questions". In YOLO mode, make the narrowest
+reasonable design decisions yourself, continue without blocking on normal clarification
+questions, and record every material assumption, trade-off, rejected option, risk, and
+revisit trigger in `design.md` and ADRs as appropriate. YOLO mode does not bypass upstream
+spec blockers, code-readiness limits, safety/security/compliance issues, or the requirement
+to surface major trade-offs in the final artifact.
 
 ## Lightweight exploratory track
 
@@ -344,12 +360,13 @@ First determine the mode:
   local behavior, interfaces, data, failure cases, test levels, and implementation constraints
   for `/plan-create` to produce a code-ready implementation plan.
 
-## Step 1 — Clarify before writing (mandatory, one question per turn)
+## Step 1 — Clarify before writing (mandatory unless YOLO, one question per turn)
 
 If a spec (`spec.md`) exists, read it first — the design must satisfy its FRs/NFRs/UCs.
 Do **not** write the design until the system boundary, drivers, quality-attribute scenarios,
-interfaces, data, runtime behavior, and verification approach are sufficiently understood. Interview
-the user **one question at a time**: ask, wait, then ask the next. Cover:
+interfaces, data, runtime behavior, and verification approach are sufficiently understood,
+unless the user explicitly enabled YOLO mode and you can record reasonable assumptions.
+Interview the user **one question at a time**: ask, wait, then ask the next. Cover:
 
 - **Stakeholders and concerns**: who needs to understand, build, run, secure, evolve, or
   integrate with the design, and what do they care about?
@@ -384,7 +401,8 @@ the user **one question at a time**: ask, wait, then ask the next. Cover:
 
 State assumptions explicitly in Risks/Trade-offs, Design Decisions, or ADRs. Keep asking
 until remaining unknowns and material trade-offs are resolved, deliberately deferred, or
-recorded with impact.
+recorded with impact. In YOLO mode, prefer proceeding with explicit design assumptions over
+continuing the interview, while still surfacing high-impact trade-offs in the artifact.
 
 ## Step 2 — Numbering convention (apply everywhere)
 

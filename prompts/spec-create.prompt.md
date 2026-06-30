@@ -89,6 +89,20 @@ maps to Feature/component. A bug fix, PR-sized change, compliance tweak, local r
 observable behavior, or explicitly named PR normally maps to Slice/change. Ask only when the
 mapping is ambiguous or materially changes the artifact to produce.
 
+## Clarification and YOLO mode
+
+Default behavior is input-gated: pause and ask one focused question at a time when missing
+information would materially change the spec, scope, stakeholder needs, non-goals,
+acceptance basis, constraints, or readiness. Do not silently fill important gaps.
+
+The user may opt into **YOLO mode** with phrases such as "yolo", "use your judgment", "make
+reasonable assumptions", or "proceed without questions". In YOLO mode, make the narrowest
+reasonable product/spec decisions yourself, continue without blocking on normal
+clarification questions, and record every material assumption, deferred question, trade-off,
+and risk in the SRS. YOLO mode does not remove the requirement to stop for safety,
+compliance, irreversible-scope, or contradictory-input issues that cannot responsibly be
+assumed.
+
 ## Lightweight exploratory track
 
 For spikes, throwaway prototypes, exploratory data/ML work, proof-of-concept integrations,
@@ -158,10 +172,11 @@ First determine the mode:
   If no requirement should change because the work is purely internal, say so explicitly
   and record the parent IDs whose behavior must remain unchanged.
 
-## Step 1 — Clarify before writing (mandatory, one question per turn)
+## Step 1 — Clarify before writing (mandatory unless YOLO, one question per turn)
 
 Do **not** write the spec until the problem, stakeholders, scope, behavior, constraints,
-and acceptance basis are sufficiently understood.
+and acceptance basis are sufficiently understood, unless the user explicitly enabled YOLO
+mode and you can record reasonable assumptions.
 Interview the user **one question at a time**: ask a single question, wait for the
 answer, then ask the next. Never batch questions. Keep going until gaps close. Cover:
 
@@ -189,10 +204,11 @@ answer, then ask the next. Never batch questions. Keep going until gaps close. C
   architecturally significant, or likely to change?
 - **Acceptance criteria**: How will each important behavior and quality be verified?
 
-If the user says "you decide" or leaves a gap, state your assumption explicitly and
-list it in the Assumptions section. Keep asking until the remaining unknowns are either
-resolved, explicitly deferred, or recorded as assumptions/open questions, then summarize
-understanding and proceed.
+If the user says "you decide", enables YOLO mode, or leaves a low-risk gap after being
+asked, state your assumption explicitly and list it in the Assumptions section. Keep asking
+until the remaining unknowns are either resolved, explicitly deferred, or recorded as
+assumptions/open questions, then summarize understanding and proceed. In YOLO mode, prefer
+proceeding with explicit assumptions over continuing the interview.
 
 ## Step 2 — Numbering convention (apply everywhere)
 

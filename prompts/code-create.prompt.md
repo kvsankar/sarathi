@@ -41,6 +41,21 @@ If any item is missing, **stop** and tell the user which artifact is not code-re
 is needed next: breakdown plan, child spec, HLD, LLD, ADR, interface contract, test
 strategy, or implementation plan. This is a normal workflow outcome, not a coding failure.
 
+## Clarification and YOLO mode
+
+Default behavior is input-gated: pause and ask one focused question at a time when missing
+information would materially change implementation behavior, test intent, quality gates,
+data migration, rollout/rollback, security/privacy posture, or planned touch scope. Do not
+silently invent behavior outside the spec/design/plan.
+
+The user may opt into **YOLO mode** with phrases such as "yolo", "use your judgment", "make
+reasonable assumptions", or "proceed without questions". In YOLO mode, make the narrowest
+reasonable local implementation decisions yourself, continue without blocking on normal
+clarification questions, and record assumptions in the code comments, tests, plan notes, or
+final implementation report as appropriate. YOLO mode does not bypass the Code-ready scope
+gate, Planned Touch Sets, upstream-blocker stops, TDD discipline, quality gates, safety
+constraints, or a required spec/design/plan update.
+
 ## Test responsibility in this command
 
 `/code-create` is where tests become executable code. For each PR, implement the planned

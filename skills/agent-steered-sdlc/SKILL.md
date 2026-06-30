@@ -23,10 +23,31 @@ Select the narrowest command that matches the user's current artifact:
 - `/code-create`: implement within the planned touch set using Red/Green/Refactor TDD and configured quality gates.
 - `/code-review`: review implementation, tests, traceability, pre-commit quality gates, and upstream consistency.
 
+When the user invokes this skill generally instead of naming a specific slash command,
+operate in human-gated mode by default. Choose and run only the next appropriate SDLC stage,
+generate or revise the artifact for that stage, run the corresponding structural checks, and
+then stop for human review. Report the artifact path, readiness/status, key open questions,
+and the recommended next command. Do not continue automatically to the next artifact type
+unless the user explicitly asks for an end-to-end, unattended, or "continue through all
+stages" run.
+
+Also operate in input-gated mode by default. If important information is missing before
+creating or revising a spec, design, plan, or code slice, pause and ask one focused question
+at a time rather than silently filling the gap. The user may opt into **YOLO mode** with
+phrases such as "yolo", "use your judgment", "make reasonable assumptions", or "proceed
+without questions". In YOLO mode, continue with the agent's best decisions, clearly record
+assumptions and trade-offs in the artifact/report, and call out any assumptions that need
+later confirmation. YOLO mode delegates input decisions; it does not bypass readiness gates,
+planned touch sets, upstream-blocker stops, safety constraints, or the default human-review
+pause after an artifact unless the user also explicitly asks for end-to-end continuation.
+
 ## Operating Rules
 
 - Preserve the spec-first order: spec, spec review, design, design review, plan,
   plan review, code, code review.
+- After creating or materially revising any spec, design, ADR, plan, code slice, or review
+  report, pause for human review before starting the next downstream stage. The pause is a
+  default collaboration boundary, even when the generated artifact passes mechanical checks.
 - Use the three-scope model: product/system, feature/component, slice/change. Every artifact
   should declare Implementation Readiness as Exploratory, Decomposable, or Code-ready.
   Parent artifacts may pass as Decomposable; `/code-create` must only proceed from a
@@ -86,7 +107,8 @@ Select the narrowest command that matches the user's current artifact:
   Exploratory, timebox them, record goal/non-goals/risks/evidence/disposal criteria, and do
   not treat prototype code as production without follow-up code-ready artifacts or explicit
   user acceptance.
-- Ask one focused question at a time when required information is missing.
+- Ask one focused question at a time when required information is missing. In YOLO mode,
+  make the narrowest reasonable assumption, proceed, and record the assumption and its risk.
 - Offer internet research for spec and design creation when current standards,
   regulations, platform behavior, APIs, or domain facts may matter.
 - Keep implementation inside the plan's planned touch set. If code work needs files

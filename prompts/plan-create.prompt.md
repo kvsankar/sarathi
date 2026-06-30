@@ -61,6 +61,20 @@ PR-sized behavior change, local refactor, or explicitly named PR normally maps t
 Slice/change Implementation plan. Ask only when the mapping is ambiguous or materially
 changes the artifact to produce.
 
+## Clarification and YOLO mode
+
+Default behavior is input-gated: pause and ask one focused question at a time when missing
+information would materially change plan type, readiness, PR slicing, Planned Touch Sets,
+test allocation, sequencing, dependencies, rollback, quality gates, or parallel/worktree
+strategy. Do not silently invent consequential implementation scope.
+
+The user may opt into **YOLO mode** with phrases such as "yolo", "use your judgment", "make
+reasonable assumptions", or "proceed without questions". In YOLO mode, make the narrowest
+reasonable planning decisions yourself, continue without blocking on normal clarification
+questions, and record every material assumption, trade-off, risk, and deferred question in
+`plan.md`. YOLO mode does not bypass upstream spec/design blockers, code-readiness limits,
+the 300-LOC PR ceiling, Planned Touch Set discipline, or safety/security/compliance concerns.
+
 ## Lightweight exploratory track
 
 For spikes, throwaway prototypes, exploratory data/ML work, proof-of-concept integrations,
@@ -121,7 +135,7 @@ acceptance/e2e tests for critical user journeys and externally visible `AT-` cov
 - **Feature/component plan** — plan one feature/component; reference parent spec/design IDs;
   note parent paths and choose Breakdown or Implementation plan type.
 
-## Step 1 — Clarify before writing (mandatory, one question per turn)
+## Step 1 — Clarify before writing (mandatory unless YOLO, one question per turn)
 
 Read `spec.md` and `design.md` first. Then interview the user **one question at a time**:
 
@@ -139,7 +153,10 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
   migrations, docs, and spec/design/plan sections each PR is allowed or expected to touch.
 - **Slicing limits**: anything that must not exceed the 300-LOC PR ceiling.
 
-State assumptions explicitly and list them. Keep asking until slicing is unambiguous.
+State assumptions explicitly and list them. Keep asking until slicing is unambiguous. In
+YOLO mode, prefer proceeding with explicit planning assumptions over continuing the
+interview, while preserving hard blockers for upstream artifact defects and non-code-ready
+work.
 
 ## Step 2 — Numbering convention
 

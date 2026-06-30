@@ -137,6 +137,28 @@ broad product/platform/app requests map to Product/system, one capability/subsys
 Feature/component, and bug fixes, PR-sized changes, or local behavior deltas map to
 Slice/change. Ask only when the mapping is ambiguous or materially changes the artifact.
 
+## Human-gated skill flow
+
+When the `agent-steered-sdlc` skill is invoked generally instead of a specific slash command,
+agents should run only the next appropriate SDLC stage by default. After creating or
+materially revising any spec, design, ADR, plan, code slice, or review report, stop for human
+review before starting the next downstream stage, even if mechanical checks pass.
+
+The stopping response should name the artifact path, readiness/status, key open questions,
+and the recommended next command. Continue automatically across multiple artifact stages
+only when the user explicitly asks for an end-to-end, unattended, or "continue through all
+stages" run.
+
+The skill and creation commands are also input-gated by default. If important information is
+missing before a spec, design, plan, or code slice can be created or revised responsibly,
+pause and ask one focused question at a time. The user may opt into **YOLO mode** with
+phrases such as "yolo", "use your judgment", "make reasonable assumptions", or "proceed
+without questions". In YOLO mode, agents may continue with their best decisions, but must
+record assumptions, trade-offs, and risks in the artifact or report. YOLO mode does not
+bypass readiness gates, Planned Touch Sets, upstream-blocker stops, safety constraints, or
+the default human-review pause after each generated artifact unless the user separately asks
+for end-to-end continuation.
+
 ## Artifact matrix
 
 | Scope | Spec carries | Design carries | Plan carries |
