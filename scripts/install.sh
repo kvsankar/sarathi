@@ -8,10 +8,11 @@ CHECKER_SOURCE="$REPO_ROOT/checkers"
 SKILL_SOURCE="$REPO_ROOT/skills/agent-steered-sdlc"
 
 TARGET_ROOT="$(pwd)"
-SCOPE="project"
-TOOLS="all"
+SCOPE="user"
+TOOLS=""
 NO_CHECKERS=0
 NO_CROSS_INSTALL=0
+DRY_RUN=0
 
 usage() {
   cat <<'EOF'
@@ -21,16 +22,21 @@ Options:
   --target <dir>        Target product workspace. Default: current directory.
   --scope <project|user>
                         Install project-local commands or user-global commands.
-                        Default: project.
-  --tools <list>        Comma-separated: all,codex,copilot,claude-code,gemini,claude,pi.
-                        Default: all.
+                        Default: user.
+  --tools <list>        Optional comma-separated subset:
+                        codex,copilot,claude-code,gemini,claude,pi.
+                        Default: install all tools.
   --no-checkers         Do not copy checkers/ into the target workspace.
   --no-cross-install    Do not install companion targets across Windows/WSL.
+  --dry-run             Show what would be installed without writing files.
   -h, --help            Show this help.
 
 Notes:
-  - GitHub Copilot prompts install to <target>/.github/prompts.
+  - GitHub Copilot prompts install to the VS Code user prompts folder by default,
+    or to <target>/.github/prompts with --scope project.
   - Codex skills install to <target>/.codex/skills or ~/.codex/skills.
+  - Codex direct prompts install to <target>/.codex/prompts or ~/.codex/prompts
+    and are invoked as /prompts:<name> after restarting Codex.
   - Claude Code commands install to <target>/.claude/commands or ~/.claude/commands,
     and the skill installs to <target>/.claude/skills or ~/.claude/skills.
   - Gemini CLI commands install to <target>/.gemini/commands or ~/.gemini/commands.
@@ -63,6 +69,10 @@ while [[ $# -gt 0 ]]; do
       NO_CROSS_INSTALL=1
       shift
       ;;
+    --dry-run)
+      DRY_RUN=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -76,6 +86,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 TARGET_ROOT="$(cd "$TARGET_ROOT" && pwd)"
+
+if [[ "$TARGET_ROOT" == "$REPO_ROOT" ]]; then
+  echo "Warning: target is the commands repository itself."
+  echo "This is okay for dogfooding, but project-local artifacts such as GitHub Copilot"
+  echo "prompts and checkers will be installed into the source checkout."
+  echo "Use --target <product-workspace> for a product."
+fi
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo "Dry run: no files will be written and no companion install will be executed."
+fi
 
 if [[ ! -d "$PROMPT_SOURCE" ]]; then
   echo "Prompt source folder not found: $PROMPT_SOURCE" >&2
@@ -118,6 +138,117 @@ prompt_description() {
   fi
 }
 
+copilot_prompt_body() {
+  awk '
+    BEGIN { replaced = 0 }
+    !replaced && $0 ~ /^agent:[[:space:]]*agent[[:space:]]*$/ {
+      print "mode: agent"
+      replaced = 1
+      next
+    }
+    { print }
+  ' "$1"
+}
+
+codex_skill_dest() {
+  if [[ "$SCOPE" == "user" ]]; then
+    printf '%s\n' "${CODEX_HOME:-$HOME/.codex}/skills/agent-steered-sdlc"
+  else
+    printf '%s\n' "$TARGET_ROOT/.codex/skills/agent-steered-sdlc"
+  fi
+}
+
+codex_prompt_dest() {
+  if [[ "$SCOPE" == "user" ]]; then
+    printf '%s\n' "${CODEX_HOME:-$HOME/.codex}/prompts"
+  else
+    printf '%s\n' "$TARGET_ROOT/.codex/prompts"
+  fi
+}
+
+copilot_prompt_dest() {
+  if [[ "$SCOPE" != "user" ]]; then
+    printf '%s\n' "$TARGET_ROOT/.github/prompts"
+    return
+  fi
+  if [[ -n "${AGENT_SDLC_COPILOT_PROMPTS_DIR:-}" ]]; then
+    printf '%s\n' "$AGENT_SDLC_COPILOT_PROMPTS_DIR"
+    return
+  fi
+  case "$(uname -s)" in
+    Darwin)
+      printf '%s\n' "$HOME/Library/Application Support/Code/User/prompts"
+      ;;
+    *)
+      printf '%s\n' "${XDG_CONFIG_HOME:-$HOME/.config}/Code/User/prompts"
+      ;;
+  esac
+}
+
+copy_codex_prompt_files() {
+  local dest="$1"
+  mkdir -p "$dest"
+  for file in "$PROMPT_SOURCE"/*.prompt.md; do
+    cp "$file" "$dest/$(command_name "$file").md"
+  done
+}
+
+write_destination_summary() {
+  echo "Destination folders:"
+  if [[ "$NO_CHECKERS" -eq 0 ]]; then
+    echo "  Checkers -> $TARGET_ROOT/checkers"
+  fi
+  for tool in "${TOOL_LIST[@]}"; do
+    case "$tool" in
+      codex)
+        echo "  Codex skill -> $(codex_skill_dest)"
+        echo "  Codex direct prompts -> $(codex_prompt_dest)"
+        echo "    Invoke as /prompts:spec-create, /prompts:design-create, etc. after restarting Codex."
+        ;;
+      copilot)
+        echo "  GitHub Copilot prompts -> $(copilot_prompt_dest)"
+        if [[ "$SCOPE" == "user" ]]; then
+          echo "    User-scoped VS Code prompt files; invoke from Copilot Chat after restarting VS Code."
+        fi
+        ;;
+      claude-code)
+        if [[ "$SCOPE" == "user" ]]; then
+          echo "  Claude Code commands -> $HOME/.claude/commands"
+          echo "  Claude Code skill -> $HOME/.claude/skills/agent-steered-sdlc"
+        else
+          echo "  Claude Code commands -> $TARGET_ROOT/.claude/commands"
+          echo "  Claude Code skill -> $TARGET_ROOT/.claude/skills/agent-steered-sdlc"
+        fi
+        ;;
+      gemini)
+        if [[ "$SCOPE" == "user" ]]; then
+          echo "  Gemini CLI commands -> $HOME/.gemini/commands"
+        else
+          echo "  Gemini CLI commands -> $TARGET_ROOT/.gemini/commands"
+        fi
+        ;;
+      claude)
+        if [[ "$SCOPE" == "user" ]]; then
+          echo "  Claude prompt export -> $HOME/.ai-prompts/claude"
+          echo "  Claude skill export -> $HOME/.ai-prompts/claude/skills/agent-steered-sdlc"
+        else
+          echo "  Claude prompt export -> $TARGET_ROOT/.ai-prompts/claude"
+          echo "  Claude skill export -> $TARGET_ROOT/.ai-prompts/claude/skills/agent-steered-sdlc"
+        fi
+        ;;
+      pi)
+        if [[ "$SCOPE" == "user" ]]; then
+          echo "  Pi prompt export -> $HOME/.ai-prompts/pi"
+          echo "  Pi skill export -> $HOME/.ai-prompts/pi/skills/agent-steered-sdlc"
+        else
+          echo "  Pi prompt export -> $TARGET_ROOT/.ai-prompts/pi"
+          echo "  Pi skill export -> $TARGET_ROOT/.ai-prompts/pi/skills/agent-steered-sdlc"
+        fi
+        ;;
+    esac
+  done
+}
+
 toml_escape_basic() {
   sed 's/\\/\\\\/g; s/"/\\"/g'
 }
@@ -127,6 +258,14 @@ copy_checkers() {
     return
   fi
   local dest="$TARGET_ROOT/checkers"
+  if [[ "$SCOPE" == "user" ]]; then
+    echo "Warning: checkers are project-local; installing them to $dest even though scope is user."
+    echo "Use --no-checkers to skip them."
+  fi
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would install checkers -> $dest"
+    return
+  fi
   mkdir -p "$dest"
   cp "$CHECKER_SOURCE"/check_*.py "$dest"/
   echo "Installed checkers -> $dest"
@@ -139,22 +278,34 @@ copy_skill_folder() {
 }
 
 install_copilot() {
-  local dest="$TARGET_ROOT/.github/prompts"
+  local dest
+  dest="$(copilot_prompt_dest)"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would install GitHub Copilot prompts -> $dest"
+    return
+  fi
   mkdir -p "$dest"
-  cp "$PROMPT_SOURCE"/*.prompt.md "$dest"/
+  for file in "$PROMPT_SOURCE"/*.prompt.md; do
+    copilot_prompt_body "$file" > "$dest/$(basename "$file")"
+  done
   echo "Installed GitHub Copilot prompts -> $dest"
+  echo "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
 }
 
 install_codex() {
-  local skill_dest codex_home
-  if [[ "$SCOPE" == "user" ]]; then
-    codex_home="${CODEX_HOME:-$HOME/.codex}"
-    skill_dest="$codex_home/skills/agent-steered-sdlc"
-  else
-    skill_dest="$TARGET_ROOT/.codex/skills/agent-steered-sdlc"
+  local skill_dest prompt_dest
+  skill_dest="$(codex_skill_dest)"
+  prompt_dest="$(codex_prompt_dest)"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would install Codex skill -> $skill_dest"
+    echo "Would install Codex direct prompts -> $prompt_dest"
+    return
   fi
   copy_skill_folder "$skill_dest"
   echo "Installed Codex skill -> $skill_dest"
+  copy_codex_prompt_files "$prompt_dest"
+  echo "Installed Codex direct prompts -> $prompt_dest"
+  echo "Codex direct prompts are available as /prompts:spec-create, /prompts:design-create, etc. after restart."
 }
 
 install_claude_code() {
@@ -165,6 +316,11 @@ install_claude_code() {
   else
     dest="$TARGET_ROOT/.claude/commands"
     skill_dest="$TARGET_ROOT/.claude/skills/agent-steered-sdlc"
+  fi
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would install Claude Code slash commands -> $dest"
+    echo "Would install Claude Code skill -> $skill_dest"
+    return
   fi
   mkdir -p "$dest"
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
@@ -181,6 +337,10 @@ install_gemini() {
     dest="$HOME/.gemini/commands"
   else
     dest="$TARGET_ROOT/.gemini/commands"
+  fi
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would install Gemini CLI commands -> $dest"
+    return
   fi
   mkdir -p "$dest"
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
@@ -208,6 +368,11 @@ install_claude_export() {
   else
     dest="$TARGET_ROOT/.ai-prompts/claude"
   fi
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would export Claude prompt pack -> $dest"
+    echo "Would include skill bundle -> $dest/skills/agent-steered-sdlc"
+    return
+  fi
   mkdir -p "$dest"
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
     prompt_body "$file" > "$dest/$(command_name "$file").md"
@@ -224,6 +389,11 @@ install_pi_export() {
   else
     dest="$TARGET_ROOT/.ai-prompts/pi"
   fi
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would export Pi prompt pack -> $dest"
+    echo "Would include skill bundle -> $dest/skills/agent-steered-sdlc"
+    return
+  fi
   mkdir -p "$dest"
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
     prompt_body "$file" > "$dest/$(command_name "$file").md"
@@ -233,14 +403,16 @@ install_pi_export() {
   echo "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }
 
-copy_checkers
-
 is_wsl() {
   [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null
 }
 
 install_windows_companion() {
   if [[ "$NO_CROSS_INSTALL" -eq 1 ]]; then
+    return
+  fi
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "Would install Windows companion targets if running in WSL with powershell.exe available."
     return
   fi
   if ! is_wsl; then
@@ -255,17 +427,18 @@ install_windows_companion() {
     return
   fi
 
-  local repo_win target_win script_win
+  local repo_win target_win script_win tools_for_windows
   repo_win="$(wslpath -w "$REPO_ROOT")"
   target_win="$(wslpath -w "$TARGET_ROOT")"
   script_win="$repo_win\\scripts\\install.ps1"
+  tools_for_windows="$(IFS=,; echo "${TOOL_LIST[*]}")"
 
   local args=(
     -NoProfile
     -ExecutionPolicy Bypass
     -File "$script_win"
     -TargetRoot "$target_win"
-    -Tool "$TOOLS"
+    -Tool "$tools_for_windows"
     -Scope "$SCOPE"
     -NoCrossInstall
   )
@@ -277,11 +450,15 @@ install_windows_companion() {
   powershell.exe "${args[@]}"
 }
 
-if [[ "$TOOLS" == "all" ]]; then
+if [[ -z "$TOOLS" || "$TOOLS" == "all" ]]; then
   TOOL_LIST=("codex" "copilot" "claude-code" "gemini" "claude" "pi")
 else
   IFS=',' read -r -a TOOL_LIST <<< "$TOOLS"
 fi
+
+write_destination_summary
+
+copy_checkers
 
 for tool in "${TOOL_LIST[@]}"; do
   case "$tool" in
@@ -297,4 +474,8 @@ done
 
 install_windows_companion
 
-echo "Install complete for target: $TARGET_ROOT"
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo "Dry run complete for target: $TARGET_ROOT"
+else
+  echo "Install complete for target: $TARGET_ROOT"
+fi

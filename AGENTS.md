@@ -270,14 +270,42 @@ and available review/git evidence.
 
 Canonical source prompts live in [prompts](prompts), skills live in [skills](skills),
 and checker code lives in [checkers](checkers). Use the install scripts to copy/adapt
-them into tool-specific locations for a product workspace:
+them into tool-specific locations.
+
+The default install is **user-scoped** for tools that support user/global commands, so it
+applies across projects:
+
+Both dry and real installs print the destination folders for each selected tool before
+doing any work.
+
+Preview the install without writing files:
 
 ```pwsh
-.\scripts\install.ps1 -TargetRoot D:\path\to\product -Tool all -Scope project
+.\scripts\install.ps1 -DryRun
 ```
 
 ```sh
-scripts/install.sh --target /path/to/product --tools all --scope project
+scripts/install.sh --dry-run
+```
+
+Run the install:
+
+```pwsh
+.\scripts\install.ps1
+```
+
+```sh
+scripts/install.sh
+```
+
+Use project scope when a product workspace should carry its own command copies:
+
+```pwsh
+.\scripts\install.ps1 -TargetRoot D:\path\to\product -Scope project
+```
+
+```sh
+scripts/install.sh --target /path/to/product --scope project
 ```
 
 On Windows, `install.ps1` also installs the matching WSL targets when WSL is available.
@@ -288,8 +316,18 @@ environment.
 Install targets:
 
 - Codex: `<target>/.codex/skills/agent-steered-sdlc` or
-  `$CODEX_HOME/skills/agent-steered-sdlc` / `~/.codex/skills/agent-steered-sdlc`.
-- GitHub Copilot: `<target>/.github/prompts/*.prompt.md`.
+  `$CODEX_HOME/skills/agent-steered-sdlc` / `~/.codex/skills/agent-steered-sdlc`, plus
+  direct prompt commands in `<target>/.codex/prompts` or `$CODEX_HOME/prompts` /
+  `~/.codex/prompts`. Restart Codex, then invoke them as `/prompts:spec-create`,
+  `/prompts:design-create`, etc. Codex documents custom prompts as deprecated in favor of
+  skills, but this installer writes both so commands are directly accessible.
+- GitHub Copilot: user scope installs VS Code user prompt files under
+  `%APPDATA%\Code\User\prompts` on Windows, `~/Library/Application Support/Code/User/prompts`
+  on macOS, or `${XDG_CONFIG_HOME:-~/.config}/Code/User/prompts` on Linux. Project scope
+  installs `<target>/.github/prompts/*.prompt.md`. Set `AGENT_SDLC_COPILOT_PROMPTS_DIR` to
+  override the user prompt folder for another VS Code profile or distribution. Copilot
+  prompt exports are written with `mode: agent` and no `tools:` allowlist, so they are direct
+  slash prompts without restricting tool availability.
 - Claude Code: `<target>/.claude/commands/*.md` or `~/.claude/commands/*.md`, plus
   the `agent-steered-sdlc` skill under `<target>/.claude/skills/` or `~/.claude/skills/`.
 - Gemini CLI: `<target>/.gemini/commands/*.toml` or `~/.gemini/commands/*.toml`.
@@ -297,6 +335,11 @@ Install targets:
   stable local slash-command folder. The export also includes the `agent-steered-sdlc`
   skill bundle for manual import/adaptation.
 - Checkers: copied to `<target>/checkers` unless `--no-checkers` / `-NoCheckers` is used.
+
+If the target is this commands repository itself, the installer warns because project-local
+artifacts such as `.github/prompts` and `checkers` may be written into the source checkout;
+that is acceptable for dogfooding, but product installs should pass `-TargetRoot` /
+`--target`.
 
 ## Repository layout
 

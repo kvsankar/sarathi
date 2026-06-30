@@ -1,10 +1,11 @@
 param(
     [string]$TargetRoot = (Get-Location).Path,
-    [string[]]$Tool = @("all"),
+    [string[]]$Tool = @(),
     [ValidateSet("project", "user")]
-    [string]$Scope = "project",
+    [string]$Scope = "user",
     [switch]$NoCheckers,
-    [switch]$NoCrossInstall
+    [switch]$NoCrossInstall,
+    [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,6 +16,13 @@ $CheckerSource = Join-Path $RepoRoot "checkers"
 $SkillSource = Join-Path $RepoRoot "skills/agent-steered-sdlc"
 $TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).Path
 
+function Test-SamePath {
+    param([string]$Left, [string]$Right)
+    $leftResolved = (Resolve-Path -LiteralPath $Left).Path.TrimEnd('\', '/')
+    $rightResolved = (Resolve-Path -LiteralPath $Right).Path.TrimEnd('\', '/')
+    return [string]::Equals($leftResolved, $rightResolved, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
 if (-not (Test-Path -LiteralPath $PromptSource)) {
     throw "Prompt source folder not found: $PromptSource"
 }
@@ -24,14 +32,25 @@ if (-not $NoCheckers -and -not (Test-Path -LiteralPath $CheckerSource)) {
 if (-not (Test-Path -LiteralPath $SkillSource)) {
     throw "Skill source folder not found: $SkillSource"
 }
+if (Test-SamePath $TargetRoot $RepoRoot) {
+    Write-Warning (
+        "TargetRoot is the commands repository itself. This is okay for dogfooding, " +
+        "but project-local artifacts such as GitHub Copilot prompts and checkers will be " +
+        "installed into the source checkout. Use -TargetRoot <product-workspace> for a product."
+    )
+}
+if ($DryRun) {
+    Write-Host "Dry run: no files will be written and no companion install will be executed."
+}
 
-$AllowedTools = @("all", "codex", "copilot", "claude-code", "gemini", "claude", "pi")
+$InstallableTools = @("codex", "copilot", "claude-code", "gemini", "claude", "pi")
+$AllowedTools = $InstallableTools + @("all")
 $Tool = @(
     $Tool | ForEach-Object { $_ -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ }
 )
 $invalidTools = @($Tool | Where-Object { $AllowedTools -notcontains $_ })
 if ($invalidTools.Count -gt 0) {
-    throw "Unknown tool(s): $($invalidTools -join ', '). Allowed: $($AllowedTools -join ', ')"
+    throw "Unknown tool(s): $($invalidTools -join ', '). Allowed: $($InstallableTools -join ', ')"
 }
 
 function Get-CommandName {
@@ -54,11 +73,127 @@ function Get-PromptDescription {
     return "Command prompt installed from commands repository."
 }
 
+function Get-CopilotPromptText {
+    param([string]$Path)
+    $text = Get-Content -LiteralPath $Path -Raw
+    return ($text -replace '(?m)^agent:\s*agent\s*$', 'mode: agent')
+}
+
+function Copy-CodexPromptFiles {
+    param([string]$Destination)
+    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
+        $name = Get-CommandName $_
+        Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Destination "$name.md") -Force
+    }
+}
+
+function Get-CodexDestinations {
+    if ($Scope -eq "user") {
+        $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
+        return @{
+            Skill = Join-Path $codexHome "skills/agent-steered-sdlc"
+            Prompts = Join-Path $codexHome "prompts"
+        }
+    }
+    return @{
+        Skill = Join-Path $TargetRoot ".codex/skills/agent-steered-sdlc"
+        Prompts = Join-Path $TargetRoot ".codex/prompts"
+    }
+}
+
+function Get-CopilotPromptDestination {
+    if ($Scope -ne "user") {
+        return Join-Path $TargetRoot ".github/prompts"
+    }
+    if ($env:AGENT_SDLC_COPILOT_PROMPTS_DIR) {
+        return $env:AGENT_SDLC_COPILOT_PROMPTS_DIR
+    }
+    if ($env:APPDATA) {
+        return Join-Path $env:APPDATA "Code/User/prompts"
+    }
+    if ((Get-Variable -Name IsMacOS -ErrorAction SilentlyContinue) -and $IsMacOS) {
+        return Join-Path $HOME "Library/Application Support/Code/User/prompts"
+    }
+    return Join-Path $HOME ".config/Code/User/prompts"
+}
+
+function Write-DestinationSummary {
+    param([string[]]$Entries)
+    Write-Host "Destination folders:"
+    if (-not $NoCheckers) {
+        Write-Host "  Checkers -> $(Join-Path $TargetRoot 'checkers')"
+    }
+    foreach ($entry in $Entries) {
+        switch ($entry) {
+            "codex" {
+                $dest = Get-CodexDestinations
+                Write-Host "  Codex skill -> $($dest.Skill)"
+                Write-Host "  Codex direct prompts -> $($dest.Prompts)"
+                Write-Host "    Invoke as /prompts:spec-create, /prompts:design-create, etc. after restarting Codex."
+            }
+            "copilot" {
+                Write-Host "  GitHub Copilot prompts -> $(Get-CopilotPromptDestination)"
+                if ($Scope -eq "user") {
+                    Write-Host "    User-scoped VS Code prompt files; invoke from Copilot Chat after restarting VS Code."
+                }
+            }
+            "claude-code" {
+                if ($Scope -eq "user") {
+                    $cmdDest = Join-Path $HOME ".claude/commands"
+                    $skillDest = Join-Path $HOME ".claude/skills/agent-steered-sdlc"
+                } else {
+                    $cmdDest = Join-Path $TargetRoot ".claude/commands"
+                    $skillDest = Join-Path $TargetRoot ".claude/skills/agent-steered-sdlc"
+                }
+                Write-Host "  Claude Code commands -> $cmdDest"
+                Write-Host "  Claude Code skill -> $skillDest"
+            }
+            "gemini" {
+                $dest = if ($Scope -eq "user") {
+                    Join-Path $HOME ".gemini/commands"
+                } else {
+                    Join-Path $TargetRoot ".gemini/commands"
+                }
+                Write-Host "  Gemini CLI commands -> $dest"
+            }
+            "claude" {
+                $dest = if ($Scope -eq "user") {
+                    Join-Path $HOME ".ai-prompts/claude"
+                } else {
+                    Join-Path $TargetRoot ".ai-prompts/claude"
+                }
+                Write-Host "  Claude prompt export -> $dest"
+                Write-Host "  Claude skill export -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+            }
+            "pi" {
+                $dest = if ($Scope -eq "user") {
+                    Join-Path $HOME ".ai-prompts/pi"
+                } else {
+                    Join-Path $TargetRoot ".ai-prompts/pi"
+                }
+                Write-Host "  Pi prompt export -> $dest"
+                Write-Host "  Pi skill export -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+            }
+        }
+    }
+}
+
 function Copy-Checkers {
     if ($NoCheckers) {
         return
     }
     $dest = Join-Path $TargetRoot "checkers"
+    if ($Scope -eq "user") {
+        Write-Warning (
+            "Checkers are project-local; installing them to " +
+            "$TargetRoot\checkers even though Scope is user. Use -NoCheckers to skip them."
+        )
+    }
+    if ($DryRun) {
+        Write-Host "Would install checkers -> $dest"
+        return
+    }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     Get-ChildItem -LiteralPath $CheckerSource -Filter "check_*.py" | Copy-Item -Destination $dest -Force
     Write-Host "Installed checkers -> $dest"
@@ -71,21 +206,32 @@ function Copy-SkillFolder {
 }
 
 function Install-Copilot {
-    $dest = Join-Path $TargetRoot ".github/prompts"
+    $dest = Get-CopilotPromptDestination
+    if ($DryRun) {
+        Write-Host "Would install GitHub Copilot prompts -> $dest"
+        return
+    }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
-    Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | Copy-Item -Destination $dest -Force
+    Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
+        $body = Get-CopilotPromptText $_.FullName
+        Set-Content -LiteralPath (Join-Path $dest $_.Name) -Value $body -NoNewline
+    }
     Write-Host "Installed GitHub Copilot prompts -> $dest"
+    Write-Host "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
 }
 
 function Install-Codex {
-    if ($Scope -eq "user") {
-        $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
-        $skillDest = Join-Path $codexHome "skills/agent-steered-sdlc"
-    } else {
-        $skillDest = Join-Path $TargetRoot ".codex/skills/agent-steered-sdlc"
+    $dest = Get-CodexDestinations
+    if ($DryRun) {
+        Write-Host "Would install Codex skill -> $($dest.Skill)"
+        Write-Host "Would install Codex direct prompts -> $($dest.Prompts)"
+        return
     }
-    Copy-SkillFolder $skillDest
-    Write-Host "Installed Codex skill -> $skillDest"
+    Copy-SkillFolder $dest.Skill
+    Write-Host "Installed Codex skill -> $($dest.Skill)"
+    Copy-CodexPromptFiles $dest.Prompts
+    Write-Host "Installed Codex direct prompts -> $($dest.Prompts)"
+    Write-Host "Codex direct prompts are available as /prompts:spec-create, /prompts:design-create, etc. after restart."
 }
 
 function Install-ClaudeCode {
@@ -95,6 +241,11 @@ function Install-ClaudeCode {
     } else {
         $dest = Join-Path $TargetRoot ".claude/commands"
         $skillDest = Join-Path $TargetRoot ".claude/skills/agent-steered-sdlc"
+    }
+    if ($DryRun) {
+        Write-Host "Would install Claude Code slash commands -> $dest"
+        Write-Host "Would install Claude Code skill -> $skillDest"
+        return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
@@ -112,6 +263,10 @@ function Install-Gemini {
         $dest = Join-Path $HOME ".gemini/commands"
     } else {
         $dest = Join-Path $TargetRoot ".gemini/commands"
+    }
+    if ($DryRun) {
+        Write-Host "Would install Gemini CLI commands -> $dest"
+        return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
@@ -138,6 +293,11 @@ function Install-ClaudeExport {
     } else {
         $dest = Join-Path $TargetRoot ".ai-prompts/claude"
     }
+    if ($DryRun) {
+        Write-Host "Would export Claude prompt pack -> $dest"
+        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+        return
+    }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
         $name = Get-CommandName $_
@@ -154,6 +314,11 @@ function Install-PiExport {
         $dest = Join-Path $HOME ".ai-prompts/pi"
     } else {
         $dest = Join-Path $TargetRoot ".ai-prompts/pi"
+    }
+    if ($DryRun) {
+        Write-Host "Would export Pi prompt pack -> $dest"
+        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+        return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
@@ -193,6 +358,10 @@ function Install-WslCompanion {
     if ($NoCrossInstall) {
         return
     }
+    if ($DryRun) {
+        Write-Host "Would install WSL companion targets if WSL is available."
+        return
+    }
     if (-not (Test-WslAvailable)) {
         Write-Host "WSL not available; skipping WSL companion install."
         return
@@ -201,7 +370,7 @@ function Install-WslCompanion {
     $repoWsl = ConvertTo-WslPath $RepoRoot
     $targetWsl = ConvertTo-WslPath $TargetRoot
     $scriptWsl = "$repoWsl/scripts/install.sh"
-    $toolList = $Tool -join ","
+    $toolList = $expandedTools -join ","
     $args = @($scriptWsl, "--target", $targetWsl, "--scope", $Scope, "--tools", $toolList, "--no-cross-install")
     if ($NoCheckers) {
         $args += "--no-checkers"
@@ -214,11 +383,13 @@ function Install-WslCompanion {
     }
 }
 
-$expandedTools = if ($Tool -contains "all") {
-    @("codex", "copilot", "claude-code", "gemini", "claude", "pi")
+$expandedTools = if ($Tool.Count -eq 0 -or $Tool -contains "all") {
+    $InstallableTools
 } else {
     $Tool
 }
+
+Write-DestinationSummary $expandedTools
 
 Copy-Checkers
 foreach ($entry in $expandedTools) {
@@ -234,4 +405,8 @@ foreach ($entry in $expandedTools) {
 
 Install-WslCompanion
 
-Write-Host "Install complete for target: $TargetRoot"
+if ($DryRun) {
+    Write-Host "Dry run complete for target: $TargetRoot"
+} else {
+    Write-Host "Install complete for target: $TargetRoot"
+}
