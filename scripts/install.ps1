@@ -228,6 +228,24 @@ function Copy-SkillFolder {
     param([string]$Destination)
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
     Get-ChildItem -Force -LiteralPath $SkillSource | Copy-Item -Destination $Destination -Recurse -Force
+
+    $promptDest = Join-Path $Destination "prompts"
+    if (Test-Path -LiteralPath $promptDest) {
+        Remove-Item -LiteralPath $promptDest -Recurse -Force
+    }
+    New-Item -ItemType Directory -Force -Path $promptDest | Out-Null
+    Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" |
+        Copy-Item -Destination $promptDest -Force
+
+    if (Test-Path -LiteralPath $CheckerSource) {
+        $checkerDest = Join-Path $Destination "checkers"
+        if (Test-Path -LiteralPath $checkerDest) {
+            Remove-Item -LiteralPath $checkerDest -Recurse -Force
+        }
+        New-Item -ItemType Directory -Force -Path $checkerDest | Out-Null
+        Get-ChildItem -LiteralPath $CheckerSource -Filter "*.py" |
+            Copy-Item -Destination $checkerDest -Force
+    }
 }
 
 function Install-Copilot {

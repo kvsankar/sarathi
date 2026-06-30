@@ -305,6 +305,16 @@ copy_skill_folder() {
   local dest="$1"
   mkdir -p "$dest"
   cp -R "$SKILL_SOURCE"/. "$dest"/
+
+  rm -rf "$dest/prompts"
+  mkdir -p "$dest/prompts"
+  cp "$PROMPT_SOURCE"/*.prompt.md "$dest/prompts"/
+
+  if [[ -d "$CHECKER_SOURCE" ]]; then
+    rm -rf "$dest/checkers"
+    mkdir -p "$dest/checkers"
+    cp "$CHECKER_SOURCE"/*.py "$dest/checkers"/
+  fi
 }
 
 install_copilot() {

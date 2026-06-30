@@ -394,6 +394,11 @@ Install targets:
   skill bundle for manual import/adaptation.
 - Checkers: copied to `<target>/checkers` unless `--no-checkers` / `-NoCheckers` is used.
 
+Every installed `agent-steered-sdlc` skill bundle should be self-contained: `SKILL.md`,
+agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. The prompts and
+checkers are also installed separately where the host tool or target workspace expects
+direct access.
+
 If the target is this commands repository itself, the installer warns because project-local
 artifacts such as `.github/prompts` and `checkers` may be written into the source checkout;
 that is acceptable for dogfooding, but product installs should pass `-TargetRoot` /

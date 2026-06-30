@@ -6,8 +6,9 @@ description: End-to-end SDLC workflow for agent-steered creation, review, verifi
 # Agent-Steered SDLC
 
 Use the installed slash commands when they are available. If the commands are not
-installed, locate this repository's `prompts/*.prompt.md` and follow the matching
-prompt exactly.
+installed, use this skill bundle's `prompts/*.prompt.md` files and follow the matching
+prompt exactly. If bundled prompts are unavailable, locate this repository's
+`prompts/*.prompt.md` as a fallback.
 
 ## Workflow
 
@@ -150,8 +151,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   regulations, platform behavior, APIs, or domain facts may matter.
 - Keep implementation inside the plan's planned touch set. If code work needs files
   outside that scope, stop and ask the user to update or approve the plan.
-- Run deterministic structural checkers after creating or reviewing artifacts. Try
-  `python` first, then `python3`, then `uv run python`.
+- Run deterministic structural checkers after creating or reviewing artifacts. Prefer the
+  checkers bundled in this skill at `checkers/check_*.py`; otherwise use the target
+  workspace's `checkers/check_*.py` or this repository's `checkers/check_*.py`. Try `python`
+  first, then `python3`, then `uv run python`.
 - Treat checker results as structural evidence, not proof of correctness. The checkers catch
   missing sections, malformed IDs, orphan references, missing trace links, declared oversize
   PRs, missing Red/Green step text, unlabeled coverage output, missing same-test-block
@@ -169,7 +172,7 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 
 ## Checkers
 
-Use the installed `checkers/check_*.py` scripts when present:
+Use the bundled or installed `checkers/check_*.py` scripts when present:
 
 - `check_spec.py` for specs.
 - `check_design.py` for designs.

@@ -87,6 +87,10 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 - **Checkers**: installs `checkers/` into the target workspace unless skipped with
   `-NoCheckers` or `--no-checkers`.
 
+Installed skill bundles are self-contained: each `agent-steered-sdlc` skill copy includes
+`SKILL.md`, agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. Prompt
+commands are also installed separately so host tools can expose them directly.
+
 Every dry or real install prints the destination folders before doing work.
 
 ## Commands
