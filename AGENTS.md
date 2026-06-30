@@ -21,41 +21,59 @@ is only an installation target for GitHub Copilot inside product workspaces.
 
 ## Slash commands
 
-Eight source command prompts live in [prompts](prompts):
+Source command prompts live in [prompts](prompts). Command verbs are deliberately split:
+
+- `create`: author or revise the artifact.
+- `verify`: collect deterministic/mechanical evidence only.
+- `review`: make the qualitative adversarial judgment using available evidence.
+- `assess`: run `verify` first, then `review`; this is the full gate.
 
 - **`/spec-create`** — [prompts/spec-create.prompt.md](prompts/spec-create.prompt.md)
   Interviews the user one question per turn, then writes a requirements-engineering
   grounded SRS. Supports product/system, feature/component, and slice/change specs.
   Writes `spec.md` in the target product workspace unless another file is named.
+- **`/spec-verify`** — [prompts/spec-verify.prompt.md](prompts/spec-verify.prompt.md)
+  Runs deterministic structural spec checks and reports evidence only.
 - **`/spec-review`** — [prompts/spec-review.prompt.md](prompts/spec-review.prompt.md)
-  Critically reviews a spec in two passes: a deterministic mechanical check plus a
-  qualitative 1–5 assessment, ending in a verdict.
+  Qualitatively reviews spec quality using available verification evidence.
+- **`/spec-assess`** — [prompts/spec-assess.prompt.md](prompts/spec-assess.prompt.md)
+  Runs `/spec-verify` plus `/spec-review` as the full spec gate.
 - **`/design-create`** — [prompts/design-create.prompt.md](prompts/design-create.prompt.md)
   Interviews the user one question per turn, then writes a Software Design Document
   grounded in requirements, design profiles, functional-core/imperative-shell separation,
   trade-offs, ADRs, quality attributes, interfaces, tests, and risks. Writes `design.md`
   plus a `design.html` companion in the target product workspace. Supports HLD,
   feature/component design, and slice/change LLD.
+- **`/design-verify`** — [prompts/design-verify.prompt.md](prompts/design-verify.prompt.md)
+  Runs upstream spec and design structural checks and reports evidence only.
 - **`/design-review`** — [prompts/design-review.prompt.md](prompts/design-review.prompt.md)
-  Critically reviews a design in two passes: a deterministic mechanical check plus a
-  qualitative 1–5 assessment against the design criteria, ending in a verdict.
+  Qualitatively reviews design quality and upstream spec fitness.
+- **`/design-assess`** — [prompts/design-assess.prompt.md](prompts/design-assess.prompt.md)
+  Runs `/design-verify` plus `/design-review` as the full design gate.
 - **`/plan-create`** — [prompts/plan-create.prompt.md](prompts/plan-create.prompt.md)
   Interviews the user one question per turn, then writes a work plan that slices spec +
   design into reviewable, Red/Green TDD pull requests of ≤300 LOC each, including Planned
   Touch Sets, documentation/build/deployment work, and parallel/worktree guidance. Writes
   `plan.md` in the target product workspace.
+- **`/plan-verify`** — [prompts/plan-verify.prompt.md](prompts/plan-verify.prompt.md)
+  Runs upstream artifact and plan structural checks and reports evidence only.
 - **`/plan-review`** — [prompts/plan-review.prompt.md](prompts/plan-review.prompt.md)
-  Critically reviews a plan in two passes: a deterministic mechanical check plus a
-  qualitative 1–5 assessment, ending in a verdict.
+  Qualitatively reviews plan readiness, slicing, test allocation, touch sets, and sequencing.
+- **`/plan-assess`** — [prompts/plan-assess.prompt.md](prompts/plan-assess.prompt.md)
+  Runs `/plan-verify` plus `/plan-review` as the full plan gate.
 - **`/code-create`** — [prompts/code-create.prompt.md](prompts/code-create.prompt.md)
   Implements the plan PR-by-PR with strict Red/Green/Refactor TDD; tests reference the
   FR/AT/COMP and PR they cover, suite stays green at each PR boundary, and language-aware
   pre-commit/local quality gates plus planned documentation/build/deployment checks are
   configured and run.
+- **`/code-verify`** — [prompts/code-verify.prompt.md](prompts/code-verify.prompt.md)
+  Runs tests, coverage, upstream structural checks, `check_code.py`,
+  pre-commit/equivalent gates, and planned build/docs/deployment checks.
 - **`/code-review`** — [prompts/code-review.prompt.md](prompts/code-review.prompt.md)
-  Critically reviews the implementation, documentation, build/deployment work, upstream
-  checks, structural code gates, pre-commit/local quality-gate verification, and a
-  qualitative 1–5 assessment.
+  Qualitatively reviews implementation, tests, docs, build/deployment work, upstream
+  artifact fitness, TDD evidence, planned scope, and quality-gate fitness.
+- **`/code-assess`** — [prompts/code-assess.prompt.md](prompts/code-assess.prompt.md)
+  Runs `/code-verify` plus `/code-review` as the full code gate.
 
 ## Test responsibility by command
 
@@ -69,8 +87,8 @@ Eight source command prompts live in [prompts](prompts):
   tests should sit near the code they protect.
 - `/code-create` writes executable tests using Red/Green/Refactor: acceptance tests for
   assigned `AT-` items plus the planned lower-level tests.
-- Review commands verify the same ownership chain and stop if a downstream artifact exposes
-  missing or incorrect upstream test intent.
+- Verify and assess commands verify the same ownership chain. Review and assess commands
+  stop if a downstream artifact exposes missing or incorrect upstream test intent.
 
 ## Build and deployment responsibility by command
 
@@ -127,10 +145,10 @@ Commands use a deliberately small work hierarchy:
   This is the usual code-ready scope.
 
 Artifacts declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
-Parent specs/designs/plans may pass review while Decomposable; that means the next step is a
-breakdown plan, child spec, LLD, ADR/interface contract, or implementation plan. `/code-create`
-must block unless it has a code-ready implementation plan for a slice/change or sufficiently
-small feature/component.
+Parent specs/designs/plans may pass review or assessment while Decomposable; that means the
+next step is a breakdown plan, child spec, LLD, ADR/interface contract, or implementation
+plan. `/code-create` must block unless it has a code-ready implementation plan for a
+slice/change or sufficiently small feature/component.
 
 ## Lightweight track
 
@@ -146,17 +164,17 @@ signal, use a documented lightweight track instead of bypassing the process sile
   implementation unless a follow-up slice/change spec, design/LLD, and implementation plan
   are created or explicitly accepted by the user.
 
-## Review independence
+## Verification, review, and assessment independence
 
 Review prompts should be run with an adversarial posture. Prefer a fresh context, separate
 reviewer, or different model/tool when available. If the same agent performs creation and
 review, it must say that review was not independent and actively look for counterexamples,
 missing upstream changes, traceability theater, and unverified claims before passing.
 
-When the platform supports sub-agents, split every review into two fresh-context sub-agent
-passes:
+When the platform supports sub-agents, split every assessment into two fresh-context
+sub-agent passes:
 
-- **Mechanical Reviewer**: runs deterministic/structural checkers and returns raw command
+- **Mechanical Verifier**: runs deterministic/structural checkers and returns raw command
   evidence, metrics, IDs, and failures.
 - **Qualitative Reviewer**: starts from the artifact plus mechanical evidence and produces
   the adversarial judgment, upstream blockers, top fixes, and verdict.
@@ -164,19 +182,19 @@ passes:
 If sub-agents are unavailable, disclose that limitation and still keep the mechanical and
 qualitative sections separate.
 
-## Review verification checklist
+## Verification and review checklist
 
-Every review must pair structural/mechanical evidence with qualitative assessment, ideally
+Every assessment must pair structural/mechanical evidence with qualitative review, ideally
 using the two fresh-context sub-agent passes above. Do not stop after checker JSON. The
 canonical checklist is
 [docs/review-verification-checklist.md](docs/review-verification-checklist.md):
 
-| Review | Mechanical/structural evidence | Qualitative assessment |
+| Assessment | Mechanical verification | Qualitative review |
 | --- | --- | --- |
-| `/spec-review` | `check_spec.py` on the target spec. | Spec quality: problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, build/deployment intent, documentation intent, traceability. |
-| `/design-review` | `check_spec.py` on upstream spec, then `check_design.py` on design. | First judge upstream spec fitness; then judge design quality, build/deployment design, documentation design, decisions, risks, testability, and traceability. |
-| `/plan-review` | `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | First judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
-| `/code-review` | `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, and pre-commit/equivalent gate. | First judge upstream code-readiness; then judge implementation correctness, test quality, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
+| `/spec-assess` | `/spec-verify`: `check_spec.py` on the target spec. | `/spec-review`: spec quality, problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, build/deployment intent, documentation intent, traceability. |
+| `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, build/deployment design, documentation design, decisions, risks, testability, and traceability. |
+| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
+| `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned build/docs/deployment checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test quality, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
 
 Agents should infer the likely scope from the user's request and state it explicitly:
 broad product/platform/app requests map to Product/system, one capability/subsystem maps to
@@ -187,8 +205,9 @@ Slice/change. Ask only when the mapping is ambiguous or materially changes the a
 
 When the `agent-steered-sdlc` skill is invoked generally instead of a specific slash command,
 agents should run only the next appropriate SDLC stage by default. After creating or
-materially revising any spec, design, ADR, plan, code slice, or review report, stop for human
-review before starting the next downstream stage, even if mechanical checks pass.
+materially revising any spec, design, ADR, plan, code slice, assessment report, or review
+report, stop for human review before starting the next downstream stage, even if mechanical
+checks pass.
 
 This is a **hard execution gate**. The agent must end its turn after the stopping response
 and must not start the next command in the same turn. A completed spec gates
@@ -196,8 +215,9 @@ and must not start the next command in the same turn. A completed spec gates
 `/code-create`; a completed code slice gates the next code slice or release/deployment
 activity.
 
-The stopping response should name the artifact path, readiness/status, checker/review
-result, key open questions, and the recommended next command. Continue automatically across
+The stopping response should name the artifact path, readiness/status,
+verification/review/assessment result, key open questions, and the recommended next command.
+Continue automatically across
 multiple artifact stages only when the user's latest message explicitly asks for an
 end-to-end, unattended, or "continue through all stages" run. YOLO mode does not bypass this
 human-review gate.
@@ -307,8 +327,8 @@ Flags: `--json`, `--tests-argv <json-array>`, `--tests <cmd>`, `--tests-shell`,
 `--max-diff-loc <n>`, `--diff-base <ref>`, `--allow-missing-git-evidence`,
 `--allow-missing-tdd-evidence`, `--spec <file>`, `--design <file>`. Git diff-size and TDD
 evidence are required by default; use the allow flags only when the repository cannot
-provide that evidence and the review report will state the limitation. Exits non-zero on any
-gate failure.
+provide that evidence and the verification/assessment report will state the limitation.
+Exits non-zero on any gate failure.
 
 Checker limits: these scripts are deterministic structural gates. They catch missing
 sections, malformed IDs, orphan references, missing trace links, declared oversize PRs,

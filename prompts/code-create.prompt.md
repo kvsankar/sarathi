@@ -7,7 +7,7 @@ agent: agent
 
 Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
 tested, documented, production code. Build **one PR at a time**, in plan order, using TDD.
-Optimize so `/code-review` finds nothing to fix.
+Optimize so `/code-assess` finds nothing to fix.
 
 ## Core principles (the code is judged against these)
 
@@ -260,19 +260,19 @@ contracts, examples, generated reference docs, runbooks, troubleshooting, releas
 migration notes, run the planned doc build/generation/link/readability/accessibility checks
 and verify examples/snippets where practical. Record any check that cannot run locally and why.
 
-Then run or perform the corresponding `/code-review` for the completed PR boundary. When
-sub-agents are available, use fresh-context Mechanical Reviewer and Qualitative Reviewer
-sub-agents as described in `/code-review`; otherwise state that review is not independent and
+Then run or perform the corresponding `/code-assess` for the completed PR boundary. When
+sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
+sub-agents as described in `/code-assess`; otherwise state that review is not independent and
 use the adversarial posture. Treat any upstream spec/design/plan blocker, failing
 qualitative finding, TDD authenticity issue, design-fidelity issue, missing edge case, NFR
 validation gap, traceability issue, or production-quality concern as a defect. Revise
 upstream artifacts if the review says they must change; otherwise revise tests/code. Repeat
-checker + review until `/code-review` would return Pass or an explicitly accepted
+checker + assessment until `/code-assess` would return Pass or an explicitly accepted
 Pass-with-fixes for that boundary.
 
 ## Step 6 — Human review gate (hard stop)
 
-After completing one PR/code slice and its checker/review loop, **stop**. Do not move to the
+After completing one PR/code slice and its checker/assessment loop, **stop**. Do not move to the
 next PR, perform release/deployment work, or continue downstream in the same turn unless the
 user's latest message explicitly requested unattended continuation across PRs.
 

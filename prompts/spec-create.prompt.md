@@ -331,19 +331,19 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 
 For feature/component or slice/change specs, include `--feature --parent <product-spec>`.
 
-Then run or perform the corresponding `/spec-review` against the completed spec. When
-sub-agents are available, use fresh-context Mechanical Reviewer and Qualitative Reviewer
-sub-agents as described in `/spec-review`; otherwise state that review is not independent and
+Then run or perform the corresponding `/spec-assess` against the completed spec. When
+sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
+sub-agents as described in `/spec-assess`; otherwise state that review is not independent and
 use the adversarial posture. Treat any qualitative finding about problem framing, stakeholder
 needs, non-goals, scope, use cases, requirements, NFRs, acceptance tests, assumptions, or
-traceability as a defect in the spec. Revise the spec and repeat checker + review until
-`/spec-review` would return Pass or an explicitly accepted Pass-with-fixes.
+traceability as a defect in the spec. Revise the spec and repeat checker + assessment until
+`/spec-assess` would return Pass or an explicitly accepted Pass-with-fixes.
 
 Write the spec to `spec.md` in the workspace unless the user names another file.
 
 ## Step 5 — Human review gate (hard stop)
 
-After writing or revising the spec and completing the checker/review loop above, **stop**.
+After writing or revising the spec and completing the checker/assessment loop above, **stop**.
 Do not start `/design-create`, `/plan-create`, `/code-create`, or any downstream artifact in
 the same turn.
 
@@ -351,7 +351,7 @@ End with a human-review handoff that includes:
 
 - Spec path.
 - Work Scope and Implementation Readiness.
-- Checker/review result.
+- checker/assessment result.
 - Key assumptions, open questions, and risks.
 - Recommended next command, normally `/design-create` only after the user approves the spec.
 

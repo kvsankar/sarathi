@@ -10,28 +10,45 @@ installed, use this skill bundle's `prompts/*.prompt.md` files and follow the ma
 prompt exactly. If bundled prompts are unavailable, locate this repository's
 `prompts/*.prompt.md` as a fallback.
 
+Command verbs have distinct meanings:
+
+- `create`: author or revise the artifact.
+- `verify`: collect deterministic/mechanical evidence only.
+- `review`: make the qualitative adversarial judgment using available evidence.
+- `assess`: run `verify` first, then `review`; this is the full gate.
+
 ## Workflow
 
 Select the narrowest command that matches the user's current artifact:
 
 - `/spec-create`: create or revise `spec.md`, including product/system,
   feature/component, and slice/change specs.
-- `/spec-review`: review requirements and stop if the spec has material issues.
+- `/spec-verify`: run structural spec checks and report evidence.
+- `/spec-review`: qualitatively review requirements and stop if the spec has material issues.
+- `/spec-assess`: run `/spec-verify` plus `/spec-review` as the full spec gate.
 - `/design-create`: create or revise `design.md`, diagrams, and ADRs from the spec.
-- `/design-review`: review design and stop if upstream spec ambiguity or design risk blocks safe progress.
+- `/design-verify`: run upstream spec and design structural checks.
+- `/design-review`: qualitatively review design and stop if upstream spec ambiguity or design risk blocks safe progress.
+- `/design-assess`: run `/design-verify` plus `/design-review` as the full design gate.
 - `/plan-create`: create `plan.md`, planned touch sets, PR slices, TDD order, and worktree/parallel-work guidance.
-- `/plan-review`: review plan and stop if spec/design issues or planned scope issues block implementation.
+- `/plan-verify`: run upstream artifact and plan structural checks.
+- `/plan-review`: qualitatively review plan and stop if spec/design issues or planned scope issues block implementation.
+- `/plan-assess`: run `/plan-verify` plus `/plan-review` as the full plan gate.
 - `/code-create`: implement within the planned touch set using Red/Green/Refactor TDD,
   configured quality gates, and planned documentation/build/deployment verification.
-- `/code-review`: review implementation, tests, traceability, pre-commit quality gates, and upstream consistency.
+- `/code-verify`: run tests, coverage, structural code checks, pre-commit/equivalent gates,
+  and planned build/docs/deployment verification.
+- `/code-review`: qualitatively review implementation, tests, traceability, quality gates,
+  and upstream consistency.
+- `/code-assess`: run `/code-verify` plus `/code-review` as the full code gate.
 
 When the user invokes this skill generally instead of naming a specific slash command,
-operate in human-gated mode by default. Choose and run only the next appropriate SDLC stage,
-generate or revise the artifact for that stage, run the corresponding structural checks, and
-then stop for human review. Report the artifact path, readiness/status, key open questions,
-and the recommended next command. Do not continue automatically to the next artifact type
-unless the user explicitly asks for an end-to-end, unattended, or "continue through all
-stages" run.
+operate in human-gated mode by default. Choose and run only the next appropriate SDLC stage.
+For creation stages, generate or revise the artifact, run the corresponding `*-assess` gate
+when practical, and then stop for human review. Report the artifact path, readiness/status,
+key open questions, and the recommended next command. Do not continue automatically to the
+next artifact type unless the user explicitly asks for an end-to-end, unattended, or
+"continue through all stages" run.
 
 ## Hard Human Gates
 
@@ -49,7 +66,7 @@ These gates are mandatory execution stops, not suggestions.
   stage, for example "continue to design", "run /design-create", "approve spec", or
   "continue end-to-end unattended".
 - YOLO mode only answers missing-input questions. It does **not** bypass human review gates.
-- Even if the matching review command passes, stop for human review before downstream work.
+- Even if the matching `*-assess` command passes, stop for human review before downstream work.
 - If a tool/runtime keeps planning downstream work after a gate, ignore that plan and
   produce the stop report instead.
 
@@ -65,8 +82,8 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 
 ## Operating Rules
 
-- Preserve the spec-first order: spec, spec review, design, design review, plan,
-  plan review, code, code review.
+- Preserve the spec-first order: spec, spec assess, design, design assess, plan,
+  plan assess, code, code assess.
 - After creating or materially revising any spec, design, ADR, plan, code slice, or review
   report, pause for human review before starting the next downstream stage. The pause is a
   hard collaboration boundary, even when the generated artifact passes mechanical checks.
@@ -117,29 +134,31 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   documentation architecture, source locations, generated/reference docs, publishing,
   ownership, and validation checks; plans assign documentation files and checks to work
   items or PRs; code updates docs with implementation and validates them where practical.
-- Treat downstream review as an upstream validation point. If design, plan, or code
-  review reveals a latent issue in an earlier artifact, stop and tell the user which
+- Treat downstream assessment/review as an upstream validation point. If design, plan, or
+  code assessment/review reveals a latent issue in an earlier artifact, stop and tell the user which
   upstream artifact needs revision.
 - Use an adversarial review posture. Prefer a fresh context, separate reviewer, or different
   model/tool when available. If the same agent performs creation and review, say review was
   not independent and actively seek counterexamples, traceability theater, and unverified
   claims before passing.
-- When the platform supports sub-agents, split every review into two fresh-context sub-agent
-  passes. The Mechanical Reviewer runs deterministic/structural checkers and returns raw
-  command evidence, metrics, IDs, and failures. The Qualitative Reviewer starts from the
-  artifact plus mechanical evidence and produces the adversarial judgment, upstream blockers,
-  top fixes, and verdict. If sub-agents are unavailable, disclose that limitation and keep
-  the mechanical and qualitative sections separate.
-- Never stop a review at checker JSON. Apply the review verification checklist:
-  - `/spec-review`: run `check_spec.py`, then qualitatively assess spec quality.
-  - `/design-review`: run upstream `check_spec.py` and qualitatively assess spec fitness;
-    then run `check_design.py` and qualitatively assess design quality.
-  - `/plan-review`: run upstream `check_spec.py` and `check_design.py`, qualitatively assess
-    upstream fitness; then run `check_plan.py` and qualitatively assess plan quality.
-  - `/code-review`: run upstream spec/design/plan checkers and qualitatively assess
-    code-readiness; then run `check_code.py`, pre-commit/equivalent gates, and qualitatively
-    assess implementation quality, test quality, TDD evidence, scope fidelity, and gate
-    fitness.
+- When the platform supports sub-agents, split every assessment into two fresh-context
+  sub-agent passes. The Mechanical Verifier runs deterministic/structural checkers and
+  returns raw command evidence, metrics, IDs, and failures. The Qualitative Reviewer starts
+  from the artifact plus mechanical evidence and produces the adversarial judgment,
+  upstream blockers, top fixes, and verdict. If sub-agents are unavailable, disclose that
+  limitation and keep the verification and review sections separate.
+- Never stop an assessment at checker JSON. Apply the verification/review checklist:
+  - `/spec-verify`: run `check_spec.py`; `/spec-review`: qualitatively review spec quality;
+    `/spec-assess`: do both.
+  - `/design-verify`: run upstream `check_spec.py` and `check_design.py`; `/design-review`:
+    qualitatively review upstream spec fitness and design quality; `/design-assess`: do both.
+  - `/plan-verify`: run upstream `check_spec.py`, `check_design.py`, and `check_plan.py`;
+    `/plan-review`: qualitatively review upstream fitness and plan quality; `/plan-assess`:
+    do both.
+  - `/code-verify`: run upstream checkers, `check_code.py`, pre-commit/equivalent gates,
+    and planned build/docs/deployment checks; `/code-review`: qualitatively review
+    code-readiness, implementation quality, test quality, TDD evidence, scope fidelity, and
+    gate fitness; `/code-assess`: do both.
 - Use the lightweight track for spikes, throwaway prototypes, exploratory data/ML work,
   proof-of-concept integrations, or infrastructure investigations. Mark these artifacts
   Exploratory, timebox them, record goal/non-goals/risks/evidence/disposal criteria, and do
@@ -151,7 +170,7 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   regulations, platform behavior, APIs, or domain facts may matter.
 - Keep implementation inside the plan's planned touch set. If code work needs files
   outside that scope, stop and ask the user to update or approve the plan.
-- Run deterministic structural checkers after creating or reviewing artifacts. Prefer the
+- Run deterministic structural checkers after creating, verifying, or assessing artifacts. Prefer the
   checkers bundled in this skill at `checkers/check_*.py`; otherwise use the target
   workspace's `checkers/check_*.py` or this repository's `checkers/check_*.py`. Try `python`
   first, then `python3`, then `uv run python`.
@@ -159,7 +178,7 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   missing sections, malformed IDs, orphan references, missing trace links, declared oversize
   PRs, missing Red/Green step text, unlabeled coverage output, missing same-test-block
   assertion trace IDs, oversize git diffs against the resolved review base, and obvious
-  skip/TODO markers. Git diff-size and TDD evidence are required by default in code review;
+  skip/TODO markers. Git diff-size and TDD evidence are required by default in code verify/assess;
   use allow-missing flags only when the repo cannot provide that evidence and the report
   states the limitation. Red/Green text, AT scenario shape, and commit-message TDD evidence
   are presence checks; they do not prove semantic correctness, test quality, or true TDD

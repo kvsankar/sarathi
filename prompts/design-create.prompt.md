@@ -533,14 +533,14 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 
 For component designs, include `--component --parent <product-design>`.
 
-Then run or perform the corresponding `/design-review` against the completed design. When
-sub-agents are available, use fresh-context Mechanical Reviewer and Qualitative Reviewer
-sub-agents as described in `/design-review`; otherwise state that review is not independent
+Then run or perform the corresponding `/design-assess` against the completed design. When
+sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
+sub-agents as described in `/design-assess`; otherwise state that review is not independent
 and use the adversarial posture. Treat any upstream spec blocker, qualitative finding,
 missing rationale, unaddressed quality attribute, interface issue, testability gap, risk, or
 traceability issue as a defect in the created design/spec set. Revise the upstream artifact
 if the review says the spec must change; otherwise revise `design.md`/`design.html`. Repeat
-checker + review until `/design-review` would return Pass or an explicitly accepted
+checker + assessment until `/design-assess` would return Pass or an explicitly accepted
 Pass-with-fixes.
 
 ## Quality rules
@@ -564,14 +564,14 @@ in the workspace unless the user names other files.
 
 ## Human review gate (hard stop)
 
-After writing or revising the design and completing the checker/review loop above, **stop**.
+After writing or revising the design and completing the checker/assessment loop above, **stop**.
 Do not start `/plan-create`, `/code-create`, or any downstream artifact in the same turn.
 
 End with a human-review handoff that includes:
 
 - Design path(s), including ADR paths if created or updated.
 - Work Scope, Design Depth, and Implementation Readiness.
-- Checker/review result.
+- checker/assessment result.
 - Key decisions, assumptions, open questions, and risks.
 - Recommended next command, normally `/plan-create` only after the user approves the design.
 

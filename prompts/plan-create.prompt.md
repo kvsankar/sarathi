@@ -7,7 +7,7 @@ agent: agent
 
 Your job is to produce a **Work Plan** that either decomposes broad work into smaller
 code-ready work items or turns an already code-ready slice/change into tested,
-production-quality code delivered as small pull requests. Optimize so `/plan-review` finds
+production-quality code delivered as small pull requests. Optimize so `/plan-assess` finds
 nothing to fix.
 
 ## Core principles (the plan is judged against these)
@@ -257,15 +257,15 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 
 For feature/component or slice/change plans, include `--feature --parent <product-plan>`.
 
-Then run or perform the corresponding `/plan-review` against the completed plan. When
-sub-agents are available, use fresh-context Mechanical Reviewer and Qualitative Reviewer
-sub-agents as described in `/plan-review`; otherwise state that review is not independent and
+Then run or perform the corresponding `/plan-assess` against the completed plan. When
+sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
+sub-agents as described in `/plan-assess`; otherwise state that review is not independent and
 use the adversarial posture. Treat any upstream spec/design blocker, qualitative finding,
 missing coverage, weak PR slicing, TDD gap, build/deployment gap, documentation gap,
 sequencing/worktree issue, rollback gap, or production-quality concern as a defect in the
 created plan or its upstream inputs. Revise upstream artifacts if the review says they must
 change; otherwise revise `plan.md`/`plan.html`.
-Repeat checker + review until `/plan-review` would return Pass or an explicitly accepted
+Repeat checker + assessment until `/plan-assess` would return Pass or an explicitly accepted
 Pass-with-fixes.
 
 ## Quality rules
@@ -298,7 +298,7 @@ workspace unless the user names other files.
 
 ## Human review gate (hard stop)
 
-After writing or revising the plan and completing the checker/review loop above, **stop**.
+After writing or revising the plan and completing the checker/assessment loop above, **stop**.
 Do not start `/code-create`, implementation, build/deployment work, or any downstream
 artifact in the same turn.
 
@@ -306,7 +306,7 @@ End with a human-review handoff that includes:
 
 - Plan path(s).
 - Work Scope, Plan Type, and Implementation Readiness.
-- Checker/review result.
+- checker/assessment result.
 - PR/work-item count, parallel waves, and known risks.
 - Recommended next command, normally `/code-create` only after the user approves the plan.
 

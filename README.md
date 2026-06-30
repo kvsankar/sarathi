@@ -8,15 +8,17 @@ traceability or skipping human review.
 The workflow is intentionally artifact-driven:
 
 ```text
-request -> spec -> design -> plan -> code/tests/docs/build/deploy -> review
+request -> spec -> design -> plan -> code/tests/docs/build/deploy -> assess
 ```
 
-Each stage can be created and reviewed independently. By default, the skill pauses for human
-input when important information is missing and pauses again after generating an artifact.
+Each stage can be created, verified, reviewed, or assessed independently. By default, the
+skill pauses for human input when important information is missing and pauses again after
+generating an artifact.
 
 ## What You Get
 
-- Slash-command prompts for specs, designs, plans, code, and reviews.
+- Slash-command prompts for specs, designs, plans, code, verification, review, and
+  assessment.
 - A native `agent-steered-sdlc` skill for agents that support skills.
 - Structural checkers for specs, designs, plans, and code/test traceability.
 - Installers for Windows, macOS, Linux, and WSL.
@@ -95,18 +97,33 @@ Every dry or real install prints the destination folders before doing work.
 
 ## Commands
 
-The prompt set has eight core commands:
+The prompt set uses four verbs:
+
+- `create`: author or revise an artifact.
+- `verify`: run deterministic/mechanical checks and report evidence only.
+- `review`: make the qualitative adversarial judgment using available evidence.
+- `assess`: run `verify` first, then `review`; this is the full gate.
+
+The core commands are:
 
 | Command | Purpose |
 | --- | --- |
 | `/spec-create` | Create or revise a Software Requirements Specification. |
-| `/spec-review` | Review a spec with structural checks plus qualitative assessment. |
+| `/spec-verify` | Run structural spec checks and report evidence. |
+| `/spec-review` | Qualitatively review spec quality. |
+| `/spec-assess` | Run `/spec-verify` plus `/spec-review`. |
 | `/design-create` | Create or revise a Software Design Document and ADRs as needed. |
-| `/design-review` | Review design quality and upstream spec fitness. |
+| `/design-verify` | Run upstream spec and design structural checks. |
+| `/design-review` | Qualitatively review design quality and upstream spec fitness. |
+| `/design-assess` | Run `/design-verify` plus `/design-review`. |
 | `/plan-create` | Create a breakdown or implementation plan with PR slices and touch sets. |
-| `/plan-review` | Review plan readiness, slicing, test/docs/build/deploy allocation, and sequencing. |
+| `/plan-verify` | Run upstream artifact and plan structural checks. |
+| `/plan-review` | Qualitatively review plan readiness, slicing, allocation, and sequencing. |
+| `/plan-assess` | Run `/plan-verify` plus `/plan-review`. |
 | `/code-create` | Implement a code-ready plan using Red/Green/Refactor TDD, including planned docs/build/deploy work. |
-| `/code-review` | Review code, tests, docs, build/deploy work, traceability, quality gates, and upstream consistency. |
+| `/code-verify` | Run tests, coverage, quality gates, build/docs/deployment checks, and structural code evidence. |
+| `/code-review` | Qualitatively review code, tests, docs, build/deploy work, quality gates, and upstream consistency. |
+| `/code-assess` | Run `/code-verify` plus `/code-review`. |
 
 Exact invocation syntax depends on the host tool. For Codex direct prompts, use
 `/prompts:<name>`. For Claude Code and Gemini, use their native command mechanisms.
@@ -172,14 +189,16 @@ that should own it.
 Default behavior is human-gated:
 
 - If important input is missing, the agent asks one focused question at a time.
-- After an artifact is generated, materially revised, or reviewed, the agent stops for human review.
+- After an artifact is generated, materially revised, reviewed, or assessed, the agent stops
+  for human review.
 - Downstream reviews stop when they discover upstream spec, design, or plan issues.
 
 The human review pause is a hard gate. A completed spec does not automatically flow into
 design; a completed design does not automatically flow into planning; a completed plan does
 not automatically flow into code; and a completed code slice does not automatically flow into
 the next slice or release/deployment work. The agent should end its turn with artifact paths,
-readiness/status, check or review results, open questions, and the recommended next command.
+readiness/status, verification/review/assessment results, open questions, and the
+recommended next command.
 
 You can opt into **YOLO mode** with phrases like:
 
@@ -204,7 +223,12 @@ Test responsibility is split by artifact:
 - Plans assign executable tests to PRs.
 - Code writes the executable tests and implementation.
 - Documentation, build, and deployment checks are assigned through the same spec/design/plan
-  chain and verified during code creation/review when planned.
+  chain and verified during code creation, `/code-verify`, or `/code-assess` when planned.
+
+Use `/code-verify` when you simply want a confidence run after a change: test suite,
+coverage, pre-commit/equivalent gates, build checks, documentation checks, deployment
+dry-runs or smoke checks where planned, and `check_code.py`. Use `/code-review` when you
+want qualitative judgment. Use `/code-assess` when you want both in one gate.
 
 The checkers provide deterministic structural evidence:
 
@@ -217,9 +241,10 @@ python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --co
 
 If `python` is unavailable, try `python3`, then `uv run python`.
 
-The checkers do not prove semantic correctness. Reviews must pair checker output with a
-qualitative assessment of requirements, design, plan quality, test quality, implementation
-fitness, documentation/build/deployment completeness, and upstream/downstream consistency.
+The checkers do not prove semantic correctness. Assessment commands pair verification
+evidence with qualitative review of requirements, design, plan quality, test quality,
+implementation fitness, documentation/build/deployment completeness, and upstream/downstream
+consistency.
 
 ## Repository Layout
 
