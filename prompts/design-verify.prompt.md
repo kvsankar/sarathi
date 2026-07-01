@@ -40,7 +40,8 @@ Report:
 - `passed/total`.
 - Any upstream spec failures.
 - Any bad IDs, duplicates, orphan refs, component requirement coverage gaps, component test
-  strategy gaps, ambiguous interface ownership, dependency cycles, or vague hits.
+  obligation gaps, missing/untraced `TEST-` obligations, ambiguous interface ownership,
+  dependency cycles, or vague hits.
 
 ## Output
 

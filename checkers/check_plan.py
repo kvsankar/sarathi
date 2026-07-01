@@ -2,10 +2,10 @@
 """Deterministic mechanical verifier for a Work Plan.
 
 Parses a plan markdown file, validates IDs/structure, and computes structural
-metrics: every spec FR/AT and design COMP is referenced by child WORK items or
-PRs; implementation PRs declare no more than 300 LOC, include Red+Green step
-text, and do not depend on a later PR. Exits 0 only when every structural gate
-passes. No semantic judgment, reproducible.
+metrics: every spec FR/AT, design COMP, and design TEST obligation is referenced
+by child WORK items or PRs; implementation PRs declare no more than 300 LOC,
+include Red+Green step text, and do not depend on a later PR. Exits 0 only when
+every structural gate passes. No semantic judgment, reproducible.
 
 Usage:
     python check_plan.py [plan.md] [--json] [--feature] [--parent product.md]
@@ -14,7 +14,7 @@ Usage:
 --feature  Treat as a feature-level plan (subset of a product).
 --parent   A product plan whose IDs may be referenced.
 --spec     Spec file: every FR-/AT- must be covered by a WORK item or PR.
---design   Design file: every COMP- must be covered by a WORK item or PR.
+--design   Design file: every COMP-/TEST- must be covered by a WORK item or PR.
 """
 
 from __future__ import annotations
@@ -38,13 +38,15 @@ UC = re.compile(rf"\bUC-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 NFR = re.compile(rf"\bNFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 AT = re.compile(rf"\bAT-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 COMP = re.compile(rf"\bCOMP-{SLUG_TOKEN}\b")
+TEST = re.compile(rf"\bTEST-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 PR_REF = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 VALID_ANY = re.compile(
     rf"\b(?:(?:MILE|WORK|PR|FR|UC|NFR|AT)-{SLUG_TOKEN}-{SLUG_TOKEN}|"
-    rf"COMP-{SLUG_TOKEN})\b"
+    rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:MILE|WORK|PR|FR|UC|NFR|AT|COMP)(?:-[A-Za-z0-9]+)+\b", re.I
+    r"\b(?:MILE|WORK|PR|FR|UC|NFR|AT|TEST|COMP)(?:-[A-Za-z0-9]+)+\b",
+    re.I,
 )
 LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.", re.I)
@@ -170,6 +172,11 @@ def main() -> int:
         if "--design" in sys.argv
         else set()
     )
+    design_tests = (
+        ids_from(sys.argv[sys.argv.index("--design") + 1], TEST)
+        if "--design" in sys.argv
+        else set()
+    )
     path = Path(args[0] if args else "plan.md")
     text = path.read_text(encoding="utf-8")
     defined, refs = defs_and_refs(text)
@@ -231,6 +238,7 @@ def main() -> int:
 
     fr_c, uc_c, nfr_c = cover(spec_frs, FR), cover(spec_ucs, UC), cover(spec_nfrs, NFR)
     at_c, comp_c = cover(spec_ats, AT), cover(design_comps, COMP)
+    test_c = cover(design_tests, TEST)
     def_ids = []
     in_fence = False
     for line in lines:
@@ -257,6 +265,7 @@ def main() -> int:
         "nfr_coverage_100": nfr_c == spec_nfrs,
         "at_coverage_100": at_c == spec_ats,
         "comp_coverage_100": comp_c == design_comps,
+        "test_obligation_coverage_100": test_c == design_tests,
         "pr_size_le_300": not oversized and not missing_loc,
         "pr_tdd_red_green": not no_tdd,
         "no_forward_deps": not fwd,
@@ -276,11 +285,13 @@ def main() -> int:
         "nfr_coverage_pct": pct(nfr_c, spec_nfrs),
         "at_coverage_pct": pct(at_c, spec_ats),
         "comp_coverage_pct": pct(comp_c, design_comps),
+        "test_obligation_coverage_pct": pct(test_c, design_tests),
         "uncovered_frs": sorted(spec_frs - fr_c),
         "uncovered_ucs": sorted(spec_ucs - uc_c),
         "uncovered_nfrs": sorted(spec_nfrs - nfr_c),
         "uncovered_ats": sorted(spec_ats - at_c),
         "uncovered_comps": sorted(design_comps - comp_c),
+        "uncovered_test_obligations": sorted(design_tests - test_c),
         "oversized_prs": sorted(oversized),
         "prs_missing_loc": sorted(missing_loc),
         "prs_missing_tdd": sorted(no_tdd),
@@ -302,6 +313,7 @@ def main() -> int:
             f"\nFR {report['fr_coverage_pct']}%  UC {report['uc_coverage_pct']}%"
             f"  NFR {report['nfr_coverage_pct']}%  AT {report['at_coverage_pct']}%"
             f"  COMP {report['comp_coverage_pct']}%"
+            f"  TEST {report['test_obligation_coverage_pct']}%"
         )
         print(f"{report['passed']}/{report['total']} gates passed")
     return 0 if all(gates.values()) else 1

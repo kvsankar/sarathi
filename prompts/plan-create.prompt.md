@@ -16,7 +16,8 @@ nothing to fix.
 2. **Red/Green TDD** — every PR writes failing tests first (Red), then minimal code to pass
    (Green), then refactor. The plan states both Red and Green steps per PR.
 3. **Full coverage** — every `FR-`/`UC-`, every `NFR-`, every `AT-`, every design
-   `COMP-`, and every required docs/build/deploy concern is delivered by at least one PR.
+   `COMP-`, every design `TEST-` obligation, and every required docs/build/deploy concern
+   is delivered by at least one PR.
    Nothing in spec/design is left unbuilt, undocumented, or unverifiable.
 4. **Always shippable** — order PRs so each merges green, behind a flag if needed; no PR
    depends on a later one, and build/deployment capability is introduced before code that
@@ -110,17 +111,18 @@ Use the same section order for every plan, but tune the content to the declared 
 - **Slice/change plan** is an Implementation plan. It carries `PR-` items, Planned Touch
   Sets, Red/Green steps, test levels, LOC estimates, quality gates, rollback notes,
   build/deployment verification, documentation updates/checks, dependencies,
-  parallel/worktree guidance, and traceability to the exact FR/AT/COMP items.
+  parallel/worktree guidance, and traceability to the exact FR/AT/COMP/TEST items.
 
 ## Test responsibility in this command
 
-`/plan-create` turns the spec's acceptance criteria and the design's test strategy into a
-PR-by-PR executable test plan. It decides **when** each test is written, **which level** it
-belongs to, and **which PR** owns it.
+`/plan-create` turns the spec's acceptance criteria and the design's `TEST-` obligations
+into a PR-by-PR executable test plan. It decides **when** each test is written, **which
+level** it belongs to, and **which PR** owns it.
 
 For each PR, list the test levels it will add or update:
 
-- **Acceptance/e2e tests** that execute one or more `AT-` scenarios.
+- **Acceptance/e2e tests** that execute one or more `AT-` scenarios and cite the relevant
+  `TEST-` obligation when the design named one.
 - **Unit/pure-core tests** for deterministic rules, calculations, validation, state
   transitions, reducers, mappers, and edge cases.
 - **Component/module tests** for cohesive components behind stable boundaries.
@@ -141,6 +143,16 @@ For each PR, list the test levels it will add or update:
 Do not push all coverage to end-to-end tests. Prefer many fast lower-level tests for logic
 and contracts, focused integration tests for wiring and infrastructure, and a smaller set of
 acceptance/e2e tests for critical user journeys and externally visible `AT-` coverage.
+Every `TEST-` obligation from the design must map to a PR or child work item unless the plan
+explicitly justifies it as non-executable or out of scope for the current slice.
+Every executable test assignment must preserve or refine the design's verification oracle:
+the concrete evidence that proves pass/fail, such as return value, state change, persisted
+record, emitted event, API response, DOM/role/text output, accessibility tree, screenshot or
+visual baseline, generated artifact, structured log, metric, trace, deployment signal, or
+captured external call.
+For boundary-facing work, identify the fixture/schema/generated-client/contract-test source
+of truth each PR will use. Do not plan tests that rely on ad-hoc mock payloads that differ
+from the producer/consumer contract.
 
 ## Scope: new, revision, breakdown, or implementation plan
 
@@ -169,7 +181,13 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
   owner/reviewer, and freshness/versioning expectations.
 - **Done definition**: coverage bar, lint/format gates, review rules.
 - **Test mix**: which acceptance, unit, component, contract, integration, UI/accessibility,
-  quality-attribute, migration, and operational checks are required by the spec/design.
+  quality-attribute, migration, and operational checks are required by the spec/design; for
+  boundary-facing tests, which shared fixtures, schemas, generated clients, captured
+  examples, or contract tests will prevent mock drift; for each planned test, what oracle
+  proves pass/fail.
+- **UX/presentation work**: For UI-facing work, which stylesheet/design-token/component
+  library/layout/error-state/responsive/accessibility work is in scope, and which PR owns
+  non-brittle checks for it?
 - **Sequencing**: which capability ships first; flags vs. trunk; migration order.
 - **Parallel execution**: which PRs can be built concurrently, whether Git worktrees should
   be used for independent branches, and which files/modules are likely to conflict.
@@ -190,7 +208,8 @@ work.
   `WORK-<AREA>-<NAME>` (child work item), and `PR-<AREA>-<NAME>` (pull request).
 - `AREA` and `NAME` are uppercase slug tokens, 2-32 characters each, using `A-Z` and
   digits only after the first character. Do not use trailing numbers.
-- Each PR cites the `FR-`/`UC-`/`AT-` it delivers and the `COMP-` it implements.
+- Each PR cites the `FR-`/`UC-`/`AT-` it delivers, the `COMP-` it implements, and the
+  `TEST-` obligations it writes or updates.
 
 ## Step 3 — Author the plan with this exact section order
 
@@ -214,12 +233,16 @@ work.
    (user docs, developer docs, API/reference docs, examples, runbooks, troubleshooting,
    release/migration notes, generated docs, or `None` with rationale); **Test Levels**
    (acceptance/e2e, unit, component, contract, integration, UI/accessibility/visual,
-   quality/NFR, build/deploy, docs, migration/ops as applicable); **Red** (failing tests,
-   naming the level and linked IDs); **Green** (impl); est LOC (≤300); `COMP-` built;
-   `FR-`/`AT-` delivered; depends-on PRs.
+   quality/NFR, build/deploy, docs, migration/ops as applicable); **Contract Fixtures**
+   (shared fixture/schema/generated-client/contract-test source for boundary payloads, or
+   `None` with rationale); **Verification Oracle** (return value/state/event/API/DOM/
+   screenshot/log/metric/artifact/deployment/external-call evidence, as applicable); **Red** (failing tests,
+   naming the level and linked `TEST-`/`AT-`/`FR-` IDs); **Green** (impl); est LOC (≤300);
+   `COMP-` built; `FR-`/`AT-` delivered; `TEST-` obligations implemented; depends-on PRs.
 5. **Coverage Map** — for a Breakdown plan, map each `FR-`/`UC-`/`NFR-`/`AT-`/`COMP-` to
-   child `WORK-` items and required child artifacts. For an Implementation plan, map each
-   `FR-`/`UC-`/`NFR-`/`AT-`/`COMP-` to the PR delivering it.
+   child `WORK-` items and required child artifacts, and map each design `TEST-` obligation
+   to the child work that will make it executable. For an Implementation plan, map each
+   `FR-`/`UC-`/`NFR-`/`AT-`/`COMP-` and each `TEST-` obligation to the PR delivering it.
 6. **Sequencing & Risks** — merge order, parallelizable PRs, build before deployment
    dependencies, documentation before/with behavior dependencies, environment promotion
    order, rollback per PR, likely merge conflicts/shared files, planned touch-set overlaps,
@@ -278,11 +301,21 @@ Pass-with-fixes.
   contain PR-level Planned Touch Sets, test levels, and Red/Green steps.
 - Every implementation PR ≤300 LOC and states Test Levels, Red steps, and Green steps. No
   PR depends on a later one.
-- Every FR, UC, NFR, AT, and COMP maps to ≥1 child work item or implementation PR. No orphan
-  or duplicate IDs.
+- Every FR, UC, NFR, AT, COMP, and TEST maps to ≥1 child work item or implementation PR. No
+  orphan or duplicate IDs.
 - Every `AT-` maps to an executable acceptance/e2e/API workflow test PR or to a justified
-  non-code verification PR/check; lower-level tests from the design are scheduled near the
+  non-code verification PR/check.
+- Every design `TEST-` obligation maps to the PR or child work item that writes/runs that
+  executable unit, component, contract, integration, UI, quality, build/deploy, docs,
+  migration, or operational check; lower-level tests from the design are scheduled near the
   code they protect.
+- Every PR-level test assignment states a verification oracle concrete enough for
+  `/code-create` to write a meaningful failing test and for `/code-review` to reject weak or
+  indirect assertions.
+- Boundary-facing PRs name the fixture/schema/generated-client/contract-test source of
+  truth used by tests; invented mock payload shapes are treated as plan defects.
+- UI-facing PRs include planned presentation/layout/responsive/accessibility/error-state
+  work or explicitly state why that quality work is out of scope.
 - Build artifact creation, packaging, deployment scripts/manifests/IaC, deployment dry runs,
   smoke checks, and rollback verification are assigned to PRs whenever the spec/design calls
   for them; otherwise the plan states why they are out of scope.

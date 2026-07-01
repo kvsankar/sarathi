@@ -65,7 +65,7 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   Runs `/plan-verify` plus `/plan-review` as the full plan gate.
 - **`/code-create`** — [prompts/code-create.prompt.md](prompts/code-create.prompt.md)
   Implements the plan PR-by-PR with strict Red/Green/Refactor TDD; tests reference the
-  FR/AT/COMP and PR they cover, suite stays green at each PR boundary, and language-aware
+  FR/AT/COMP/TEST and PR they cover, suite stays green at each PR boundary, and language-aware
   pre-commit/local quality gates plus planned documentation/build/deployment checks are
   configured and run.
 - **`/code-verify`** — [prompts/code-verify.prompt.md](prompts/code-verify.prompt.md)
@@ -80,17 +80,35 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
 ## Test responsibility by command
 
 - `/spec-create` writes `AT-` acceptance tests as requirements-level, black-box acceptance
-  criteria in the spec. These are not executable unit/component/integration tests.
-- `/design-create` defines the test architecture: acceptance/e2e, unit/pure-core,
-  component, contract, integration, UI/accessibility/visual, quality-attribute, migration,
+  criteria in the spec. Specs write `AT-` items at product/system, feature/component, and
+  slice/change scope, but the granularity should narrow as the scope narrows. These are not
+  executable unit/component/integration tests.
+- `/design-create` defines the test architecture and explicit `TEST-<AREA>-<NAME>`
+  executable test obligations: acceptance/e2e, unit/pure-core, component, contract,
+  integration, UI/accessibility/visual, quality-attribute, migration, build/deploy, docs,
   and operational checks as applicable.
-- `/plan-create` assigns those test levels to PRs. Each `AT-` must map to an executable
-  acceptance/e2e/API workflow test PR or justified non-code verification, and lower-level
-  tests should sit near the code they protect.
+- `/plan-create` assigns those test obligations to PRs. Each `AT-` must map to an
+  executable acceptance/e2e/API workflow test PR or justified non-code verification, and
+  each design `TEST-` obligation must map to the PR or child work item that writes/runs it.
+  Boundary-facing PRs must name the shared fixture/schema/generated-client/contract source
+  used to prevent mock drift; UI-facing PRs must assign UX/presentation checks or scope them
+  out.
 - `/code-create` writes executable tests using Red/Green/Refactor: acceptance tests for
-  assigned `AT-` items plus the planned lower-level tests.
+  assigned `AT-` items plus the planned `TEST-` obligations. This is where unit,
+  component, contract, integration, UI/accessibility/visual, quality/NFR, migration,
+  build/deploy, docs, and operational test implementations are written when planned.
 - Verify and assess commands verify the same ownership chain. Review and assess commands
   stop if a downstream artifact exposes missing or incorrect upstream test intent.
+- Test implementations are code and are reviewed as code. `/code-review` and
+  `/code-assess` must judge verification oracles, assertions, fixtures, helpers, mocks,
+  data, selectors, determinism, readability, maintainability, and
+  false-positive/false-negative risk, not only whether the suite ran. Every test needs a
+  concrete oracle for pass/fail, such as return value, state, event, API/DOM output,
+  screenshot, artifact, log, metric, trace, deployment signal, or external call.
+- Defect remediation is artifact-first when the defect exposes missing requirements, unclear
+  boundary contracts, omitted UX quality, unrealistic tests, or mock drift. Update the
+  governing spec/design/plan and record the prevention lesson in the review report, ADR,
+  decision log, or retrospective note used by the target repo.
 
 ## Build and deployment responsibility by command
 
@@ -156,8 +174,9 @@ slice/change or sufficiently small feature/component.
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
 `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities keep the shorter
-`KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`. Numeric suffixes such as
-`FR-AUTH-10` are invalid and should be migrated using
+`KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`. Design test obligations use
+`TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such as `FR-AUTH-10` are
+invalid and should be migrated using
 [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
 ## Lightweight track
@@ -202,9 +221,9 @@ canonical checklist is
 | Assessment | Mechanical verification | Qualitative review |
 | --- | --- | --- |
 | `/spec-assess` | `/spec-verify`: `check_spec.py` on the target spec. | `/spec-review`: spec quality, problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, build/deployment intent, documentation intent, traceability. |
-| `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, build/deployment design, documentation design, decisions, risks, testability, and traceability. |
-| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
-| `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned build/docs/deployment checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test quality, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
+| `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, build/deployment design, documentation design, decisions, risks, testability, verification-oracle design, and traceability. |
+| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, verification-oracle allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
+| `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned build/docs/deployment checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test implementation quality, verification-oracle rigor, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
 
 Agents should infer the likely scope from the user's request and state it explicitly:
 broad product/platform/app requests map to Product/system, one capability/subsystem maps to
@@ -247,8 +266,8 @@ for end-to-end continuation.
 | Scope | Spec carries | Design carries | Plan carries |
 | --- | --- | --- | --- |
 | Product/system | Mission, stakeholders, boundary, product needs, non-goals, major capabilities, representative use cases, major NFRs, build/release/deployment expectations, user/developer documentation expectations, broad acceptance intent, child-artifact needs. | HLD: context, major containers/services/modules, drivers, boundaries, data ownership, quality tactics, build/package/release strategy, deployment/operations strategy, documentation strategy, ADRs, risks, decomposition candidates. | Breakdown plan: milestones, feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research/decision needs, build/deployment tracks, documentation tracks, parallel tracks, readiness targets. |
-| Feature/component | Parent refs, local goal, actors, concrete behavior, FR/NFR/AT coverage, edge cases, integration/business rules, build/deployment constraints, documentation constraints, dependencies, non-goals. | Feature/component design: responsibilities, contracts, local state/data, runtime flows, core/shell split, dependencies, UX/API contracts, build/deployment impacts, documentation impacts, decisions, risks, test matrix. | Breakdown or implementation plan: child slice/change work or PRs, child artifact needs, integration order, test allocation, build/deployment allocation, documentation allocation, touch-scope risks. |
-| Slice/change | Exact requirement delta, parent IDs refined/preserved, changed and unchanged behavior, edge cases, build/deployment delta, documentation delta, executable or justified non-code acceptance criteria. | LLD: touched components/modules, API/schema/data deltas, failure paths, validation/policy logic, build/deployment script or artifact changes, documentation changes, migration/rollback, side effects, test levels/doubles, likely touch candidates. | Implementation plan: `PR-` items, Planned Touch Sets, Red/Green steps, test levels, LOC estimates, quality gates, build/deployment verification, documentation checks, rollback, dependencies, worktree guidance. |
+| Feature/component | Parent refs, local goal, actors, concrete behavior, FR/NFR/AT coverage, edge cases, integration/business rules, build/deployment constraints, documentation constraints, dependencies, non-goals. | Feature/component design: responsibilities, contracts, local state/data, runtime flows, core/shell split, dependencies, UX/API contracts, build/deployment impacts, documentation impacts, decisions, risks, explicit `TEST-` obligations. | Breakdown or implementation plan: child slice/change work or PRs, child artifact needs, integration order, `AT-`/`TEST-` allocation, build/deployment allocation, documentation allocation, touch-scope risks. |
+| Slice/change | Exact requirement delta, parent IDs refined/preserved, changed and unchanged behavior, edge cases, build/deployment delta, documentation delta, executable or justified non-code acceptance criteria. | LLD: touched components/modules, API/schema/data deltas, failure paths, validation/policy logic, build/deployment script or artifact changes, documentation changes, migration/rollback, side effects, `TEST-` obligations/doubles, likely touch candidates. | Implementation plan: `PR-` items, Planned Touch Sets, Red/Green steps, `AT-`/`TEST-` allocation, LOC estimates, quality gates, build/deployment verification, documentation checks, rollback, dependencies, worktree guidance. |
 
 ## Local quality gates
 
@@ -292,9 +311,9 @@ Flags: `--json`, `--feature` (focused feature/component or slice/change mode), `
 (validate refs against a parent spec). Exits non-zero on any gate failure.
 
 [checkers/check_design.py](checkers/check_design.py) enforces structural design hygiene:
-ID format, duplicates, orphan refs, component→requirement references, component mentions in
-test strategy, single interface ownership, interface-derived dependency cycles, and banned
-vague terms.
+ID format, duplicates, orphan refs, component→requirement references, explicit `TEST-`
+obligation coverage, single interface ownership, interface-derived dependency cycles, and
+banned vague terms.
 
 ```pwsh
 python checkers/check_design.py design.md --json
@@ -307,9 +326,9 @@ Flags: `--json`, `--component` (single-component mode), `--parent <file>` (paren
 design), `--spec <file>` (resolve FR/UC refs). Exits non-zero on any gate failure.
 
 [checkers/check_plan.py](checkers/check_plan.py) enforces structural plan hygiene:
-slug-only `KIND-AREA-NAME` plan ID format, duplicates, orphan refs, FR/AT/COMP reference coverage,
-declared 300-LOC PR estimates, Red/Green step text, no forward dependencies, and banned
-vague terms.
+slug-only `KIND-AREA-NAME` plan ID format, duplicates, orphan refs, FR/AT/COMP/TEST reference
+coverage, declared 300-LOC PR estimates, Red/Green step text, no forward dependencies, and
+banned vague terms.
 
 ```pwsh
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
@@ -322,8 +341,9 @@ Flags: `--json`, `--feature` (focused feature/component or slice/change mode), `
 `--spec <file>`, `--design <file>`. Exits non-zero on any gate failure.
 
 [checkers/check_code.py](checkers/check_code.py) runs the test suite and enforces structural
-code/test hygiene: tests pass, labeled coverage output ≥ threshold, PR-ID and FR/AT/COMP
-test-text traceability, the per-module LOC ceiling, and no TODO/FIXME/skip markers.
+code/test hygiene: tests pass, labeled coverage output ≥ threshold, PR-ID and
+FR/AT/COMP/TEST test-text traceability, the per-module LOC ceiling, and no TODO/FIXME/skip
+markers.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json
@@ -345,9 +365,9 @@ sections, malformed IDs, orphan references, missing trace links, declared oversi
 missing Red/Green step text, unlabeled coverage output, missing same-test-block assertion
 trace IDs, oversize git diffs against the resolved review base, and obvious skip/TODO
 markers. Red/Green text, AT scenario shape, and commit-message TDD evidence are presence
-checks; they do not prove semantic correctness, test quality, or true TDD history. The
-qualitative review prompts must judge those concerns from the artifact content, code, tests,
-and available review/git evidence.
+checks; they do not prove semantic correctness, test implementation quality, or true TDD
+history. The qualitative review prompts must judge those concerns from the artifact content,
+code, tests, and available review/git evidence.
 
 ## Installation
 

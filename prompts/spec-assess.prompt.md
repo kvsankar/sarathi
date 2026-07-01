@@ -106,6 +106,12 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Supplementary/NFR coverage** — performance, security, privacy, reliability, usability,
   accessibility, interoperability, compliance, data, platform, build/release/deployment, and
   operational constraints are considered and measurable where applicable.
+- **UX/presentation quality** — UI-facing work captures baseline styling/layout,
+  responsive behavior, accessibility, and readable loading/empty/error/validation states as
+  measurable requirements or explicitly scopes them out.
+- **Boundary contract quality** — externally visible APIs/events/files/SDKs/CLIs/webhooks
+  define success and error shapes that consumers rely on, including validation vs. domain
+  error variants when relevant.
 - **Release/deployment acceptance** — externally relevant artifact, environment, promotion,
   rollout, migration, rollback, smoke-check, operator-facing, or uptime constraints are
   either expressed as requirements/acceptance criteria or explicitly scoped out.
@@ -116,6 +122,10 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Acceptance quality** — tests are black-box, scenario-based, and verify the linked UC/FR/NFR
   rather than restating the requirement. They are requirements-level acceptance criteria,
   not unit/component/integration test designs.
+- **Acceptance granularity by scope** — product/system `AT-` items are broad representative
+  acceptance intent, feature/component `AT-` items refine bounded behavior, and
+  slice/change `AT-` items are precise enough to map to executable acceptance/e2e/API tests
+  or justified non-code verification.
 - **Traceability and change readiness** — need → feature → use case → requirement → acceptance
   links support validation, impact analysis, and future revision.
 

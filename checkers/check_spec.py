@@ -31,7 +31,7 @@ from schemas import SPEC_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
-ID_CANDIDATE = re.compile(r"\b(?:UN|FEAT|UC|FR|NFR|AT)(?:-[A-Za-z0-9]+)+\b", re.I)
+ID_CANDIDATE = re.compile(r"\b(?:UN|FEAT|UC|FR|NFR|AT|TEST)(?:-[A-Za-z0-9]+)+\b", re.I)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|fast|easy)\b|etc\.", re.I)
 NUM_UNIT = re.compile(
     r"\d+(?:\.\d+)?\s*(ms|s|sec|min|%|mb|gb|kb|req|rps|users|days|hrs|"

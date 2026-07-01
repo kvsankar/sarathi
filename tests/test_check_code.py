@@ -37,13 +37,13 @@ def run_check_code(
     src.mkdir(exist_ok=True)
     plan.write_text("- PR-AUTH-SIGNIN\n", encoding="utf-8")
     spec.write_text("- FR-AUTH-SIGNIN\n- AT-AUTH-SIGNIN\n", encoding="utf-8")
-    design.write_text("- COMP-AUTH\n", encoding="utf-8")
+    design.write_text("- COMP-AUTH\n- TEST-AUTH-POLICY\n", encoding="utf-8")
     (tests / "test_auth.py").write_text(
         test_body
         or (
             "def test_auth():\n"
             '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, '
-            'AT-AUTH-SIGNIN, COMP-AUTH."""\n'
+            'AT-AUTH-SIGNIN, COMP-AUTH, TEST-AUTH-POLICY."""\n'
             "    result = 'granted'\n"
             "    assert result == 'granted'\n"
         ),
@@ -119,7 +119,8 @@ def test_check_code_rejects_unlabeled_percent_as_coverage(
 def test_check_code_rejects_id_only_weak_assertion(tmp_path, monkeypatch, capsys):
     weak_test = (
         "def test_auth():\n"
-        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, COMP-AUTH."""\n'
+        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, '
+        'COMP-AUTH, TEST-AUTH-POLICY."""\n'
         "    assert True\n"
     )
 
@@ -137,13 +138,15 @@ def test_check_code_rejects_id_only_weak_assertion(tmp_path, monkeypatch, capsys
         "AT-AUTH-SIGNIN",
         "COMP-AUTH",
         "FR-AUTH-SIGNIN",
+        "TEST-AUTH-POLICY",
     ]
 
 
 def test_check_code_rejects_numbered_ids_in_traceability(tmp_path, monkeypatch, capsys):
     numbered_test = (
         "def test_auth():\n"
-        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH."""\n'
+        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH, '
+        'TEST-AUTH-10."""\n'
         "    result = 'granted'\n"
         "    assert result == 'granted'\n"
     )
@@ -162,13 +165,15 @@ def test_check_code_rejects_numbered_ids_in_traceability(tmp_path, monkeypatch, 
         "AT-AUTH-10",
         "FR-AUTH-10",
         "PR-AUTH-10",
+        "TEST-AUTH-10",
     ]
 
 
 def test_check_code_rejects_tautological_assertion(tmp_path, monkeypatch, capsys):
     weak_test = (
         "def test_auth():\n"
-        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, COMP-AUTH."""\n'
+        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, '
+        'COMP-AUTH, TEST-AUTH-POLICY."""\n'
         "    assert 1 == 1\n"
     )
 
@@ -190,7 +195,8 @@ def test_check_code_rejects_neighbor_assertion_bleed(tmp_path, monkeypatch, caps
         "    result = 'granted'\n"
         "    assert result == 'granted'\n\n"
         "def test_placeholder():\n"
-        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, COMP-AUTH."""\n'
+        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, '
+        'COMP-AUTH, TEST-AUTH-POLICY."""\n'
         "    pass\n"
     )
 

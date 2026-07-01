@@ -99,8 +99,9 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   code-ready implementation plan for a slice/change or sufficiently small feature/component.
 - Use slug-only IDs. Specs and plans use `KIND-AREA-NAME`, for example
   `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities use
-  `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Numeric suffixes such as
-  `FR-AUTH-10` are invalid.
+  `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Design test obligations use
+  `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such as `FR-AUTH-10`
+  are invalid.
 - Infer the likely scope from the user's request and state it explicitly. Broad
   product/platform/app requests map to product/system, one capability/subsystem maps to
   feature/component, and bug fixes, PR-sized changes, or local behavior deltas map to
@@ -119,21 +120,28 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
     edge cases, build/deployment constraints, documentation constraints, dependencies, and
     non-goals; design carries responsibilities, contracts, local state/data, runtime flows,
     core/shell split, dependencies, build/deployment impacts, documentation impacts,
-    decisions, risks, and test matrix; plan carries child slice/change work or PRs,
-    integration order, test allocation, build/deployment allocation, documentation
+    decisions, risks, and explicit `TEST-` obligations; plan carries child slice/change work
+    or PRs, integration order, `AT-`/`TEST-` allocation, build/deployment allocation, documentation
     allocation, and touch-scope risks.
   - Slice/change spec carries the exact requirement delta, parent IDs refined/preserved,
     changed/unchanged behavior, documentation deltas, and acceptance criteria; design
     carries LLD-level local changes, API/schema/data deltas, failure paths,
     validation/policy logic, build/deployment script or artifact changes, documentation
-    changes, migration/rollback, side effects, test levels/doubles, and likely touch candidates;
-    plan carries concrete `PR-` items, Planned Touch Sets, Red/Green steps, test levels,
+    changes, migration/rollback, side effects, `TEST-` obligations/doubles, and likely touch candidates;
+    plan carries concrete `PR-` items, Planned Touch Sets, Red/Green steps, `AT-`/`TEST-` allocation,
     LOC estimates, quality gates, build/deployment verification, documentation checks,
     rollback, dependencies, and worktree guidance.
 - Treat test ownership as part of artifact ownership: specs define `AT-` acceptance
-  criteria; designs define the test architecture and lower-level test mix; plans assign
-  executable test levels to PRs; code writes acceptance tests plus the planned lower-level
-  tests using TDD.
+  criteria at product/system, feature/component, and slice/change scope; designs define
+  explicit `TEST-` executable test obligations for lower-level and workflow checks; plans
+  assign each `AT-` and `TEST-` to PRs or child work; code writes acceptance tests plus the
+  planned `TEST-` obligations using TDD. Executable tests are implementation code: their
+  verification oracles, assertions, fixtures, helpers, mocks, data, selectors, determinism,
+  and maintainability must be reviewed in `/code-review` and `/code-assess`, not merely
+  executed in `/code-verify`. Every test should have a concrete oracle for pass/fail:
+  return value, state, persisted record, event, API response, DOM/accessibility output,
+  screenshot/visual baseline, artifact, structured log, metric, trace, deployment signal,
+  or captured external call as appropriate.
 - Treat build and deployment ownership as part of artifact ownership: specs define
   externally relevant build/release/deployment needs or non-goals; designs define artifact,
   package, release, environment, deployment, validation, smoke, and rollback strategy; plans
@@ -147,6 +155,11 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 - Treat downstream assessment/review as an upstream validation point. If design, plan, or
   code assessment/review reveals a latent issue in an earlier artifact, stop and tell the user which
   upstream artifact needs revision.
+- For defect remediation, reconcile artifacts before treating the work as code-only. If a
+  defect exposes missing requirements, unclear boundary contracts, omitted UX quality,
+  unrealistic tests, or mock drift, update the spec/design/plan and record the prevention
+  lesson in the review report, ADR, decision log, or retrospective note used by the target
+  repo.
 - Use an adversarial review posture. Prefer a fresh context, separate reviewer, or different
   model/tool when available. If the same agent performs creation and review, say review was
   not independent and actively seek counterexamples, traceability theater, and unverified
@@ -167,8 +180,8 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
     do both.
   - `/code-verify`: run upstream checkers, `check_code.py`, pre-commit/equivalent gates,
     and planned build/docs/deployment checks; `/code-review`: qualitatively review
-    code-readiness, implementation quality, test quality, TDD evidence, scope fidelity, and
-    gate fitness; `/code-assess`: do both.
+    code-readiness, implementation quality, test implementation quality, verification-oracle
+    rigor, TDD evidence, scope fidelity, and gate fitness; `/code-assess`: do both.
 - Use the lightweight track for spikes, throwaway prototypes, exploratory data/ML work,
   proof-of-concept integrations, or infrastructure investigations. Mark these artifacts
   Exploratory, timebox them, record goal/non-goals/risks/evidence/disposal criteria, and do
@@ -191,9 +204,9 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   skip/TODO markers. Git diff-size and TDD evidence are required by default in code verify/assess;
   use allow-missing flags only when the repo cannot provide that evidence and the report
   states the limitation. Red/Green text, AT scenario shape, and commit-message TDD evidence
-  are presence checks; they do not prove semantic correctness, test quality, or true TDD
-  history. Qualitative review must judge those from artifact content, code, tests, and
-  available review/git evidence.
+  are presence checks; they do not prove semantic correctness, test implementation quality,
+  or true TDD history. Qualitative review must judge those from artifact content, code,
+  tests, and available review/git evidence.
 - Configure and run language-appropriate local quality gates for code work. Prefer
   repository-native tooling and pre-commit hooks where practical. For code-ready work, also
   run planned build/package commands and deployment dry-run/lint/plan/smoke/rollback checks

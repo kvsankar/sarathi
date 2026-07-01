@@ -36,8 +36,18 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   scope drift.
 - TDD discipline: Red and Green steps would produce meaningful failing tests before code,
   not merely template words.
-- Test allocation: `AT-` acceptance coverage and lower-level unit/component/contract/
-  integration/UI/quality/operational tests are assigned to appropriate PRs.
+- Test allocation: `AT-` acceptance coverage and explicit design `TEST-` obligations for
+  lower-level unit/component/contract/integration/UI/quality/operational tests are assigned
+  to appropriate PRs.
+- Verification-oracle allocation: each planned executable test names the observable evidence
+  that proves pass/fail, such as return value, state, event, API response, DOM/accessibility
+  output, screenshot, artifact, log, metric, trace, deployment signal, or external call.
+- Contract-fixture allocation: boundary-facing PRs use shared fixtures, schemas, generated
+  clients, captured representative examples, or contract tests instead of ad-hoc mock
+  payloads.
+- UX/presentation allocation: UI-facing PRs assign baseline styling/layout,
+  responsive/accessibility checks, and readable loading/empty/error/validation states, or
+  explicitly scope them out.
 - Build/deployment allocation: package, artifact, release, migration, deployment dry-run,
   smoke, and rollback work is assigned where relevant.
 - Documentation allocation: user/developer docs, generated/reference docs, examples,

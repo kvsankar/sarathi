@@ -2,9 +2,9 @@
 """Deterministic mechanical verifier for a Software Design Document.
 
 Parses an SDD markdown file, validates IDs/structure, and computes structural
-metrics for requirement references, test-strategy references, single interface
-ownership, and dependency-cycle freedom through interfaces. Exits 0 only when
-every structural gate passes. No semantic judgment, fully reproducible.
+metrics for requirement references, explicit TEST- obligation coverage, single
+interface ownership, and dependency-cycle freedom through interfaces. Exits 0
+only when every structural gate passes. No semantic judgment, fully reproducible.
 
 Usage:
     python check_design.py [design.md] [--json] [--component]
@@ -31,14 +31,20 @@ if str(CHECKER_DIR) not in sys.path:
 from schemas import DESIGN_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
-ID = re.compile(rf"\b(LAYER|COMP|IFACE|DEC|RISK)-({SLUG_TOKEN})\b")
-REQ = re.compile(rf"\b(FR|UC|NFR)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
+ID = re.compile(
+    rf"\b(?:(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN}|"
+    rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
+)
+DESIGN_ENTITY = re.compile(rf"\b(LAYER|COMP|IFACE|DEC|RISK)-({SLUG_TOKEN})\b")
+REQ = re.compile(rf"\b(FR|UC|NFR|AT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
 VALID_ANY = re.compile(
     rf"\b(?:(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN}|"
-    rf"(?:FR|UC|NFR)-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
+    rf"(?:FR|UC|NFR|AT|TEST)-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:LAYER|COMP|IFACE|DEC|RISK|FR|UC|NFR)(?:-[A-Za-z0-9]+)+\b", re.I
+    r"\b(?:LAYER|COMP|IFACE|DEC|RISK|FR|UC|NFR|AT|TEST)"
+    r"(?:-[A-Za-z0-9]+)+\b",
+    re.I,
 )
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)
 # Leading markdown list markers that precede a defining ID (not table pipes).
@@ -52,6 +58,10 @@ def _defline(line: str):
     if not DEF_MARKER.match(line):
         return None
     return ID.match(LEAD.sub("", line.strip()))
+
+
+def id_kind(token: str) -> str:
+    return token.split("-", 1)[0]
 
 
 def _norm_heading(title: str) -> str:
@@ -89,12 +99,12 @@ def item_blocks(text: str, kinds: set[str]) -> dict[str, str]:
         fence = line.strip().startswith("```")
         m = None if in_fence else _defline(line)
         is_heading = HEADING.match(line.strip()) is not None
-        if m and m.group(1) in kinds:
+        if m and id_kind(m.group(0)) in kinds:
             if cur:
                 blocks[cur] = "\n".join(buf)
             cur, buf = m.group(0), [line]
         elif cur:
-            if is_heading or (m and m.group(1) in kinds):
+            if is_heading or (m and id_kind(m.group(0)) in kinds):
                 blocks[cur] = "\n".join(buf)
                 cur, buf = None, []
             else:
@@ -130,7 +140,7 @@ def section_text(text: str, title: str) -> str:
 def defs_and_refs(text: str):
     """Return {kind: set(ids defined on their own line)} and all referenced ids."""
     defined: dict[str, set] = {
-        k: set() for k in ("LAYER", "COMP", "IFACE", "DEC", "RISK")
+        k: set() for k in ("LAYER", "COMP", "IFACE", "DEC", "RISK", "TEST")
     }
     refs: set[str] = set()
     in_fence = False
@@ -143,7 +153,7 @@ def defs_and_refs(text: str):
         if ids:
             first = None if in_fence else _defline(line)
             if first:
-                defined[first.group(1)].add(first.group(0))
+                defined[id_kind(first.group(0))].add(first.group(0))
             refs.update(ids)
     return defined, refs
 
@@ -179,16 +189,33 @@ def main() -> int:
     defined, refs = defs_and_refs(text)
     all_ids = set().union(*defined.values()) | parent_ids
 
-    # Per-component lines: requirement refs (coverage) and presence in Test Strategy.
+    # Per-component lines: requirement refs and explicit test-obligation refs.
     comps = defined["COMP"]
     comp_blocks = item_blocks(text, {"COMP"})
     iface_blocks = item_blocks(text, {"IFACE"})
+    test_blocks = item_blocks(text, {"TEST"})
     comp_reqs = {
         c: {x.group(0) for x in REQ.finditer(block)} for c, block in comp_blocks.items()
     }
-    # A component is tested if its ID appears in the Test Strategy section.
     ts_text = section_text(text, "Test Strategy")
-    tested = {c for c in comps if c in ts_text}
+    ts_tests = {
+        m.group(0) for m in ID.finditer(ts_text) if id_kind(m.group(0)) == "TEST"
+    }
+    tested = {c for c in comps if any(c in block for block in test_blocks.values())}
+    untraced_tests = []
+    for test_id, block in test_blocks.items():
+        linked_design = {
+            m.group(0)
+            for m in ID.finditer(block)
+            if id_kind(m.group(0)) in {"COMP", "IFACE"}
+        }
+        linked_outcome = {m.group(0) for m in REQ.finditer(block)} | {
+            m.group(0)
+            for m in DESIGN_ENTITY.finditer(block)
+            if m.group(1) in {"DEC", "RISK"}
+        }
+        if not linked_design or not linked_outcome:
+            untraced_tests.append(test_id)
     covered = {c for c in comps if comp_reqs.get(c)}
 
     # Each interface must declare exactly one real component owner.
@@ -198,7 +225,7 @@ def main() -> int:
         if line.strip().startswith("```"):
             in_fence = not in_fence
             continue
-        if not in_fence and (m := _defline(line)) and m.group(1) == "IFACE":
+        if not in_fence and (m := _defline(line)) and id_kind(m.group(0)) == "IFACE":
             iface_def_ids.append(m.group(0))
     iface_defs = Counter(iface_def_ids)
     iface_dupes = [i for i, n in iface_defs.items() if n > 1]
@@ -209,7 +236,9 @@ def main() -> int:
         for line in block.splitlines():
             if re.search(r"\bowner\b", line, re.I):
                 owner_refs.extend(
-                    m.group(0) for m in ID.finditer(line) if m.group(1) == "COMP"
+                    m.group(0)
+                    for m in ID.finditer(line)
+                    if id_kind(m.group(0)) == "COMP"
                 )
         unique_owners = sorted(set(owner_refs))
         if len(unique_owners) != 1 or unique_owners[0] not in comps:
@@ -234,7 +263,9 @@ def main() -> int:
     # Dependency cycles: COMP -> owning COMP for any referenced interface.
     deps: dict[str, set] = {c: set() for c in comps}
     for comp, block in comp_blocks.items():
-        for ref in {x.group(0) for x in ID.finditer(block) if x.group(1) == "IFACE"}:
+        for ref in {
+            x.group(0) for x in ID.finditer(block) if id_kind(x.group(0)) == "IFACE"
+        }:
             owner = iface_owners.get(ref)
             if owner and owner != comp:
                 deps[comp].add(owner)
@@ -273,6 +304,8 @@ def main() -> int:
         "no_orphan_refs": not orphans,
         "comp_req_coverage_100": covered == comps,
         "comp_test_coverage_100": tested == comps,
+        "test_obligations_declared": bool(ts_tests) if comps else True,
+        "test_obligation_traceability_100": not untraced_tests,
         "iface_single_owner": not iface_dupes and not iface_owner_issues,
         "no_dependency_cycles": not cycles,
         "no_vagueness": vague == 0,
@@ -286,6 +319,9 @@ def main() -> int:
         "comp_test_coverage_pct": pct(tested, comps),
         "uncovered_components": sorted(comps - covered),
         "untested_components": sorted(comps - tested),
+        "test_obligation_count": len(defined["TEST"]),
+        "test_obligations_in_strategy": sorted(ts_tests),
+        "untraced_test_obligations": sorted(untraced_tests),
         "iface_owner_count": len(iface_owners),
         "dependency_cycles": cycles,
         "orphan_refs": orphans,

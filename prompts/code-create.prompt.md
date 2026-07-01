@@ -15,7 +15,7 @@ Optimize so `/code-assess` finds nothing to fix.
    (**Green**), then **Refactor** with tests green. Never write prod code without a red test.
 2. **One PR at a time** — implement the lowest unbuilt PR whose deps are met; keep ≤300 LOC.
 3. **Always green** — the full suite passes before a PR is done; never leave red on trunk.
-4. **Traceable** — tests name the FR/AT/COMP and PR they cover; nothing built off-plan.
+4. **Traceable** — tests name the FR/AT/COMP/TEST and PR they cover; nothing built off-plan.
 5. **Production quality** — error handling, input validation, reproducible build artifacts,
    deployable configuration/scripts when planned, accurate user/developer documentation when
    planned, no dead code, lint clean.
@@ -68,17 +68,21 @@ test levels before or alongside the production code using Red/Green/Refactor:
 
 - Write executable **acceptance/e2e/API workflow tests** for the `AT-` items assigned to the
   PR. These should verify externally visible behavior or measurable NFR outcomes from the
-  user's perspective or a public API boundary.
+  user's perspective or a public API boundary, and cite the relevant `TEST-` obligation when
+  the design/plan named one.
 - Write **unit/pure-core tests** for deterministic logic, validation, calculations, state
   transitions, reducers, mappers, policies, and edge cases.
 - Write **component/module tests** for components behind stable local boundaries.
 - Write **contract tests** for APIs, events, schemas, DTOs, protocols, compatibility, and
-  error behavior.
+  error behavior. Use the design/plan's shared fixtures, schemas, generated clients,
+  captured representative examples, or contract-test harness; do not invent mock payload
+  shapes for convenience.
 - Write **integration tests** for persistence, messaging, external-service adapters,
   framework wiring, migrations, transactions, auth, caching, retries, and configuration.
 - Write **UI/accessibility/visual tests** for routes, screens, widgets/components, keyboard
   and focus behavior, semantics, contrast, responsive behavior, and visual regressions when
-  planned.
+  planned. Prefer role, label, text, and semantic selectors; avoid coupling behavior tests
+  to CSS class names unless the style contract itself is under test.
 - Write **quality-attribute checks** for performance, reliability, security, privacy,
   resilience, observability, offline/sync, rollout/rollback, and operational behavior when
   planned.
@@ -90,9 +94,31 @@ test levels before or alongside the production code using Red/Green/Refactor:
   release/migration notes, doc build, link checks, accessibility/readability, and freshness
   or version checks.
 
-Follow the plan's test mix. If the planned tests are insufficient to prove the linked
-`FR-`/`AT-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather than silently
-changing the test strategy.
+Follow the plan's test mix. Treat each assigned `TEST-` as an executable obligation, not a
+suggestion. If the planned tests are insufficient to prove the linked
+`FR-`/`AT-`/`TEST-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather than
+silently changing the test strategy.
+
+Treat test implementation as production-quality code. Keep assertions meaningful and
+behavior-focused; make fixtures realistic and maintainable; keep helpers readable; avoid
+over-mocking, sleeps, hidden network/time dependencies, order dependence, brittle selectors,
+and tautological assertions. Prefer the narrowest test level that proves the behavior, then
+add broader acceptance/e2e coverage only where planned.
+
+Implement the planned verification oracle for every test. Each executable test must assert
+at least one concrete observable that proves pass/fail: return value, state transition,
+persisted record, emitted event, API response, DOM/role/text output, accessibility tree,
+screenshot or visual baseline, generated file/artifact, structured log entry, metric, trace,
+deployment status, or captured external call. Use logs, screenshots, and metrics deliberately
+when they are the behavior under test or the strongest practical signal; otherwise prefer
+direct state/output assertions. Do not accept a test whose only oracle is "no exception" or
+"the mock was called" unless that is the specified externally meaningful behavior.
+
+For boundary-facing tests, compare mocks/fixtures against the real producer/consumer
+contract before writing the Red test. If the plan does not name a fixture/schema/generated
+client/contract-test source and the boundary shape matters, stop for a plan/design update.
+For UI-facing work, keep presentation changes decoupled from behavior tests; add visual,
+accessibility, responsive, or role/text-based assertions only where planned.
 
 ## Quality gates and pre-commit
 
@@ -158,8 +184,9 @@ repo lacks thresholds, use these defaults unless the user chooses different stan
 
 Read `plan.md`, `design.md`, `spec.md`. Apply the Code-ready scope gate above. Then identify
 the next PR (lowest number, deps merged, not yet built). State the PR, its Red tests, Green
-scope, Planned Touch Set, the COMP/FR/AT it covers, the planned test levels, and the
-quality-gate command(s) that must pass at the PR boundary. Also state any planned
+scope, Planned Touch Set, the COMP/FR/AT/TEST it covers, the planned test levels, the
+verification oracle for each planned test, and the quality-gate command(s) that must pass at
+the PR boundary. Also state any planned
 build/deployment work: build command, expected artifact, deployment validation command,
 smoke check, rollback check, or `None` with the plan's rationale. Also state planned
 documentation work: user docs, developer docs, API/reference docs, examples, runbooks,
@@ -193,12 +220,19 @@ Touch Set, stop and ask for a plan/design/spec update before editing them.
 Write the failing tests first. Run them; show they fail for the right reason. Test names
 must be plain, readable behaviour (e.g. `test_win_detected_on_full_row`). Put the covered
 IDs in a docstring or comment — never in the function name. One concise `Covers:` line is
-enough (e.g. `"""Covers FR-GAME-WINROW, AT-GAME-WINROW (PR-CORE-WINROW)."""`).
+enough (e.g. `"""Covers FR-GAME-WINROW, AT-GAME-WINROW, TEST-GAME-WINROW (PR-CORE-WINROW)."""`).
+Include a concise `Verifies:` note when it improves readability, naming the oracle being
+asserted, such as returned value, persisted row, emitted event, DOM text, screenshot
+baseline, structured log, metric, artifact, deployment dry-run result, or external call.
 
 When a PR includes multiple test levels, write the smallest useful Red test first for the
 logic or contract being introduced, then add the planned acceptance/e2e/API workflow test
 for the assigned `AT-`. Keep slow acceptance/e2e coverage focused; do not duplicate every
 unit edge case at the top level.
+
+When testing boundary errors, include representative multi-field or multi-cause payloads
+where the contract allows them, and assert the user/API-facing normalized result rather than
+raw object stringification or framework internals.
 
 ## Step 3 — Green
 
@@ -289,10 +323,20 @@ first completed PR boundary.
 
 ## Quality rules
 
-- Every PR maps 1:1 to a plan `PR-`; tests cover its FR/AT/COMP. ≤300 LOC per PR.
+- Every PR maps 1:1 to a plan `PR-`; tests cover its FR/AT/COMP/TEST. ≤300 LOC per PR.
 - Each PR implements the test levels assigned in the plan, including executable acceptance
-  coverage for assigned `AT-` items and lower-level tests for the affected core, component,
-  contract, integration, UI, quality, migration, or operational behavior.
+  coverage for assigned `AT-` items and executable `TEST-` obligations for the affected
+  core, component, contract, integration, UI, quality, migration, or operational behavior.
+- Test code is reviewable: meaningful assertions, realistic fixtures, clear helpers,
+  deterministic setup, no tautologies, no accidental network/time/order dependence, and no
+  brittle selectors except where style itself is under test.
+- Every test implements a concrete verification oracle aligned with the design/plan; weak
+  tests that only prove execution, mock invocation, or absence of exceptions are rejected
+  unless that is the explicitly planned behavior.
+- Boundary-facing tests use the planned fixture/schema/generated-client/contract source of
+  truth and do not drift into bespoke mock shapes.
+- UI-facing implementation includes the planned presentation/layout/responsive/accessibility
+  and readable state work without making behavior tests brittle.
 - Each PR implements the build/deployment work assigned in the plan, verifies the expected
   artifact or deployment validation outcome, and avoids live deployment unless explicitly
   requested.

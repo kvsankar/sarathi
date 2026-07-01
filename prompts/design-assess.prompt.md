@@ -38,8 +38,9 @@ designs should include context, service/container, component/module, API/event c
 data/state, runtime flow, build/release, deployment/operations, developer documentation,
 and test views. Web frontend designs should
 include route/page structure, component hierarchy, UX interaction states, state management,
-data-fetch/API contracts, accessibility, responsive behavior, performance/security,
-build/release, user/developer documentation, and tests.
+data-fetch/API contracts, presentation approach, error-normalization boundaries,
+accessibility, responsive behavior, performance/security, build/release, user/developer
+documentation, and tests.
 Mobile designs should include platform scope, navigation, screen contracts, state/data flow,
 offline/sync where applicable, permissions/capabilities, lifecycle/background behavior,
 performance/battery budgets, build/release, user/developer documentation,
@@ -99,10 +100,14 @@ For a component design: `python checkers/check_design.py <comp.md> --component -
 
 It exits `0` only if every structural gate passes (non-zero otherwise) and emits metrics:
 
-- **counts** per ID kind (LAYER/COMP/IFACE/DEC/RISK).
+- **counts** per ID kind (LAYER/COMP/IFACE/DEC/RISK/TEST).
 - **comp_req_coverage_pct** — must be **100%** (every component block references ≥1
   `FR-`/`UC-`).
-- **comp_test_coverage_pct** — must be **100%** (every component ID appears in Test Strategy).
+- **comp_test_coverage_pct** — must be **100%** (every component ID appears in at least one
+  explicit `TEST-` obligation).
+- **test_obligation_count / untraced_test_obligations** — executable lower-level/workflow
+  `TEST-` obligations should exist and each should trace to a component/interface plus a
+  requirement, acceptance criterion, risk, or decision.
 - **uncovered_components / untested_components** — must be empty.
 - **iface_owner_count** — each interface declares exactly one real `owner: COMP-...` (no orphans, no dupes).
 - **dependency_cycles** — must be empty (component dependencies through interfaces have no cycles).
@@ -156,7 +161,14 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   least sufficient mechanism/YAGNI, useful DRY, and fail-safe behavior are applied where
   they reduce real risk without adding speculative abstraction.
 - **Interfaces and contracts** — APIs/events/schemas/protocols define ownership, inputs,
-  outputs, errors, auth/trust, compatibility, and quality expectations.
+  outputs, errors, auth/trust, compatibility, quality expectations, representative payload
+  variants, and the fixture/schema/generated-client source tests should use.
+- **Contract realism** — boundary-facing tests and client/server adapters are grounded in
+  documented producer/consumer contracts, shared fixtures, schemas, generated clients, or
+  contract tests rather than ad-hoc mock shapes.
+- **User-facing presentation and feedback** — UI designs define the styling/layout approach,
+  responsive behavior, readable loading/empty/error/validation states, and any deliberate
+  styling deferrals.
 - **State, data, and side effects** — mutable state, persistence, consistency, transactions,
   concurrency, time, external calls, retries, migrations, and recovery are deliberate.
 - **Functional core / imperative shell** — pure decision logic, rules, validation, state
@@ -165,11 +177,15 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   messaging, retries, analytics, and observability, with test strategy matching each side.
   If the design uses an equivalent separation or says the split is not applicable, the
   explanation is specific, justified by the architecture style, and still protects testability.
-- **Testability and operability** — components and contracts are testable in isolation and
-  collaboration; the design distinguishes acceptance/e2e, unit/pure-core, component,
-  contract, integration, UI/accessibility/visual, quality-attribute, migration, and
-  operational checks as applicable; observability, failure handling, rollout/rollback, and
-  operational checks exist.
+- **Testability and operability** — explicit `TEST-` obligations make components and
+  contracts testable in isolation and collaboration; the design distinguishes
+  acceptance/e2e, unit/pure-core, component, contract, integration, UI/accessibility/visual,
+  quality-attribute, migration, and operational checks as applicable; observability, failure
+  handling, rollout/rollback, and operational checks exist.
+- **Verification-oracle design** — each `TEST-` obligation names the observable evidence
+  that will prove pass/fail, such as return values, state changes, persisted records, events,
+  API responses, DOM/accessibility output, screenshots, artifacts, logs, metrics, traces,
+  deployment signals, or captured external calls.
 - **Build and deployment design** — deployable artifacts, package boundaries, build commands,
   CI/CD or release workflow, artifact storage, environment promotion, configuration/secrets,
   migrations, rollout/rollback, dry-run/validation, smoke checks, and ownership are explicit

@@ -27,8 +27,8 @@ If sub-agents are unavailable, state that limitation and keep the mechanical and
 sections separate.
 
 Target the plan file the user provides (default `plan.md`). Do not edit it unless asked;
-report findings only. Pass `--spec spec.md` and `--design design.md` so FR/AT/COMP refs
-resolve. For a feature/component or slice/change plan, add `--feature` and
+report findings only. Pass `--spec spec.md` and `--design design.md` so FR/AT/COMP/TEST
+refs resolve. For a feature/component or slice/change plan, add `--feature` and
 `--parent <product-plan>`.
 
 Use an adversarial assessment posture: try to refute the slicing, find missing upstream
@@ -120,9 +120,20 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   theater. The structural checker only verifies Red/Green step text; use judgment here.
 - **Coverage** — no requirement/component silently skipped; NFRs scheduled.
 - **Test-level allocation** — each `AT-` maps to an executable acceptance/e2e/API workflow
-  test PR or justified non-code verification, while unit/pure-core, component, contract,
-  integration, UI/accessibility/visual, quality-attribute, migration, and operational tests
-  from the design are scheduled near the code they protect.
+  test PR or justified non-code verification, while each design `TEST-` obligation for
+  unit/pure-core, component, contract, integration, UI/accessibility/visual,
+  quality-attribute, migration, and operational checks is scheduled near the code it
+  protects.
+- **Verification-oracle allocation** — each planned executable test states the observable
+  evidence that proves pass/fail, such as return value, state, event, API response,
+  DOM/accessibility output, screenshot, artifact, log, metric, trace, deployment signal, or
+  external call.
+- **Contract-fixture allocation** — boundary-facing PRs identify the shared fixtures,
+  schemas, generated clients, captured representative examples, or contract tests that keep
+  mocks aligned with the real producer/consumer contract.
+- **UX/presentation allocation** — UI-facing PRs assign baseline styling/layout,
+  responsive/accessibility checks, and readable loading/empty/error/validation states, or
+  explicitly justify why they are out of scope.
 - **Build/deployment allocation** — artifact creation, packaging, generated outputs, CI/CD
   config, deployment scripts/manifests/IaC, migration validation, dry-run/plan/lint commands,
   smoke checks, rollback checks, and release docs are assigned to PRs when the upstream

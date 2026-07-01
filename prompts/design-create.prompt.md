@@ -35,13 +35,17 @@ such as arc42, C4-style views, and SEI quality-attribute/attribute-driven design
    test deterministically; the shell should be thin, explicit, observable, and contract-tested.
 7. **Interface-first collaboration** — APIs, events, schemas, protocols, and error contracts
    are part of the design, not afterthoughts.
-8. **Data and lifecycle awareness** — model data ownership, identity, consistency, retention,
+8. **Contract truth over convenient mocks** — tests and client adapters should use shared
+   fixtures, generated clients, schemas, contract tests, or captured representative payloads
+   from the documented boundary contract. Do not design tests around ad-hoc mock shapes that
+   differ from the producer/consumer contract.
+9. **Data and lifecycle awareness** — model data ownership, identity, consistency, retention,
    migrations, privacy/security classification, and failure/recovery behavior where relevant.
-9. **Buildability, documentability, testability, and operability by design** — each
+10. **Buildability, documentability, testability, and operability by design** — each
    component should have an isolation strategy, contract/integration test approach,
    build/package path, documentation owner and audience where relevant, observability hooks,
    deployment checks, and operational checks.
-10. **Decisions carry rationale and consequences** — record alternatives considered,
+11. **Decisions carry rationale and consequences** — record alternatives considered,
     why the chosen option fits now, rejected options, trade-offs, and expected change points.
 
 ## Research and source grounding
@@ -112,6 +116,9 @@ design's ability to satisfy requirements and quality attributes:
   over-abstracting code or components that only look superficially similar.
 - **Fail safely** — define error handling, recovery, degraded behavior, and observability for
   important failure modes.
+- **User-visible boundary adaptation** — isolate translation of backend/API/domain errors,
+  validation results, empty data, loading state, and integration failures into safe
+  human-readable UI or API-facing messages at a single clear boundary.
 
 ## Test responsibility in this command
 
@@ -142,10 +149,34 @@ that do not appear in the spec but are needed for safe implementation:
   examples, diagrams, runbooks, troubleshooting, accessibility/readability, links, generated
   docs, and versioned release/migration notes.
 
-Document this as a test matrix in **Test Strategy**. For each test level, state purpose,
-owner/component, linked `FR-`/`NFR-`/`UC-`/`AT-`/`COMP-`, required doubles or environments,
+Document this as explicit test obligations in **Test Strategy**. Use
+`TEST-<AREA>-<NAME>` IDs for every executable lower-level or workflow test obligation that
+must survive into the plan. For each `TEST-` item, state the test kind, purpose,
+owner/component or interface, linked `FR-`/`NFR-`/`UC-`/`AT-`/`COMP-`/`IFACE-`/`RISK-`/
+`DEC-`, **verification oracle**, required doubles or environments, expected speed/scope,
 and whether `/code-create` should implement it in the PR that introduces the behavior or
 defer it to a specific later PR.
+
+The verification oracle is the observable evidence that proves pass/fail. Choose the
+strongest practical oracle for the test level: return values, state transitions, persisted
+records, emitted events, API responses, DOM/role/text output, accessibility tree, screenshots
+or visual baselines, generated files/artifacts, metrics, structured logs, traces, deployment
+status, or external calls captured through a test double. Logs, screenshots, and metrics are
+valid oracles when they are the behavior under test or the best observable evidence, but
+avoid using them as vague substitutes for direct assertions when direct state/output can be
+checked.
+
+`AT-` items remain requirements-level acceptance criteria from the spec. `TEST-` items are
+design-level executable test obligations: unit/pure-core, component, contract, integration,
+UI/accessibility/visual, quality-attribute, migration, build/deploy, documentation, and
+operational checks. An executable acceptance/e2e/API test may cite both the `AT-` it proves
+and the `TEST-` obligation that planned it.
+
+For boundary-facing work, at least one `TEST-` obligation should verify representative real
+producer/consumer payloads for success and error cases unless the boundary is explicitly
+out of scope. Prefer shared fixtures, generated schemas/clients, OpenAPI/AsyncAPI examples,
+consumer-driven contract tests, or integration tests over hand-written mocks that invent a
+different shape.
 
 ## Work scope, design depth, and readiness
 
@@ -218,7 +249,7 @@ Use the same section order for every design, but tune the content to the declare
 - **Feature/component design** carries component responsibilities, interfaces/contracts,
   local data/state ownership, runtime flows, functional-core/imperative-shell partition,
   dependencies, UX/API contracts, build/release/deployment impacts, feature-level
-  documentation impacts, decisions/ADRs, risks, and a test matrix for that
+  documentation impacts, decisions/ADRs, risks, and explicit `TEST-` obligations for that
   feature/component. It should identify any child slice/change LLDs still required.
 - **Slice/change design (LLD)** carries the exact local design needed for implementation:
   touched components/modules, API/schema/data changes, detailed happy and failure flows,
@@ -267,7 +298,8 @@ Candidate design contents:
   and calculations in the core; HTTP/RPC handlers, persistence, messaging, clocks, retries,
   transactions, and framework glue in the shell.
 - **API/event contracts**: HTTP/RPC endpoints, commands/events, schemas, auth, errors,
-  idempotency, pagination, versioning, compatibility, and OpenAPI/AsyncAPI references where useful.
+  idempotency, pagination, versioning, compatibility, representative success/error examples,
+  and OpenAPI/AsyncAPI references where useful.
 - **Data model and state**: entities, relationships, ownership, lifecycle/state machines,
   migrations, indexes, retention, consistency, transactions, and cache behavior.
 - **Runtime flows**: sequence diagrams for core use cases, failure paths, retries, async/event
@@ -305,7 +337,14 @@ Candidate design contents:
   authorization/permission checks, and reducers in the core; routing, network calls, browser
   storage, timers, analytics, mutations, and DOM/browser APIs in the shell.
 - **Data fetching and API contracts**: API schemas, cache keys, freshness, retries, pagination,
-  optimistic updates, mutation invalidation, and authorization behavior.
+  optimistic updates, mutation invalidation, authorization behavior, error-body variants,
+  and the source of truth for test fixtures or generated clients.
+- **Presentation approach**: global stylesheet, design tokens, component library, utility
+  CSS, or native platform conventions; layout grid/spacing/typography strategy; responsive
+  breakpoints; and what styling is deliberately out of scope.
+- **Error normalization boundary**: where backend/domain/network/validation error shapes
+  are mapped into safe human-readable display messages, how multi-field validation errors
+  are attributed, and which raw details are logged vs. shown.
 - **Loading/error/empty/accessibility/responsive states**: matrices for important components
   and routes, including focus management, keyboard behavior, ARIA/semantic HTML, contrast,
   target size, breakpoints, touch behavior, and content priority.
@@ -318,12 +357,14 @@ Candidate design contents:
   user guide/tutorial changes, design-system/component usage docs, route behavior notes,
   integration examples, accessibility notes, analytics event docs, and release notes.
 - **Frontend test strategy**: pure function tests, component tests, accessibility checks,
-  API-mocked integration tests, visual tests where useful, and E2E tests for critical journeys.
+  contract-realistic API integration tests using shared fixtures/generated clients/schemas,
+  visual tests where useful, and E2E tests for critical journeys. Prefer role/text/semantic
+  selectors; do not couple tests to CSS class names unless styling itself is under test.
 
 Minimum web frontend artifacts: route map, component hierarchy diagram, UX flow diagram,
 state model/table, data/API contract table, loading/error/empty state matrix, accessibility
-checklist, responsive behavior matrix, build/release notes, documentation notes, and test
-traceability matrix.
+checklist, responsive behavior matrix, presentation approach, error-normalization boundary,
+build/release notes, documentation notes, and test traceability matrix.
 
 ### Mobile app design
 
@@ -431,7 +472,8 @@ Interview the user **one question at a time**: ask, wait, then ask the next. Cov
 - **State and side effects**: pure decision logic, persistence, I/O, external calls, time,
   randomness, transactions, concurrency, retries, idempotency, and consistency boundaries.
 - **Interfaces and contracts**: APIs, events, commands, schemas, protocols, auth, errors,
-  compatibility/versioning, and ownership.
+  compatibility/versioning, ownership, representative payload examples, and fixture/schema
+  source of truth for tests.
 - **Quality tactics and trade-offs**: how the design meets performance, reliability,
   security, modifiability, usability, observability, deployability, build reproducibility,
   deployment, and cost goals.
@@ -454,6 +496,8 @@ Use **prefix + slug**, no numeric suffix:
 - Slug = component/area name (e.g. `AUTH`, `CORE`). One entity per slug, so no `-N` suffix.
 - `LAYER-<SLUG>` (layer), `COMP-<SLUG>` (component), `IFACE-<SLUG>` (interface),
   `DEC-<SLUG>` (design decision), `RISK-<SLUG>` (risk). IDs are unique and stable.
+- `TEST-<AREA>-<NAME>` identifies an executable test obligation owned by the design, such
+  as `TEST-AUTH-POLICY`, `TEST-AUTH-CONTRACT`, or `TEST-RETR-EMPTYQUERY`.
 - Components cite the slug-only `FR-<AREA>-<NAME>`, `NFR-<AREA>-<NAME>`, and
   `UC-<AREA>-<NAME>` IDs from `spec.md` they realize.
 
@@ -480,7 +524,8 @@ Use **prefix + slug**, no numeric suffix:
    layers, components, dependency arrows, and core-vs-shell boundaries.
 6. **Interfaces** — (`IFACE-<SLUG>`); contract, inputs/outputs, `owner: COMP-<SLUG>`,
    protocol/schema, auth/trust boundary, error behavior, versioning/compatibility, and QoS
-   expectations where relevant.
+   expectations where relevant. For boundary contracts, include representative success and
+   error payload shapes or cite the formal schema/example source that tests must use.
 7. **Core vs. Shell** or **Core vs. Shell / Equivalent Separation** — include a table that classifies each `COMP-` as pure core,
    application/orchestration, adapter/shell, presentation, data, infrastructure, or mixed.
    For the core, list pure decisions, rules, validation, state transitions, calculations,
@@ -499,19 +544,23 @@ Use **prefix + slug**, no numeric suffix:
 10. **Design Decisions** — (`DEC-<SLUG>`); decision, alternatives considered, user input
    received or assumption made, rationale, quality attributes affected, consequences,
    reversibility, ADR link/path when applicable, and expected revisit triggers.
-11. **Test Strategy** — a test-level matrix covering acceptance/e2e, integration, contract,
-   component/module, unit/pure-core, UI/accessibility/visual, migration, operational, and
-   quality-attribute checks as applicable. Include build/package verification and deployment
-   validation/smoke checks where relevant, plus documentation checks such as doc build,
-   generated API/reference output, examples, link checks, accessibility/readability, and
-   freshness/version checks. Explain how each `COMP-`, `IFACE-`, critical flow, `AT-`, and
-   important `NFR-` is tested in isolation and in collaboration, including test data,
-   doubles, environments, observability, failure injection, and migration/rollback checks
+11. **Test Strategy** — list explicit `TEST-<AREA>-<NAME>` obligations in a matrix covering
+   acceptance/e2e, integration, contract, component/module, unit/pure-core,
+   UI/accessibility/visual, migration, operational, and quality-attribute checks as
+   applicable. Include build/package verification and deployment validation/smoke checks
+   where relevant, plus documentation checks such as doc build, generated API/reference
+   output, examples, link checks, accessibility/readability, and freshness/version checks.
+   For each `TEST-`, state kind, linked `COMP-`/`IFACE-`, linked `FR-`/`NFR-`/`UC-`/`AT-`/
+   `RISK-`/`DEC-`, verification oracle, data/doubles/environment, fixture or schema source
+   for boundary payloads, speed/scope, and whether it is required for the first
+   implementation PR or a later PR. Explain how each `COMP-`, `IFACE-`, critical flow,
+   `AT-`, and important `NFR-` is tested in isolation and in collaboration, including
+   observability, failure injection, contract-realistic mocks, and migration/rollback checks
    where relevant.
 12. **Risks & Trade-offs** — (`RISK-<SLUG>`); risk or technical debt, impact, likelihood,
    mitigation, owner, trigger, and residual risk.
-13. **Traceability Matrix** — requirements (`FR-`/`NFR-`/`UC-`) → components → interfaces →
-   decisions/tactics → tests/operational checks.
+13. **Traceability Matrix** — requirements (`FR-`/`NFR-`/`UC-`/`AT-`) → components →
+   interfaces → decisions/tactics → `TEST-` obligations/operational checks.
 
 ## Step 4 — Render an HTML companion
 
@@ -554,8 +603,16 @@ Pass-with-fixes.
 - Each component has cohesive responsibility, clear state/side-effect boundaries, and a named lifecycle.
 - Quality attributes are addressed by concrete tactics, flows, constraints, or tests rather than adjectives.
 - Every component, interface, deployable artifact, documentation artifact, critical `AT-`,
-  and important `NFR-` has a named test/check level and relevant build, deployment,
-  documentation, observability, or operational checks.
+  and important `NFR-` has a named `TEST-` obligation or check level and relevant build,
+  deployment, documentation, observability, or operational checks.
+- Every `TEST-` obligation has a concrete verification oracle: what output, state, record,
+  event, DOM, screenshot, log, metric, trace, artifact, deployment signal, or external-call
+  observation proves pass/fail.
+- Every boundary-facing test obligation identifies a fixture/schema/generated-client or
+  contract-test source of truth; ad-hoc mocks with invented payload shapes are called out as
+  risks or rejected.
+- UI-facing designs define a presentation approach and readable loading/empty/error/
+  validation states, or explicitly record them as out of scope.
 - Every diagram uses IDs as node/entity labels so it maps back to the spec and tables.
 - Record important alternatives, trade-offs, assumptions, risks, and technical debt. No vague verbs, no "etc.".
 - Create/update ADRs for material decisions and keep ADRs synchronized with `DEC-` entries.

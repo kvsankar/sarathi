@@ -43,8 +43,17 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   accessibility, interoperability, compliance, data, platform, operational,
   build/deployment, and documentation constraints are considered and measurable where
   applicable.
+- UX/presentation quality: UI-facing work has explicit expectations for baseline styling,
+  layout, responsive behavior, accessibility, and readable loading/empty/error/validation
+  states, or scopes them out deliberately.
+- Boundary contract quality: externally consumed API/event/file/SDK/CLI/webhook success and
+  error shapes are defined when consumers or user-visible behavior depend on them.
 - Acceptance quality: acceptance tests are black-box, scenario-based, and verify linked
   UC/FR/NFR intent instead of restating requirements.
+- Acceptance granularity: product/system `AT-` items may be broad acceptance intent,
+  feature/component `AT-` items should refine bounded behavior, and slice/change `AT-`
+  items should be precise enough to map to executable acceptance/e2e/API tests or justified
+  non-code verification.
 - Traceability and change readiness: links support validation, impact analysis, and future
   revision.
 

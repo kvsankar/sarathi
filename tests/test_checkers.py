@@ -96,7 +96,10 @@ No persistent state is introduced.
 - DEC-AUTH Use existing credential store.
 
 # Test Strategy
-COMP-AUTH has unit tests for policy and contract tests for IFACE-AUTH.
+- TEST-AUTH-POLICY Unit/pure-core tests cover COMP-AUTH policy decisions for
+  FR-AUTH-SIGNIN and NFR-PERF-SIGNIN.
+- TEST-AUTH-CONTRACT Contract tests cover IFACE-AUTH behavior for COMP-AUTH and
+  AT-AUTH-SIGNIN.
 
 # Risks & Trade-offs
 - RISK-AUTH Credential-store outage blocks sign-in.
@@ -125,12 +128,13 @@ Use Red/Green TDD and one small PR.
 # Pull Requests / Child Work Items
 - PR-AUTH-SIGNIN Scope: implement login. LOC 120. Red: failing AT-AUTH-SIGNIN test.
   Green: implement COMP-AUTH. Delivers FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN,
-  AT-AUTH-SIGNIN, and COMP-AUTH.
+  AT-AUTH-SIGNIN, COMP-AUTH, TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT.
 
 # Coverage Map
 """
             "FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN, AT-AUTH-SIGNIN, "
-            "and COMP-AUTH map to PR-AUTH-SIGNIN.\n"
+            "COMP-AUTH, TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT map to "
+            "PR-AUTH-SIGNIN.\n"
             """
 
 # Sequencing & Risks
@@ -200,6 +204,21 @@ def test_check_spec_rejects_lowercase_ids(tmp_path, monkeypatch, capsys):
 
     assert rc == 1
     assert "fr-auth-signin" in report["bad_id_format"]
+
+
+def test_check_spec_rejects_design_test_obligation_ids(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8") + "\n- TEST-AUTH-POLICY\n"
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert "TEST-AUTH-POLICY" in report["bad_id_format"]
 
 
 def test_check_spec_rejects_latency_nfr_with_wrong_unit(tmp_path, monkeypatch, capsys):
@@ -332,6 +351,38 @@ def test_check_design_rejects_numbered_requirement_refs(tmp_path, monkeypatch, c
     assert "FR-AUTH-10" in report["bad_id_format"]
 
 
+def test_check_design_requires_explicit_test_obligations(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    text = design_path.read_text(encoding="utf-8").replace(
+        (
+            "- TEST-AUTH-POLICY Unit/pure-core tests cover COMP-AUTH policy "
+            "decisions for\n"
+            "  FR-AUTH-SIGNIN and NFR-PERF-SIGNIN.\n"
+            "- TEST-AUTH-CONTRACT Contract tests cover IFACE-AUTH behavior for "
+            "COMP-AUTH and\n"
+            "  AT-AUTH-SIGNIN.\n"
+        ),
+        "COMP-AUTH has tests.\n",
+    )
+    design_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_design")
+
+    rc, report = run_main(
+        module,
+        [str(design_path), "--spec", str(spec_path), "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["test_obligations_declared"] is False
+    assert report["gates"]["comp_test_coverage_100"] is False
+
+
 def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     design_path = tmp_path / "design.md"
@@ -359,6 +410,47 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert rc == 0
     assert report["plan_kind"] == "implementation"
     assert report["at_coverage_pct"] == 100.0
+    assert report["test_obligation_coverage_pct"] == 100.0
+
+
+def test_check_plan_rejects_uncovered_design_test_obligation(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8")
+    text = text.replace(", TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT", "")
+    text = text.replace(
+        "COMP-AUTH, TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT", "COMP-AUTH"
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["test_obligation_coverage_100"] is False
+    assert report["uncovered_test_obligations"] == [
+        "TEST-AUTH-CONTRACT",
+        "TEST-AUTH-POLICY",
+    ]
 
 
 def test_check_plan_rejects_declared_pr_over_300_loc(tmp_path, monkeypatch, capsys):

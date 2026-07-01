@@ -15,8 +15,8 @@ Do not stop after checker JSON. This assessment must include:
    code-readiness and upstream-fitness assessment.
 2. Verification A: structural `check_code.py` evidence.
 3. Verification A2: pre-commit or equivalent quality-gate evidence.
-4. Verification B: qualitative implementation, test, TDD, scope, production-quality, and
-   quality-gate fitness assessment.
+4. Verification B: qualitative implementation, test implementation, TDD, scope,
+   production-quality, and quality-gate fitness assessment.
 
 When the platform supports sub-agents, run these as two fresh-context passes:
 
@@ -24,16 +24,17 @@ When the platform supports sub-agents, run these as two fresh-context passes:
   pre-commit/equivalent gates; return raw evidence, metrics, IDs, git evidence, and command
   failures.
 - **Qualitative Reviewer sub-agent**: read the code, upstream artifacts, and mechanical
-  evidence, then judge upstream fitness, implementation quality, test quality, TDD evidence,
-  scope fidelity, and quality-gate fitness adversarially.
+  evidence, then judge upstream fitness, implementation quality, test implementation
+  quality, TDD evidence, scope fidelity, and quality-gate fitness adversarially.
 
 If sub-agents are unavailable, state that limitation and keep the mechanical and qualitative
 sections separate.
 
-Use an adversarial assessment posture: try to refute correctness, test quality, TDD claims,
-planned-scope fidelity, and upstream artifact fitness. Prefer a fresh context, separate
-reviewer, or different model/tool when available. If the same agent that implemented the
-code is assessing it, state that the review half of the assessment is not independent.
+Use an adversarial assessment posture: try to refute correctness, test implementation
+quality, TDD claims, planned-scope fidelity, and upstream artifact fitness. Prefer a fresh
+context, separate reviewer, or different model/tool when available. If the same agent that
+implemented the code is assessing it, state that the review half of the assessment is not
+independent.
 
 ## Verification 0 — Upstream Consistency Gate
 
@@ -100,9 +101,10 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 - **bad_id_format** — ID-looking tokens that are not slug-only, including trailing numeric
   IDs, must be empty.
 - **pr_traceability_pct** — every plan PR-ID is referenced by ≥1 test. Must be 100%.
-- **id_traceability_pct** — every FR/AT/COMP appears in a test docstring/comment. Must be 100%.
-- **id_assertion_traceability_pct** — every FR/AT/COMP appears in the same test/function
-  block as a non-trivial assertion-like statement. Must be 100%.
+- **id_traceability_pct** — every FR/AT/COMP/TEST appears in a test docstring/comment. Must
+  be 100%.
+- **id_assertion_traceability_pct** — every FR/AT/COMP/TEST appears in the same
+  test/function block as a non-trivial assertion-like statement. Must be 100%.
 - **oversized_modules** — files exceeding the LOC ceiling. Must be empty.
 - **diff_loc / diff_evidence / oversized_diff** — actual added+deleted lines from
   `git diff --numstat` when git evidence is available. If unavailable, qualitative review
@@ -189,10 +191,27 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   available git history, review notes, command transcripts, or failing-test evidence. If no
   such evidence exists, report that TDD order was not independently verified rather than
   treating final green tests as proof.
-- **Test-level completeness** — executable acceptance/e2e/API workflow tests cover assigned
-  `AT-` items, and planned lower-level tests cover unit/pure-core logic, components,
-  contracts, integrations, UI/accessibility/visual behavior, quality attributes, migrations,
-  or operations as applicable.
+- **Test implementation quality and level completeness** — executable acceptance/e2e/API
+  workflow tests cover assigned `AT-` items, and planned `TEST-` obligations cover
+  unit/pure-core logic, components, contracts, integrations, UI/accessibility/visual
+  behavior, quality attributes, migrations, or operations as applicable. Review the test
+  code itself: assertions, fixtures, helpers, mocks, generated data, setup/teardown,
+  selectors, determinism, speed, isolation, readability, maintainability, and
+  false-positive/false-negative risk.
+- **Verification-oracle rigor** — every test has a concrete pass/fail oracle aligned with
+  the design/plan, such as return values, state changes, persisted records, emitted events,
+  API responses, DOM/accessibility output, screenshots/visual baselines, generated
+  artifacts, structured logs, metrics, traces, deployment signals, or captured external
+  calls. Tests that only prove execution, mock invocation, or absence of exceptions are weak
+  unless that is the specified behavior.
+- **Contract realism** — mocks, fixtures, generated clients, captured examples, and
+  contract/integration tests reflect the real producer/consumer boundary, including
+  representative success and error variants. Ad-hoc string/object mocks that bypass the
+  documented contract are defects.
+- **UI quality and selector resilience** — planned styling/layout/responsive/accessibility
+  and readable loading/empty/error/validation states are implemented; behavior tests use
+  role/text/semantic selectors rather than CSS classes unless style is the contract under
+  test.
 - **Build/deployment completeness** — assigned build/package work produces or validates the
   expected artifact; deployment scripts, manifests, IaC, migrations, smoke checks, rollback
   checks, and release docs are implemented and verified where planned.
@@ -204,7 +223,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Design fidelity** — matches COMP boundaries; pure core stays pure; no layering breaks.
 - **Planned scope fidelity** — changed files/sections stay within each PR's Planned Touch Set;
   any out-of-scope edit is flagged as a plan/design/spec revision need, not accepted silently.
-- **Readability** — plain test names (IDs in docstrings, not crammed into names), clear structure, no dead code.
+- **Readability** — plain test names (IDs in docstrings, not crammed into names), clear
+  structure, no dead code. Test helpers and fixtures should reduce drift and duplication
+  without obscuring the behavior being asserted.
 - **Production quality** — error handling, validation, NFRs met, artifacts are reproducible,
   config/secrets are handled safely, documentation matches behavior, and deployment/rollback
   behavior is credible.

@@ -39,7 +39,14 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Responsibility design: components have cohesive responsibilities, clear ownership, and
   manageable coupling.
 - Interfaces and contracts: APIs, schemas, events, errors, versioning, and compatibility
-  are explicit.
+  are explicit, including representative success/error variants and the fixture/schema/
+  generated-client source of truth for tests.
+- Contract realism: boundary tests and mocks are tied to documented producer/consumer
+  contracts, shared fixtures, schemas, generated clients, or contract tests, not invented
+  convenient shapes.
+- UI presentation and feedback: UI-facing designs define baseline styling/layout,
+  responsive behavior, accessibility, and readable loading/empty/error/validation states, or
+  deliberately scope them out.
 - Data and side effects: state ownership, persistence, transactions, idempotency,
   concurrency, migrations, and rollback are addressed where relevant.
 - Quality attributes: performance, security, privacy, reliability, accessibility,
@@ -47,8 +54,11 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   spec.
 - Trade-offs and ADRs: meaningful options, selected decisions, rejected alternatives, and
   consequences are surfaced and documented.
-- Testability: acceptance/e2e, unit/pure-core, component, contract, integration, UI,
-  migration, operational, and quality-attribute tests are allocated sensibly.
+- Testability: explicit `TEST-` obligations sensibly cover acceptance/e2e, unit/pure-core,
+  component, contract, integration, UI, migration, operational, and quality-attribute tests.
+- Verification-oracle design: each `TEST-` obligation names the observable evidence that
+  will prove pass/fail, such as return value, state, event, API response, DOM/accessibility
+  output, screenshot, artifact, log, metric, trace, deployment signal, or external call.
 - Risks: open risks, assumptions, and follow-up decisions are visible.
 
 ## Output

@@ -51,16 +51,30 @@ These `AT-` items are black-box, externally observable scenarios or quality chec
 state how stakeholders will know the requirement is satisfied. They are written in the spec,
 not as executable test code.
 
+Write `AT-` items at every spec scope, but match their granularity to that scope:
+
+- **Product/system specs** carry broad, representative `AT-` intent for major capabilities,
+  cross-cutting NFRs, build/release/deployment outcomes, and documentation outcomes. These
+  often decompose before they become executable tests.
+- **Feature/component specs** carry concrete `AT-` criteria for that bounded capability or
+  subsystem, refining parent `AT-` intent without duplicating it.
+- **Slice/change specs** carry precise `AT-` criteria for the exact implementable behavior
+  delta, bug fix, migration, docs/build/deploy delta, or justified non-code verification.
+  These are the `AT-` items most directly mapped to executable acceptance/e2e/API tests.
+
 Do not define unit tests, component tests, contract tests, integration tests, visual tests,
 or other lower-level implementation tests here. Those belong downstream:
 
-- `/design-create` chooses the appropriate test levels and testability strategy for each
-  component, interface, quality attribute, and risk.
-- `/plan-create` schedules which PR writes which executable tests, including which `AT-`
-  items become executable acceptance tests.
+- `/design-create` creates explicit `TEST-<AREA>-<NAME>` executable test obligations for
+  unit/pure-core, component, contract, integration, UI/accessibility/visual,
+  quality-attribute, migration, build/deploy, documentation, and operational checks as
+  needed.
+- `/plan-create` schedules which PR writes each executable test obligation, including which
+  `AT-` items become executable acceptance/e2e/API tests.
 - `/code-create` writes the executable tests: acceptance/e2e tests for `AT-` coverage and
   lower-level tests such as unit, component, contract, integration, accessibility,
-  performance, security, migration, or operational checks as required by the design and plan.
+  performance, security, migration, or operational checks for the assigned `TEST-`
+  obligations required by the design and plan.
 
 ## Build, release, and deployment responsibility in this command
 
@@ -98,6 +112,28 @@ when users, developers, operators, support, auditors, or integrators need it to 
 
 If user or developer documentation is intentionally out of scope, record that in
 **Non-Goals** or **Assumptions & Open Questions** rather than leaving it implicit.
+
+## User experience and boundary contract responsibility in this command
+
+For products with a user interface or external integration boundary, capture user-visible
+quality and contract expectations as requirements, not as implicit implementation taste.
+Do not prescribe a detailed visual design system unless stakeholders require one, but do
+state the externally observable quality bar:
+
+- **Presentation and interaction quality**: baseline visual styling, layout density,
+  responsive behavior, loading/empty/error states, readability, accessibility, and affordance
+  clarity. If styling is intentionally minimal or deferred, record that as a Non-Goal or
+  open question.
+- **Human-readable feedback**: validation, domain, authorization, connectivity, and
+  unexpected failures shall surface useful, safe, user-understandable text without leaking
+  raw objects, stack traces, or implementation internals.
+- **Boundary contracts**: public APIs, events, files, CLI outputs, webhooks, SDK calls, and
+  generated clients shall define externally visible success and error shapes when consumers
+  depend on them. Include known variant shapes, such as validation errors vs. domain errors,
+  when they affect users or downstream implementers.
+- **Contract acceptance**: acceptance criteria should include representative success,
+  validation/error, empty/loading, and responsive/accessibility scenarios when those states
+  are user-visible or integration-critical.
 
 ## Work scope and readiness model
 
@@ -245,6 +281,12 @@ answer, then ask the next. Never batch questions. Keep going until gaps close. C
   must be supported?
 - **Supplementary/NFR constraints**: Performance, security, privacy, reliability, usability,
   accessibility, interoperability, compliance, data, platform, operational, and budget limits.
+- **User experience quality**: For UI-facing work, what baseline styling, layout,
+  responsiveness, loading/empty/error states, accessibility, and human-readable feedback are
+  expected? What is explicitly out of scope?
+- **External contract expectations**: Which API/event/file/SDK/CLI/webhook success and
+  error shapes are externally visible or consumed across a boundary? Which variants must be
+  human-readable or contract-tested?
 - **Build, release, and deployment needs**: What deployable artifact is expected; where it
   runs; how environments, promotion, rollout, rollback, migrations, approvals, smoke checks,
   and operator/user-visible release behavior should work; and which of those are in scope now.
@@ -293,8 +335,9 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
    obligations that cite `UC-`/`FEAT-` and avoid design decisions.
 7. **Non-Functional Requirements** — list (`NFR-<AREA>-<NAME>`), measurable supplementary
    requirements and external constraints with thresholds, units, scope, and verification
-   method, including build/release/deployment, documentation, and operational constraints
-   when externally relevant.
+   method, including usability/presentation, human-readable feedback, boundary contract,
+   build/release/deployment, documentation, and operational constraints when externally
+   relevant.
 8. **Acceptance Tests** — list (`AT-<AREA>-<NAME>`), Given/When/Then or equivalent
    black-box acceptance criteria; each maps to a `UC-` and the `FR-`/`NFR-` it verifies.
    State the externally visible behavior or measurable quality to verify, not the internal
@@ -319,6 +362,12 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
   criteria or explicitly deferred as non-goals/open questions.
 - User/developer documentation expectations are either captured as requirements/acceptance
   criteria or explicitly deferred as non-goals/open questions.
+- UI/presentation quality, loading/empty/error states, accessibility, and responsive behavior
+  are either captured as measurable requirements/acceptance criteria or explicitly deferred
+  as non-goals/open questions when the product has a UI.
+- External boundary contracts, including success/error body shapes that consumers depend on,
+  are captured as requirements/acceptance criteria or explicitly deferred as non-goals/open
+  questions.
 - Avoid "etc.", "and/or", "TBD", "as appropriate", vague adjectives, hidden design decisions,
   unowned assumptions, and requirements that bundle multiple obligations.
 

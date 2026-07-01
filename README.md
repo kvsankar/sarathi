@@ -161,8 +161,9 @@ Artifacts declare one readiness value:
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
 `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities keep the shorter
-`KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`. Numeric suffixes such as
-`FR-AUTH-10` are rejected by the checkers.
+`KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`. Design test obligations use
+`TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such as `FR-AUTH-10`
+are rejected by the checkers.
 
 For older numbered artifacts, see [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
@@ -238,10 +239,26 @@ end-to-end unattended continuation.
 
 Test responsibility is split by artifact:
 
-- Specs define `AT-` acceptance criteria.
-- Designs define the test architecture and lower-level test mix.
-- Plans assign executable tests to PRs.
-- Code writes the executable tests and implementation.
+- Specs define `AT-` acceptance criteria at product/system, feature/component, and
+  slice/change scope; the criteria become narrower as the scope narrows.
+- Designs define the test architecture and explicit `TEST-<AREA>-<NAME>` executable test
+  obligations for unit, component, contract, integration, UI, quality, docs/build/deploy,
+  migration, and operational checks.
+- Plans assign `AT-` acceptance coverage and `TEST-` obligations to PRs.
+- Code writes the executable tests and implementation, citing the assigned `AT-` and
+  `TEST-` IDs where applicable. This is where unit, component, contract, integration, UI,
+  quality, migration, build/deploy, docs, and operational test implementations are created
+  when planned.
+- Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
+  fixtures, helpers, mocks, data, selectors, determinism, readability, maintainability, and
+  false-positive/false-negative risk are judged, not just whether the tests pass.
+- Every executable test needs a concrete verification oracle: return value, state, persisted
+  record, event, API response, DOM/accessibility output, screenshot/visual baseline,
+  artifact, structured log, metric, trace, deployment signal, or captured external call as
+  appropriate.
+- Defect remediation updates upstream artifacts first when the defect reveals missing UX
+  quality, unclear boundary contracts, unrealistic mocks, or other latent spec/design/plan
+  gaps.
 - Documentation, build, and deployment checks are assigned through the same spec/design/plan
   chain and verified during code creation, `/code-verify`, or `/code-assess` when planned.
 
@@ -262,9 +279,9 @@ python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --co
 If `python` is unavailable, try `python3`, then `uv run python`.
 
 The checkers do not prove semantic correctness. Assessment commands pair verification
-evidence with qualitative review of requirements, design, plan quality, test quality,
-implementation fitness, documentation/build/deployment completeness, and upstream/downstream
-consistency.
+evidence with qualitative review of requirements, design, plan quality, test implementation
+quality, verification-oracle rigor, implementation fitness, documentation/build/deployment
+completeness, and upstream/downstream consistency.
 
 ## Repository Layout
 
