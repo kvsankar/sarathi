@@ -53,7 +53,8 @@ Report:
 - Assertion-traceability percentage.
 - Diff LOC and evidence source.
 - TDD evidence source.
-- Oversized modules/diffs, failing/skipped tests, TODO/FIXME/vague markers, and uncovered IDs.
+- Bad ID format, oversized modules/diffs, failing/skipped tests, TODO/FIXME/vague markers,
+  and uncovered IDs.
 
 ## Local Quality Gates
 

@@ -31,13 +31,21 @@ if str(CHECKER_DIR) not in sys.path:
 
 from schemas import PLAN_SECTIONS  # noqa: E402
 
-ID = re.compile(r"\b(MILE|WORK|PR)-([A-Z][A-Z0-9]*)-(\d+)\b")
-FR = re.compile(r"\bFR-[A-Z][A-Z0-9]*-\d+\b")
-UC = re.compile(r"\bUC-[A-Z][A-Z0-9]*-\d+\b")
-NFR = re.compile(r"\bNFR-[A-Z][A-Z0-9]*-\d+\b")
-AT = re.compile(r"\bAT-[A-Z][A-Z0-9]*-\d+\b")
-COMP = re.compile(r"\bCOMP-[A-Z][A-Z0-9]*\b")
-PR_REF = re.compile(r"\bPR-[A-Z][A-Z0-9]*-\d+\b")
+SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
+ID = re.compile(rf"\b(MILE|WORK|PR)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
+FR = re.compile(rf"\bFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+UC = re.compile(rf"\bUC-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+NFR = re.compile(rf"\bNFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+AT = re.compile(rf"\bAT-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+COMP = re.compile(rf"\bCOMP-{SLUG_TOKEN}\b")
+PR_REF = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+VALID_ANY = re.compile(
+    rf"\b(?:(?:MILE|WORK|PR|FR|UC|NFR|AT)-{SLUG_TOKEN}-{SLUG_TOKEN}|"
+    rf"COMP-{SLUG_TOKEN})\b"
+)
+ID_CANDIDATE = re.compile(
+    r"\b(?:MILE|WORK|PR|FR|UC|NFR|AT|COMP)(?:-[A-Za-z0-9]+)+\b", re.I
+)
 LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.", re.I)
 LEAD = re.compile(r"^[\s#>\-\*\+0-9.\)]*")
@@ -119,6 +127,17 @@ def defs_and_refs(text: str):
 
 def ids_from(path: str, pat: re.Pattern) -> set:
     return {m.group(0) for m in pat.finditer(Path(path).read_text(encoding="utf-8"))}
+
+
+def malformed_ids(text: str) -> list[str]:
+    """ID-looking tokens that do not follow plan/spec/design slug grammar."""
+    return sorted(
+        {
+            m.group(0)
+            for m in ID_CANDIDATE.finditer(text)
+            if not VALID_ANY.fullmatch(m.group(0))
+        }
+    )
 
 
 def loc_values(block: str) -> list[int]:
@@ -221,20 +240,7 @@ def main() -> int:
         if not in_fence and (m := _defline(line)):
             def_ids.append(m.group(0))
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
-    bad = [m.group(0) for m in ID.finditer(text) if int(m.group(3)) % 10 != 0]
-    for kind in defined:
-        by_slug: dict[str, list[int]] = {}
-        for item in defined[kind]:
-            m = ID.fullmatch(item)
-            if m is None:
-                continue
-            by_slug.setdefault(m.group(2), []).append(int(m.group(3)))
-        for slug, nums in by_slug.items():
-            expected = list(range(10, 10 * len(nums) + 1, 10))
-            if sorted(nums) != expected:
-                bad.extend(
-                    f"{kind}-{slug}-{n}" for n in sorted(nums) if n not in expected
-                )
+    bad = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
     vague = len(VAGUE.findall(text))
 
@@ -243,7 +249,7 @@ def main() -> int:
 
     gates = {
         "has_delivery_items": bool(work_blocks or pr_blocks),
-        "id_format_zero_gap": not bad,
+        "id_format_slug_only": not bad,
         "no_duplicates": not dupes,
         "no_orphan_refs": not orphans,
         "fr_coverage_100": fr_c == spec_frs,
@@ -281,7 +287,7 @@ def main() -> int:
         "forward_deps": sorted(fwd),
         "orphan_refs": orphans,
         "duplicates": dupes,
-        "bad_id_numbers": bad,
+        "bad_id_format": bad,
         "vague_hits": vague,
         "gates": gates,
         "passed": sum(gates.values()),

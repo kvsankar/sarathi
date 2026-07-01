@@ -9,7 +9,8 @@ This is a prompt, skill, and checker repository. Canonical source files live in:
 
 - [docs](docs): user-facing overview pages, including
   [agent-steered-sdlc.html](docs/agent-steered-sdlc.html) and
-  [review-verification-checklist.md](docs/review-verification-checklist.md).
+  [review-verification-checklist.md](docs/review-verification-checklist.md). Numbered-ID
+  migration guidance lives in [slug-id-migration.md](docs/slug-id-migration.md).
 - [prompts](prompts): reusable stage prompt definitions. Some host tools expose these as
   slash commands; others expose them as prompt files, skills, or natural-language stages.
 - [skills](skills): native skill bundles such as `agent-steered-sdlc`.
@@ -151,6 +152,14 @@ next step is a breakdown plan, child spec, LLD, ADR/interface contract, or imple
 plan. `/code-create` must block unless it has a code-ready implementation plan for a
 slice/change or sufficiently small feature/component.
 
+## ID format
+
+Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
+`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities keep the shorter
+`KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`. Numeric suffixes such as
+`FR-AUTH-10` are invalid and should be migrated using
+[docs/slug-id-migration.md](docs/slug-id-migration.md).
+
 ## Lightweight track
 
 For spikes, throwaway prototypes, exploratory data/ML work, proof-of-concept integrations,
@@ -268,7 +277,7 @@ The local hooks invoke:
 ## Mechanical checkers
 
 [checkers/check_spec.py](checkers/check_spec.py) enforces structural spec hygiene:
-ID format, zero-gap numbering, duplicates, orphan refs, UC→AT and FR→AT reference coverage,
+slug-only `KIND-AREA-NAME` ID format, duplicates, orphan refs, UC→AT and FR→AT reference coverage,
 NFR unit presence, obvious NFR unit/quality mismatches, AT scenario shape, and banned vague
 terms.
 
@@ -298,7 +307,7 @@ Flags: `--json`, `--component` (single-component mode), `--parent <file>` (paren
 design), `--spec <file>` (resolve FR/UC refs). Exits non-zero on any gate failure.
 
 [checkers/check_plan.py](checkers/check_plan.py) enforces structural plan hygiene:
-ID format, zero-gap numbering, duplicates, orphan refs, FR/AT/COMP reference coverage,
+slug-only `KIND-AREA-NAME` plan ID format, duplicates, orphan refs, FR/AT/COMP reference coverage,
 declared 300-LOC PR estimates, Red/Green step text, no forward dependencies, and banned
 vague terms.
 

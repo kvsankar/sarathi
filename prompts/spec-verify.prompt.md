@@ -39,7 +39,7 @@ Report:
 - Exit code.
 - `passed/total`.
 - UC and FR acceptance coverage percentages.
-- Any uncovered IDs, orphan refs, duplicates, bad ID numbers, NFR unit issues,
+- Any uncovered IDs, orphan refs, duplicates, bad ID format, NFR unit issues,
   acceptance-test shape issues, or vague hits.
 
 ## Output

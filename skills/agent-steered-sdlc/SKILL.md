@@ -97,6 +97,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   should declare Implementation Readiness as Exploratory, Decomposable, or Code-ready.
   Parent artifacts may pass as Decomposable; `/code-create` must only proceed from a
   code-ready implementation plan for a slice/change or sufficiently small feature/component.
+- Use slug-only IDs. Specs and plans use `KIND-AREA-NAME`, for example
+  `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities use
+  `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Numeric suffixes such as
+  `FR-AUTH-10` are invalid.
 - Infer the likely scope from the user's request and state it explicitly. Broad
   product/platform/app requests map to product/system, one capability/subsystem maps to
   feature/component, and bug fixes, PR-sized changes, or local behavior deltas map to

@@ -35,14 +35,15 @@ def run_check_code(
     src = tmp_path / "src"
     tests.mkdir(exist_ok=True)
     src.mkdir(exist_ok=True)
-    plan.write_text("- PR-AUTH-10\n", encoding="utf-8")
-    spec.write_text("- FR-AUTH-10\n- AT-AUTH-10\n", encoding="utf-8")
+    plan.write_text("- PR-AUTH-SIGNIN\n", encoding="utf-8")
+    spec.write_text("- FR-AUTH-SIGNIN\n- AT-AUTH-SIGNIN\n", encoding="utf-8")
     design.write_text("- COMP-AUTH\n", encoding="utf-8")
     (tests / "test_auth.py").write_text(
         test_body
         or (
             "def test_auth():\n"
-            '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH."""\n'
+            '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, '
+            'AT-AUTH-SIGNIN, COMP-AUTH."""\n'
             "    result = 'granted'\n"
             "    assert result == 'granted'\n"
         ),
@@ -118,7 +119,7 @@ def test_check_code_rejects_unlabeled_percent_as_coverage(
 def test_check_code_rejects_id_only_weak_assertion(tmp_path, monkeypatch, capsys):
     weak_test = (
         "def test_auth():\n"
-        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH."""\n'
+        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, COMP-AUTH."""\n'
         "    assert True\n"
     )
 
@@ -133,16 +134,41 @@ def test_check_code_rejects_id_only_weak_assertion(tmp_path, monkeypatch, capsys
     assert rc == 1
     assert report["gates"]["id_assertion_traceability_100"] is False
     assert report["ids_without_nearby_assertion"] == [
-        "AT-AUTH-10",
+        "AT-AUTH-SIGNIN",
         "COMP-AUTH",
+        "FR-AUTH-SIGNIN",
+    ]
+
+
+def test_check_code_rejects_numbered_ids_in_traceability(tmp_path, monkeypatch, capsys):
+    numbered_test = (
+        "def test_auth():\n"
+        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH."""\n'
+        "    result = 'granted'\n"
+        "    assert result == 'granted'\n"
+    )
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        numbered_test,
+    )
+
+    assert rc == 1
+    assert report["gates"]["id_format_slug_only"] is False
+    assert report["bad_id_format"] == [
+        "AT-AUTH-10",
         "FR-AUTH-10",
+        "PR-AUTH-10",
     ]
 
 
 def test_check_code_rejects_tautological_assertion(tmp_path, monkeypatch, capsys):
     weak_test = (
         "def test_auth():\n"
-        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH."""\n'
+        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, COMP-AUTH."""\n'
         "    assert 1 == 1\n"
     )
 
@@ -164,7 +190,7 @@ def test_check_code_rejects_neighbor_assertion_bleed(tmp_path, monkeypatch, caps
         "    result = 'granted'\n"
         "    assert result == 'granted'\n\n"
         "def test_placeholder():\n"
-        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH."""\n'
+        '    """Covers PR-AUTH-SIGNIN, FR-AUTH-SIGNIN, AT-AUTH-SIGNIN, COMP-AUTH."""\n'
         "    pass\n"
     )
 

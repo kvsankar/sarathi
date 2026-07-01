@@ -90,8 +90,8 @@ It exits `0` only if every structural gate passes (non-zero otherwise) and emits
 - **prs_missing_tdd** — implementation PRs lacking Red and Green step text. This is a
   presence check; qualitative review must still judge whether the Red step would be a
   meaningful failing test. Must be empty.
-- **forward_deps** — PRs depending on a later-numbered PR. Must be empty.
-- **orphan_refs**, **duplicates**, **bad_id_numbers** — must be empty.
+- **forward_deps** — PRs depending on a later PR defined below them. Must be empty.
+- **orphan_refs**, **duplicates**, **bad_id_format** — must be empty.
 - **vague_hits** — count of "etc.", "and/or", "tbd", "as appropriate", "various".
 - **gates** + `passed/total`.
 

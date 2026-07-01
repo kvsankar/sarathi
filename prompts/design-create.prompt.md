@@ -387,7 +387,7 @@ First determine the mode:
   mark readiness Exploratory or Decomposable unless it truly contains implementation-ready
   local detail.
 - **Revision** — a design file exists. Read it first, preserve all existing IDs (never
-  renumber), insert new items at the next gap number, and update the traceability matrix.
+  rename just for neatness), add new descriptive slug IDs, and update the traceability matrix.
 - **Feature/component design** — designing one feature, component, subsystem, or integration,
   not the whole product. Write a focused file (e.g. `designs/<slug>.md`) with only the
   sections that apply. It may **reference** product-level IDs without redefining them; note
@@ -447,14 +447,15 @@ until remaining unknowns and material trade-offs are resolved, deliberately defe
 recorded with impact. In YOLO mode, prefer proceeding with explicit design assumptions over
 continuing the interview, while still surfacing high-impact trade-offs in the artifact.
 
-## Step 2 — Numbering convention (apply everywhere)
+## Step 2 — ID convention (apply everywhere)
 
-Use **prefix + slug**, no numeric suffix — numbers belong to the spec, not the design:
+Use **prefix + slug**, no numeric suffix:
 
 - Slug = component/area name (e.g. `AUTH`, `CORE`). One entity per slug, so no `-N` suffix.
 - `LAYER-<SLUG>` (layer), `COMP-<SLUG>` (component), `IFACE-<SLUG>` (interface),
   `DEC-<SLUG>` (design decision), `RISK-<SLUG>` (risk). IDs are unique and stable.
-- Components cite the numbered `FR-`/`NFR-`/`UC-` from `spec.md` they realize.
+- Components cite the slug-only `FR-<AREA>-<NAME>`, `NFR-<AREA>-<NAME>`, and
+  `UC-<AREA>-<NAME>` IDs from `spec.md` they realize.
 
 ## Step 3 — Author the design with this exact section order
 

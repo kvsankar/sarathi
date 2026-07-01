@@ -157,6 +157,15 @@ Artifacts declare one readiness value:
 
 `/code-create` should only run from a code-ready implementation plan.
 
+## ID Format
+
+Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
+`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities keep the shorter
+`KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`. Numeric suffixes such as
+`FR-AUTH-10` are rejected by the checkers.
+
+For older numbered artifacts, see [docs/slug-id-migration.md](docs/slug-id-migration.md).
+
 ## Builds And Deployment
 
 Builds and deployment are covered from the beginning:
@@ -275,4 +284,5 @@ for GitHub Copilot project-scoped prompts.
 
 - Overview page: [docs/agent-steered-sdlc.html](docs/agent-steered-sdlc.html)
 - Review checklist: [docs/review-verification-checklist.md](docs/review-verification-checklist.md)
+- Slug ID migration: [docs/slug-id-migration.md](docs/slug-id-migration.md)
 - Agent-facing repository guidance: [AGENTS.md](AGENTS.md)

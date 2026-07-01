@@ -199,13 +199,13 @@ First determine the mode:
 - **New product/system spec** — author the full document below, but keep readiness as
   Exploratory or Decomposable unless the work is genuinely small enough to implement from.
 - **Revision** — a spec file already exists. Read it first, preserve all existing IDs
-  (never renumber), and insert new items using the next gap number under the right slug.
+  (never rename just for neatness), and add new descriptive slug IDs under the right area.
   Update the traceability matrix and Assumptions to reflect changes.
 - **Feature/component spec** — the user is specifying one feature, component, subsystem, or
   integration, not the whole product. Write a
   focused file (e.g. `specs/<slug>.md`) containing only the sections that apply. It may
-  **reference** product-level IDs (e.g. an existing `UN-AUTH-10`) without redefining them;
-  note the parent product spec path. Full-section presence is not required, but every
+  **reference** product-level IDs (e.g. an existing `UN-AUTH-ACCESS`) without redefining
+  them; note the parent product spec path. Full-section presence is not required, but every
   use case and functional requirement you add must still have acceptance tests. Mark it
   Decomposable when it still needs child slices before implementation.
 - **Slice/change spec** — the user is specifying a narrow code change, bug fix, refactor with
@@ -262,36 +262,40 @@ until the remaining unknowns are either resolved, explicitly deferred, or record
 assumptions/open questions, then summarize understanding and proceed. In YOLO mode, prefer
 proceeding with explicit assumptions over continuing the interview.
 
-## Step 2 — Numbering convention (apply everywhere)
+## Step 2 — ID convention (apply everywhere)
 
-Use **prefix slugs + zero-padded gap numbers** so items can be inserted later:
+Use **descriptive slug-only IDs**. Do not use numeric suffixes.
 
-- Slug = feature/area name at a sensible level of abstraction (e.g. `AUTH`, `SEARCH`).
-- Number in increments of 10: `10, 20, 30...`.
-- Examples: `UN-AUTH-10` (user need), `FEAT-AUTH-10` (feature), `UC-AUTH-10` (use case),
-  `FR-AUTH-10` (functional), `NFR-PERF-10` (non-functional), `AT-AUTH-10` (acceptance test).
+- Format: `KIND-AREA-NAME`.
+- `AREA` and `NAME` are uppercase slug tokens, 2-32 characters each, using `A-Z` and
+  digits only after the first character.
+- Use exactly two slug tokens after the kind; do not use internal hyphens or trailing
+  numbers.
+- Examples: `UN-AUTH-ACCESS` (user need), `FEAT-AUTH-LOGIN` (feature),
+  `UC-AUTH-SIGNIN` (use case), `FR-AUTH-SIGNIN` (functional),
+  `NFR-PERF-SIGNIN` (non-functional), `AT-AUTH-SIGNIN` (acceptance test).
 - Every ID is unique and stable. Cross-references use IDs only.
 
 ## Step 3 — Author the spec with this exact section order
 
 1. **Mission Statement** — a brief paragraph covering problem, stakeholders, value, and
    system boundary. Include explicit `Work Scope:` and `Implementation Readiness:` lines.
-2. **User Needs** — numbered list (`UN-<SLUG>-<n>`), each a single stakeholder outcome or
+2. **User Needs** — list (`UN-<AREA>-<NAME>`), each a single stakeholder outcome or
    pain, phrased without solution mechanics.
 3. **Non-Goals** — bullet list of explicit out-of-scope outcomes, audiences, platforms,
    integrations, features, quality targets, constraints, or future work. Reference related
    `UN-`/`FEAT-`/`UC-`/`FR-` IDs when a non-goal narrows them.
-4. **Features** — numbered list (`FEAT-<SLUG>-<n>`), each an externally visible capability
+4. **Features** — list (`FEAT-<AREA>-<NAME>`), each an externally visible capability
    that cites the `UN-` it satisfies.
-5. **Use Cases** — numbered (`UC-<SLUG>-<n>`), each expanding a feature with actor, goal,
+5. **Use Cases** — list (`UC-<AREA>-<NAME>`), each expanding a feature with actor, goal,
    precondition, main success flow, alternates/exceptions, postcondition, and cited `FEAT-`.
-6. **Functional Requirements** — numbered (`FR-<SLUG>-<n>`), atomic, testable system
+6. **Functional Requirements** — list (`FR-<AREA>-<NAME>`), atomic, testable system
    obligations that cite `UC-`/`FEAT-` and avoid design decisions.
-7. **Non-Functional Requirements** — numbered (`NFR-<SLUG>-<n>`), measurable supplementary
+7. **Non-Functional Requirements** — list (`NFR-<AREA>-<NAME>`), measurable supplementary
    requirements and external constraints with thresholds, units, scope, and verification
    method, including build/release/deployment, documentation, and operational constraints
    when externally relevant.
-8. **Acceptance Tests** — numbered (`AT-<SLUG>-<n>`), Given/When/Then or equivalent
+8. **Acceptance Tests** — list (`AT-<AREA>-<NAME>`), Given/When/Then or equivalent
    black-box acceptance criteria; each maps to a `UC-` and the `FR-`/`NFR-` it verifies.
    State the externally visible behavior or measurable quality to verify, not the internal
    unit/component/integration test mechanics.

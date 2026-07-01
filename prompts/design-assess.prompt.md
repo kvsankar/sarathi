@@ -108,7 +108,8 @@ It exits `0` only if every structural gate passes (non-zero otherwise) and emits
 - **dependency_cycles** — must be empty (component dependencies through interfaces have no cycles).
 - **orphan_refs** — IDs referenced but never defined.
 - **duplicates** — IDs defined more than once.
-- **suffixed_ids** — design IDs must have no numeric suffix (use `COMP-RULES`, not `COMP-RULES-10`).
+- **bad_id_format** — design IDs must use `KIND-SLUG`, and spec cross-references must use
+  `KIND-AREA-NAME`; trailing numeric IDs such as `COMP-RULES-10` or `FR-AUTH-10` are invalid.
 - **vague_hits** — count of "etc.", "and/or", "tbd", "as appropriate", "simple", "robust".
 - **gates** + `passed/total`.
 

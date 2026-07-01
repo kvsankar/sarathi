@@ -29,7 +29,9 @@ if str(CHECKER_DIR) not in sys.path:
 
 from schemas import SPEC_SECTIONS  # noqa: E402
 
-ID = re.compile(r"\b(UN|FEAT|UC|FR|NFR|AT)-([A-Z][A-Z0-9]*)-(\d+)\b")
+SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
+ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
+ID_CANDIDATE = re.compile(r"\b(?:UN|FEAT|UC|FR|NFR|AT)(?:-[A-Za-z0-9]+)+\b", re.I)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|fast|easy)\b|etc\.", re.I)
 NUM_UNIT = re.compile(
     r"\d+(?:\.\d+)?\s*(ms|s|sec|min|%|mb|gb|kb|req|rps|users|days|hrs|"
@@ -144,6 +146,17 @@ def vague_count(text: str) -> int:
     return len(VAGUE.findall(text))
 
 
+def malformed_ids(text: str) -> list[str]:
+    """ID-looking tokens that do not follow KIND-AREA-NAME slug grammar."""
+    return sorted(
+        {
+            m.group(0)
+            for m in ID_CANDIDATE.finditer(text)
+            if not ID.fullmatch(m.group(0))
+        }
+    )
+
+
 def unit_mismatches(blocks: dict[str, str]) -> list[str]:
     mismatches = []
     for nfr, block in blocks.items():
@@ -201,18 +214,7 @@ def main() -> int:
         if not in_fence and (m := _defline(line)):
             def_ids.append(m.group(0))
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
-    bad_fmt = [m.group(0) for m in ID.finditer(text) if int(m.group(3)) % 10 != 0]
-    for kind in defined:
-        by_slug: dict[str, list[int]] = {}
-        for item in defined[kind]:
-            m = ID.fullmatch(item)
-            by_slug.setdefault(m.group(2), []).append(int(m.group(3)))
-        for slug, nums in by_slug.items():
-            expected = list(range(10, 10 * len(nums) + 1, 10))
-            if sorted(nums) != expected:
-                bad_fmt.extend(
-                    f"{kind}-{slug}-{n}" for n in sorted(nums) if n not in expected
-                )
+    bad_fmt = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
     vague = vague_count(text)
     nfr_blocks = item_blocks(text, {"NFR"})
@@ -230,7 +232,7 @@ def main() -> int:
         return round(100 * len(a) / len(b), 1) if b else 100.0
 
     gates = {
-        "id_format_zero_gap": not bad_fmt,
+        "id_format_slug_only": not bad_fmt,
         "no_duplicates": not dupes,
         "no_orphan_refs": not orphans,
         "uc_at_coverage_100": uc_cov == uc,
@@ -251,7 +253,7 @@ def main() -> int:
         "uncovered_frs": sorted(fr - fr_cov),
         "orphan_refs": orphans,
         "duplicates": dupes,
-        "bad_id_numbers": bad_fmt,
+        "bad_id_format": bad_fmt,
         "nfr_missing_units": nfr_no_unit,
         "nfr_unit_mismatches": nfr_bad_unit,
         "ats_missing_scenario_shape": weak_ats,

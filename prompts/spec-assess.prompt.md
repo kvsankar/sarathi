@@ -38,7 +38,7 @@ spec so its IDs are not treated as orphans. Otherwise review the whole product s
 ## Verification A — Mechanical / Deterministic (run the tool)
 
 Run the bundled checker and report its output verbatim. This is a deterministic
-**structural** check: it catches section, ID, numbering, orphan-reference, coverage-link,
+**structural** check: it catches section, ID format, orphan-reference, coverage-link,
 unit, and banned-word issues. It does not prove requirements are correct, complete, or
 semantically well tested; Verification B must judge that.
 
@@ -56,7 +56,8 @@ It exits `0` only if every structural gate passes (non-zero otherwise) and emits
 - **uncovered_use_cases / uncovered_frs** — must be empty.
 - **orphan_refs** — IDs referenced but never defined.
 - **duplicates** — IDs defined more than once.
-- **bad_id_numbers** — IDs not zero-gapped (10/20/30...).
+- **bad_id_format** — IDs that are not slug-only `KIND-AREA-NAME`, including trailing
+  numeric IDs such as `FR-AUTH-10`.
 - **nfr_missing_units** — NFRs without a number+unit.
 - **nfr_unit_mismatches** — NFRs whose obvious quality dimension does not match the unit.
 - **ats_missing_scenario_shape** — ATs that do not contain Given/When/Then or an equivalent

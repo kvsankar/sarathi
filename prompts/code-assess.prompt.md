@@ -97,6 +97,8 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 
 - **tests_pass** — the suite returns success; **no skipped/xfail** tests.
 - **coverage_pct** — line coverage ≥ `--cov-min` (default 80).
+- **bad_id_format** — ID-looking tokens that are not slug-only, including trailing numeric
+  IDs, must be empty.
 - **pr_traceability_pct** — every plan PR-ID is referenced by ≥1 test. Must be 100%.
 - **id_traceability_pct** — every FR/AT/COMP appears in a test docstring/comment. Must be 100%.
 - **id_assertion_traceability_pct** — every FR/AT/COMP appears in the same test/function

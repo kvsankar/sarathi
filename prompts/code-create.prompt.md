@@ -193,7 +193,7 @@ Touch Set, stop and ask for a plan/design/spec update before editing them.
 Write the failing tests first. Run them; show they fail for the right reason. Test names
 must be plain, readable behaviour (e.g. `test_win_detected_on_full_row`). Put the covered
 IDs in a docstring or comment — never in the function name. One concise `Covers:` line is
-enough (e.g. `"""Covers FR-GAME-30, AT-GAME-30 (PR-CORE-10)."""`).
+enough (e.g. `"""Covers FR-GAME-WINROW, AT-GAME-WINROW (PR-CORE-WINROW)."""`).
 
 When a PR includes multiple test levels, write the smallest useful Red test first for the
 logic or contract being introduced, then add the planned acceptance/e2e/API workflow test

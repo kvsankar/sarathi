@@ -28,8 +28,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-PR = re.compile(r"\bPR-[A-Z][A-Z0-9]*-\d+\b")
-ID = re.compile(r"\b(?:(?:FR|AT)-[A-Z][A-Z0-9]*-\d+|COMP-[A-Z][A-Z0-9]*)\b")
+SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
+PR = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+ID = re.compile(rf"\b(?:(?:FR|AT)-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})\b")
+VALID_ANY = re.compile(
+    rf"\b(?:(?:UN|FEAT|UC|FR|NFR|AT|MILE|WORK|PR)-{SLUG_TOKEN}-{SLUG_TOKEN}|"
+    rf"(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN})\b"
+)
+ID_CANDIDATE = re.compile(
+    r"\b(?:UN|FEAT|UC|FR|NFR|AT|MILE|WORK|PR|LAYER|COMP|IFACE|DEC|RISK)"
+    r"(?:-[A-Za-z0-9]+)+\b",
+    re.I,
+)
 SKIP = re.compile(r"\b(skip|skipif|xfail)\b", re.I)
 VAGUE = re.compile(r"\b(TODO|FIXME|XXX|etc\.)\b", re.I)
 COV_TOTAL = re.compile(r"(?im)^\s*TOTAL\b.*?(\d+(?:\.\d+)?)\s*%\s*$")
@@ -70,6 +80,24 @@ def ids(path, pat):
     if not p.exists():
         return set()
     return {m.group(0) for m in pat.finditer(p.read_text(encoding="utf-8"))}
+
+
+def malformed_ids_in_text(text: str) -> set[str]:
+    """ID-looking tokens that do not follow slug-only artifact grammar."""
+    return {
+        m.group(0)
+        for m in ID_CANDIDATE.finditer(text)
+        if not VALID_ANY.fullmatch(m.group(0))
+    }
+
+
+def malformed_ids(path: str | None) -> set[str]:
+    if path is None:
+        return set()
+    p = Path(path)
+    if not p.exists():
+        return set()
+    return malformed_ids_in_text(p.read_text(encoding="utf-8", errors="ignore"))
 
 
 def source_files(root: Path, suffixes: set[str]):
@@ -246,11 +274,20 @@ def main() -> int:
             if f.suffix in (".py", ".ts", ".js", ".tsx", ".jsx"):
                 test_text += f.read_text(encoding="utf-8", errors="ignore") + "\n"
 
+    spec_path = arg("--spec", "spec.md")
+    design_path = arg("--design", "design.md")
+    bad_ids = (
+        malformed_ids(plan)
+        | malformed_ids(spec_path)
+        | malformed_ids(design_path)
+        | malformed_ids_in_text(test_text)
+    )
+
     plan_prs = ids(plan, PR)
     seen_prs = {
         p for p in plan_prs if p.replace("-", "_") in test_text or p in test_text
     }
-    want = ids(arg("--spec", "spec.md"), ID) | ids(arg("--design", "design.md"), ID)
+    want = ids(spec_path, ID) | ids(design_path, ID)
     seen = {i for i in want if i in test_text or i.replace("-", "_") in test_text}
     assertion_seen = assertion_linked_ids(test_text, want)
 
@@ -284,6 +321,7 @@ def main() -> int:
     )
     gates = {
         "tests_pass": bool(tests_pass),
+        "id_format_slug_only": not bad_ids,
         "coverage_ok": cov is not None and cov >= cov_min,
         "pr_traceability_100": seen_prs == plan_prs,
         "id_traceability_100": seen == want,
@@ -303,6 +341,7 @@ def main() -> int:
         "uncovered_prs": sorted(plan_prs - seen_prs),
         "uncovered_ids": sorted(want - seen),
         "ids_without_nearby_assertion": sorted(want - assertion_seen),
+        "bad_id_format": sorted(bad_ids),
         "oversized_modules": oversized,
         "diff_loc": diff_loc,
         "max_diff_loc": max_diff_loc,

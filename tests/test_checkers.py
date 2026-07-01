@@ -30,29 +30,29 @@ Work Scope: Slice/change
 Implementation Readiness: Code-ready
 
 # User Needs
-- UN-AUTH-10 Users need authenticated access.
+- UN-AUTH-ACCESS Users need authenticated access.
 
 # Non-Goals
 - Anonymous posting is out of scope.
 
 # Features
-- FEAT-AUTH-10 Login satisfies UN-AUTH-10.
+- FEAT-AUTH-LOGIN Login satisfies UN-AUTH-ACCESS.
 
 # Use Cases
-- UC-AUTH-10 Actor: user. Goal: sign in. FEAT-AUTH-10.
+- UC-AUTH-SIGNIN Actor: user. Goal: sign in. FEAT-AUTH-LOGIN.
 
 # Functional Requirements
-- FR-AUTH-10 The system shall allow valid users to sign in. UC-AUTH-10.
+- FR-AUTH-SIGNIN The system shall allow valid users to sign in. UC-AUTH-SIGNIN.
 
 # Non-Functional Requirements
-- NFR-PERF-10 Sign-in shall complete within 200 ms. Verification: timing.
+- NFR-PERF-SIGNIN Sign-in shall complete within 200 ms. Verification: timing.
 
 # Acceptance Tests
-- AT-AUTH-10 Given a valid user, when they sign in, then access is granted.
-  Verifies UC-AUTH-10, FR-AUTH-10, and NFR-PERF-10.
+- AT-AUTH-SIGNIN Given a valid user, when they sign in, then access is granted.
+  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.
 
 # Traceability Matrix
-UN-AUTH-10 -> FEAT-AUTH-10 -> UC-AUTH-10 -> FR-AUTH-10 -> AT-AUTH-10.
+UN-AUTH-ACCESS -> FEAT-AUTH-LOGIN -> UC-AUTH-SIGNIN -> FR-AUTH-SIGNIN -> AT-AUTH-SIGNIN.
 
 # Assumptions & Open Questions
 - Credentials already exist.
@@ -72,13 +72,13 @@ Implementation Readiness: Code-ready
 Python.
 
 # Drivers & Constraints
-FR-AUTH-10 and UC-AUTH-10 drive the design.
+FR-AUTH-SIGNIN and UC-AUTH-SIGNIN drive the design.
 
 # Layers
 - LAYER-APP Application orchestration.
 
 # Components
-- COMP-AUTH in LAYER-APP realizes FR-AUTH-10 and UC-AUTH-10 through IFACE-AUTH.
+- COMP-AUTH in LAYER-APP realizes FR-AUTH-SIGNIN and UC-AUTH-SIGNIN through IFACE-AUTH.
 
 # Interfaces
 - IFACE-AUTH owner: COMP-AUTH. Contract: authenticate credentials.
@@ -102,7 +102,7 @@ COMP-AUTH has unit tests for policy and contract tests for IFACE-AUTH.
 - RISK-AUTH Credential-store outage blocks sign-in.
 
 # Traceability Matrix
-FR-AUTH-10 -> COMP-AUTH -> IFACE-AUTH -> DEC-AUTH.
+FR-AUTH-SIGNIN -> COMP-AUTH -> IFACE-AUTH -> DEC-AUTH.
 """,
         encoding="utf-8",
     )
@@ -110,7 +110,8 @@ FR-AUTH-10 -> COMP-AUTH -> IFACE-AUTH -> DEC-AUTH.
 
 def write_valid_plan(path: Path) -> None:
     path.write_text(
-        """# Overview
+        (
+            """# Overview
 Work Scope: Slice/change
 Plan Type: Implementation
 Implementation Readiness: Code-ready
@@ -119,19 +120,23 @@ Implementation Readiness: Code-ready
 Use Red/Green TDD and one small PR.
 
 # Milestones
-- MILE-AUTH-10 Deliver login.
+- MILE-AUTH-LOGIN Deliver login.
 
 # Pull Requests / Child Work Items
-- PR-AUTH-10 Scope: implement login. LOC 120. Red: failing AT-AUTH-10 test.
-  Green: implement COMP-AUTH. Delivers FR-AUTH-10, UC-AUTH-10, NFR-PERF-10,
-  AT-AUTH-10, and COMP-AUTH.
+- PR-AUTH-SIGNIN Scope: implement login. LOC 120. Red: failing AT-AUTH-SIGNIN test.
+  Green: implement COMP-AUTH. Delivers FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN,
+  AT-AUTH-SIGNIN, and COMP-AUTH.
 
 # Coverage Map
-FR-AUTH-10, UC-AUTH-10, NFR-PERF-10, AT-AUTH-10, and COMP-AUTH map to PR-AUTH-10.
+"""
+            "FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN, AT-AUTH-SIGNIN, "
+            "and COMP-AUTH map to PR-AUTH-SIGNIN.\n"
+            """
 
 # Sequencing & Risks
-PR-AUTH-10 has no dependency.
-""",
+PR-AUTH-SIGNIN has no dependency.
+"""
+        ),
         encoding="utf-8",
     )
 
@@ -162,7 +167,39 @@ def test_check_spec_rejects_nfr_without_units(tmp_path, monkeypatch, capsys):
     )
 
     assert rc == 1
-    assert report["nfr_missing_units"] == ["NFR-PERF-10"]
+    assert report["nfr_missing_units"] == ["NFR-PERF-SIGNIN"]
+
+
+def test_check_spec_rejects_numbered_ids(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8").replace("FR-AUTH-SIGNIN", "FR-AUTH-10")
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert "FR-AUTH-10" in report["bad_id_format"]
+
+
+def test_check_spec_rejects_lowercase_ids(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8").replace(
+        "FR-AUTH-SIGNIN", "fr-auth-signin"
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert "fr-auth-signin" in report["bad_id_format"]
 
 
 def test_check_spec_rejects_latency_nfr_with_wrong_unit(tmp_path, monkeypatch, capsys):
@@ -180,7 +217,7 @@ def test_check_spec_rejects_latency_nfr_with_wrong_unit(tmp_path, monkeypatch, c
     )
 
     assert rc == 1
-    assert report["nfr_unit_mismatches"] == ["NFR-PERF-10"]
+    assert report["nfr_unit_mismatches"] == ["NFR-PERF-SIGNIN"]
 
 
 def test_check_spec_rejects_acceptance_test_that_only_namedrops_ids(
@@ -189,9 +226,10 @@ def test_check_spec_rejects_acceptance_test_that_only_namedrops_ids(
     spec_path = tmp_path / "spec.md"
     write_valid_spec(spec_path)
     text = spec_path.read_text(encoding="utf-8").replace(
-        "- AT-AUTH-10 Given a valid user, when they sign in, then access is granted.\n"
-        "  Verifies UC-AUTH-10, FR-AUTH-10, and NFR-PERF-10.",
-        "- AT-AUTH-10 Covers UC-AUTH-10, FR-AUTH-10, and NFR-PERF-10.",
+        "- AT-AUTH-SIGNIN Given a valid user, when they sign in, then "
+        "access is granted.\n"
+        "  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.",
+        "- AT-AUTH-SIGNIN Covers UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.",
     )
     spec_path.write_text(text, encoding="utf-8")
     module = load_checker("check_spec")
@@ -201,7 +239,7 @@ def test_check_spec_rejects_acceptance_test_that_only_namedrops_ids(
     )
 
     assert rc == 1
-    assert report["ats_missing_scenario_shape"] == ["AT-AUTH-10"]
+    assert report["ats_missing_scenario_shape"] == ["AT-AUTH-SIGNIN"]
 
 
 def test_check_design_accepts_complete_structural_design(tmp_path, monkeypatch, capsys):
@@ -271,6 +309,29 @@ def test_check_design_detects_missing_interface_owner(tmp_path, monkeypatch, cap
     assert report["iface_owner_issues"] == ["IFACE-AUTH"]
 
 
+def test_check_design_rejects_numbered_requirement_refs(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    text = design_path.read_text(encoding="utf-8").replace(
+        "FR-AUTH-SIGNIN", "FR-AUTH-10"
+    )
+    design_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_design")
+
+    rc, report = run_main(
+        module,
+        [str(design_path), "--spec", str(spec_path), "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert "FR-AUTH-10" in report["bad_id_format"]
+
+
 def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     design_path = tmp_path / "design.md"
@@ -327,4 +388,34 @@ def test_check_plan_rejects_declared_pr_over_300_loc(tmp_path, monkeypatch, caps
     )
 
     assert rc == 1
-    assert report["oversized_prs"] == ["PR-AUTH-10"]
+    assert report["oversized_prs"] == ["PR-AUTH-SIGNIN"]
+
+
+def test_check_plan_rejects_numbered_pr_ids(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8").replace("PR-AUTH-SIGNIN", "PR-AUTH-10")
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert "PR-AUTH-10" in report["bad_id_format"]

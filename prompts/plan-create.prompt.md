@@ -148,7 +148,8 @@ acceptance/e2e tests for critical user journeys and externally visible `AT-` cov
   feature/component or slice/change items and state which child artifacts are required.
 - **New implementation plan** — author the full PR-oriented document below for code-ready
   slice/change work or a small feature/component that already has enough local detail.
-- **Revision** — a plan exists. Read it, preserve IDs, insert at next gap number, refresh coverage.
+- **Revision** — a plan exists. Read it, preserve IDs, add new descriptive slug IDs, and
+  refresh coverage.
 - **Feature/component plan** — plan one feature/component; reference parent spec/design IDs;
   note parent paths and choose Breakdown or Implementation plan type.
 
@@ -183,10 +184,12 @@ YOLO mode, prefer proceeding with explicit planning assumptions over continuing 
 interview, while preserving hard blockers for upstream artifact defects and non-code-ready
 work.
 
-## Step 2 — Numbering convention
+## Step 2 — ID convention
 
-- `MILE-<SLUG>-10` (milestone), `WORK-<SLUG>-10` (child work item),
-  `PR-<SLUG>-10` (pull request). Numbers in 10s, stable.
+- Use slug-only `KIND-AREA-NAME` IDs: `MILE-<AREA>-<NAME>` (milestone),
+  `WORK-<AREA>-<NAME>` (child work item), and `PR-<AREA>-<NAME>` (pull request).
+- `AREA` and `NAME` are uppercase slug tokens, 2-32 characters each, using `A-Z` and
+  digits only after the first character. Do not use trailing numbers.
 - Each PR cites the `FR-`/`UC-`/`AT-` it delivers and the `COMP-` it implements.
 
 ## Step 3 — Author the plan with this exact section order
@@ -198,12 +201,12 @@ work.
    branch/worktree isolation, integration cadence, build artifact strategy, deployment
    strategy, documentation strategy, and whether this plan decomposes parent work or
    implements code-ready work.
-3. **Milestones** — numbered (`MILE-<SLUG>-<n>`); each groups child work or PRs toward a
+3. **Milestones** — list (`MILE-<AREA>-<NAME>`); each groups child work or PRs toward a
    coherent delivery slice.
-4. **Pull Requests / Child Work Items** — for a Breakdown plan, list numbered
-   `WORK-<SLUG>-<n>` items with scope, parent IDs, required child spec/design/LLD/plan,
+4. **Pull Requests / Child Work Items** — for a Breakdown plan, list
+   `WORK-<AREA>-<NAME>` items with scope, parent IDs, required child spec/design/LLD/plan,
    dependencies, readiness target, risks, and done signal. For an Implementation plan, list
-   numbered `PR-<SLUG>-<n>` items; for each: scope; **Planned Touch Set**
+   `PR-<AREA>-<NAME>` items; for each: scope; **Planned Touch Set**
    (files/directories/modules/config/docs/generated artifacts plus any spec/design/plan
    sections allowed to change, including build/deployment/CI/IaC files when relevant);
    **Build/Deploy Work** (artifact, script, pipeline, manifest, migration, dry-run, smoke,

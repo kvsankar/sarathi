@@ -30,9 +30,16 @@ if str(CHECKER_DIR) not in sys.path:
 
 from schemas import DESIGN_SECTIONS  # noqa: E402
 
-ID = re.compile(r"\b(LAYER|COMP|IFACE|DEC|RISK)-([A-Z][A-Z0-9]*)\b")
-SUFFIXED = re.compile(r"\b(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Z][A-Z0-9]*-\d+\b")
-REQ = re.compile(r"\b(FR|UC|NFR)-([A-Z][A-Z0-9]*)-(\d+)\b")
+SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
+ID = re.compile(rf"\b(LAYER|COMP|IFACE|DEC|RISK)-({SLUG_TOKEN})\b")
+REQ = re.compile(rf"\b(FR|UC|NFR)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
+VALID_ANY = re.compile(
+    rf"\b(?:(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN}|"
+    rf"(?:FR|UC|NFR)-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
+)
+ID_CANDIDATE = re.compile(
+    r"\b(?:LAYER|COMP|IFACE|DEC|RISK|FR|UC|NFR)(?:-[A-Za-z0-9]+)+\b", re.I
+)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)
 # Leading markdown list markers that precede a defining ID (not table pipes).
 LEAD = re.compile(r"^[\s#>\-\*\+\d\.\)]*")
@@ -141,6 +148,17 @@ def defs_and_refs(text: str):
     return defined, refs
 
 
+def malformed_ids(text: str) -> list[str]:
+    """ID-looking tokens that do not follow design/spec slug grammar."""
+    return sorted(
+        {
+            m.group(0)
+            for m in ID_CANDIDATE.finditer(text)
+            if not VALID_ANY.fullmatch(m.group(0))
+        }
+    )
+
+
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
@@ -208,7 +226,7 @@ def main() -> int:
         if not in_fence and (m := _defline(line)):
             def_ids.append(m.group(0))
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
-    bad_fmt = [m.group(0) for m in SUFFIXED.finditer(text)]
+    bad_fmt = malformed_ids(text)
     known = all_ids | req_ids
     orphans = sorted(r for r in refs if r not in known)
     vague = len(VAGUE.findall(text))
@@ -250,7 +268,7 @@ def main() -> int:
         return round(100 * len(a) / len(b), 1) if b else 100.0
 
     gates = {
-        "id_format_no_suffix": not bad_fmt,
+        "id_format_slug_only": not bad_fmt,
         "no_duplicates": not dupes,
         "no_orphan_refs": not orphans,
         "comp_req_coverage_100": covered == comps,
@@ -272,7 +290,7 @@ def main() -> int:
         "dependency_cycles": cycles,
         "orphan_refs": orphans,
         "duplicates": dupes,
-        "suffixed_ids": bad_fmt,
+        "bad_id_format": bad_fmt,
         "iface_duplicates": iface_dupes,
         "iface_owner_issues": sorted(iface_owner_issues),
         "vague_hits": vague,
