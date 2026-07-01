@@ -26,6 +26,7 @@ def run_check_code(
     monkeypatch,
     capsys,
     test_body: str | None = None,
+    spec_body: str | None = None,
     extra_args: list[str] | None = None,
 ):
     plan = tmp_path / "plan.md"
@@ -36,7 +37,9 @@ def run_check_code(
     tests.mkdir(exist_ok=True)
     src.mkdir(exist_ok=True)
     plan.write_text("- PR-AUTH-SIGNIN\n", encoding="utf-8")
-    spec.write_text("- FR-AUTH-SIGNIN\n- AT-AUTH-SIGNIN\n", encoding="utf-8")
+    spec.write_text(
+        spec_body or "- FR-AUTH-SIGNIN\n- AT-AUTH-SIGNIN\n", encoding="utf-8"
+    )
     design.write_text("- COMP-AUTH\n- TEST-AUTH-POLICY\n", encoding="utf-8")
     (tests / "test_auth.py").write_text(
         test_body
@@ -145,7 +148,7 @@ def test_check_code_rejects_id_only_weak_assertion(tmp_path, monkeypatch, capsys
 def test_check_code_rejects_numbered_ids_in_traceability(tmp_path, monkeypatch, capsys):
     numbered_test = (
         "def test_auth():\n"
-        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, COMP-AUTH, '
+        '    """Covers PR-AUTH-10, FR-AUTH-10, AT-AUTH-10, JT-AUTH-10, COMP-AUTH, '
         'TEST-AUTH-10."""\n'
         "    result = 'granted'\n"
         "    assert result == 'granted'\n"
@@ -164,9 +167,32 @@ def test_check_code_rejects_numbered_ids_in_traceability(tmp_path, monkeypatch, 
     assert report["bad_id_format"] == [
         "AT-AUTH-10",
         "FR-AUTH-10",
+        "JT-AUTH-10",
         "PR-AUTH-10",
         "TEST-AUTH-10",
     ]
+
+
+def test_check_code_requires_journey_test_traceability(tmp_path, monkeypatch, capsys):
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+    )
+    assert rc == 0
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        spec_body="- FR-AUTH-SIGNIN\n- AT-AUTH-SIGNIN\n- JT-AUTH-LOGIN\n",
+    )
+
+    assert rc == 1
+    assert "JT-AUTH-LOGIN" in report["uncovered_ids"]
+    assert "JT-AUTH-LOGIN" in report["ids_without_nearby_assertion"]
 
 
 def test_check_code_rejects_tautological_assertion(tmp_path, monkeypatch, capsys):

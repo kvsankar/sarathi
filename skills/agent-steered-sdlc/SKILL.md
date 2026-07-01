@@ -108,10 +108,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   Parent artifacts may pass as Decomposable; `/code-create` must only proceed from a
   code-ready implementation plan for a slice/change or sufficiently small feature/component.
 - Use slug-only IDs. Specs and plans use `KIND-AREA-NAME`, for example
-  `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities use
-  `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Design test obligations use
-  `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such as `FR-AUTH-10`
-  are invalid.
+  `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, and `PR-AUTH-SIGNIN`.
+  Design entities use `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Design test
+  obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such
+  as `FR-AUTH-10` are invalid.
 - Infer the likely scope from the user's request and state it explicitly. Broad
   product/platform/app requests map to product/system, one capability/subsystem maps to
   feature/component, and bug fixes, PR-sized changes, or local behavior deltas map to
@@ -129,36 +129,38 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
     normally a Breakdown plan with feature/component `WORK-` items, dependencies, child
     artifact needs, mock approval, logging/error-handling tracks, build/deployment tracks,
     documentation tracks, parallel tracks, and readiness targets.
-  - Feature/component spec carries parent references, local behavior, FR/NFR/AT coverage,
-    edge cases, UI mock preference, logging/telemetry and error-handling constraints,
+  - Feature/component spec carries parent references, local behavior, FR/NFR/AT/JT
+    coverage, edge cases, UI mock preference, logging/telemetry and error-handling constraints,
     build/deployment constraints, documentation constraints, dependencies, and non-goals;
     design carries responsibilities, contracts, local state/data, runtime flows, core/shell
     split, dependencies, mock UI artifact/approval when required, logging/error-handling
     impacts, build/deployment impacts, documentation impacts, decisions, risks, and explicit
     `TEST-` obligations; plan carries child slice/change work or PRs, integration order,
-    `AT-`/`TEST-` allocation, mock approval, logging/error-handling allocation,
+    `AT-`/`JT-`/`TEST-` allocation, mock approval, logging/error-handling allocation,
     build/deployment allocation, documentation allocation, and touch-scope risks.
   - Slice/change spec carries the exact requirement delta, parent IDs refined/preserved,
     changed/unchanged behavior, UI mock preference/delta, logging/error-handling deltas,
-    documentation deltas, and acceptance criteria; design carries LLD-level local changes,
+    documentation deltas, and acceptance/journey criteria; design carries LLD-level local changes,
     API/schema/data deltas, failure paths, validation/policy logic, mock UI artifact/
     approval when required, logging/telemetry changes, build/deployment script or artifact
     changes, documentation changes, migration/rollback, side effects, `TEST-` obligations/
     doubles, and likely touch candidates;
-    plan carries concrete `PR-` items, Planned Touch Sets, Red/Green steps, `AT-`/`TEST-` allocation,
-    LOC estimates, quality gates, mock approval, logging/error-handling verification,
+    plan carries concrete `PR-` items, Planned Touch Sets, Red/Green steps,
+    `AT-`/`JT-`/`TEST-` allocation, LOC estimates, quality gates, mock approval,
+    logging/error-handling verification,
     build/deployment verification, documentation checks, rollback, dependencies, and
     worktree guidance.
 - Treat test ownership as part of artifact ownership: specs define `AT-` acceptance
-  criteria at product/system, feature/component, and slice/change scope; designs define
-  explicit `TEST-` executable test obligations for lower-level and workflow checks; plans
-  assign each `AT-` and `TEST-` to PRs or child work; code writes acceptance tests plus the
-  planned `TEST-` obligations using TDD. Code may also add implementation-local
+  criteria at product/system, feature/component, and slice/change scope, and `JT-` journey
+  tests for long ordered stories that compose multiple `AT-` scenarios; designs define
+  explicit `TEST-` executable test obligations for lower-level, workflow, and journey
+  checks; plans assign each `AT-`, `JT-`, and `TEST-` to PRs or child work; code writes
+  acceptance and journey tests plus the planned `TEST-` obligations using TDD. Code may also add implementation-local
   supplemental inner tests discovered during Red/Green/Refactor, such as helper, pure-core,
   parser, mapper, regression, characterization, table/property, adapter, or edge-case
-  tests. These supplement, never replace, planned `AT-`/`TEST-` coverage. They must stay
-  within the current `PR-` and Planned Touch Set, cite the nearest `PR-` plus relevant
-  `FR-`/`AT-`/`TEST-`/`COMP-` when applicable, and use a concrete oracle. If a supplemental
+  tests. These supplement, never replace, planned `AT-`/`JT-`/`TEST-` coverage. They must
+  stay within the current `PR-` and Planned Touch Set, cite the nearest `PR-` plus relevant
+  `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-` when applicable, and use a concrete oracle. If a supplemental
   test implies new externally visible behavior, a changed contract, a UX/NFR expectation,
   or broader scope, stop and revise the spec/design/plan before coding it. Executable tests
   are implementation code: their verification oracles, assertions, fixtures, helpers,

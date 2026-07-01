@@ -192,9 +192,11 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   explanation is specific, justified by the architecture style, and still protects testability.
 - **Testability and operability** — explicit `TEST-` obligations make components and
   contracts testable in isolation and collaboration; the design distinguishes
-  acceptance/e2e, unit/pure-core, component, contract, integration, UI/accessibility/visual,
-  quality-attribute, migration, and operational checks as applicable; observability, failure
-  handling, rollout/rollback, and operational checks exist.
+  acceptance/e2e/journey, unit/pure-core, component, contract, integration,
+  UI/accessibility/visual, quality-attribute, migration, and operational checks as
+  applicable; critical `JT-` stories are mapped to executable obligations with ordered
+  steps, state handoff, environment, and oracle details; observability, failure handling,
+  rollout/rollback, and operational checks exist.
 - **Verification-oracle design** — each `TEST-` obligation names the observable evidence
   that will prove pass/fail, such as return values, state changes, persisted records, events,
   API responses, DOM/accessibility output, screenshots, artifacts, logs, metrics, traces,

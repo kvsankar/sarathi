@@ -40,7 +40,7 @@ Report:
 - `passed/total`.
 - UC and FR acceptance coverage percentages.
 - Any uncovered IDs, orphan refs, duplicates, bad ID format, NFR unit issues,
-  acceptance-test shape issues, or vague hits.
+  acceptance-test shape issues, journey-test sequence/composition issues, or vague hits.
 
 ## Output
 

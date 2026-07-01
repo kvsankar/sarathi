@@ -15,7 +15,7 @@ Optimize so `/code-assess` finds nothing to fix.
    (**Green**), then **Refactor** with tests green. Never write prod code without a red test.
 2. **One PR at a time** — implement the lowest unbuilt PR whose deps are met; keep ≤300 LOC.
 3. **Always green** — the full suite passes before a PR is done; never leave red on trunk.
-4. **Traceable** — tests name the FR/AT/COMP/TEST and PR they cover; nothing built off-plan.
+4. **Traceable** — tests name the FR/AT/JT/COMP/TEST and PR they cover; nothing built off-plan.
 5. **Production quality** — error handling, input validation, useful structured logging/
    telemetry where planned, reproducible build artifacts, deployable configuration/scripts
    when planned, accurate user/developer documentation when planned, no dead code, lint clean.
@@ -71,6 +71,10 @@ test levels before or alongside the production code using Red/Green/Refactor:
   PR. These should verify externally visible behavior or measurable NFR outcomes from the
   user's perspective or a public API boundary, and cite the relevant `TEST-` obligation when
   the design/plan named one.
+- Write executable **journey/workflow tests** for the `JT-` items assigned to the PR. These
+  should chain the referenced `AT-` scenarios in the planned order, preserve realistic state
+  between steps, use the planned UI/API/service harness, clean up or isolate test data, and
+  assert the final and important intermediate oracles.
 - Write **unit/pure-core tests** for deterministic logic, validation, calculations, state
   transitions, reducers, mappers, policies, and edge cases.
 - Write **component/module tests** for components behind stable local boundaries.
@@ -97,17 +101,17 @@ test levels before or alongside the production code using Red/Green/Refactor:
 
 Follow the plan's test mix. Treat each assigned `TEST-` as an executable obligation, not a
 suggestion. If the planned tests are insufficient to prove the linked
-`FR-`/`AT-`/`TEST-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather than
-silently changing the test strategy.
+`FR-`/`AT-`/`JT-`/`TEST-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather
+than silently changing the test strategy.
 
 Also add **implementation-local supplemental inner tests** when Red/Green/Refactor exposes
 useful behavior that was too small or code-shaped to name in the design/plan. Examples
 include helper or pure-core edge cases, table/property cases, parser/mapper/reducer cases,
 regression tests for a discovered bug, characterization tests around legacy boundaries, local
 adapter/error-normalization tests, and boundary fixture variations. These tests supplement,
-never replace, planned `AT-`/`TEST-` coverage. They must stay within the current `PR-` and
-Planned Touch Set, cite the nearest `PR-` plus relevant `FR-`/`AT-`/`TEST-`/`COMP-` when
-applicable, and state a concrete oracle. If a supplemental test implies new externally
+never replace, planned `AT-`/`JT-`/`TEST-` coverage. They must stay within the current `PR-`
+and Planned Touch Set, cite the nearest `PR-` plus relevant `FR-`/`AT-`/`JT-`/`TEST-`/
+`COMP-` when applicable, and state a concrete oracle. If a supplemental test implies new externally
 visible behavior, a changed API/event/schema/error contract, a UX/NFR expectation, or
 broader scope, stop and request the appropriate spec/design/plan update before coding it.
 
@@ -196,7 +200,7 @@ repo lacks thresholds, use these defaults unless the user chooses different stan
 
 Read `plan.md`, `design.md`, `spec.md`. Apply the Code-ready scope gate above. Then identify
 the next PR (lowest number, deps merged, not yet built). State the PR, its Red tests, Green
-scope, Planned Touch Set, the COMP/FR/AT/TEST it covers, the planned test levels, the
+scope, Planned Touch Set, the COMP/FR/AT/JT/TEST it covers, the planned test levels, the
 verification oracle for each planned test, any likely supplemental inner-test discovery
 areas, and the quality-gate command(s) that must pass at the PR boundary. Also state any
 mock UI dependency and approval status for UI-facing work. If the spec/design/plan requires
@@ -252,8 +256,8 @@ asserted, such as returned value, persisted row, emitted event, DOM text, screen
 baseline, structured log, metric, artifact, deployment dry-run result, or external call.
 
 When a PR includes multiple test levels, write the smallest useful Red test first for the
-logic or contract being introduced, then add the planned acceptance/e2e/API workflow test
-for the assigned `AT-`. Keep slow acceptance/e2e coverage focused; do not duplicate every
+logic or contract being introduced, then add the planned acceptance/e2e/API workflow or
+journey test for the assigned `AT-`/`JT-`. Keep slow acceptance/e2e coverage focused; do not duplicate every
 unit edge case at the top level.
 
 When testing boundary errors, include representative multi-field or multi-cause payloads
@@ -366,7 +370,7 @@ first completed PR boundary.
 
 ## Quality rules
 
-- Every PR maps 1:1 to a plan `PR-`; tests cover its FR/AT/COMP/TEST. ≤300 LOC per PR.
+- Every PR maps 1:1 to a plan `PR-`; tests cover its FR/AT/JT/COMP/TEST. ≤300 LOC per PR.
 - Each PR implements the test levels assigned in the plan, including executable acceptance
   coverage for assigned `AT-` items and executable `TEST-` obligations for the affected
   core, component, contract, integration, UI, quality, migration, or operational behavior.

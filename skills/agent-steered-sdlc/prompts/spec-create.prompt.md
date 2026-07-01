@@ -42,13 +42,15 @@ management and the requirements pyramid:
   facts that may be current, specialized, regulated, market-dependent, standards-dependent,
   platform-specific, or vendor-specific.
 - **Traceability enables validation and change control** — every item should connect from
-  stakeholder need to feature, use case, requirement, and acceptance test.
+  stakeholder need to feature, use case, requirement, acceptance test, and journey test.
 
 ## Test responsibility in this command
 
-`/spec-create` defines **acceptance tests as requirements-level acceptance criteria**.
-These `AT-` items are black-box, externally observable scenarios or quality checks that
-state how stakeholders will know the requirement is satisfied. They are written in the spec,
+`/spec-create` defines **acceptance tests and journey tests as requirements-level
+acceptance criteria**. `AT-` items are black-box, externally observable scenarios or quality
+checks that state how stakeholders will know one requirement or use-case outcome is
+satisfied. `JT-` items are long-form, ordered stories that compose multiple `AT-` scenarios
+across a realistic user, operator, API, or business workflow. They are written in the spec,
 not as executable test code.
 
 Write `AT-` items at every spec scope, but match their granularity to that scope:
@@ -62,6 +64,13 @@ Write `AT-` items at every spec scope, but match their granularity to that scope
   delta, bug fix, migration, docs/build/deploy delta, or justified non-code verification.
   These are the `AT-` items most directly mapped to executable acceptance/e2e/API tests.
 
+Write `JT-` items when confidence depends on a sequence of behaviors rather than one
+isolated scenario. Product/system specs may define broad critical journeys; feature specs
+may refine a journey across screens, APIs, jobs, or actors; slice specs may define a small
+journey/regression that exercises the changed path end to end. Each `JT-` must reference at
+least two `AT-` items in order and name the observable final oracle or intermediate oracles
+that prove the story worked.
+
 Do not define unit tests, component tests, contract tests, integration tests, visual tests,
 or other lower-level implementation tests here. Those belong downstream:
 
@@ -70,8 +79,9 @@ or other lower-level implementation tests here. Those belong downstream:
   quality-attribute, migration, build/deploy, documentation, and operational checks as
   needed.
 - `/plan-create` schedules which PR writes each executable test obligation, including which
-  `AT-` items become executable acceptance/e2e/API tests.
-- `/code-create` writes the executable tests: acceptance/e2e tests for `AT-` coverage and
+  `AT-` and `JT-` items become executable acceptance/e2e/API journey tests.
+- `/code-create` writes the executable tests: acceptance/e2e tests for `AT-` and `JT-`
+  coverage and
   lower-level tests such as unit, component, contract, integration, accessibility,
   performance, security, migration, or operational checks for the assigned `TEST-`
   obligations required by the design and plan. It may also add scoped implementation-local
@@ -235,14 +245,15 @@ Use the same section order for every spec, but tune the content to the declared 
   actors and users, concrete behavior/use cases, FRs/NFRs local to the feature/component,
   edge cases, integration or business rules, logging/telemetry and error-handling
   constraints, build/release/deployment constraints, documentation constraints, acceptance
-  criteria, dependencies, non-goals, and traceability back to parent needs/features. It may
-  be Decomposable or Code-ready depending on size and precision.
+  criteria, journey tests when workflows cross multiple scenarios, dependencies, non-goals,
+  and traceability back to parent needs/features. It may be Decomposable or Code-ready
+  depending on size and precision.
 - **Slice/change spec** carries the precise requirement delta for one implementable change,
-  parent IDs being refined or preserved, exact behavior and edge cases, changed FR/NFR/AT
+  parent IDs being refined or preserved, exact behavior and edge cases, changed FR/NFR/AT/JT
   items, logging/error-handling deltas, build/release/deployment deltas and documentation
-  deltas when relevant, externally visible acceptance criteria or justified non-code
-  verification, and explicitly unchanged behavior. It should normally be Code-ready before
-  planning/code.
+  deltas when relevant, externally visible acceptance/journey criteria or justified
+  non-code verification, and explicitly unchanged behavior. It should normally be
+  Code-ready before planning/code.
 
 ## Research and source grounding
 
@@ -357,7 +368,8 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
   numbers.
 - Examples: `UN-AUTH-ACCESS` (user need), `FEAT-AUTH-LOGIN` (feature),
   `UC-AUTH-SIGNIN` (use case), `FR-AUTH-SIGNIN` (functional),
-  `NFR-PERF-SIGNIN` (non-functional), `AT-AUTH-SIGNIN` (acceptance test).
+  `NFR-PERF-SIGNIN` (non-functional), `AT-AUTH-SIGNIN` (acceptance test),
+  `JT-AUTH-ONBOARDING` (journey test).
 - Every ID is unique and stable. Cross-references use IDs only.
 
 ## Step 3 — Author the spec with this exact section order
@@ -384,9 +396,13 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
    black-box acceptance criteria; each maps to a `UC-` and the `FR-`/`NFR-` it verifies.
    State the externally visible behavior or measurable quality to verify, not the internal
    unit/component/integration test mechanics.
-9. **Traceability Matrix** — needs → non-goals/scope boundaries → features → use cases →
-   requirements → acceptance tests, including priority/risk where known.
-10. **Assumptions & Open Questions** — unconfirmed facts, source/research notes,
+9. **Journey Tests** — list (`JT-<AREA>-<NAME>`) for long, ordered stories that exercise
+   multiple `AT-` items one after another. Each `JT-` names the actors/systems, ordered
+   `AT-` sequence, important state carried between steps, and observable final oracle. If no
+   journey test is needed at the current scope, state that explicitly.
+10. **Traceability Matrix** — needs → non-goals/scope boundaries → features → use cases →
+   requirements → acceptance tests → journey tests, including priority/risk where known.
+11. **Assumptions & Open Questions** — unconfirmed facts, source/research notes,
    out-of-scope/deferred items, priority trade-offs, UI mock preference and approval gate
    when relevant, and change-impact notes for revisions.
 
@@ -396,7 +412,8 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
 - Work scope and implementation readiness are explicit and realistic. Broad parent specs
   are not mislabeled code-ready when they still require decomposition or child artifacts.
 - Non-goals are explicit enough to prevent accidental implementation or acceptance-test scope.
-- Every use case maps to ≥1 acceptance test; every requirement is testable.
+- Every use case maps to ≥1 acceptance test; every requirement is testable; critical
+  multi-step stories have `JT-` coverage or an explicit reason they are out of scope.
 - Each requirement is necessary, atomic, feasible, verifiable, unambiguous, and uses "shall".
 - User needs and use cases stay in the problem/behavior domain; functional requirements state
   externally observable obligations; NFRs state measurable quality or constraint obligations.

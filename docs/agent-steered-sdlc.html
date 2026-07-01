@@ -517,7 +517,7 @@
         </div>
         <div class="note-card">
           <strong>Tests land at the right place.</strong>
-          <p><code>AT-</code> criteria start in specs. Design names executable <code>TEST-</code> obligations and oracles. Plans assign both to PRs; code writes them and may add scoped inner tests discovered during TDD.</p>
+          <p><code>AT-</code> criteria cover one scenario. <code>JT-</code> journeys chain multiple <code>AT-</code> scenarios into a long story. Design names executable <code>TEST-</code> obligations and oracles; plans assign them to PRs; code writes them.</p>
         </div>
         <div class="note-card">
           <strong>Spikes stay lightweight.</strong>
@@ -540,21 +540,21 @@
         <tbody>
           <tr>
             <td class="scope">Product/System</td>
-            <td>Mission, stakeholders, boundary, needs, non-goals, capabilities, UI mock preference, diagnostics/error/docs/build/deploy expectations, major NFRs, broad ATs.</td>
+            <td>Mission, stakeholders, boundary, needs, non-goals, capabilities, UI mock preference, diagnostics/error/docs/build/deploy expectations, major NFRs, broad ATs/JTs.</td>
             <td>HLD: context, major services/modules, drivers, boundaries, data ownership, mock UI when required, logging/error/docs/build/release/deploy strategy, ADRs, risks.</td>
             <td>Breakdown: milestones, feature/component work, dependencies, child artifacts, mock approval, logging/error/docs/build/deploy tracks, parallel tracks.</td>
           </tr>
           <tr>
             <td class="scope">Feature/Component</td>
-            <td>Parent refs, local behavior, FR/NFR/ATs, edge cases, rules, UI mock preference, logging/error/docs/build/deploy constraints, dependencies, non-goals.</td>
+            <td>Parent refs, local behavior, FR/NFR/AT/JT coverage, edge cases, rules, UI mock preference, logging/error/docs/build/deploy constraints, dependencies, non-goals.</td>
             <td>Responsibilities, contracts, local state/flows, core/shell split, mock UI when required, logging/error/docs/build/deploy impacts, decisions, <code>TEST-</code> obligations.</td>
-            <td>Child slices or PRs, integration order, <code>AT-</code>/<code>TEST-</code> allocation, mock approval, logging/error/docs/build/deploy allocation, touch-scope risks.</td>
+            <td>Child slices or PRs, integration order, <code>AT-</code>/<code>JT-</code>/<code>TEST-</code> allocation, mock approval, logging/error/docs/build/deploy allocation, touch-scope risks.</td>
           </tr>
           <tr>
             <td class="scope">Slice/Change</td>
-            <td>Exact requirement delta, refined parent IDs, changed/unchanged behavior, UI mock preference/delta, logging/error/docs/build/deploy delta, code-ready ATs.</td>
+            <td>Exact requirement delta, refined parent IDs, changed/unchanged behavior, UI mock preference/delta, logging/error/docs/build/deploy delta, code-ready ATs/JTs.</td>
             <td>LLD: local changes, API/schema/data deltas, failure paths, mock UI when required, logging/error/docs/build/deploy scripts or artifacts, migration/rollback, <code>TEST-</code> obligations.</td>
-            <td>Implementation PRs, Planned Touch Sets, Red/Green steps, <code>AT-</code>/<code>TEST-</code> allocation, mock approval, logging/error/docs/build/deploy verification, quality gates, worktrees.</td>
+            <td>Implementation PRs, Planned Touch Sets, Red/Green steps, <code>AT-</code>/<code>JT-</code>/<code>TEST-</code> allocation, mock approval, logging/error/docs/build/deploy verification, quality gates, worktrees.</td>
           </tr>
         </tbody>
       </table>

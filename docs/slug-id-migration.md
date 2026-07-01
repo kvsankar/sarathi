@@ -9,6 +9,7 @@ Old IDs used numeric leaves:
 ```text
 FR-AUTH-10
 AT-AUTH-20
+JT-AUTH-30
 PR-AUTH-10
 TEST-AUTH-10
 ```
@@ -18,6 +19,7 @@ New IDs use descriptive slug leaves:
 ```text
 FR-AUTH-SIGNIN
 AT-AUTH-SIGNIN
+JT-AUTH-ONBOARDING
 PR-AUTH-SIGNIN
 TEST-AUTH-POLICY
 ```
@@ -38,7 +40,7 @@ character. Do not use trailing numbers or internal hyphens.
 ## Affected Kinds
 
 - Spec IDs: `UN-AREA-NAME`, `FEAT-AREA-NAME`, `UC-AREA-NAME`, `FR-AREA-NAME`,
-  `NFR-AREA-NAME`, `AT-AREA-NAME`.
+  `NFR-AREA-NAME`, `AT-AREA-NAME`, `JT-AREA-NAME`.
 - Plan IDs: `MILE-AREA-NAME`, `WORK-AREA-NAME`, `PR-AREA-NAME`.
 - Design entity IDs: unchanged `LAYER-SLUG`, `COMP-SLUG`, `IFACE-SLUG`, `DEC-SLUG`,
   `RISK-SLUG`.
@@ -51,6 +53,7 @@ character. Do not use trailing numbers or internal hyphens.
    ```text
    FR-AUTH-10 -> FR-AUTH-SIGNIN
    AT-AUTH-10 -> AT-AUTH-SIGNIN
+   JT-AUTH-10 -> JT-AUTH-ONBOARDING
    PR-AUTH-10 -> PR-AUTH-SIGNIN
    TEST-AUTH-10 -> TEST-AUTH-POLICY
    ```
@@ -80,5 +83,5 @@ character. Do not use trailing numbers or internal hyphens.
 - `bad_id_format`: an old numeric ID, lowercase ID, too-short token, too-long token, or
   extra hyphenated token remains.
 - `orphan_refs`: a reference was renamed but its definition was not, or the reverse.
-- Coverage below 100%: an acceptance test, design `TEST-` obligation, work item, PR, or
-  executable test still points at the old ID or omits the new one.
+- Coverage below 100%: an acceptance test, journey test, design `TEST-` obligation, work
+  item, PR, or executable test still points at the old ID or omits the new one.

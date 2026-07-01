@@ -50,7 +50,7 @@ For a feature/component or slice/change spec, run: `python checkers/check_spec.p
 
 It exits `0` only if every structural gate passes (non-zero otherwise) and emits metrics:
 
-- **counts** per ID kind (UN/FEAT/UC/FR/NFR/AT).
+- **counts** per ID kind (UN/FEAT/UC/FR/NFR/AT/JT).
 - **uc_at_coverage_pct** — must be **100%** (every use case ID is referenced by ≥1 AT).
 - **fr_at_coverage_pct** — must be **100%** (every functional req ID is referenced by ≥1 AT).
 - **uncovered_use_cases / uncovered_frs** — must be empty.
@@ -63,6 +63,8 @@ It exits `0` only if every structural gate passes (non-zero otherwise) and emits
 - **ats_missing_scenario_shape** — ATs that do not contain Given/When/Then or an equivalent
   observable/measurable verification shape. This is a presence check; qualitative review
   must still judge whether the acceptance test is meaningful.
+- **jts_missing_sequence** — JTs that do not compose multiple `AT-` items in an ordered
+  sequence with an observable oracle.
 - **vague_hits** — count of "etc.", "and/or", "tbd", "as appropriate", "fast", "easy".
 - **gates** + `passed/total`.
 
@@ -95,7 +97,7 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   cases, major NFRs, logging/telemetry and error-handling expectations,
   build/release/deployment expectations, broad acceptance intent, user/developer
   documentation expectations, and child-artifact needs; feature/component specs carry
-  parent references, local behavior, FR/NFR/AT coverage, dependencies, edge cases,
+  parent references, local behavior, FR/NFR/AT/JT coverage, dependencies, edge cases,
   logging/error-handling constraints, build/deployment constraints, documentation
   constraints, and non-goals;
   slice/change specs carry the exact requirement delta, parent IDs, changed/unchanged
@@ -138,8 +140,12 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   acceptance intent, feature/component `AT-` items refine bounded behavior, and
   slice/change `AT-` items are precise enough to map to executable acceptance/e2e/API tests
   or justified non-code verification.
-- **Traceability and change readiness** — need → feature → use case → requirement → acceptance
-  links support validation, impact analysis, and future revision.
+- **Journey coverage** — critical multi-step stories have `JT-` items that compose multiple
+  `AT-` scenarios in order, carry realistic state across steps, and name observable final
+  or intermediate oracles. Missing `JT-` coverage for a long workflow is a spec gap unless
+  explicitly scoped out.
+- **Traceability and change readiness** — need → feature → use case → requirement →
+  acceptance → journey links support validation, impact analysis, and future revision.
 
 ## Report format
 

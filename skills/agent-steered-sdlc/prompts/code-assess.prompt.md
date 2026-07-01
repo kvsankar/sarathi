@@ -103,9 +103,9 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 - **bad_id_format** — ID-looking tokens that are not slug-only, including trailing numeric
   IDs, must be empty.
 - **pr_traceability_pct** — every plan PR-ID is referenced by ≥1 test. Must be 100%.
-- **id_traceability_pct** — every FR/AT/COMP/TEST appears in a test docstring/comment. Must
+- **id_traceability_pct** — every FR/AT/JT/COMP/TEST appears in a test docstring/comment. Must
   be 100%.
-- **id_assertion_traceability_pct** — every FR/AT/COMP/TEST appears in the same
+- **id_assertion_traceability_pct** — every FR/AT/JT/COMP/TEST appears in the same
   test/function block as a non-trivial assertion-like statement. Must be 100%.
 - **oversized_modules** — files exceeding the LOC ceiling. Must be empty.
 - **diff_loc / diff_evidence / oversized_diff** — actual added+deleted lines from
@@ -194,17 +194,18 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   such evidence exists, report that TDD order was not independently verified rather than
   treating final green tests as proof.
 - **Test implementation quality and level completeness** — executable acceptance/e2e/API
-  workflow tests cover assigned `AT-` items, and planned `TEST-` obligations cover
-  unit/pure-core logic, components, contracts, integrations, UI/accessibility/visual
-  behavior, quality attributes, migrations, or operations as applicable. Review the test
-  code itself: assertions, fixtures, helpers, mocks, generated data, setup/teardown,
-  selectors, determinism, speed, isolation, readability, maintainability, and
-  false-positive/false-negative risk.
+  workflow tests cover assigned `AT-` items, executable journey/workflow tests cover
+  assigned `JT-` items by chaining ordered `AT-` scenarios with realistic state handoff, and
+  planned `TEST-` obligations cover unit/pure-core logic, components, contracts,
+  integrations, UI/accessibility/visual behavior, quality attributes, migrations, or
+  operations as applicable. Review the test code itself: assertions, fixtures, helpers,
+  mocks, generated data, setup/teardown, selectors, determinism, speed, isolation,
+  readability, maintainability, and false-positive/false-negative risk.
 - **Supplemental inner test quality** — code-discovered helper, pure-core, parser, mapper,
   regression, characterization, property/table, adapter, or edge-case tests supplement the
-  planned coverage, cite the nearest `PR-` and relevant `FR-`/`AT-`/`TEST-`/`COMP-`, stay
-  within the Planned Touch Set, use concrete oracles, and do not smuggle product-visible
-  behavior or contract/UX/NFR changes past the upstream artifacts.
+  planned coverage, cite the nearest `PR-` and relevant `FR-`/`AT-`/`JT-`/`TEST-`/
+  `COMP-`, stay within the Planned Touch Set, use concrete oracles, and do not smuggle
+  product-visible behavior or contract/UX/NFR changes past the upstream artifacts.
 - **Verification-oracle rigor** — every test has a concrete pass/fail oracle aligned with
   the design/plan, such as return values, state changes, persisted records, emitted events,
   API responses, DOM/accessibility output, screenshots/visual baselines, generated
@@ -236,7 +237,7 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Documentation completeness** — assigned user/developer docs, README/API/reference output,
   examples, tutorials, diagrams, runbooks, troubleshooting, release/migration notes, and doc
   generation are implemented and verified where planned.
-- **Correctness** — code satisfies its FR/AT; edge cases handled at the lowest useful test
+- **Correctness** — code satisfies its FR/AT/JT; edge cases handled at the lowest useful test
   level and not only through broad end-to-end tests.
 - **Design fidelity** — matches COMP boundaries; pure core stays pure; no layering breaks.
 - **Planned scope fidelity** — changed files/sections stay within each PR's Planned Touch Set;

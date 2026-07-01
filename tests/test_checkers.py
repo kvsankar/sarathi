@@ -51,6 +51,9 @@ Implementation Readiness: Code-ready
 - AT-AUTH-SIGNIN Given a valid user, when they sign in, then access is granted.
   Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.
 
+# Journey Tests
+No long-form journey tests are required for this slice.
+
 # Traceability Matrix
 UN-AUTH-ACCESS -> FEAT-AUTH-LOGIN -> UC-AUTH-SIGNIN -> FR-AUTH-SIGNIN -> AT-AUTH-SIGNIN.
 
@@ -261,6 +264,60 @@ def test_check_spec_rejects_acceptance_test_that_only_namedrops_ids(
     assert report["ats_missing_scenario_shape"] == ["AT-AUTH-SIGNIN"]
 
 
+def test_check_spec_rejects_journey_without_multiple_ordered_ats(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8").replace(
+        "No long-form journey tests are required for this slice.",
+        "- JT-AUTH-LOGIN Given a valid user, when they sign in, then access is "
+        "granted. "
+        "Verifies AT-AUTH-SIGNIN.",
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["jts_missing_sequence"] == ["JT-AUTH-LOGIN"]
+
+
+def test_check_spec_accepts_journey_composing_ordered_acceptance_tests(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8").replace(
+        "- AT-AUTH-SIGNIN Given a valid user, when they sign in, then access is "
+        "granted.\n"
+        "  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.",
+        "- AT-AUTH-SIGNIN Given a valid user, when they sign in, then access is "
+        "granted.\n"
+        "  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.\n"
+        "- AT-AUTH-REFRESH Given a signed-in user, when the session refreshes, then "
+        "access remains granted.\n"
+        "  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.",
+    )
+    text = text.replace(
+        "No long-form journey tests are required for this slice.",
+        "- JT-AUTH-LOGIN Step 1 verifies AT-AUTH-SIGNIN, then step 2 verifies "
+        "AT-AUTH-REFRESH after session refresh; expect access to remain granted.",
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert report["jts_missing_sequence"] == []
+
+
 def test_check_design_accepts_complete_structural_design(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     design_path = tmp_path / "design.md"
@@ -451,6 +508,52 @@ def test_check_plan_rejects_uncovered_design_test_obligation(
         "TEST-AUTH-CONTRACT",
         "TEST-AUTH-POLICY",
     ]
+
+
+def test_check_plan_requires_journey_test_coverage(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    text = spec_path.read_text(encoding="utf-8").replace(
+        "- AT-AUTH-SIGNIN Given a valid user, when they sign in, then access is "
+        "granted.\n"
+        "  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.",
+        "- AT-AUTH-SIGNIN Given a valid user, when they sign in, then access is "
+        "granted.\n"
+        "  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.\n"
+        "- AT-AUTH-REFRESH Given a signed-in user, when the session refreshes, then "
+        "access remains granted.\n"
+        "  Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.",
+    )
+    text = text.replace(
+        "No long-form journey tests are required for this slice.",
+        "- JT-AUTH-LOGIN Step 1 verifies AT-AUTH-SIGNIN, then step 2 verifies "
+        "AT-AUTH-REFRESH after retry; expect access to remain granted.",
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["jt_coverage_100"] is False
+    assert report["uncovered_jts"] == ["JT-AUTH-LOGIN"]
 
 
 def test_check_plan_rejects_declared_pr_over_300_loc(tmp_path, monkeypatch, capsys):

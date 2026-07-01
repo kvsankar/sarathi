@@ -13,7 +13,7 @@ Usage:
 --component  Treat the file as a component-level design (a subset of a product).
              Full-section presence is not required; coverage still enforced.
 --parent     A product design whose IDs may be referenced (so they are not orphans).
---spec       A spec file whose FR-/UC- IDs components may realize (so they resolve).
+--spec       A spec file whose FR-/UC-/JT- IDs components may realize (so they resolve).
 """
 
 from __future__ import annotations
@@ -36,13 +36,13 @@ ID = re.compile(
     rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
 )
 DESIGN_ENTITY = re.compile(rf"\b(LAYER|COMP|IFACE|DEC|RISK)-({SLUG_TOKEN})\b")
-REQ = re.compile(rf"\b(FR|UC|NFR|AT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
+REQ = re.compile(rf"\b(FR|UC|NFR|AT|JT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
 VALID_ANY = re.compile(
     rf"\b(?:(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN}|"
-    rf"(?:FR|UC|NFR|AT|TEST)-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
+    rf"(?:FR|UC|NFR|AT|JT|TEST)-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:LAYER|COMP|IFACE|DEC|RISK|FR|UC|NFR|AT|TEST)"
+    r"\b(?:LAYER|COMP|IFACE|DEC|RISK|FR|UC|NFR|AT|JT|TEST)"
     r"(?:-[A-Za-z0-9]+)+\b",
     re.I,
 )

@@ -2,7 +2,7 @@
 """Deterministic mechanical verifier for a Work Plan.
 
 Parses a plan markdown file, validates IDs/structure, and computes structural
-metrics: every spec FR/AT, design COMP, and design TEST obligation is referenced
+metrics: every spec FR/AT/JT, design COMP, and design TEST obligation is referenced
 by child WORK items or PRs; implementation PRs declare no more than 300 LOC,
 include Red+Green step text, and do not depend on a later PR. Exits 0 only when
 every structural gate passes. No semantic judgment, reproducible.
@@ -13,7 +13,7 @@ Usage:
 
 --feature  Treat as a feature-level plan (subset of a product).
 --parent   A product plan whose IDs may be referenced.
---spec     Spec file: every FR-/AT- must be covered by a WORK item or PR.
+--spec     Spec file: every FR-/AT-/JT- must be covered by a WORK item or PR.
 --design   Design file: every COMP-/TEST- must be covered by a WORK item or PR.
 """
 
@@ -37,15 +37,16 @@ FR = re.compile(rf"\bFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 UC = re.compile(rf"\bUC-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 NFR = re.compile(rf"\bNFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 AT = re.compile(rf"\bAT-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+JT = re.compile(rf"\bJT-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 COMP = re.compile(rf"\bCOMP-{SLUG_TOKEN}\b")
 TEST = re.compile(rf"\bTEST-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 PR_REF = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 VALID_ANY = re.compile(
-    rf"\b(?:(?:MILE|WORK|PR|FR|UC|NFR|AT)-{SLUG_TOKEN}-{SLUG_TOKEN}|"
+    rf"\b(?:(?:MILE|WORK|PR|FR|UC|NFR|AT|JT)-{SLUG_TOKEN}-{SLUG_TOKEN}|"
     rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:MILE|WORK|PR|FR|UC|NFR|AT|TEST|COMP)(?:-[A-Za-z0-9]+)+\b",
+    r"\b(?:MILE|WORK|PR|FR|UC|NFR|AT|JT|TEST|COMP)(?:-[A-Za-z0-9]+)+\b",
     re.I,
 )
 LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)
@@ -167,6 +168,7 @@ def main() -> int:
     spec_ucs = spec_ids(UC)
     spec_nfrs = spec_ids(NFR)
     spec_ats = spec_ids(AT)
+    spec_jts = spec_ids(JT)
     design_comps = (
         ids_from(sys.argv[sys.argv.index("--design") + 1], COMP)
         if "--design" in sys.argv
@@ -238,6 +240,7 @@ def main() -> int:
 
     fr_c, uc_c, nfr_c = cover(spec_frs, FR), cover(spec_ucs, UC), cover(spec_nfrs, NFR)
     at_c, comp_c = cover(spec_ats, AT), cover(design_comps, COMP)
+    jt_c = cover(spec_jts, JT)
     test_c = cover(design_tests, TEST)
     def_ids = []
     in_fence = False
@@ -264,6 +267,7 @@ def main() -> int:
         "uc_coverage_100": uc_c == spec_ucs,
         "nfr_coverage_100": nfr_c == spec_nfrs,
         "at_coverage_100": at_c == spec_ats,
+        "jt_coverage_100": jt_c == spec_jts,
         "comp_coverage_100": comp_c == design_comps,
         "test_obligation_coverage_100": test_c == design_tests,
         "pr_size_le_300": not oversized and not missing_loc,
@@ -284,12 +288,14 @@ def main() -> int:
         "uc_coverage_pct": pct(uc_c, spec_ucs),
         "nfr_coverage_pct": pct(nfr_c, spec_nfrs),
         "at_coverage_pct": pct(at_c, spec_ats),
+        "jt_coverage_pct": pct(jt_c, spec_jts),
         "comp_coverage_pct": pct(comp_c, design_comps),
         "test_obligation_coverage_pct": pct(test_c, design_tests),
         "uncovered_frs": sorted(spec_frs - fr_c),
         "uncovered_ucs": sorted(spec_ucs - uc_c),
         "uncovered_nfrs": sorted(spec_nfrs - nfr_c),
         "uncovered_ats": sorted(spec_ats - at_c),
+        "uncovered_jts": sorted(spec_jts - jt_c),
         "uncovered_comps": sorted(design_comps - comp_c),
         "uncovered_test_obligations": sorted(design_tests - test_c),
         "oversized_prs": sorted(oversized),
@@ -312,7 +318,7 @@ def main() -> int:
         print(
             f"\nFR {report['fr_coverage_pct']}%  UC {report['uc_coverage_pct']}%"
             f"  NFR {report['nfr_coverage_pct']}%  AT {report['at_coverage_pct']}%"
-            f"  COMP {report['comp_coverage_pct']}%"
+            f"  JT {report['jt_coverage_pct']}%  COMP {report['comp_coverage_pct']}%"
             f"  TEST {report['test_obligation_coverage_pct']}%"
         )
         print(f"{report['passed']}/{report['total']} gates passed")

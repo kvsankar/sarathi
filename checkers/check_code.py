@@ -2,7 +2,7 @@
 """Deterministic mechanical verifier for TDD code against a Work Plan.
 
 Runs the test suite, checks labeled coverage output, verifies every plan PR-ID
-and every spec/design FR/AT/COMP/TEST is referenced by a named test, looks for
+and every spec/design FR/AT/JT/COMP/TEST is referenced by a named test, looks for
 nearby assertions, and reports git diff/TDD evidence when available. These are
 structural gates, not proof of semantic correctness. Exits 0 only when every
 gate passes. No semantic judgment, reproducible.
@@ -30,14 +30,16 @@ from pathlib import Path
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 PR = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
-ID = re.compile(rf"\b(?:(?:FR|AT|TEST)-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})\b")
+ID = re.compile(
+    rf"\b(?:(?:FR|AT|JT|TEST)-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})\b"
+)
 VALID_ANY = re.compile(
-    rf"\b(?:(?:UN|FEAT|UC|FR|NFR|AT|TEST|MILE|WORK|PR)-"
+    rf"\b(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR)-"
     rf"{SLUG_TOKEN}-{SLUG_TOKEN}|"
     rf"(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:UN|FEAT|UC|FR|NFR|AT|TEST|MILE|WORK|PR|LAYER|COMP|IFACE|DEC|RISK)"
+    r"\b(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|LAYER|COMP|IFACE|DEC|RISK)"
     r"(?:-[A-Za-z0-9]+)+\b",
     re.I,
 )

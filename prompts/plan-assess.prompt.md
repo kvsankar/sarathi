@@ -27,7 +27,7 @@ If sub-agents are unavailable, state that limitation and keep the mechanical and
 sections separate.
 
 Target the plan file the user provides (default `plan.md`). Do not edit it unless asked;
-report findings only. Pass `--spec spec.md` and `--design design.md` so FR/AT/COMP/TEST
+report findings only. Pass `--spec spec.md` and `--design design.md` so FR/AT/JT/COMP/TEST
 refs resolve. For a feature/component or slice/change plan, add `--feature` and
 `--parent <product-plan>`.
 
@@ -120,15 +120,18 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   verification, documentation updates/checks, rollback, dependencies, and worktree guidance.
 - **TDD discipline** — planned Red steps precede Green steps and are meaningful, not coverage
   theater. The structural checker only verifies Red/Green step text; use judgment here.
-- **Coverage** — no requirement/component silently skipped; NFRs scheduled.
+- **Coverage** — no requirement/component silently skipped; NFRs and journey tests are
+  scheduled.
 - **Test-level allocation** — each `AT-` maps to an executable acceptance/e2e/API workflow
-  test PR or justified non-code verification, while each design `TEST-` obligation for
-  unit/pure-core, component, contract, integration, UI/accessibility/visual,
-  quality-attribute, migration, and operational checks is scheduled near the code it
-  protects.
+  test PR or justified non-code verification, each `JT-` maps to an executable
+  journey/e2e/API workflow PR or justified non-code verification with ordered steps and
+  state handoff, while each design `TEST-` obligation for unit/pure-core, component,
+  contract, integration, UI/accessibility/visual, quality-attribute, migration, and
+  operational checks is scheduled near the code it protects.
 - **Inner-test discovery guidance** — the plan identifies likely implementation-local
   supplemental test zones where useful, without using them as a substitute for required
-  `AT-`/`TEST-` coverage or allowing new product-visible scope to bypass upstream artifacts.
+  `AT-`/`JT-`/`TEST-` coverage or allowing new product-visible scope to bypass upstream
+  artifacts.
 - **Verification-oracle allocation** — each planned executable test states the observable
   evidence that proves pass/fail, such as return value, state, event, API response,
   DOM/accessibility output, screenshot, artifact, log, metric, trace, deployment signal, or

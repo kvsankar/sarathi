@@ -31,15 +31,16 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - TDD authenticity: tests appear to have meaningful Red/Green history or the lack of
   independent evidence is clearly reported.
 - Test implementation quality and level completeness: executable acceptance tests cover
-  assigned `AT-` items, and planned `TEST-` obligations cover unit/pure-core, component,
-  contract, integration, UI, migration, operational, and quality-attribute risks. Review the
-  test code itself: assertions, fixtures, helpers, mocks, generated data, setup/teardown,
-  selectors, determinism, speed, isolation, readability, maintainability, and
-  false-positive/false-negative risk.
+  assigned `AT-` items, executable journey/workflow tests cover assigned `JT-` items by
+  chaining the ordered `AT-` scenarios with realistic state handoff, and planned `TEST-`
+  obligations cover unit/pure-core, component, contract, integration, UI, migration,
+  operational, and quality-attribute risks. Review the test code itself: assertions,
+  fixtures, helpers, mocks, generated data, setup/teardown, selectors, determinism, speed,
+  isolation, readability, maintainability, and false-positive/false-negative risk.
 - Supplemental inner tests: code-discovered helper, pure-core, parser, mapper, regression,
   characterization, property/table, adapter, or edge-case tests are useful, traceable to the
-  nearest `PR-` and relevant `FR-`/`AT-`/`TEST-`/`COMP-`, and stay inside the Planned Touch
-  Set. Flag tests that replace required `AT-`/`TEST-` coverage, overfit implementation
+  nearest `PR-` and relevant `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-`, and stay inside the Planned
+  Touch Set. Flag tests that replace required `AT-`/`JT-`/`TEST-` coverage, overfit implementation
   trivia, lack an oracle, or reveal product-visible behavior that should have updated
   upstream artifacts.
 - Verification-oracle rigor: every test has a concrete pass/fail oracle aligned with the
@@ -64,7 +65,7 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   authorization, timeout, offline, and unexpected failures map to safe messages, typed/
   documented errors, retries/fallback/degraded behavior, escalation, and logs/telemetry at
   the right boundary.
-- Correctness: implementation satisfies FR/AT behavior and relevant edge cases.
+- Correctness: implementation satisfies FR/AT/JT behavior and relevant edge cases.
 - Design fidelity: component boundaries, pure-core/imperative-shell separation, interfaces,
   data ownership, failure handling, and dependency direction match the design.
 - Planned scope fidelity: changed files/sections stay within the Planned Touch Set; any

@@ -30,7 +30,7 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Upstream spec fitness: requirements are clear enough to design against.
 - Scope/readiness fit: HLD, feature/component design, or slice/change LLD depth matches the
   artifact scope and declared readiness.
-- Requirement fit and traceability: design decisions and components trace to FR/NFR/AT
+- Requirement fit and traceability: design decisions and components trace to FR/NFR/AT/JT
   intent without inventing hidden requirements.
 - Architecture views: context, logical/runtime/deployment/data views are present at the
   right depth.
@@ -63,8 +63,11 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   retry/fallback/degraded behavior, escalation, and safe user/API messages.
 - Trade-offs and ADRs: meaningful options, selected decisions, rejected alternatives, and
   consequences are surfaced and documented.
-- Testability: explicit `TEST-` obligations sensibly cover acceptance/e2e, unit/pure-core,
-  component, contract, integration, UI, migration, operational, and quality-attribute tests.
+- Testability: explicit `TEST-` obligations sensibly cover acceptance/e2e/journey,
+  unit/pure-core, component, contract, integration, UI, migration, operational, and
+  quality-attribute tests. Critical `JT-` stories from the spec are mapped to executable
+  journey/e2e/workflow obligations with ordered steps, state handoff, environment, and
+  oracle details.
 - Verification-oracle design: each `TEST-` obligation names the observable evidence that
   will prove pass/fail, such as return value, state, event, API response, DOM/accessibility
   output, screenshot, artifact, log, metric, trace, deployment signal, or external call.

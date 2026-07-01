@@ -9,6 +9,7 @@ SPEC_SECTIONS = [
     "Functional Requirements",
     "Non-Functional Requirements",
     "Acceptance Tests",
+    "Journey Tests",
     "Traceability Matrix",
     "Assumptions & Open Questions",
 ]

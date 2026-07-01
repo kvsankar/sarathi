@@ -49,7 +49,7 @@ Report:
 - `passed/total`.
 - Test pass/fail.
 - Coverage percentage.
-- PR and FR/AT/COMP/TEST traceability percentages.
+- PR and FR/AT/JT/COMP/TEST traceability percentages.
 - Assertion-traceability percentage.
 - Diff LOC and evidence source.
 - TDD evidence source.

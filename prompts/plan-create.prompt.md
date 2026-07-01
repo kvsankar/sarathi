@@ -15,7 +15,7 @@ nothing to fix.
 1. **Small reviewable PRs** — each PR changes **≤300 LOC** (prod + test), one focused concern.
 2. **Red/Green TDD** — every PR writes failing tests first (Red), then minimal code to pass
    (Green), then refactor. The plan states both Red and Green steps per PR.
-3. **Full coverage** — every `FR-`/`UC-`, every `NFR-`, every `AT-`, every design
+3. **Full coverage** — every `FR-`/`UC-`, every `NFR-`, every `AT-`, every `JT-`, every design
    `COMP-`, every design `TEST-` obligation, and every required logging/error-handling/
    docs/build/deploy concern is delivered by at least one PR.
    Nothing in spec/design is left unbuilt, undocumented, or unverifiable.
@@ -116,18 +116,21 @@ Use the same section order for every plan, but tune the content to the declared 
   Sets, Red/Green steps, test levels, LOC estimates, quality gates, rollback notes,
   logging/error-handling verification, build/deployment verification, documentation
   updates/checks, dependencies, parallel/worktree guidance, and traceability to the exact
-  FR/AT/COMP/TEST items.
+  FR/AT/JT/COMP/TEST items.
 
 ## Test responsibility in this command
 
-`/plan-create` turns the spec's acceptance criteria and the design's `TEST-` obligations
-into a PR-by-PR executable test plan. It decides **when** each test is written, **which
-level** it belongs to, and **which PR** owns it.
+`/plan-create` turns the spec's acceptance criteria, journey tests, and the design's
+`TEST-` obligations into a PR-by-PR executable test plan. It decides **when** each test is
+written, **which level** it belongs to, and **which PR** owns it.
 
 For each PR, list the test levels it will add or update:
 
 - **Acceptance/e2e tests** that execute one or more `AT-` scenarios and cite the relevant
   `TEST-` obligation when the design named one.
+- **Journey/workflow E2E tests** that execute `JT-` stories by chaining multiple `AT-`
+  scenarios in order, preserving state between steps, and asserting final plus important
+  intermediate oracles.
 - **Unit/pure-core tests** for deterministic rules, calculations, validation, state
   transitions, reducers, mappers, and edge cases.
 - **Component/module tests** for cohesive components behind stable boundaries.
@@ -148,7 +151,7 @@ For each PR, list the test levels it will add or update:
 
 Do not push all coverage to end-to-end tests. Prefer many fast lower-level tests for logic
 and contracts, focused integration tests for wiring and infrastructure, and a smaller set of
-acceptance/e2e tests for critical user journeys and externally visible `AT-` coverage.
+acceptance/e2e tests for critical `JT-` journeys and externally visible `AT-` coverage.
 Every `TEST-` obligation from the design must map to a PR or child work item unless the plan
 explicitly justifies it as non-executable or out of scope for the current slice.
 Every executable test assignment must preserve or refine the design's verification oracle:
@@ -160,9 +163,9 @@ The plan does not need to enumerate every implementation-local unit case in adva
 should identify likely inner-test discovery zones, such as complex pure logic, parsers,
 mappers, reducers, adapters, boundary normalizers, or migration helpers. `/code-create` may
 add supplemental inner tests found during TDD inside the owning PR and Planned Touch Set.
-Those tests supplement planned `AT-`/`TEST-` coverage; if they imply new externally visible
-behavior, a changed contract, UX/NFR expectations, or broader scope, the agent must stop and
-request a spec/design/plan update.
+Those tests supplement planned `AT-`/`JT-`/`TEST-` coverage; if they imply new externally
+visible behavior, a changed contract, UX/NFR expectations, or broader scope, the agent must
+stop and request a spec/design/plan update.
 For boundary-facing work, identify the fixture/schema/generated-client/contract-test source
 of truth each PR will use. Do not plan tests that rely on ad-hoc mock payloads that differ
 from the producer/consumer contract.
@@ -226,7 +229,7 @@ work.
   `WORK-<AREA>-<NAME>` (child work item), and `PR-<AREA>-<NAME>` (pull request).
 - `AREA` and `NAME` are uppercase slug tokens, 2-32 characters each, using `A-Z` and
   digits only after the first character. Do not use trailing numbers.
-- Each PR cites the `FR-`/`UC-`/`AT-` it delivers, the `COMP-` it implements, and the
+- Each PR cites the `FR-`/`UC-`/`AT-`/`JT-` it delivers, the `COMP-` it implements, and the
   `TEST-` obligations it writes or updates.
 
 ## Step 3 — Author the plan with this exact section order
@@ -255,17 +258,19 @@ work.
    (UI/API/domain/integration/infrastructure error mapping, retry/fallback/degraded
    behavior, safe messages, or `None` with rationale); **Mock UI Dependency** (approved
    mock path/status for UI-facing PRs, or `None` with rationale); **Test Levels**
-   (acceptance/e2e, unit, component, contract, integration, UI/accessibility/visual,
+   (acceptance/e2e/journey, unit, component, contract, integration, UI/accessibility/visual,
    quality/NFR, build/deploy, docs, migration/ops as applicable); **Contract Fixtures**
    (shared fixture/schema/generated-client/contract-test source for boundary payloads, or
    `None` with rationale); **Verification Oracle** (return value/state/event/API/DOM/
-   screenshot/log/metric/artifact/deployment/external-call evidence, as applicable); **Red** (failing tests,
-   naming the level and linked `TEST-`/`AT-`/`FR-` IDs); **Green** (impl); est LOC (≤300);
-   `COMP-` built; `FR-`/`AT-` delivered; `TEST-` obligations implemented; depends-on PRs.
-5. **Coverage Map** — for a Breakdown plan, map each `FR-`/`UC-`/`NFR-`/`AT-`/`COMP-` to
-   child `WORK-` items and required child artifacts, and map each design `TEST-` obligation
-   to the child work that will make it executable. For an Implementation plan, map each
-   `FR-`/`UC-`/`NFR-`/`AT-`/`COMP-` and each `TEST-` obligation to the PR delivering it.
+   screenshot/log/metric/artifact/deployment/external-call evidence, as applicable);
+   **Red** (failing tests, naming the level and linked `TEST-`/`JT-`/`AT-`/`FR-` IDs);
+   **Green** (impl); est LOC (≤300); `COMP-` built; `FR-`/`AT-`/`JT-` delivered; `TEST-`
+   obligations implemented; depends-on PRs.
+5. **Coverage Map** — for a Breakdown plan, map each `FR-`/`UC-`/`NFR-`/`AT-`/`JT-`/
+   `COMP-` to child `WORK-` items and required child artifacts, and map each design `TEST-`
+   obligation to the child work that will make it executable. For an Implementation plan,
+   map each `FR-`/`UC-`/`NFR-`/`AT-`/`JT-`/`COMP-` and each `TEST-` obligation to the PR
+   delivering it.
 6. **Sequencing & Risks** — merge order, parallelizable PRs, build before deployment
    dependencies, documentation before/with behavior dependencies, environment promotion
    order, rollback per PR, likely merge conflicts/shared files, planned touch-set overlaps,
@@ -324,10 +329,13 @@ Pass-with-fixes.
   contain PR-level Planned Touch Sets, test levels, and Red/Green steps.
 - Every implementation PR ≤300 LOC and states Test Levels, Red steps, and Green steps. No
   PR depends on a later one.
-- Every FR, UC, NFR, AT, COMP, and TEST maps to ≥1 child work item or implementation PR. No
-  orphan or duplicate IDs.
+- Every FR, UC, NFR, AT, JT, COMP, and TEST maps to ≥1 child work item or implementation
+  PR. No orphan or duplicate IDs.
 - Every `AT-` maps to an executable acceptance/e2e/API workflow test PR or to a justified
   non-code verification PR/check.
+- Every `JT-` maps to an executable journey/e2e/API workflow test PR or to a justified
+  non-code verification PR/check. Journey PRs name ordered steps, state carried across
+  steps, data/setup/cleanup, and final/intermediate oracles.
 - Every design `TEST-` obligation maps to the PR or child work item that writes/runs that
   executable unit, component, contract, integration, UI, quality, logging/telemetry,
   error-handling, build/deploy, docs, migration, or operational check; lower-level tests

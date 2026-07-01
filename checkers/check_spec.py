@@ -4,8 +4,8 @@
 Parses an SRS markdown file, validates IDs/structure, and computes structural
 coverage metrics (e.g. % of use cases and FRs referenced by acceptance tests).
 It also checks obvious NFR unit/quality mismatches and acceptance-test scenario
-shape. Exits 0 only when every structural gate passes. No semantic judgment,
-fully reproducible.
+shape plus journey-test sequence/composition. Exits 0 only when every structural
+gate passes. No semantic judgment, fully reproducible.
 
 Usage:
     python check_spec.py [spec.md] [--json] [--feature] [--parent product.md]
@@ -30,8 +30,10 @@ if str(CHECKER_DIR) not in sys.path:
 from schemas import SPEC_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
-ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
-ID_CANDIDATE = re.compile(r"\b(?:UN|FEAT|UC|FR|NFR|AT|TEST)(?:-[A-Za-z0-9]+)+\b", re.I)
+ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT|JT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
+ID_CANDIDATE = re.compile(
+    r"\b(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST)(?:-[A-Za-z0-9]+)+\b", re.I
+)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|fast|easy)\b|etc\.", re.I)
 NUM_UNIT = re.compile(
     r"\d+(?:\.\d+)?\s*(ms|s|sec|min|%|mb|gb|kb|req|rps|users|days|hrs|"
@@ -118,7 +120,7 @@ def item_blocks(text: str, kinds: set[str]) -> dict[str, str]:
 def defs_and_refs(text: str):
     """Return {kind: set(ids defined on their own line)} and all referenced ids."""
     defined: dict[str, set] = {
-        k: set() for k in ("UN", "FEAT", "UC", "FR", "NFR", "AT")
+        k: set() for k in ("UN", "FEAT", "UC", "FR", "NFR", "AT", "JT")
     }
     refs: set[str] = set()
     in_fence = False
@@ -184,6 +186,21 @@ def ats_missing_scenario_shape(blocks: dict[str, str]) -> list[str]:
     return sorted(missing)
 
 
+def jts_missing_sequence(blocks: dict[str, str]) -> list[str]:
+    missing = []
+    for jt, block in blocks.items():
+        ats = {m.group(0) for m in ID.finditer(block) if m.group(1) == "AT"}
+        has_sequence = re.search(
+            r"\b(step|sequence|journey|after|then|next|followed by)\b", block, re.I
+        )
+        has_oracle = re.search(
+            r"\b(observe|verify|measure|expect|assert|check)\b", block, re.I
+        )
+        if len(ats) < 2 or not has_sequence or not has_oracle:
+            missing.append(jt)
+    return sorted(missing)
+
+
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
@@ -204,6 +221,7 @@ def main() -> int:
         for at, block in item_blocks(text, {"AT"}).items()
     }
     at_blocks = item_blocks(text, {"AT"})
+    jt_blocks = item_blocks(text, {"JT"})
 
     def_ids = []
     in_fence = False
@@ -223,6 +241,7 @@ def main() -> int:
     ]
     nfr_bad_unit = unit_mismatches(nfr_blocks)
     weak_ats = ats_missing_scenario_shape(at_blocks)
+    weak_jts = jts_missing_sequence(jt_blocks)
 
     uc, fr = defined["UC"], defined["FR"]
     uc_cov = covered_by(uc, ats, {"UC"})
@@ -240,6 +259,7 @@ def main() -> int:
         "nfr_has_units": not nfr_no_unit,
         "nfr_units_match_quality": not nfr_bad_unit,
         "ats_have_scenario_shape": not weak_ats,
+        "jts_compose_multiple_ats": not weak_jts,
         "no_vagueness": vague == 0,
     }
     if not feature:
@@ -257,6 +277,7 @@ def main() -> int:
         "nfr_missing_units": nfr_no_unit,
         "nfr_unit_mismatches": nfr_bad_unit,
         "ats_missing_scenario_shape": weak_ats,
+        "jts_missing_sequence": weak_jts,
         "vague_hits": vague,
         "gates": gates,
         "passed": sum(gates.values()),

@@ -40,8 +40,9 @@ Report:
 - `passed/total`.
 - Any upstream spec failures.
 - Any bad IDs, duplicates, orphan refs, component requirement coverage gaps, component test
-  obligation gaps, missing/untraced `TEST-` obligations, ambiguous interface ownership,
-  dependency cycles, or vague hits.
+  obligation gaps, missing/untraced `TEST-` obligations, missing `JT-`-to-`TEST` journey
+  coverage visible in the design, ambiguous interface ownership, dependency cycles, or
+  vague hits.
 
 ## Output
 

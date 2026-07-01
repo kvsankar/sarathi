@@ -132,9 +132,10 @@ design's ability to satisfy requirements and quality attributes:
 which kinds of tests are needed, where they sit in the system, what each level proves, and
 which components, interfaces, flows, risks, and NFRs they cover.
 
-Use the spec's `AT-` items as acceptance intent. Decide how those acceptance criteria will
-be verified later, such as API acceptance tests, browser/device end-to-end tests,
-workflow-level integration tests, or operational/NFR checks. Also define lower-level tests
+Use the spec's `AT-` items as acceptance intent and its `JT-` items as long-form journey
+intent. Decide how those criteria will be verified later, such as API acceptance tests,
+browser/device end-to-end tests, workflow-level integration tests, journey tests that carry
+state across multiple use cases, or operational/NFR checks. Also define lower-level tests
 that do not appear in the spec but are needed for safe implementation:
 
 - **Pure core/unit tests** for business rules, validation, calculations, state transitions,
@@ -146,8 +147,8 @@ that do not appear in the spec but are needed for safe implementation:
   transactions, migrations, auth, caching, retries, and adapters.
 - **UI tests** such as component/widget tests, accessibility checks, visual regression, and
   route/navigation interaction tests where relevant.
-- **End-to-end or acceptance tests** for critical user journeys and `AT-` scenarios, kept
-  focused enough to avoid duplicating all lower-level coverage.
+- **End-to-end, journey, or acceptance tests** for critical `JT-` stories and `AT-`
+  scenarios, kept focused enough to avoid duplicating all lower-level coverage.
 - **Quality-attribute tests/checks** for performance, reliability, security, privacy,
   accessibility, observability, resilience, offline/sync, build/package reproducibility,
   deployment validation, migration/rollback, and operations.
@@ -158,10 +159,12 @@ that do not appear in the spec but are needed for safe implementation:
 Document this as explicit test obligations in **Test Strategy**. Use
 `TEST-<AREA>-<NAME>` IDs for every executable lower-level or workflow test obligation that
 must survive into the plan. For each `TEST-` item, state the test kind, purpose,
-owner/component or interface, linked `FR-`/`NFR-`/`UC-`/`AT-`/`COMP-`/`IFACE-`/`RISK-`/
-`DEC-`, **verification oracle**, required doubles or environments, expected speed/scope,
-and whether `/code-create` should implement it in the PR that introduces the behavior or
-defer it to a specific later PR.
+owner/component or interface, linked `FR-`/`NFR-`/`UC-`/`AT-`/`JT-`/`COMP-`/`IFACE-`/
+`RISK-`/`DEC-`, **verification oracle**, required doubles or environments, expected
+speed/scope, and whether `/code-create` should implement it in the PR that introduces the
+behavior or defer it to a specific later PR. For journey tests, state the ordered steps,
+state carried between steps, actors/systems involved, data setup/cleanup, and whether the
+journey runs through UI, public API, service boundary, or a production-like workflow harness.
 
 The verification oracle is the observable evidence that proves pass/fail. Choose the
 strongest practical oracle for the test level: return values, state transitions, persisted
@@ -172,11 +175,11 @@ valid oracles when they are the behavior under test or the best observable evide
 avoid using them as vague substitutes for direct assertions when direct state/output can be
 checked.
 
-`AT-` items remain requirements-level acceptance criteria from the spec. `TEST-` items are
-design-level executable test obligations: unit/pure-core, component, contract, integration,
-UI/accessibility/visual, quality-attribute, migration, build/deploy, documentation, and
-operational checks. An executable acceptance/e2e/API test may cite both the `AT-` it proves
-and the `TEST-` obligation that planned it.
+`AT-` and `JT-` items remain requirements-level acceptance criteria from the spec. `TEST-`
+items are design-level executable test obligations: unit/pure-core, component, contract,
+integration, UI/accessibility/visual, journey/e2e, quality-attribute, migration,
+build/deploy, documentation, and operational checks. An executable acceptance/e2e/API test
+may cite both the `AT-` or `JT-` it proves and the `TEST-` obligation that planned it.
 
 For boundary-facing work, at least one `TEST-` obligation should verify representative real
 producer/consumer payloads for success and error cases unless the boundary is explicitly
@@ -532,9 +535,11 @@ Use **prefix + slug**, no numeric suffix:
 - `LAYER-<SLUG>` (layer), `COMP-<SLUG>` (component), `IFACE-<SLUG>` (interface),
   `DEC-<SLUG>` (design decision), `RISK-<SLUG>` (risk). IDs are unique and stable.
 - `TEST-<AREA>-<NAME>` identifies an executable test obligation owned by the design, such
-  as `TEST-AUTH-POLICY`, `TEST-AUTH-CONTRACT`, or `TEST-RETR-EMPTYQUERY`.
+  as `TEST-AUTH-POLICY`, `TEST-AUTH-CONTRACT`, `TEST-AUTH-ONBOARDINGJOURNEY`, or
+  `TEST-RETR-EMPTYQUERY`.
 - Components cite the slug-only `FR-<AREA>-<NAME>`, `NFR-<AREA>-<NAME>`, and
-  `UC-<AREA>-<NAME>` IDs from `spec.md` they realize.
+  `UC-<AREA>-<NAME>` IDs from `spec.md` they realize. Test obligations may also cite
+  `AT-<AREA>-<NAME>` and `JT-<AREA>-<NAME>` acceptance intent from the spec.
 
 ## Step 3 — Author the design with this exact section order
 
@@ -583,21 +588,23 @@ Use **prefix + slug**, no numeric suffix:
    received or assumption made, rationale, quality attributes affected, consequences,
    reversibility, ADR link/path when applicable, and expected revisit triggers.
 11. **Test Strategy** — list explicit `TEST-<AREA>-<NAME>` obligations in a matrix covering
-   acceptance/e2e, integration, contract, component/module, unit/pure-core,
+   acceptance/e2e/journey, integration, contract, component/module, unit/pure-core,
    UI/accessibility/visual, migration, operational, and quality-attribute checks as
    applicable. Include build/package verification and deployment validation/smoke checks
    where relevant, plus documentation checks such as doc build, generated API/reference
    output, examples, link checks, accessibility/readability, and freshness/version checks.
    For each `TEST-`, state kind, linked `COMP-`/`IFACE-`, linked `FR-`/`NFR-`/`UC-`/`AT-`/
-   `RISK-`/`DEC-`, verification oracle, data/doubles/environment, fixture or schema source
-   for boundary payloads, speed/scope, and whether it is required for the first
-   implementation PR or a later PR. Explain how each `COMP-`, `IFACE-`, critical flow,
-   `AT-`, and important `NFR-` is tested in isolation and in collaboration, including
-   logging/telemetry assertions, observability, failure injection, error-mapping tests,
-   contract-realistic mocks, and migration/rollback checks where relevant.
+   `JT-`/`RISK-`/`DEC-`, verification oracle, data/doubles/environment, fixture or schema
+   source for boundary payloads, speed/scope, and whether it is required for the first
+   implementation PR or a later PR. For `JT-` coverage, describe the ordered journey steps,
+   state handoff, setup/cleanup, actors/systems, and final observable oracle. Explain how
+   each `COMP-`, `IFACE-`, critical flow, `AT-`, `JT-`, and important `NFR-` is tested in
+   isolation and in collaboration, including logging/telemetry assertions, observability,
+   failure injection, error-mapping tests, contract-realistic mocks, and migration/rollback
+   checks where relevant.
 12. **Risks & Trade-offs** — (`RISK-<SLUG>`); risk or technical debt, impact, likelihood,
    mitigation, owner, trigger, and residual risk.
-13. **Traceability Matrix** — requirements (`FR-`/`NFR-`/`UC-`/`AT-`) → components →
+13. **Traceability Matrix** — requirements (`FR-`/`NFR-`/`UC-`/`AT-`/`JT-`) → components →
    interfaces → decisions/tactics → `TEST-` obligations/operational checks.
 
 ## Step 4 — Render an HTML companion
@@ -648,8 +655,8 @@ Pass-with-fixes.
 - Each component has cohesive responsibility, clear state/side-effect boundaries, and a named lifecycle.
 - Quality attributes are addressed by concrete tactics, flows, constraints, or tests rather than adjectives.
 - Every component, interface, deployable artifact, documentation artifact, critical `AT-`,
-  and important `NFR-` has a named `TEST-` obligation or check level and relevant build,
-  deployment, documentation, observability, or operational checks.
+  critical `JT-`, and important `NFR-` has a named `TEST-` obligation or check level and
+  relevant build, deployment, documentation, observability, or operational checks.
 - Logging and telemetry design names the structured signals, correlation/support IDs,
   sinks, retention/sampling, redaction/privacy rules, and consumers that matter for humans,
   agents, debugging, support, or operations.

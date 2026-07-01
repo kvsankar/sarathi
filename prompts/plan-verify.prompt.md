@@ -40,8 +40,8 @@ Report:
 - Exit codes.
 - `passed/total`.
 - Any upstream spec/design failures.
-- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/COMP/TEST refs, oversize declared
-  PRs, missing Red/Green text, forward dependencies, or vague hits.
+- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, oversize
+  declared PRs, missing Red/Green text, forward dependencies, or vague hits.
 
 ## Output
 

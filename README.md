@@ -167,10 +167,10 @@ Artifacts declare one readiness value:
 ## ID Format
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
-`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, and `PR-AUTH-SIGNIN`. Design entities keep the shorter
-`KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`. Design test obligations use
-`TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such as `FR-AUTH-10`
-are rejected by the checkers.
+`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, and `PR-AUTH-SIGNIN`. Design
+entities keep the shorter `KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`.
+Design test obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric
+suffixes such as `FR-AUTH-10` are rejected by the checkers.
 
 For older numbered artifacts, see [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
@@ -269,22 +269,24 @@ end-to-end unattended continuation.
 Test responsibility is split by artifact:
 
 - Specs define `AT-` acceptance criteria at product/system, feature/component, and
-  slice/change scope; the criteria become narrower as the scope narrows.
+  slice/change scope; the criteria become narrower as the scope narrows. Specs also define
+  `JT-` journey tests for long ordered stories that compose multiple `AT-` scenarios.
 - Designs define the test architecture and explicit `TEST-<AREA>-<NAME>` executable test
-  obligations for unit, component, contract, integration, UI, quality, docs/build/deploy,
-  migration, and operational checks.
-- Plans assign `AT-` acceptance coverage and `TEST-` obligations to PRs.
-- Code writes the executable tests and implementation, citing the assigned `AT-` and
-  `TEST-` IDs where applicable. This is where unit, component, contract, integration, UI,
-  quality, migration, build/deploy, docs, and operational test implementations are created
-  when planned.
+  obligations for unit, component, contract, integration, UI, journey/e2e, quality,
+  docs/build/deploy, migration, and operational checks.
+- Plans assign `AT-` acceptance coverage, `JT-` journey coverage, and `TEST-` obligations
+  to PRs.
+- Code writes the executable tests and implementation, citing the assigned `AT-`, `JT-`,
+  and `TEST-` IDs where applicable. This is where unit, component, contract, integration,
+  UI, journey/e2e, quality, migration, build/deploy, docs, and operational test
+  implementations are created when planned.
 - Code may also add implementation-local supplemental inner tests discovered during
   Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
   characterization, table/property, adapter, or edge-case tests. These supplement, never
-  replace, planned `AT-`/`TEST-` coverage; they stay within the current `PR-` and Planned
-  Touch Set, cite the nearest trace IDs when applicable, and use a concrete oracle. If they
-  imply new externally visible behavior, contract, UX/NFR, or scope, revise the upstream
-  artifact first.
+  replace, planned `AT-`/`JT-`/`TEST-` coverage; they stay within the current `PR-` and
+  Planned Touch Set, cite the nearest trace IDs when applicable, and use a concrete oracle.
+  If they imply new externally visible behavior, contract, UX/NFR, or scope, revise the
+  upstream artifact first.
 - Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
   fixtures, helpers, mocks, data, selectors, determinism, readability, maintainability, and
   false-positive/false-negative risk are judged, not just whether the tests pass.
