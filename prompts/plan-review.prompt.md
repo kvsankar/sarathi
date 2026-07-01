@@ -39,6 +39,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Test allocation: `AT-` acceptance coverage and explicit design `TEST-` obligations for
   lower-level unit/component/contract/integration/UI/quality/operational tests are assigned
   to appropriate PRs.
+- Inner-test discovery: the plan leaves room for code-discovered supplemental inner tests
+  inside each PR without relying on them to cover missing `AT-`/`TEST-` obligations or
+  permitting product-scope creep.
 - Verification-oracle allocation: each planned executable test names the observable evidence
   that proves pass/fail, such as return value, state, event, API response, DOM/accessibility
   output, screenshot, artifact, log, metric, trace, deployment signal, or external call.

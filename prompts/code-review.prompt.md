@@ -36,6 +36,12 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   test code itself: assertions, fixtures, helpers, mocks, generated data, setup/teardown,
   selectors, determinism, speed, isolation, readability, maintainability, and
   false-positive/false-negative risk.
+- Supplemental inner tests: code-discovered helper, pure-core, parser, mapper, regression,
+  characterization, property/table, adapter, or edge-case tests are useful, traceable to the
+  nearest `PR-` and relevant `FR-`/`AT-`/`TEST-`/`COMP-`, and stay inside the Planned Touch
+  Set. Flag tests that replace required `AT-`/`TEST-` coverage, overfit implementation
+  trivia, lack an oracle, or reveal product-visible behavior that should have updated
+  upstream artifacts.
 - Verification-oracle rigor: every test has a concrete pass/fail oracle aligned with the
   design/plan, such as return values, state changes, persisted records, emitted events, API
   responses, DOM/accessibility output, screenshots/visual baselines, generated artifacts,

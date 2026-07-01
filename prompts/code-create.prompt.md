@@ -99,6 +99,17 @@ suggestion. If the planned tests are insufficient to prove the linked
 `FR-`/`AT-`/`TEST-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather than
 silently changing the test strategy.
 
+Also add **implementation-local supplemental inner tests** when Red/Green/Refactor exposes
+useful behavior that was too small or code-shaped to name in the design/plan. Examples
+include helper or pure-core edge cases, table/property cases, parser/mapper/reducer cases,
+regression tests for a discovered bug, characterization tests around legacy boundaries, local
+adapter/error-normalization tests, and boundary fixture variations. These tests supplement,
+never replace, planned `AT-`/`TEST-` coverage. They must stay within the current `PR-` and
+Planned Touch Set, cite the nearest `PR-` plus relevant `FR-`/`AT-`/`TEST-`/`COMP-` when
+applicable, and state a concrete oracle. If a supplemental test implies new externally
+visible behavior, a changed API/event/schema/error contract, a UX/NFR expectation, or
+broader scope, stop and request the appropriate spec/design/plan update before coding it.
+
 Treat test implementation as production-quality code. Keep assertions meaningful and
 behavior-focused; make fixtures realistic and maintainable; keep helpers readable; avoid
 over-mocking, sleeps, hidden network/time dependencies, order dependence, brittle selectors,
@@ -185,8 +196,8 @@ repo lacks thresholds, use these defaults unless the user chooses different stan
 Read `plan.md`, `design.md`, `spec.md`. Apply the Code-ready scope gate above. Then identify
 the next PR (lowest number, deps merged, not yet built). State the PR, its Red tests, Green
 scope, Planned Touch Set, the COMP/FR/AT/TEST it covers, the planned test levels, the
-verification oracle for each planned test, and the quality-gate command(s) that must pass at
-the PR boundary. Also state any planned
+verification oracle for each planned test, any likely supplemental inner-test discovery
+areas, and the quality-gate command(s) that must pass at the PR boundary. Also state any planned
 build/deployment work: build command, expected artifact, deployment validation command,
 smoke check, rollback check, or `None` with the plan's rationale. Also state planned
 documentation work: user docs, developer docs, API/reference docs, examples, runbooks,
@@ -221,6 +232,8 @@ Write the failing tests first. Run them; show they fail for the right reason. Te
 must be plain, readable behaviour (e.g. `test_win_detected_on_full_row`). Put the covered
 IDs in a docstring or comment — never in the function name. One concise `Covers:` line is
 enough (e.g. `"""Covers FR-GAME-WINROW, AT-GAME-WINROW, TEST-GAME-WINROW (PR-CORE-WINROW)."""`).
+For supplemental inner tests without a direct `AT-`/`TEST-`, cite the owning `PR-` and
+nearest `COMP-`/`FR-` and state why the test is supplemental.
 Include a concise `Verifies:` note when it improves readability, naming the oracle being
 asserted, such as returned value, persisted row, emitted event, DOM text, screenshot
 baseline, structured log, metric, artifact, deployment dry-run result, or external call.
@@ -327,6 +340,10 @@ first completed PR boundary.
 - Each PR implements the test levels assigned in the plan, including executable acceptance
   coverage for assigned `AT-` items and executable `TEST-` obligations for the affected
   core, component, contract, integration, UI, quality, migration, or operational behavior.
+- Supplemental inner tests discovered during implementation are allowed when they stay
+  within the current `PR-` and Planned Touch Set, cite the nearest trace IDs, use concrete
+  oracles, and do not introduce new externally visible behavior or scope without upstream
+  artifact updates.
 - Test code is reviewable: meaningful assertions, realistic fixtures, clear helpers,
   deterministic setup, no tautologies, no accidental network/time/order dependence, and no
   brittle selectors except where style itself is under test.

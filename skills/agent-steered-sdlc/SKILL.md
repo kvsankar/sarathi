@@ -135,13 +135,21 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   criteria at product/system, feature/component, and slice/change scope; designs define
   explicit `TEST-` executable test obligations for lower-level and workflow checks; plans
   assign each `AT-` and `TEST-` to PRs or child work; code writes acceptance tests plus the
-  planned `TEST-` obligations using TDD. Executable tests are implementation code: their
-  verification oracles, assertions, fixtures, helpers, mocks, data, selectors, determinism,
-  and maintainability must be reviewed in `/code-review` and `/code-assess`, not merely
-  executed in `/code-verify`. Every test should have a concrete oracle for pass/fail:
-  return value, state, persisted record, event, API response, DOM/accessibility output,
-  screenshot/visual baseline, artifact, structured log, metric, trace, deployment signal,
-  or captured external call as appropriate.
+  planned `TEST-` obligations using TDD. Code may also add implementation-local
+  supplemental inner tests discovered during Red/Green/Refactor, such as helper, pure-core,
+  parser, mapper, regression, characterization, table/property, adapter, or edge-case
+  tests. These supplement, never replace, planned `AT-`/`TEST-` coverage. They must stay
+  within the current `PR-` and Planned Touch Set, cite the nearest `PR-` plus relevant
+  `FR-`/`AT-`/`TEST-`/`COMP-` when applicable, and use a concrete oracle. If a supplemental
+  test implies new externally visible behavior, a changed contract, a UX/NFR expectation,
+  or broader scope, stop and revise the spec/design/plan before coding it. Executable tests
+  are implementation code: their verification oracles, assertions, fixtures, helpers,
+  mocks, data, selectors, determinism, and maintainability must be reviewed in
+  `/code-review` and `/code-assess`, not merely executed in `/code-verify`. Every test
+  should have a concrete oracle for pass/fail: return value, state, persisted record,
+  event, API response, DOM/accessibility output, screenshot/visual baseline, artifact,
+  structured log, metric, trace, deployment signal, or captured external call as
+  appropriate.
 - Treat build and deployment ownership as part of artifact ownership: specs define
   externally relevant build/release/deployment needs or non-goals; designs define artifact,
   package, release, environment, deployment, validation, smoke, and rollback strategy; plans

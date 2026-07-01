@@ -124,6 +124,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   unit/pure-core, component, contract, integration, UI/accessibility/visual,
   quality-attribute, migration, and operational checks is scheduled near the code it
   protects.
+- **Inner-test discovery guidance** — the plan identifies likely implementation-local
+  supplemental test zones where useful, without using them as a substitute for required
+  `AT-`/`TEST-` coverage or allowing new product-visible scope to bypass upstream artifacts.
 - **Verification-oracle allocation** — each planned executable test states the observable
   evidence that proves pass/fail, such as return value, state, event, API response,
   DOM/accessibility output, screenshot, artifact, log, metric, trace, deployment signal, or

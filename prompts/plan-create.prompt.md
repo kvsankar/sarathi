@@ -150,6 +150,13 @@ the concrete evidence that proves pass/fail, such as return value, state change,
 record, emitted event, API response, DOM/role/text output, accessibility tree, screenshot or
 visual baseline, generated artifact, structured log, metric, trace, deployment signal, or
 captured external call.
+The plan does not need to enumerate every implementation-local unit case in advance. It
+should identify likely inner-test discovery zones, such as complex pure logic, parsers,
+mappers, reducers, adapters, boundary normalizers, or migration helpers. `/code-create` may
+add supplemental inner tests found during TDD inside the owning PR and Planned Touch Set.
+Those tests supplement planned `AT-`/`TEST-` coverage; if they imply new externally visible
+behavior, a changed contract, UX/NFR expectations, or broader scope, the agent must stop and
+request a spec/design/plan update.
 For boundary-facing work, identify the fixture/schema/generated-client/contract-test source
 of truth each PR will use. Do not plan tests that rely on ad-hoc mock payloads that differ
 from the producer/consumer contract.

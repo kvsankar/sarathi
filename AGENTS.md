@@ -97,6 +97,13 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   assigned `AT-` items plus the planned `TEST-` obligations. This is where unit,
   component, contract, integration, UI/accessibility/visual, quality/NFR, migration,
   build/deploy, docs, and operational test implementations are written when planned.
+- `/code-create` may also add implementation-local supplemental inner tests discovered
+  during Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
+  characterization, table/property, adapter, or edge-case tests. These supplement, never
+  replace, planned `AT-`/`TEST-` coverage; they must cite the nearest `PR-` plus relevant
+  `FR-`/`AT-`/`TEST-`/`COMP-` when applicable, stay inside the Planned Touch Set, and use a
+  concrete oracle. If they imply new user-visible behavior, a changed contract, a UX/NFR
+  expectation, or broader scope, stop and update the upstream artifacts first.
 - Verify and assess commands verify the same ownership chain. Review and assess commands
   stop if a downstream artifact exposes missing or incorrect upstream test intent.
 - Test implementations are code and are reviewed as code. `/code-review` and

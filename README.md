@@ -249,6 +249,13 @@ Test responsibility is split by artifact:
   `TEST-` IDs where applicable. This is where unit, component, contract, integration, UI,
   quality, migration, build/deploy, docs, and operational test implementations are created
   when planned.
+- Code may also add implementation-local supplemental inner tests discovered during
+  Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
+  characterization, table/property, adapter, or edge-case tests. These supplement, never
+  replace, planned `AT-`/`TEST-` coverage; they stay within the current `PR-` and Planned
+  Touch Set, cite the nearest trace IDs when applicable, and use a concrete oracle. If they
+  imply new externally visible behavior, contract, UX/NFR, or scope, revise the upstream
+  artifact first.
 - Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
   fixtures, helpers, mocks, data, selectors, determinism, readability, maintainability, and
   false-positive/false-negative risk are judged, not just whether the tests pass.

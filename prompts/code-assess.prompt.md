@@ -198,6 +198,11 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   code itself: assertions, fixtures, helpers, mocks, generated data, setup/teardown,
   selectors, determinism, speed, isolation, readability, maintainability, and
   false-positive/false-negative risk.
+- **Supplemental inner test quality** — code-discovered helper, pure-core, parser, mapper,
+  regression, characterization, property/table, adapter, or edge-case tests supplement the
+  planned coverage, cite the nearest `PR-` and relevant `FR-`/`AT-`/`TEST-`/`COMP-`, stay
+  within the Planned Touch Set, use concrete oracles, and do not smuggle product-visible
+  behavior or contract/UX/NFR changes past the upstream artifacts.
 - **Verification-oracle rigor** — every test has a concrete pass/fail oracle aligned with
   the design/plan, such as return values, state changes, persisted records, emitted events,
   API responses, DOM/accessibility output, screenshots/visual baselines, generated

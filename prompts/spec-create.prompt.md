@@ -74,7 +74,10 @@ or other lower-level implementation tests here. Those belong downstream:
 - `/code-create` writes the executable tests: acceptance/e2e tests for `AT-` coverage and
   lower-level tests such as unit, component, contract, integration, accessibility,
   performance, security, migration, or operational checks for the assigned `TEST-`
-  obligations required by the design and plan.
+  obligations required by the design and plan. It may also add scoped implementation-local
+  supplemental inner tests discovered during TDD. If those tests reveal missing externally
+  visible behavior, contract, UX/NFR, or scope, revise this spec instead of treating the
+  behavior as code-only.
 
 ## Build, release, and deployment responsibility in this command
 
