@@ -136,7 +136,10 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   primary integration seam unless explicitly waived by the user.
 - **Logging and telemetry acceptance** — externally relevant logs, events, metrics, traces,
   audit records, support IDs, correlation IDs, retention, redaction, and debugging signals
-  are either expressed as requirements/acceptance criteria or explicitly scoped out.
+  are either expressed as requirements/acceptance criteria or explicitly scoped out. When
+  production performance or operations matter, APM/application-performance expectations
+  such as latency, throughput, error rate, saturation/resource use, critical spans, trace
+  propagation, dashboards, alerts, and SLO/SLI signals are captured or explicitly deferred.
 - **Error-handling acceptance** — UI, API, domain, integration, infrastructure, validation,
   authorization, timeout, offline, and unexpected-failure behavior is either expressed as
   requirements/acceptance criteria or explicitly scoped out.

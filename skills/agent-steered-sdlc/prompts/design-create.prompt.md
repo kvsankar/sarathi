@@ -143,6 +143,11 @@ design's ability to satisfy requirements and quality attributes:
 - **Diagnostic signal without leakage** — design logs, metrics, traces, audit records, and
   support IDs so humans and agents can debug and operate the system without exposing
   secrets, regulated data, stack traces, or unstable internals.
+- **APM as operability, not decoration** — when production performance or reliability
+  matters, design application performance monitoring explicitly: service/resource names,
+  request/job spans, RED/USE metrics, trace propagation, sampling, dashboards, alerts,
+  SLO/SLI signals, and the exporter/provider strategy such as OpenTelemetry, New Relic,
+  Datadog, Azure Monitor, or the project's existing stack.
 
 ## Test responsibility in this command
 
@@ -348,7 +353,10 @@ Every non-trivial design should include:
   path, ownership, and review/update triggers.
 - **Logging/telemetry view** — log/event/metric/trace/audit records, correlation IDs,
   support/debug IDs, sinks, retention, sampling, redaction/privacy rules, alert hooks, and
-  how humans and agents consume the signals.
+  how humans and agents consume the signals. Include APM/application-performance
+  instrumentation when relevant: service/resource names, span boundaries, trace context
+  propagation, RED/USE metrics, latency histograms, error rates, saturation/resource
+  metrics, dashboards, alerts, SLO/SLI signals, and OpenTelemetry/vendor exporter choices.
 - **Error-handling view** — UI/API/domain/integration/infrastructure error categories,
   mapping boundaries, user-facing messages, retry/fallback/degraded behavior, escalation,
   and safe failure defaults.
@@ -546,7 +554,9 @@ Interview the user **one question at a time**: ask, wait, then ask the next. Cov
   diagrams, publishing/versioning, ownership, review triggers, and doc validation checks.
 - **Logging, telemetry, and diagnostics architecture**: structured log fields, event names,
   metrics, traces, audit records, correlation/support IDs, sinks, retention, sampling,
-  redaction/privacy rules, alert hooks, and how humans or agents will use the signals.
+  redaction/privacy rules, alert hooks, APM instrumentation, service/resource names,
+  span boundaries, trace propagation, latency/throughput/error/saturation metrics,
+  dashboards, SLO/SLI signals, and how humans or agents will use the signals.
 - **Error-handling architecture**: error categories by UI, API, domain, integration,
   infrastructure, validation, authorization, timeout, offline, and unexpected-failure level;
   mapping boundaries; retry/fallback/degraded behavior; escalation; and safe user/API
@@ -732,7 +742,10 @@ Pass-with-fixes.
   planned when context warrants them, or explicitly deferred with rationale.
 - Logging and telemetry design names the structured signals, correlation/support IDs,
   sinks, retention/sampling, redaction/privacy rules, and consumers that matter for humans,
-  agents, debugging, support, or operations.
+  agents, debugging, support, or operations. When production performance or reliability
+  matters, it also names APM instrumentation, service/resource names, spans, trace
+  propagation, latency/throughput/error/saturation metrics, dashboards, alerts, and
+  SLO/SLI signals.
 - Error-handling design covers UI, API, domain, integration, infrastructure, validation,
   authorization, timeout, offline, and unexpected-failure categories where relevant,
   including mapping boundaries, recovery/retry/fallback, escalation, and safe user/API

@@ -174,7 +174,11 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   variants, and the fixture/schema/generated-client source tests should use.
 - **Logging and telemetry design** — structured logs, events, metrics, traces, audit/support
   IDs, correlation, sinks, retention/sampling, redaction/privacy, alert hooks, and
-  human/agent consumers are explicit and compatible with the requirements.
+  human/agent consumers are explicit and compatible with the requirements. When production
+  performance or reliability matters, APM/application-performance instrumentation is
+  explicit: service/resource names, critical spans, trace propagation, latency/throughput/
+  error/saturation metrics, dashboards, alerts, SLO/SLI signals, sampling, and exporter/
+  provider strategy such as OpenTelemetry or the project's APM stack.
 - **Error-handling design** — UI, API, domain, integration, infrastructure, validation,
   authorization, timeout, offline, and unexpected-failure categories have clear mapping
   boundaries, retry/fallback/degraded behavior, escalation, and safe user/API messages.

@@ -224,7 +224,9 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
   owner/reviewer, and freshness/versioning expectations.
 - **Logging, telemetry, and error-handling ownership**: which PRs own structured log fields,
   events, metrics, traces, audit/support IDs, correlation propagation, redaction, alert
-  hooks, error mapping, retry/fallback/degraded behavior, and safe UI/API messages.
+  hooks, APM instrumentation, service/resource names, latency/throughput/error/saturation
+  metrics, dashboards, SLO/SLI signals, exporter/provider configuration, error mapping,
+  retry/fallback/degraded behavior, and safe UI/API messages.
 - **Done definition**: coverage bar, lint/format gates, review rules.
 - **Test mix**: which acceptance, unit, component, contract, integration, UI/accessibility,
   quality-attribute, migration, and operational checks are required by the spec/design; for
@@ -292,8 +294,9 @@ work.
    or rollback work owned by this PR, or `None` with rationale); **Documentation Work**
    (user docs, developer docs, API/reference docs, examples, runbooks, troubleshooting,
    release/migration notes, generated docs, or `None` with rationale);
-   **Logging/Telemetry Work** (structured logs, events, metrics, traces, audit/support IDs,
-   correlation, redaction, alert hooks, or `None` with rationale); **Error Handling Work**
+   **Logging/Telemetry/APM Work** (structured logs, events, metrics, traces, audit/support
+   IDs, correlation, redaction, alert hooks, APM instrumentation, dashboards, SLO/SLI
+   signals, exporter/provider config, or `None` with rationale); **Error Handling Work**
    (UI/API/domain/integration/infrastructure error mapping, retry/fallback/degraded
    behavior, safe messages, or `None` with rationale); **Mock UI Dependency** (approved
    mock path/status for UI-facing PRs, or `None` with rationale); **Test Levels**
@@ -413,8 +416,10 @@ Pass-with-fixes.
   work or explicitly state why that quality work is out of scope.
 - If a mock UI is required, UI-facing PRs reference the approved mock artifact and must not
   start until that mock is explicitly approved by the user.
-- Logging/telemetry and error-handling work is assigned to PRs whenever the spec/design
-  calls for it; otherwise the plan states why it is out of scope.
+- Logging/telemetry/APM and error-handling work is assigned to PRs whenever the spec/design
+  calls for it; otherwise the plan states why it is out of scope. Production-facing systems
+  that need performance visibility assign APM instrumentation, latency/throughput/error/
+  saturation metrics, trace propagation, dashboards, alerts, and SLO/SLI signals.
 - Build artifact creation, packaging, deployment scripts/manifests/IaC, deployment dry runs,
   smoke checks, and rollback verification are assigned to PRs whenever the spec/design calls
   for them; otherwise the plan states why they are out of scope.

@@ -249,15 +249,20 @@ that should own it.
 Diagnostics and failure behavior are covered across the lifecycle:
 
 - Specs capture externally relevant human/agent/operator diagnostics, telemetry,
-  support/debugging needs, privacy/redaction constraints, user-facing error behavior, and
-  boundary error contracts as requirements or non-goals.
+  application performance monitoring, support/debugging needs, privacy/redaction
+  constraints, user-facing error behavior, and boundary error contracts as requirements or
+  non-goals.
 - Designs define structured logging, correlation IDs, events, metrics, traces, sinks,
+  APM instrumentation, service/resource names, latency/throughput/error/saturation metrics,
+  dashboards, SLO/SLI signals, exporter/provider choices such as OpenTelemetry or New Relic,
   retention/redaction, alert hooks, and how UI/API/domain/infrastructure errors are mapped,
   recovered, retried, degraded, or surfaced.
 - Plans assign logging, telemetry, and error-handling work to PRs, including fixtures,
-  verification oracles, and tests for representative success/failure paths.
+  APM setup, dashboards/alerts, verification oracles, and tests for representative success/
+  failure paths.
 - Code implements and verifies the planned diagnostics and error handling without leaking
-  secrets, stack traces, raw objects, or unstable internals to users, logs, or agents.
+  secrets, stack traces, raw objects, or unstable internals to users, logs, APM providers,
+  or agents.
 
 Reviews stop with an upstream blocker when logging, telemetry, or error-handling intent is
 missing from the artifact that should own it.
@@ -365,6 +370,9 @@ Test responsibility is split by artifact:
   `/code-verify`, or `/code-assess` when planned. The same is true for environment-specific
   checks and context-driven reviews/tests such as performance, security, privacy,
   accessibility, resilience, migration, compatibility, cost, and operational checks.
+  Production-facing telemetry should include APM/application-performance signals when
+  warranted: latency, throughput, error rate, saturation/resource use, critical spans, trace
+  propagation, dashboards, alerts, and SLO/SLI signals.
 
 Use `/code-verify` when you simply want a confidence run after a change: test suite,
 coverage, pre-commit/equivalent gates, logging/error-handling checks, build checks,

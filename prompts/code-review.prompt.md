@@ -71,6 +71,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Logging and telemetry fitness: planned structured logs, events, metrics, traces,
   audit/support IDs, correlation propagation, redaction, alert hooks, and human/agent
   debugging signals are implemented, tested, stable, and free of secrets or excessive noise.
+  Planned APM/application-performance work is present: service/resource attributes,
+  critical spans, trace propagation, latency/throughput/error/saturation metrics,
+  dashboards, alerts, SLO/SLI signals, and exporter/provider config.
 - Error-handling fitness: UI, API, domain, integration, infrastructure, validation,
   authorization, timeout, offline, and unexpected failures map to safe messages, typed/
   documented errors, retries/fallback/degraded behavior, escalation, and logs/telemetry at

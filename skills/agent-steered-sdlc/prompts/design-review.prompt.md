@@ -67,7 +67,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   absent from the design. If material, fail or block with the required upstream/design change.
 - Logging and telemetry design: structured logs, events, metrics, traces, audit/support IDs,
   correlation, sinks, retention/sampling, redaction/privacy, alert hooks, and human/agent
-  consumers are explicit where relevant.
+  consumers are explicit where relevant. For production-facing systems, APM instrumentation
+  is explicit: service/resource names, spans, trace propagation, latency/throughput/error/
+  saturation metrics, dashboards, alerts, SLO/SLI signals, and exporter/provider strategy.
 - Error-handling design: UI, API, domain, integration, infrastructure, validation,
   authorization, timeout, offline, and unexpected-failure categories have clear mapping,
   retry/fallback/degraded behavior, escalation, and safe user/API messages.

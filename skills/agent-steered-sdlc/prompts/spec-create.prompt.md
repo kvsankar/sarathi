@@ -134,14 +134,16 @@ as requirements when humans, agents, operators, support teams, auditors, or down
 systems depend on them:
 
 - Product/system specs state diagnostic audiences, high-level telemetry/observability
-  goals, support/debugging expectations, privacy/redaction constraints, error categories,
-  user-facing error behavior, and operational acceptance signals.
+  goals, APM/application-performance signals, support/debugging expectations, privacy/
+  redaction constraints, error categories, user-facing error behavior, and operational
+  acceptance signals.
 - Feature/component specs state feature-specific events, metrics, traces, correlation needs,
-  log/audit expectations, fallback/degraded behavior, retry/recovery expectations, and
-  human-readable error behavior.
+  APM spans/service metrics, log/audit expectations, fallback/degraded behavior, retry/
+  recovery expectations, and human-readable error behavior.
 - Slice/change specs state the exact logging/telemetry/error-handling delta: new or changed
-  events/fields, redaction rules, correlation propagation, error mapping, retry/fallback
-  behavior, user/API messages, and acceptance criteria or justified non-code verification.
+  events/fields, metrics, spans, APM instrumentation, redaction rules, correlation
+  propagation, error mapping, retry/fallback behavior, user/API messages, and acceptance
+  criteria or justified non-code verification.
 
 If logging, telemetry, or error handling is intentionally out of scope, record that in
 **Non-Goals** or **Assumptions & Open Questions** rather than leaving it implicit.
@@ -167,6 +169,11 @@ state the externally observable quality bar:
 - **Diagnostics for humans and agents**: logs, telemetry events, metrics, traces, audit
   records, and support IDs should be useful for debugging, support, operations, and agentic
   follow-up while avoiding sensitive data, secrets, and unstable implementation details.
+- **Application performance monitoring**: when performance, reliability, operations, or
+  production support matter, capture expectations for request/job latency, throughput,
+  error rate, saturation/resource use, critical spans, trace propagation, dashboards,
+  alerts, SLO/SLI signals, and preferred telemetry standards or tools such as OpenTelemetry,
+  New Relic, Datadog, Azure Monitor, or the project's existing APM stack.
 - **Boundary contracts**: public APIs, events, files, CLI outputs, webhooks, SDK calls, and
   generated clients shall define externally visible success and error shapes when consumers
   depend on them. Include known variant shapes, such as validation errors vs. domain errors,
@@ -463,7 +470,9 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
   risk. A mock/fake/stub is never treated as equivalent to the real contract.
 - Logging, telemetry, diagnostic, and support/debugging expectations are either captured as
   measurable requirements/acceptance criteria or explicitly deferred as non-goals/open
-  questions.
+  questions. Application performance monitoring expectations such as latency, throughput,
+  error rate, saturation, trace propagation, dashboards, alerts, and SLO/SLI signals are
+  captured or explicitly ruled out when operations or production performance matter.
 - Error-handling expectations across UI, API, domain, integration, infrastructure, and
   unexpected-failure levels are captured as requirements/acceptance criteria or explicitly
   deferred as non-goals/open questions.

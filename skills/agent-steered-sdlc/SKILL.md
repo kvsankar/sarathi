@@ -232,12 +232,15 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   a required mock UI has not been approved by the user.
 - Treat logging, telemetry, and error handling as part of artifact ownership: specs define
   externally relevant human/agent/operator diagnostics, privacy/redaction constraints,
-  telemetry events/metrics/traces, error categories, user-facing error behavior, and
-  support/debugging needs or non-goals; designs define structured logging, correlation
-  IDs, event/metric/trace contracts, sinks/retention, redaction, alert hooks, and
-  layer-specific error mapping/recovery/degradation strategy; plans assign that work and
-  verification to PRs; code implements and tests it without leaking secrets, stack traces,
-  raw objects, or unstable internals to users or logs.
+  telemetry events/metrics/traces, APM/application-performance signals, error categories,
+  user-facing error behavior, and support/debugging needs or non-goals; designs define
+  structured logging, correlation IDs, event/metric/trace contracts, APM instrumentation,
+  service/resource names, latency/throughput/error/saturation metrics, dashboards,
+  SLO/SLI signals, exporter/provider choices such as OpenTelemetry or New Relic, sinks/
+  retention, redaction, alert hooks, and layer-specific error mapping/recovery/degradation
+  strategy; plans assign that work and verification to PRs; code implements and tests it
+  without leaking secrets, stack traces, raw objects, or unstable internals to users, logs,
+  APM providers, or agents.
 - Treat downstream assessment/review as an upstream validation point. If design, plan, or
   code assessment/review reveals a latent issue in an earlier artifact, stop and tell the user which
   upstream artifact needs revision.

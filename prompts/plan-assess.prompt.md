@@ -176,8 +176,10 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   approved mock artifact and remain blocked until user approval is explicit.
 - **Logging/error-handling allocation** — PRs assign structured logs, telemetry events,
   metrics, traces, audit/support IDs, correlation propagation, redaction, alert hooks,
+  APM instrumentation, dashboards, SLO/SLI signals, exporter/provider config,
   representative failure-path tests, error mapping, retry/fallback/degraded behavior, and
-  safe UI/API messages where required.
+  safe UI/API messages where required. If production performance visibility is needed but
+  no PR owns latency/throughput/error/saturation metrics or trace propagation, flag it.
 - **Build/deployment allocation** — artifact creation, packaging, generated outputs, CI/CD
   config, deployment scripts/manifests/IaC, migration validation, dry-run/plan/lint commands,
   smoke checks, rollback checks, and release docs are assigned to PRs when the upstream

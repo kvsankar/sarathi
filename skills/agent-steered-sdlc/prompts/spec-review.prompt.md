@@ -63,7 +63,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   stub story unless the user explicitly waives the risk.
 - Logging and telemetry quality: required logs, events, metrics, traces, audit records,
   support IDs, correlation IDs, retention, and redaction/privacy constraints are captured or
-  explicitly scoped out.
+  explicitly scoped out. When production performance or operations matter, APM expectations
+  such as latency, throughput, error rate, saturation, critical spans, trace propagation,
+  dashboards, alerts, and SLO/SLI signals are captured or explicitly deferred.
 - Error-handling quality: UI, API, domain, integration, infrastructure, validation,
   authorization, timeout, offline, and unexpected-failure behavior is specified at the
   externally visible level or explicitly scoped out.

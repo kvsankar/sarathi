@@ -98,7 +98,9 @@ command, tools covered, thresholds, and pass/fail.
 Run planned commands where present:
 
 - Logging/telemetry checks for structured events, metrics, traces, audit/support IDs,
-  correlation propagation, redaction, alert hooks, and absence of sensitive data.
+  correlation propagation, redaction, alert hooks, APM instrumentation, service/resource
+  attributes, trace propagation, latency/throughput/error/saturation metrics, dashboards,
+  alerts, SLO/SLI signals, exporter/provider config, and absence of sensitive data.
 - Error-handling checks for UI/API/domain/integration/infrastructure error mapping,
   retry/fallback/degraded behavior, safe user/API messages, and representative failure
   paths.

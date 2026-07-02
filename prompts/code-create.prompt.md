@@ -272,7 +272,8 @@ a mock UI and approval is missing, **stop before editing production UI code** an
 human mock approval.
 Also state any
 planned logging/telemetry work: structured fields, events, metrics, traces, correlation/
-support IDs, redaction, alert hooks, or `None` with the plan's rationale. State planned
+support IDs, redaction, alert hooks, APM instrumentation, dashboards, SLO/SLI signals,
+exporter/provider config, or `None` with the plan's rationale. State planned
 error-handling work: UI/API/domain/integration/infrastructure mapping, retry/fallback/
 degraded behavior, safe messages, or `None` with the plan's rationale. Also state any
 planned build/deployment work: build command, expected artifact, deployment validation
@@ -299,7 +300,8 @@ If build/deployment files, generated artifacts, scripts, pipeline config, IaC, m
 or release documentation are required but absent from the Planned Touch Set, stop and ask
 for a plan/design update before editing them.
 
-If logging/telemetry config, logging adapters, event/metric/trace schemas, alert hooks,
+If logging/telemetry/APM config, logging adapters, event/metric/trace schemas, APM agent or
+OpenTelemetry exporter setup, service/resource attributes, alert hooks, dashboards,
 correlation propagation, redaction logic, or error-handling modules are required but absent
 from the Planned Touch Set, stop and ask for a plan/design/spec update before editing them.
 
@@ -331,8 +333,9 @@ raw object stringification or framework internals.
 
 When testing logging or telemetry, assert the stable structured signal: event name, level,
 correlation/support ID, metric name/value/tags, trace span attributes, audit field, redaction
-behavior, or absence of sensitive data. Do not assert volatile timestamps, stack traces, or
-formatting details unless the format is the contract.
+behavior, APM service/resource attributes, span name/status/duration bucket, histogram/
+counter values, dashboard/alert rule shape, or absence of sensitive data. Do not assert
+volatile timestamps, stack traces, or formatting details unless the format is the contract.
 
 ## Step 3 — Green
 
@@ -350,10 +353,11 @@ Keep docs aligned with actual behavior and contracts; do not document unimplemen
 behavior as if it exists.
 
 When the PR owns logging/telemetry or error-handling work, implement only the planned
-structured signals, correlation/support IDs, redaction, alert hooks, error mapping,
-retry/fallback/degraded behavior, and safe UI/API messages. Do not log secrets, raw tokens,
-PII beyond the approved contract, stack traces to user-visible surfaces, raw framework
-objects, or unstable internals meant only for local debugging.
+structured signals, APM instrumentation, service/resource attributes, correlation/support
+IDs, redaction, alert hooks, dashboards, SLO/SLI signals, exporter/provider config, error
+mapping, retry/fallback/degraded behavior, and safe UI/API messages. Do not log secrets,
+raw tokens, PII beyond the approved contract, stack traces to user-visible surfaces, raw
+framework objects, or unstable internals meant only for local debugging.
 
 ## Step 4 — Refactor
 
@@ -363,7 +367,8 @@ configured local quality gate where possible. Re-run planned build/package and
 deployment-validation commands after refactoring when touched files can affect them. Re-run
 planned documentation build/generation/link/readability checks when touched files can affect
 them. Re-run planned logging/telemetry/error-handling tests when touched files can affect
-diagnostic signal shape, redaction, error mapping, retries, fallback, or user/API messages.
+diagnostic signal shape, APM metrics/spans/exporters, redaction, error mapping, retries,
+fallback, or user/API messages.
 
 ## Step 5 — Verify the PR
 
