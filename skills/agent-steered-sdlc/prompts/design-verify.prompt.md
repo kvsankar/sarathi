@@ -48,6 +48,10 @@ Report:
   obligation gaps, missing/untraced `TEST-` obligations, missing `JT-`-to-`TEST` journey
   coverage visible in the design, ambiguous interface ownership, dependency cycles, or
   vague hits.
+- `external_double_mentions`, `external_double_drift_risks`, and
+  `external_double_mitigation_tests`. If a design mentions mocked/faked/stubbed or locally
+  mirrored external interfaces, the structural gate requires a drift risk plus real-boundary
+  or type-conformance mitigation evidence.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 

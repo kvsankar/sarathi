@@ -289,6 +289,13 @@ Test responsibility is split by artifact:
 - Designs define the test architecture and explicit `TEST-<AREA>-<NAME>` executable test
   obligations for unit, component, contract, integration, UI, journey/e2e, quality,
   docs/build/deploy, migration, and operational checks.
+- External systems should be tested against the real dependency or its official conformance
+  surface whenever feasible. If a mock, fake, stub, local mirror, or locally re-declared
+  interface replaces the real system, the artifacts must flag that as verification risk and
+  name the mitigation: real-boundary smoke/integration test, official conformance harness,
+  type-conformance check, generated schema/client, vendor sandbox/emulator, captured real
+  fixture, or explicit user-approved limitation. A primary integration seam should not be
+  covered only by a self-authored double.
 - Plans assign `AT-` acceptance coverage, `JT-` journey coverage, and `TEST-` obligations
   to PRs.
 - Code writes the executable tests and implementation, and records executable-test
@@ -343,6 +350,9 @@ If `python` is unavailable, try `python3`, then `uv run python`.
 default. Use `--traceability <file>` for a project-specific map location. Use
 `--allow-inline-test-traceability` only as a temporary migration flag for older repos that
 still carry artifact IDs in test comments or docstrings.
+Traceability entries may also include `boundary`, `level`, `uses_double`, `real_boundary`,
+and `type_conformance`. If tests for a boundary use a double, at least one test for that
+same boundary must be marked as a real-boundary or type-conformance check.
 Module size is advisory by default. Use `--enforce-max-loc` only when a project explicitly
 opts into a hard module-size gate; otherwise review oversized modules as maintainability
 signals and avoid mechanical file splitting.

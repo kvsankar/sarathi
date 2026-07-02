@@ -175,6 +175,13 @@ direct state/output assertions. Do not accept a test whose only oracle is "no ex
 For boundary-facing tests, compare mocks/fixtures against the real producer/consumer
 contract before writing the Red test. If the plan does not name a fixture/schema/generated
 client/contract-test source and the boundary shape matters, stop for a plan/design update.
+Prefer tests against the real external system or official conformance surface. When a PR
+adds or edits a mock, fake, stub, test double, local mirror, or locally re-declared interface
+for an external system, the same PR must add or update drift control unless the plan already
+assigned it to an adjacent PR: real-boundary smoke/integration test, official conformance
+harness, type-conformance check, generated schema/client check, vendor sandbox/emulator,
+captured real fixture, or explicit user-approved limitation. A test double must never be the
+only verification of an external contract.
 For UI-facing work, keep presentation changes decoupled from behavior tests; add visual,
 accessibility, responsive, or role/text-based assertions only where planned.
 
@@ -437,6 +444,10 @@ first completed PR boundary.
   unless that is the explicitly planned behavior.
 - Boundary-facing tests use the planned fixture/schema/generated-client/contract source of
   truth and do not drift into bespoke mock shapes.
+- Tests that mock/fake/stub an external system are flagged as verification risk in the
+  handoff and tied to a real-boundary, official-conformance, type-conformance,
+  generated-schema/client, sandbox/emulator, or captured-real-fixture test. If that is not
+  feasible, stop for explicit user approval of the residual risk.
 - UI-facing implementation includes the planned presentation/layout/responsive/accessibility
   and readable state work without making behavior tests brittle.
 - UI-facing implementation follows the approved mock UI when one is required; if the mock is

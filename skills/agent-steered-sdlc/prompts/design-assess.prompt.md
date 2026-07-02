@@ -175,6 +175,13 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Contract realism** — boundary-facing tests and client/server adapters are grounded in
   documented producer/consumer contracts, shared fixtures, schemas, generated clients, or
   contract tests rather than ad-hoc mock shapes.
+- **External double verification risk** — any mock, fake, stub, test double, local mirror,
+  or locally re-declared interface for an external system is explicitly flagged as
+  verification risk, linked to a `RISK-`, and mitigated by a `TEST-` obligation that uses
+  the real external system, official conformance harness, type-conformance check, generated
+  schema/client, vendor sandbox/emulator, captured real fixture, or explicit user-approved
+  limitation. If the primary integration seam is covered only by a self-authored double,
+  fail the design assessment.
 - **User-facing presentation and feedback** — UI designs define the styling/layout approach,
   responsive behavior, readable loading/empty/error/validation states, and any deliberate
   styling deferrals.

@@ -153,6 +153,12 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Contract-fixture allocation** — boundary-facing PRs identify the shared fixtures,
   schemas, generated clients, captured representative examples, or contract tests that keep
   mocks aligned with the real producer/consumer contract.
+- **External double verification allocation** — PRs that use mocks, fakes, stubs, or test
+  doubles for external systems flag the verification risk and allocate mitigation through a
+  real-boundary smoke/integration test, official conformance harness, type-conformance
+  check, generated schema/client check, vendor sandbox/emulator, captured real fixture, or
+  explicit user-approved limitation. If a primary integration seam is covered only by a
+  self-authored double, fail the plan assessment.
 - **UX/presentation allocation** — UI-facing PRs assign baseline styling/layout,
   responsive/accessibility checks, and readable loading/empty/error/validation states, or
   explicitly justify why they are out of scope.

@@ -58,6 +58,7 @@ tests:
       - AT-AUTH-SIGNIN
       - COMP-AUTH
       - TEST-AUTH-POLICY
+      - TEST-AUTH-CONTRACT
 """,
             encoding="utf-8",
         )
@@ -297,6 +298,7 @@ tests:
       - AT-AUTH-SIGNIN
       - COMP-AUTH
       - TEST-AUTH-POLICY
+      - TEST-AUTH-CONTRACT
 """
 
     rc, report = run_check_code(
@@ -468,6 +470,78 @@ approvals:
     assert rc == 0
     assert report["gates"]["markers_approved"] is True
     assert report["marker_approval_requirements"][0]["issues"] == []
+
+
+def test_check_code_rejects_double_only_external_boundary(
+    tmp_path, monkeypatch, capsys
+):
+    traceability = """version: 1
+tests:
+  - name: test_auth
+    path: tests/test_auth.py
+    level: unit
+    boundary: vendor-sdk
+    uses_double: true
+    covers:
+      - PR-AUTH-SIGNIN
+      - FR-AUTH-SIGNIN
+      - AT-AUTH-SIGNIN
+      - COMP-AUTH
+      - TEST-AUTH-POLICY
+"""
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        traceability_body=traceability,
+    )
+
+    assert rc == 1
+    assert report["gates"]["external_doubles_tied_to_reality"] is False
+    assert report["external_boundary_verification"]["double_only_boundaries"] == [
+        "vendor-sdk"
+    ]
+
+
+def test_check_code_accepts_external_double_with_real_boundary_test(
+    tmp_path, monkeypatch, capsys
+):
+    traceability = """version: 1
+tests:
+  - name: test_auth
+    path: tests/test_auth.py
+    level: unit
+    boundary: vendor-sdk
+    uses_double: true
+    covers:
+      - PR-AUTH-SIGNIN
+      - FR-AUTH-SIGNIN
+      - AT-AUTH-SIGNIN
+      - COMP-AUTH
+      - TEST-AUTH-POLICY
+  - name: test_auth
+    path: tests/test_auth.py
+    level: integration
+    boundary: vendor-sdk
+    real_boundary: true
+    covers:
+      - PR-AUTH-SIGNIN
+      - TEST-AUTH-POLICY
+"""
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        traceability_body=traceability,
+    )
+
+    assert rc == 0
+    assert report["gates"]["external_doubles_tied_to_reality"] is True
+    assert report["external_boundary_verification"]["double_only_boundaries"] == []
 
 
 def test_git_diff_loc_measures_actual_changed_lines(tmp_path):

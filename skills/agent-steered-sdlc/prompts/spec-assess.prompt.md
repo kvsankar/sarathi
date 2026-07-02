@@ -120,6 +120,13 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Boundary contract quality** — externally visible APIs/events/files/SDKs/CLIs/webhooks
   define success and error shapes that consumers rely on, including validation vs. domain
   error variants when relevant.
+- **External system verification quality** — every external dependency names the real
+  contract the system must honor: data shape, required fields, errors/exceptions,
+  lifecycle/ordering, auth/env/secrets, and version assumptions. At least one acceptance
+  criterion should be verifiable against the real system or official conformance surface for
+  each material seam. If real-boundary verification is infeasible, the spec must flag that
+  as a verification risk. A mock/fake/stub-only acceptance story is a spec defect for a
+  primary integration seam unless explicitly waived by the user.
 - **Logging and telemetry acceptance** — externally relevant logs, events, metrics, traces,
   audit records, support IDs, correlation IDs, retention, redaction, and debugging signals
   are either expressed as requirements/acceptance criteria or explicitly scoped out.

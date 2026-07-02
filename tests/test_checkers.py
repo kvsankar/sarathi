@@ -84,6 +84,9 @@ Implementation Readiness: Code-ready
 # Non-Functional Requirements
 - NFR-PERF-SIGNIN Sign-in shall complete within 200 ms. Verification: timing.
 
+# External Interfaces & Contracts
+- No external interfaces are introduced by this slice.
+
 # Acceptance Tests
 - AT-AUTH-SIGNIN Given a valid user, when they sign in, then access is granted.
   Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.
@@ -502,6 +505,88 @@ def test_check_design_accepts_complete_structural_design(tmp_path, monkeypatch, 
     assert report["comp_test_coverage_pct"] == 100.0
 
 
+def test_check_design_flags_external_double_without_drift_control(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    fake_host = (
+        "Contract: authenticate credentials. Tests use a fake external vendor SDK host."
+    )
+    design_path.write_text(
+        design_path.read_text(encoding="utf-8").replace(
+            "Contract: authenticate credentials.",
+            fake_host,
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_design")
+
+    rc, report = run_main(
+        module,
+        [str(design_path), "--spec", str(spec_path), "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["external_doubles_flagged_as_risk"] is False
+    assert report["gates"]["external_doubles_have_real_boundary_mitigation"] is False
+
+
+def test_check_design_accepts_external_double_with_drift_control(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    fake_host = (
+        "Contract: authenticate credentials. Tests use a fake external vendor SDK host."
+    )
+    contract_test = (
+        "- TEST-AUTH-CONTRACT Contract tests cover IFACE-AUTH behavior for "
+        "COMP-AUTH and\n"
+        "  AT-AUTH-SIGNIN."
+    )
+    text = design_path.read_text(encoding="utf-8")
+    text = text.replace(
+        "Contract: authenticate credentials.",
+        fake_host,
+    )
+    text = text.replace(
+        contract_test,
+        "- TEST-AUTH-CONTRACT Contract tests cover IFACE-AUTH behavior for "
+        "COMP-AUTH and\n"
+        "  AT-AUTH-SIGNIN.\n"
+        "- TEST-AUTH-DRIFT Type-conformance and real-boundary integration tests cover\n"
+        "  COMP-AUTH, RISK-DRIFT, and the external vendor SDK contract.",
+    )
+    text = text.replace(
+        "- RISK-AUTH Credential-store outage blocks sign-in.",
+        "- RISK-AUTH Credential-store outage blocks sign-in.\n"
+        "- RISK-DRIFT Test double drift is a verification risk because the fake\n"
+        "  external vendor SDK host can diverge from the real boundary.",
+    )
+    design_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_design")
+
+    rc, report = run_main(
+        module,
+        [str(design_path), "--spec", str(spec_path), "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["external_double_drift_risks"] == ["RISK-DRIFT"]
+    assert report["external_double_mitigation_tests"] == ["TEST-AUTH-DRIFT"]
+
+
 def test_check_design_accepts_equivalent_core_shell_section(
     tmp_path, monkeypatch, capsys
 ):
@@ -632,6 +717,81 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["plan_kind"] == "implementation"
     assert report["at_coverage_pct"] == 100.0
     assert report["test_obligation_coverage_pct"] == 100.0
+
+
+def test_check_plan_flags_external_double_without_mitigation(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace(
+            "Green: implement COMP-AUTH.",
+            "Green: implement COMP-AUTH with a fake external vendor SDK host.",
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["external_double_mitigation_present"] is False
+
+
+def test_check_plan_accepts_external_double_with_real_boundary_mitigation(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace(
+            "Green: implement COMP-AUTH.",
+            "Green: implement COMP-AUTH with a fake external vendor SDK host and\n"
+            "  a real-boundary integration test for the SDK contract.",
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["gates"]["external_double_mitigation_present"] is True
 
 
 def test_check_plan_requires_upstream_and_mock_approvals(tmp_path, monkeypatch, capsys):

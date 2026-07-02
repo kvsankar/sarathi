@@ -88,15 +88,19 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
 - `/design-create` defines the test architecture and explicit `TEST-<AREA>-<NAME>`
   executable test obligations: acceptance/e2e/journey, unit/pure-core, component, contract,
   integration, UI/accessibility/visual, quality-attribute, migration, build/deploy, docs,
-  and operational checks as applicable.
+  and operational checks as applicable. External-system mocks, fakes, stubs, local mirrors,
+  or locally re-declared interfaces are verification risks and must be tied to
+  real-boundary, official-conformance, type-conformance, generated-schema/client,
+  sandbox/emulator, captured-real-fixture, or explicit user-approved mitigation.
 - `/plan-create` assigns those test obligations to PRs. Each `AT-` must map to an
   executable acceptance/e2e/API workflow test PR or justified non-code verification, each
   `JT-` must map to an executable journey/e2e/API workflow test PR or justified non-code
   verification, and each design `TEST-` obligation must map to the PR or child work item
   that writes/runs it.
   Boundary-facing PRs must name the shared fixture/schema/generated-client/contract source
-  used to prevent mock drift; UI-facing PRs must assign UX/presentation checks or scope them
-  out.
+  used to prevent mock drift; if a real external system cannot be used in tests, the plan
+  must flag the verification risk and name the mitigation or user-approved limitation.
+  UI-facing PRs must assign UX/presentation checks or scope them out.
 - `/code-create` writes executable tests using Red/Green/Refactor: acceptance tests for
   assigned `AT-` items, journey tests for assigned `JT-` items, plus the planned `TEST-`
   obligations. This is where unit, component, contract, integration,
@@ -106,6 +110,10 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   when planned or explicitly accepted: generated code only, docs-only, formatting-only,
   build/deploy config validation, and characterization before legacy refactor. Each
   exception must carry replacement verification evidence.
+- For external systems, prefer tests against the real dependency or its official conformance
+  surface. A test double is a liability until something ties it to reality. A primary
+  integration seam must not be covered only by a self-authored double unless the user
+  explicitly accepts the residual verification risk.
 - `/code-create` records executable-test traceability in `.sdlc/test-traceability.yaml`.
   Test names, docstrings, and comments should stay behavior-focused and should not carry
   artifact IDs unless the project explicitly adopts inline metadata.
@@ -272,10 +280,10 @@ canonical checklist is
 
 | Assessment | Mechanical verification | Qualitative review |
 | --- | --- | --- |
-| `/spec-assess` | `/spec-verify`: `check_spec.py` on the target spec. | `/spec-review`: spec quality, problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, UI mock preference, logging/error-handling intent, build/deployment intent, documentation intent, traceability. |
-| `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, UI mock artifact/approval when required, logging/telemetry and error-handling design, build/deployment design, documentation design, decisions, risks, testability, verification-oracle design, and traceability. |
-| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, verification-oracle allocation, UI mock approval allocation, logging/error-handling allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
-| `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned logging/error-handling/build/docs/deployment checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test implementation quality, verification-oracle rigor, mock UI fidelity when required, logging/telemetry and error-handling verification, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
+| `/spec-assess` | `/spec-verify`: `check_spec.py` on the target spec. | `/spec-review`: spec quality, problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, UI mock preference, external contracts and real-boundary testability, logging/error-handling intent, build/deployment intent, documentation intent, traceability. |
+| `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, UI mock artifact/approval when required, logging/telemetry and error-handling design, build/deployment design, documentation design, decisions, risks, external-double verification risk/mitigation, testability, verification-oracle design, and traceability. |
+| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, verification-oracle allocation, external-double mitigation allocation, UI mock approval allocation, logging/error-handling allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
+| `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned logging/error-handling/build/docs/deployment checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test implementation quality, verification-oracle rigor, external-double verification risk, mock UI fidelity when required, logging/telemetry and error-handling verification, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
 
 Agents should infer the likely scope from the user's request and state it explicitly:
 broad product/platform/app requests map to Product/system, one capability/subsystem maps to
@@ -387,7 +395,7 @@ The local hooks invoke:
 [checkers/check_spec.py](checkers/check_spec.py) enforces structural spec hygiene:
 slug-only `KIND-AREA-NAME` ID format, duplicates, orphan refs, UC→AT and FR→AT reference coverage,
 NFR unit presence, obvious NFR unit/quality mismatches, AT scenario shape, JT
-sequence/composition, and banned vague terms.
+sequence/composition, the required external-interface contract section, and banned vague terms.
 
 ```pwsh
 python checkers/check_spec.py spec.md --json
@@ -402,7 +410,9 @@ Flags: `--json`, `--feature` (focused feature/component or slice/change mode), `
 [checkers/check_design.py](checkers/check_design.py) enforces structural design hygiene:
 ID format, duplicates, orphan refs, component→requirement references, explicit `TEST-`
 obligation coverage, single interface ownership, interface-derived dependency cycles, and
-banned vague terms.
+banned vague terms. If a design mentions mocked/faked/stubbed or locally mirrored external
+interfaces, it must also include drift-risk and real-boundary/type-conformance mitigation
+evidence.
 
 ```pwsh
 python checkers/check_design.py design.md --json
@@ -417,7 +427,7 @@ design), `--spec <file>` (resolve FR/UC/JT refs). Exits non-zero on any gate fai
 [checkers/check_plan.py](checkers/check_plan.py) enforces structural plan hygiene:
 slug-only `KIND-AREA-NAME` plan ID format, duplicates, orphan refs, FR/AT/JT/COMP/TEST
 reference coverage, advisory PR LOC estimates, Red/Green step text, no forward dependencies,
-and banned vague terms.
+external-double mitigation allocation, and banned vague terms.
 
 ```pwsh
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
@@ -432,7 +442,8 @@ Flags: `--json`, `--feature` (focused feature/component or slice/change mode), `
 [checkers/check_code.py](checkers/check_code.py) runs the test suite and enforces structural
 code/test hygiene: tests pass, labeled coverage output ≥ threshold, PR-ID and
 FR/AT/JT/COMP/TEST traceability, advisory per-module LOC reporting, no unjustified
-TODO/FIXME/XXX/skip/xfail markers, and human-approved remaining markers.
+TODO/FIXME/XXX/skip/xfail markers, external-boundary double-to-reality evidence, and
+human-approved remaining markers.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json

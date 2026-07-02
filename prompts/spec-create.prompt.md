@@ -171,6 +171,12 @@ state the externally observable quality bar:
   generated clients shall define externally visible success and error shapes when consumers
   depend on them. Include known variant shapes, such as validation errors vs. domain errors,
   when they affect users or downstream implementers.
+- **External system verification**: when behavior depends on an external system such as an
+  SDK, HTTP API, CLI, database driver, broker, plugin host, OS service, or file format, the
+  spec must name the real contract to honor: data shapes, required fields, errors,
+  lifecycle/ordering, auth/env/secrets, and version expectations. Prefer acceptance criteria
+  that can be verified against the real system or its official conformance surface. If real
+  boundary verification is infeasible, flag that as a verification risk.
 - **Contract acceptance**: acceptance criteria should include representative success,
   validation/error, empty/loading, and responsive/accessibility scenarios when those states
   are user-visible or integration-critical.
@@ -334,6 +340,10 @@ answer, then ask the next. Never batch questions. Keep going until gaps close. C
 - **External contract expectations**: Which API/event/file/SDK/CLI/webhook success and
   error shapes are externally visible or consumed across a boundary? Which variants must be
   human-readable or contract-tested?
+- **External system testability**: Which external systems can be exercised directly in
+  acceptance/contract/integration tests, sandbox tests, emulator tests, official conformance
+  harnesses, generated-client/schema checks, or captured real fixtures? If any must be
+  mocked or faked, why is the real system infeasible and what verification risk remains?
 - **Logging, telemetry, and diagnostics**: What events, metrics, traces, audit records,
   support IDs, correlation IDs, retention/redaction rules, and agent/human debugging signals
   are required or explicitly out of scope?
@@ -392,17 +402,24 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
    method, including usability/presentation, human-readable feedback, boundary contract,
    logging/telemetry, error handling, build/release/deployment, documentation, and
    operational constraints when externally relevant.
-8. **Acceptance Tests** — list (`AT-<AREA>-<NAME>`), Given/When/Then or equivalent
+8. **External Interfaces & Contracts** — list every external dependency or boundary the
+   system must honor, or state `None`. For each external system, pin the contract source and
+   version when known, success/error data shapes, required fields, lifecycle/ordering,
+   auth/env/secret expectations, and whether the real system or official conformance surface
+   can be used in downstream tests. If not, explicitly flag the verification risk.
+9. **Acceptance Tests** — list (`AT-<AREA>-<NAME>`), Given/When/Then or equivalent
    black-box acceptance criteria; each maps to a `UC-` and the `FR-`/`NFR-` it verifies.
    State the externally visible behavior or measurable quality to verify, not the internal
-   unit/component/integration test mechanics.
-9. **Journey Tests** — list (`JT-<AREA>-<NAME>`) for long, ordered stories that exercise
+   unit/component/integration test mechanics. For each external system that affects
+   acceptance, include at least one criterion tied to the concrete real contract, not a
+   paraphrased mock shape.
+10. **Journey Tests** — list (`JT-<AREA>-<NAME>`) for long, ordered stories that exercise
    multiple `AT-` items one after another. Each `JT-` names the actors/systems, ordered
    `AT-` sequence, important state carried between steps, and observable final oracle. If no
    journey test is needed at the current scope, state that explicitly.
-10. **Traceability Matrix** — needs → non-goals/scope boundaries → features → use cases →
+11. **Traceability Matrix** — needs → non-goals/scope boundaries → features → use cases →
    requirements → acceptance tests → journey tests, including priority/risk where known.
-11. **Assumptions & Open Questions** — unconfirmed facts, source/research notes,
+12. **Assumptions & Open Questions** — unconfirmed facts, source/research notes,
    out-of-scope/deferred items, priority trade-offs, UI mock preference and approval gate
    when relevant, and change-impact notes for revisions.
 
@@ -429,8 +446,10 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
   If Required, the spec states that mock UI approval is a hard human gate before production
   UI implementation.
 - External boundary contracts, including success/error body shapes that consumers depend on,
-  are captured as requirements/acceptance criteria or explicitly deferred as non-goals/open
-  questions.
+  are captured in **External Interfaces & Contracts** and requirements/acceptance criteria
+  or explicitly deferred as non-goals/open questions.
+- If an external system cannot be used directly in tests, the spec flags the verification
+  risk. A mock/fake/stub is never treated as equivalent to the real contract.
 - Logging, telemetry, diagnostic, and support/debugging expectations are either captured as
   measurable requirements/acceptance criteria or explicitly deferred as non-goals/open
   questions.

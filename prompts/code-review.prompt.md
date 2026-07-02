@@ -55,6 +55,12 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Contract realism: boundary-facing tests use shared fixtures, schemas, generated clients,
   captured representative examples, or contract tests that match the real producer/consumer
   contract, including error variants; ad-hoc convenient mocks are flagged.
+- External double verification risk: flag any external-system mock/fake/stub/test double or
+  locally re-declared interface that is not tied to the real boundary through a
+  real-boundary test, official conformance harness, type-conformance check, generated
+  schema/client, vendor sandbox/emulator, captured real fixture, or explicit user-approved
+  limitation. Ask which tests fail if the local mirror drifts; if none, this is a blocking
+  review finding for a primary integration seam.
 - UI quality and selector resilience: planned styling/layout/responsive/accessibility and
   readable loading/empty/error/validation states are present, while behavior tests remain
   role/text/semantic rather than CSS-coupled unless style itself is under test.

@@ -187,6 +187,14 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   oracle for pass/fail: return value, state, persisted record, event, API response,
   DOM/accessibility output, screenshot/visual baseline, artifact, structured log, metric,
   trace, deployment signal, or captured external call as appropriate.
+- Treat external-system doubles as verification risk. Prefer tests against the real
+  dependency or official conformance surface. If a mock, fake, stub, local mirror, or
+  locally re-declared interface replaces the real external system, the spec/design/plan/code
+  evidence must flag the residual risk and tie the double back to reality through a
+  real-boundary smoke/integration test, official conformance harness, type-conformance
+  check, generated schema/client, vendor sandbox/emulator, captured real fixture, or
+  explicit user-approved limitation. A primary integration seam must not be covered only by
+  a self-authored double unless the user explicitly accepts that risk.
 - Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
   when planned or explicitly accepted: generated code only, docs-only, formatting-only,
   build/deploy config validation, and characterization before legacy refactor. Generated

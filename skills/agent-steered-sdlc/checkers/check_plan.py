@@ -60,6 +60,23 @@ LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.", re.I)
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
 UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
+EXTERNAL_DOUBLE = re.compile(
+    r"\b(?:external|vendor|sdk|api|cli|host|service|broker|driver|"
+    r"database|file format)"
+    r"\b(?:(?!\n\n).){0,160}\b(?:mock|fake|stub|test double|mirror|mirrored|"
+    r"re-?declar|hand-?cop(?:y|ied)|hand-?authored|local interface|do not import)\b|"
+    r"\b(?:mock|fake|stub|test double|mirror|mirrored|re-?declar|hand-?cop(?:y|ied)|"
+    r"hand-?authored|local interface|do not import)\b(?:(?!\n\n).){0,160}"
+    r"\b(?:external|vendor|sdk|api|cli|host|service|broker|driver|"
+    r"database|file format)\b",
+    re.I | re.S,
+)
+REAL_BOUNDARY = re.compile(
+    r"\b(?:real[- ]boundary|real dependency|real external|official conformance|"
+    r"type[- ]conformance|contract test|integration test|vendor sandbox|emulator|"
+    r"captured real|generated client|schema|openapi|asyncapi)\b",
+    re.I,
+)
 LEAD = re.compile(r"^[\s#>\-\*\+0-9.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 DEF_MARKER = re.compile(r"^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[\.)]\s+)")
@@ -150,6 +167,12 @@ def malformed_ids(text: str) -> list[str]:
             if not VALID_ANY.fullmatch(m.group(0))
         }
     )
+
+
+def external_double_mentions(text: str) -> list[str]:
+    return [
+        re.sub(r"\s+", " ", m.group(0)).strip() for m in EXTERNAL_DOUBLE.finditer(text)
+    ]
 
 
 def loc_values(block: str) -> list[int]:
@@ -275,6 +298,10 @@ def main() -> int:
     bad = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
     vague = len(VAGUE.findall(text))
+    ext_double_mentions = external_double_mentions(text)
+    external_double_mitigation_present = (
+        not ext_double_mentions or REAL_BOUNDARY.search(delivery_text) is not None
+    )
     approval_requirements = []
     approval_context = {}
     if require_approvals:
@@ -331,6 +358,7 @@ def main() -> int:
         "jt_coverage_100": jt_c == spec_jts,
         "comp_coverage_100": comp_c == design_comps,
         "test_obligation_coverage_100": test_c == design_tests,
+        "external_double_mitigation_present": external_double_mitigation_present,
         "pr_tdd_red_green": not no_tdd,
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -361,6 +389,8 @@ def main() -> int:
         "uncovered_jts": sorted(spec_jts - jt_c),
         "uncovered_comps": sorted(design_comps - comp_c),
         "uncovered_test_obligations": sorted(design_tests - test_c),
+        "external_double_mentions": ext_double_mentions,
+        "external_double_mitigation_present": external_double_mitigation_present,
         "loc_target": loc_target,
         "large_prs": sorted(large_prs),
         "prs_missing_loc": sorted(missing_loc),

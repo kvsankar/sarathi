@@ -46,6 +46,9 @@ Report:
 - UC and FR acceptance coverage percentages.
 - Any uncovered IDs, orphan refs, duplicates, bad ID format, NFR unit issues,
   acceptance-test shape issues, journey-test sequence/composition issues, or vague hits.
+- Whether the required **External Interfaces & Contracts** section is present in full-spec
+  mode. This is structural evidence only; qualitative review still judges whether each
+  external contract is concrete and real-boundary testable.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 

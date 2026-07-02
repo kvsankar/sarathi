@@ -54,6 +54,11 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Contract-fixture allocation: boundary-facing PRs use shared fixtures, schemas, generated
   clients, captured representative examples, or contract tests instead of ad-hoc mock
   payloads.
+- External double verification allocation: PRs that use mocks/fakes/stubs/test doubles for
+  external systems flag verification risk and allocate real-boundary, official-conformance,
+  type-conformance, generated-schema/client, sandbox/emulator, captured-real-fixture, or
+  user-approved mitigation. A primary integration seam covered only by a double is a
+  blocking plan defect.
 - UX/presentation allocation: UI-facing PRs assign baseline styling/layout,
   responsive/accessibility checks, and readable loading/empty/error/validation states, or
   explicitly scope them out.

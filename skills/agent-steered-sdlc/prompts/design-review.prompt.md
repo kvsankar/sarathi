@@ -44,6 +44,11 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Contract realism: boundary tests and mocks are tied to documented producer/consumer
   contracts, shared fixtures, schemas, generated clients, or contract tests, not invented
   convenient shapes.
+- External double verification risk: any mock/fake/stub/test double/local mirror for an
+  external system is flagged as verification risk and tied to real-boundary, official
+  conformance, type-conformance, generated-schema/client, sandbox/emulator, captured-real
+  fixture, or explicit user-approved mitigation. A primary integration seam covered only by
+  a self-authored double is a blocking design defect.
 - UI presentation and feedback: UI-facing designs define baseline styling/layout,
   responsive behavior, accessibility, and readable loading/empty/error/validation states, or
   deliberately scope them out.

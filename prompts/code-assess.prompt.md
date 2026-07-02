@@ -239,6 +239,12 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   contract/integration tests reflect the real producer/consumer boundary, including
   representative success and error variants. Ad-hoc string/object mocks that bypass the
   documented contract are defects.
+- **External double verification risk** — explicitly answer: "Which tests would fail if
+  our local mirror, fake, stub, or mock diverged from the real external contract?" If the
+  answer is "none," fail the assessment. Prefer evidence from real-boundary tests, official
+  conformance harnesses, type-conformance checks, generated schemas/clients, vendor
+  sandboxes/emulators, or captured real fixtures. Coverage percentage and passing unit tests
+  do not satisfy external-seam verification by themselves.
 - **UI quality and selector resilience** — planned styling/layout/responsive/accessibility
   and readable loading/empty/error/validation states are implemented; behavior tests use
   role/text/semantic selectors rather than CSS classes unless style is the contract under

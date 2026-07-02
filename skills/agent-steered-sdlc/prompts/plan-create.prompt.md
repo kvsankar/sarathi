@@ -176,6 +176,14 @@ stop and request a spec/design/plan update.
 For boundary-facing work, identify the fixture/schema/generated-client/contract-test source
 of truth each PR will use. Do not plan tests that rely on ad-hoc mock payloads that differ
 from the producer/consumer contract.
+Prefer tests against the real external system or official conformance surface for external
+boundaries. Unit tests may use doubles, but a mock/fake/stub for an external system is a
+verification risk until tied back to reality. If a PR uses or edits a double for an external
+system, the same PR or a clearly named predecessor/successor PR must include mitigation:
+real-boundary smoke/integration test, official conformance harness, type-conformance check,
+generated schema/client check, vendor sandbox/emulator, captured real fixture, or explicit
+human-approved limitation. The product's primary integration seam must have at least one
+real-boundary or official-conformance test PR unless explicitly waived by the user.
 
 ## Scope: new, revision, breakdown, or implementation plan
 
@@ -209,8 +217,8 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
 - **Test mix**: which acceptance, unit, component, contract, integration, UI/accessibility,
   quality-attribute, migration, and operational checks are required by the spec/design; for
   boundary-facing tests, which shared fixtures, schemas, generated clients, captured
-  examples, or contract tests will prevent mock drift; for each planned test, what oracle
-  proves pass/fail.
+  examples, real-boundary checks, type-conformance checks, or contract tests will prevent
+  mock drift; for each planned test, what oracle proves pass/fail.
 - **UX/presentation work**: For UI-facing work, which stylesheet/design-token/component
   library/layout/error-state/responsive/accessibility work is in scope, and which PR owns
   non-brittle checks for it?
@@ -360,7 +368,11 @@ Pass-with-fixes.
   `/code-create` to write a meaningful failing test and for `/code-review` to reject weak or
   indirect assertions.
 - Boundary-facing PRs name the fixture/schema/generated-client/contract-test source of
-  truth used by tests; invented mock payload shapes are treated as plan defects.
+  truth used by tests; invented mock payload shapes are treated as plan defects. If a test
+  double replaces a real external system, the plan flags verification risk and allocates a
+  real-boundary, official-conformance, type-conformance, generated-schema/client,
+  sandbox/emulator, or captured-real-fixture mitigation. A primary integration seam covered
+  only by a double fails plan assessment unless explicitly waived by the user.
 - UI-facing PRs include planned presentation/layout/responsive/accessibility/error-state
   work or explicitly state why that quality work is out of scope.
 - If a mock UI is required, UI-facing PRs reference the approved mock artifact and must not

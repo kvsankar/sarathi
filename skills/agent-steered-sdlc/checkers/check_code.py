@@ -264,6 +264,7 @@ def traceability_from_file(
         "seen_ids": set(),
         "assertion_seen": set(),
         "bad_id_format": set(),
+        "boundary_tests": [],
     }
     if not path.exists():
         return result
@@ -290,6 +291,10 @@ def traceability_from_file(
         if entry_path is not None and not isinstance(entry_path, str):
             result["invalid_entries"].append(f"tests[{index}] has invalid path")
             continue
+        boundary = entry.get("boundary")
+        if boundary is not None and not isinstance(boundary, str):
+            result["invalid_entries"].append(f"tests[{index}] has invalid boundary")
+            continue
         if not covers or not all(isinstance(item, str) for item in covers):
             result["invalid_entries"].append(f"tests[{index}] has invalid covers")
             continue
@@ -301,12 +306,44 @@ def traceability_from_file(
         result["seen_prs"].update(covered & plan_prs)
         result["seen_ids"].update(covered & wanted)
         matching_blocks = [block for block in blocks if block_matches(block, name)]
+        if boundary:
+            result["boundary_tests"].append(
+                {
+                    "name": name,
+                    "path": entry_path,
+                    "boundary": boundary,
+                    "level": entry.get("level"),
+                    "uses_double": entry.get("uses_double") is True,
+                    "real_boundary": entry.get("real_boundary") is True,
+                    "type_conformance": entry.get("type_conformance") is True,
+                }
+            )
         if not matching_blocks:
             result["unresolved_tests"].append(name)
             continue
         if any(has_nontrivial_assertion(block) for block in matching_blocks):
             result["assertion_seen"].update(covered & wanted)
     return result
+
+
+def boundary_verification(boundary_tests: list[dict]) -> dict[str, object]:
+    by_boundary: dict[str, list[dict]] = {}
+    for item in boundary_tests:
+        by_boundary.setdefault(str(item["boundary"]), []).append(item)
+    double_only = []
+    for boundary, entries in sorted(by_boundary.items()):
+        has_double = any(item.get("uses_double") for item in entries)
+        tied_to_reality = any(
+            item.get("real_boundary") or item.get("type_conformance")
+            for item in entries
+        )
+        if has_double and not tied_to_reality:
+            double_only.append(boundary)
+    return {
+        "boundaries": sorted(by_boundary),
+        "double_only_boundaries": double_only,
+        "entries": boundary_tests,
+    }
 
 
 def git_output(args: list[str], cwd: Path) -> tuple[int, str]:
@@ -433,6 +470,9 @@ def main() -> int:
     else:
         traceability_source = "missing"
         seen_prs, seen, assertion_seen = set(), set(), set()
+    external_boundary_verification = boundary_verification(
+        list(traceability["boundary_tests"])
+    )
     bad_ids = (
         malformed_ids(plan)
         | malformed_ids(spec_path)
@@ -533,6 +573,9 @@ def main() -> int:
                 and not traceability["unresolved_tests"]
             )
         ),
+        "external_doubles_tied_to_reality": (
+            not external_boundary_verification["double_only_boundaries"]
+        ),
         "module_size_ok": not oversized if enforce_max_loc else True,
         "tdd_evidence_ok": tdd_ok if require_tdd else True,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -560,6 +603,7 @@ def main() -> int:
             "unresolved_tests": traceability["unresolved_tests"],
             "allow_inline_legacy": allow_inline_trace,
         },
+        "external_boundary_verification": external_boundary_verification,
         "bad_id_format": sorted(bad_ids),
         "max_loc": max_loc,
         "module_size_enforced": enforce_max_loc,

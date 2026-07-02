@@ -8,6 +8,7 @@ SPEC_SECTIONS = [
     "Use Cases",
     "Functional Requirements",
     "Non-Functional Requirements",
+    "External Interfaces & Contracts",
     "Acceptance Tests",
     "Journey Tests",
     "Traceability Matrix",

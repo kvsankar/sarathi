@@ -54,6 +54,29 @@ ID_CANDIDATE = re.compile(
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
 UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
+EXTERNAL_DOUBLE = re.compile(
+    r"\b(?:external|vendor|sdk|api|cli|host|service|broker|driver|"
+    r"database|file format)"
+    r"\b(?:(?!\n\n).){0,160}\b(?:mock|fake|stub|test double|mirror|mirrored|"
+    r"re-?declar|hand-?cop(?:y|ied)|hand-?authored|local interface|do not import)\b|"
+    r"\b(?:mock|fake|stub|test double|mirror|mirrored|re-?declar|hand-?cop(?:y|ied)|"
+    r"hand-?authored|local interface|do not import)\b(?:(?!\n\n).){0,160}"
+    r"\b(?:external|vendor|sdk|api|cli|host|service|broker|driver|"
+    r"database|file format)\b",
+    re.I | re.S,
+)
+DRIFT_RISK = re.compile(
+    r"\b(?:drift|verification risk|false confidence|real boundary|real dependency|"
+    r"external contract|vendor contract)\b",
+    re.I,
+)
+DRIFT_MITIGATION = re.compile(
+    r"\b(?:real[- ]boundary|real dependency|real external|official conformance|"
+    r"type[- ]conformance|assignable to .*vendor|contract test|integration test|"
+    r"vendor sandbox|emulator|captured real|generated client|schema|openapi|"
+    r"asyncapi)\b",
+    re.I,
+)
 # Leading markdown list markers that precede a defining ID (not table pipes).
 LEAD = re.compile(r"^[\s#>\-\*\+\d\.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
@@ -176,6 +199,12 @@ def malformed_ids(text: str) -> list[str]:
     )
 
 
+def external_double_mentions(text: str) -> list[str]:
+    return [
+        re.sub(r"\s+", " ", m.group(0)).strip() for m in EXTERNAL_DOUBLE.finditer(text)
+    ]
+
+
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
@@ -276,6 +305,18 @@ def main() -> int:
     known = all_ids | req_ids
     orphans = sorted(r for r in refs if r not in known)
     vague = len(VAGUE.findall(text))
+    ext_double_mentions = external_double_mentions(text)
+    risk_text = section_text(text, "Risks & Trade-offs")
+    drift_risks = [
+        risk
+        for risk, block in item_blocks(text, {"RISK"}).items()
+        if DRIFT_RISK.search(block)
+    ]
+    drift_tests = [
+        test_id
+        for test_id, block in test_blocks.items()
+        if DRIFT_MITIGATION.search(block)
+    ]
 
     # Dependency cycles: COMP -> owning COMP for any referenced interface.
     deps: dict[str, set] = {c: set() for c in comps}
@@ -359,6 +400,13 @@ def main() -> int:
         "comp_test_coverage_100": tested == comps,
         "test_obligations_declared": bool(ts_tests) if comps else True,
         "test_obligation_traceability_100": not untraced_tests,
+        "external_doubles_flagged_as_risk": (
+            not ext_double_mentions
+            or (DRIFT_RISK.search(risk_text) is not None and bool(drift_risks))
+        ),
+        "external_doubles_have_real_boundary_mitigation": (
+            not ext_double_mentions or bool(drift_tests)
+        ),
         "iface_single_owner": not iface_dupes and not iface_owner_issues,
         "no_dependency_cycles": not cycles,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -378,6 +426,9 @@ def main() -> int:
         "test_obligation_count": len(defined["TEST"]),
         "test_obligations_in_strategy": sorted(ts_tests),
         "untraced_test_obligations": sorted(untraced_tests),
+        "external_double_mentions": ext_double_mentions,
+        "external_double_drift_risks": sorted(drift_risks),
+        "external_double_mitigation_tests": sorted(drift_tests),
         "iface_owner_count": len(iface_owners),
         "dependency_cycles": cycles,
         "approval_requirements": approval_requirements,

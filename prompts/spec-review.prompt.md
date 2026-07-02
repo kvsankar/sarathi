@@ -51,6 +51,11 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   production UI implementation.
 - Boundary contract quality: externally consumed API/event/file/SDK/CLI/webhook success and
   error shapes are defined when consumers or user-visible behavior depend on them.
+- External system verification quality: material external dependencies name the real
+  contract to honor and prefer acceptance criteria that can be verified against the real
+  system or official conformance surface. If real-boundary testing is infeasible, the spec
+  flags that verification risk; a primary integration seam cannot rely only on a mock/fake/
+  stub story unless the user explicitly waives the risk.
 - Logging and telemetry quality: required logs, events, metrics, traces, audit records,
   support IDs, correlation IDs, retention, and redaction/privacy constraints are captured or
   explicitly scoped out.

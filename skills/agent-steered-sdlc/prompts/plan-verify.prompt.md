@@ -47,6 +47,10 @@ Report:
 - Any upstream spec/design failures.
 - Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, large declared
   PRs, missing LOC estimates, missing Red/Green text, forward dependencies, or vague hits.
+- `external_double_mentions` and `external_double_mitigation_present`. If a plan uses a
+  mock/fake/stub/test double for an external system, the structural gate requires a
+  real-boundary, official-conformance, type-conformance, generated-schema/client,
+  sandbox/emulator, captured-real-fixture, or user-approved mitigation allocation.
 - LOC sizing is advisory reviewability evidence; do not treat a large PR as a mechanical
   failure or recommend trimming useful comments, tests, docs, JSDoc/docstrings, or readable
   structure merely to fit the target.

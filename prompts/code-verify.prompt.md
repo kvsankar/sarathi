@@ -61,6 +61,10 @@ Report:
   `.sdlc/test-traceability.yaml` or the project-equivalent traceability map.
 - Assertion-traceability percentage.
 - Test traceability file status, invalid entries, and unresolved mapped test names.
+- External boundary verification from `.sdlc/test-traceability.yaml`: each entry may declare
+  `boundary`, `level`, `uses_double`, `real_boundary`, and `type_conformance`. If a boundary
+  has tests that use a double, at least one mapped test for the same boundary must be a
+  real-boundary or type-conformance check.
 - Diff LOC and evidence source, as advisory reviewability evidence.
 - TDD evidence source.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
@@ -71,6 +75,8 @@ Report:
   project-specific hard gate is used; never recommend cutting useful comments, tests, docs,
   JSDoc/docstrings, readable structure, or cohesive module boundaries merely to fit a size
   target.
+- Any external boundary whose tests rely only on a self-authored double is a failed
+  verification gate. Coverage percentage and passing unit tests do not satisfy this gate.
 
 Do not add SDLC-specific annotations to app code. If markers remain, surface their file,
 line, marker, and text to the user and require `code.markers.approved` before downstream

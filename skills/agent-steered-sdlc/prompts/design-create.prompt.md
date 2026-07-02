@@ -35,10 +35,11 @@ such as arc42, C4-style views, and SEI quality-attribute/attribute-driven design
    test deterministically; the shell should be thin, explicit, observable, and contract-tested.
 7. **Interface-first collaboration** — APIs, events, schemas, protocols, error contracts,
    and diagnostic contracts are part of the design, not afterthoughts.
-8. **Contract truth over convenient mocks** — tests and client adapters should use shared
-   fixtures, generated clients, schemas, contract tests, or captured representative payloads
-   from the documented boundary contract. Do not design tests around ad-hoc mock shapes that
-   differ from the producer/consumer contract.
+8. **Real boundary over convenient mocks** — prefer tests against the real external system
+   or its official conformance surface. Tests and client adapters should use shared
+   fixtures, generated clients, schemas, contract tests, captured representative payloads,
+   vendor sandboxes, or emulators from the documented boundary contract. Do not design tests
+   around ad-hoc mock shapes that differ from the producer/consumer contract.
 9. **Data and lifecycle awareness** — model data ownership, identity, consistency, retention,
    migrations, privacy/security classification, and failure/recovery behavior where relevant.
 10. **Buildability, documentability, diagnosability, testability, and operability by design** — each
@@ -85,6 +86,13 @@ Architecture decisions are part of the deliverable, not side notes.
   `docs/adr/ADR-<SLUG>.md` unless the repo already has an ADR location or naming convention.
   Each ADR should include: status, context, decision, options considered, consequences,
   affected requirements/design IDs, risks, and revisit triggers.
+- Any ADR that chooses to mock, fake, stub, mirror, or locally re-declare an external system
+  interface instead of importing real vendor types or exercising the real dependency must
+  include a **Drift control** subsection. It must explain why real-boundary testing or real
+  types are infeasible, what verification risk remains, and which mitigation detects drift:
+  real-boundary smoke/integration test, official conformance harness, type-conformance
+  check, generated schema/client, vendor sandbox/emulator, captured real fixture, or an
+  explicit user-approved limitation.
 - Keep `design.md` and ADRs synchronized: every `DEC-<SLUG>` in **Design Decisions** should
   link or refer to its ADR when one exists, and each ADR should reference the corresponding
   `DEC-<SLUG>`.
@@ -186,6 +194,15 @@ producer/consumer payloads for success and error cases unless the boundary is ex
 out of scope. Prefer shared fixtures, generated schemas/clients, OpenAPI/AsyncAPI examples,
 consumer-driven contract tests, or integration tests over hand-written mocks that invent a
 different shape.
+
+When the design uses a mock, fake, stub, test double, local mirror, or locally re-declared
+interface for an external system, record it as a verification risk in **Risks & Trade-offs**
+and link it to a `TEST-` mitigation. The default mitigation is a test against the real
+system or official conformance surface. If that is not feasible, state why and use the
+strongest available substitute: type-conformance check, generated schema/client check,
+captured real fixtures, vendor sandbox/emulator, subprocess smoke test, or explicit
+human-approved limitation. A primary integration seam must not rely only on a self-authored
+double.
 
 For UI-facing products where the spec says `UI Mock Preference: Required`, create or update
 a mock UI companion such as `mock-ui.html` unless the repo already has an established mock
@@ -567,7 +584,9 @@ Use **prefix + slug**, no numeric suffix:
    protocol/schema, auth/trust boundary, error behavior, diagnostic/correlation fields,
    versioning/compatibility, and QoS expectations where relevant. For boundary contracts,
    include representative success and error payload shapes or cite the formal schema/example
-   source that tests must use.
+   source that tests must use. If the interface is mocked, faked, stubbed, mirrored, or
+   locally re-declared instead of using the real external system or vendor types, state that
+   explicitly as verification risk.
 7. **Core vs. Shell** or **Core vs. Shell / Equivalent Separation** — include a table that classifies each `COMP-` as pure core,
    application/orchestration, adapter/shell, presentation, data, infrastructure, or mixed.
    For the core, list pure decisions, rules, validation, state transitions, calculations,
@@ -670,6 +689,11 @@ Pass-with-fixes.
 - Every boundary-facing test obligation identifies a fixture/schema/generated-client or
   contract-test source of truth; ad-hoc mocks with invented payload shapes are called out as
   risks or rejected.
+- Every external-system mock/fake/stub/test double is flagged as verification risk, names
+  why the real system cannot be used at that test level, and links to a real-boundary,
+  official-conformance, type-conformance, generated-schema/client, sandbox/emulator, or
+  captured-real-fixture mitigation. Primary integration seams require at least one
+  real-boundary or official-conformance test unless the user explicitly waives it.
 - UI-facing designs define a presentation approach and readable loading/empty/error/
   validation states, or explicitly record them as out of scope.
 - UI-facing designs honor the spec's UI mock preference. If `UI Mock Preference: Required`,
