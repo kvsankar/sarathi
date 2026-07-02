@@ -102,6 +102,10 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   obligations. This is where unit, component, contract, integration,
   UI/accessibility/visual, quality/NFR, migration, build/deploy, docs, and operational test
   implementations are written when planned.
+- Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
+  when planned or explicitly accepted: generated code only, docs-only, formatting-only,
+  build/deploy config validation, and characterization before legacy refactor. Each
+  exception must carry replacement verification evidence.
 - `/code-create` records executable-test traceability in `.sdlc/test-traceability.yaml`.
   Test names, docstrings, and comments should stay behavior-focused and should not carry
   artifact IDs unless the project explicitly adopts inline metadata.

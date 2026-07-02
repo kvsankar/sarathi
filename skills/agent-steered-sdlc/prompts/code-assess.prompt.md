@@ -204,7 +204,10 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **TDD authenticity** — tests assert behaviour, not implementation; meaningful Red. Use
   available git history, review notes, command transcripts, or failing-test evidence. If no
   such evidence exists, report that TDD order was not independently verified rather than
-  treating final green tests as proof.
+  treating final green tests as proof. Accept a missing Red step only for a planned or
+  explicitly accepted narrow exception: generated code only, docs-only, formatting-only,
+  build/deploy config validation, or characterization before legacy refactor. Verify the
+  replacement evidence for that exception.
 - **Test implementation quality and level completeness** — executable acceptance/e2e/API
   workflow tests cover assigned `AT-` items, executable journey/workflow tests cover
   assigned `JT-` items by chaining ordered `AT-` scenarios with realistic state handoff, and

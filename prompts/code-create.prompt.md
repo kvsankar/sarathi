@@ -1,18 +1,19 @@
 ---
-description: Implement a work plan PR-by-PR with strict Red/Green/Refactor TDD, keeping every step shippable, tested, documented, and traceable to the spec, design, and plan.
+description: Implement a work plan PR-by-PR with strict Red/Green/Refactor TDD for behavior changes, keeping every step shippable, tested, documented, and traceable to the spec, design, and plan.
 agent: agent
 ---
 
 # Code Create
 
 Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
-tested, documented, production code. Build **one PR at a time**, in plan order, using TDD.
-Optimize so `/code-assess` finds nothing to fix.
+tested, documented, production code. Build **one PR at a time**, in plan order, using TDD
+for behavior changes. Optimize so `/code-assess` finds nothing to fix.
 
 ## Core principles (the code is judged against these)
 
-1. **TDD always** — for each PR: write a failing test (**Red**), minimal code to pass
-   (**Green**), then **Refactor** with tests green. Never write prod code without a red test.
+1. **TDD by default** — for behavior-changing code: write a failing test (**Red**), minimal
+   code to pass (**Green**), then **Refactor** with tests green. Do not write
+   behavior-changing production code without a red test.
 2. **One PR at a time** — implement the lowest unbuilt PR whose deps are met; target about
    500 changed LOC for reviewability, but treat that as a guideline. Exceed it with a
    rationale when needed for cohesive, clear work. Never trim useful comments, tests, docs,
@@ -68,10 +69,37 @@ final implementation report as appropriate. YOLO mode does not bypass the Code-r
 gate, Planned Touch Sets, upstream-blocker stops, TDD discipline, quality gates, safety
 constraints, or a required spec/design/plan update.
 
+## Narrow TDD Exceptions
+
+Red/Green remains mandatory for behavior changes. Only these planned and documented
+exceptions are allowed:
+
+- **Generated code only** — no Red test is required for generated output when the source
+  schema/template/spec is reviewed, the generator command is recorded, generated files are
+  not hand-edited, and downstream contract/build/tests validate the result.
+- **Docs-only changes** — no Red test is required when no executable behavior changes and
+  planned doc build/link/example checks run where applicable.
+- **Formatting-only changes** — no Red test is required when produced by the project
+  formatter and no semantic edits are mixed in.
+- **Build/deploy config validation changes** — no Red test is required when the change is
+  limited to scripts/manifests/CI/IaC/package configuration and is verified by planned
+  dry-run, lint, validate, plan, synth, smoke, or equivalent checks.
+- **Characterization before legacy refactor** — passing characterization tests may be
+  written first to pin existing legacy behavior before a refactor. After behavior is pinned,
+  refactor with the characterization suite green. Any intentional behavior change after that
+  returns to normal Red/Green.
+
+Every exception must be present in the plan or explicitly accepted by the user, recorded in
+the implementation report, mapped in `.sdlc/test-traceability.yaml` when tests are involved,
+and backed by concrete verification evidence. Do not use an exception for new behavior,
+bug fixes, API/schema contract changes, validation logic, security/privacy behavior, error
+handling, logging semantics, or UI behavior.
+
 ## Test responsibility in this command
 
 `/code-create` is where tests become executable code. For each PR, implement the planned
-test levels before or alongside the production code using Red/Green/Refactor:
+test levels before or alongside the production code using Red/Green/Refactor unless a narrow
+TDD exception above applies:
 
 - Write executable **acceptance/e2e/API workflow tests** for the `AT-` items assigned to the
   PR. These should verify externally visible behavior or measurable NFR outcomes from the
@@ -421,7 +449,9 @@ first completed PR boundary.
   with implemented behavior and contracts.
 - Every edit stays within the PR's Planned Touch Set. Out-of-scope needs stop work and trigger
   a user-visible plan/spec/design update request.
-- No prod line lands without a prior failing test. Suite is green at each PR boundary.
+- No behavior-changing production line lands without a prior failing test. Narrow TDD
+  exceptions are allowed only when planned or explicitly accepted and verified with the
+  replacement evidence above. Suite is green at each PR boundary.
 - Pre-commit or an equivalent local quality gate is configured, documented, and green.
 - Formatter, lint, type, complexity, dependency/security, coverage, and test thresholds are
   explicit and met, with documented exceptions only when the user accepts them.

@@ -28,8 +28,11 @@ agent implemented the code, state that the review is not independent.
 Score each item 1-5 and give one concrete fix for any score below 5:
 
 - Upstream code-readiness: spec/design/plan are still fit for the implemented behavior.
-- TDD authenticity: tests appear to have meaningful Red/Green history or the lack of
-  independent evidence is clearly reported.
+- TDD authenticity: behavior-changing code has meaningful Red/Green history, or the lack of
+  independent evidence is clearly reported. Missing Red is acceptable only for a planned or
+  explicitly accepted narrow exception: generated code only, docs-only, formatting-only,
+  build/deploy config validation, or characterization before legacy refactor, with concrete
+  replacement verification.
 - Test implementation quality and level completeness: executable acceptance tests cover
   assigned `AT-` items, executable journey/workflow tests cover assigned `JT-` items by
   chaining the ordered `AT-` scenarios with realistic state handoff, and planned `TEST-`

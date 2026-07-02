@@ -296,6 +296,10 @@ Test responsibility is split by artifact:
   artifact IDs. This is where unit, component, contract, integration, UI, journey/e2e,
   quality, migration, build/deploy, docs, and operational test implementations are created
   when planned.
+- Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
+  when planned or explicitly accepted: generated code only, docs-only, formatting-only,
+  build/deploy config validation, and characterization before legacy refactor. Each
+  exception needs replacement verification evidence.
 - Code may also add implementation-local supplemental inner tests discovered during
   Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
   characterization, table/property, adapter, or edge-case tests. These supplement, never

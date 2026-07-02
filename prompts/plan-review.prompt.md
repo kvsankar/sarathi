@@ -38,7 +38,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Planned Touch Sets: files/sections are explicit enough to bound implementation and catch
   scope drift.
 - TDD discipline: Red and Green steps would produce meaningful failing tests before code,
-  not merely template words.
+  not merely template words. Missing Red/Green is acceptable only for a narrow declared
+  exception with replacement verification: generated code only, docs-only, formatting-only,
+  build/deploy config validation, or characterization before legacy refactor.
 - Test allocation: `AT-` acceptance coverage, `JT-` journey coverage, and explicit design
   `TEST-` obligations for lower-level unit/component/contract/integration/UI/quality/
   operational tests are assigned to appropriate PRs. `JT-` PRs preserve ordered steps,

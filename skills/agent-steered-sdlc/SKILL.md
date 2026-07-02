@@ -187,6 +187,12 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   oracle for pass/fail: return value, state, persisted record, event, API response,
   DOM/accessibility output, screenshot/visual baseline, artifact, structured log, metric,
   trace, deployment signal, or captured external call as appropriate.
+- Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
+  when planned or explicitly accepted: generated code only, docs-only, formatting-only,
+  build/deploy config validation, and characterization before legacy refactor. Generated
+  output must not be hand-edited; docs/format/config exceptions need their replacement
+  verification checks; characterization tests may pass first only to pin existing legacy
+  behavior before refactoring. Any intentional behavior change returns to normal Red/Green.
 - Treat build and deployment ownership as part of artifact ownership: specs define
   externally relevant build/release/deployment needs or non-goals; designs define artifact,
   package, release, environment, deployment, validation, smoke, and rollback strategy; plans

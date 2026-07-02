@@ -17,8 +17,10 @@ nothing to fix.
    change would become worse by splitting. Never remove useful comments, tests, docs,
    JSDoc/docstrings, or readable structure merely to fit the target; split, justify, or
    ask for human input instead.
-2. **Red/Green TDD** — every PR writes failing tests first (Red), then minimal code to pass
-   (Green), then refactor. The plan states both Red and Green steps per PR.
+2. **Red/Green TDD by default** — every behavior-changing PR writes failing tests first
+   (Red), then minimal code to pass (Green), then refactor. The plan states Red and Green
+   steps per behavior-changing PR, or one of the narrow approved TDD exceptions plus
+   replacement verification evidence.
 3. **Full coverage** — every `FR-`/`UC-`, every `NFR-`, every `AT-`, every `JT-`, every design
    `COMP-`, every design `TEST-` obligation, and every required logging/error-handling/
    docs/build/deploy concern is delivered by at least one PR.
@@ -246,8 +248,8 @@ work.
 2. **Strategy** — Red/Green TDD loop, the reviewable-PR size target and exception rule,
    flags, always-green ordering, branch/worktree isolation, integration cadence,
    logging/error-handling strategy, build artifact strategy, deployment strategy,
-   documentation strategy, and whether this plan decomposes parent work or implements
-   code-ready work.
+   documentation strategy, narrow TDD exception policy, and whether this plan decomposes
+   parent work or implements code-ready work.
 3. **Milestones** — list (`MILE-<AREA>-<NAME>`); each groups child work or PRs toward a
    coherent delivery slice.
 4. **Pull Requests / Child Work Items** — for a Breakdown plan, list
@@ -271,8 +273,11 @@ work.
    `None` with rationale); **Verification Oracle** (return value/state/event/API/DOM/
    screenshot/log/metric/artifact/deployment/external-call evidence, as applicable);
    **Red** (failing tests, naming the level and linked `TEST-`/`JT-`/`AT-`/`FR-` IDs);
-   **Green** (impl); estimated changed LOC with rationale when above target; `COMP-` built;
-   `FR-`/`AT-`/`JT-` delivered; `TEST-` obligations implemented; depends-on PRs.
+   **Green** (impl); or **TDD Exception** (`Generated code only`, `Docs-only`,
+   `Formatting-only`, `Build/deploy config validation`, or `Characterization before legacy
+   refactor`) with replacement verification evidence; estimated changed LOC with rationale
+   when above target; `COMP-` built; `FR-`/`AT-`/`JT-` delivered; `TEST-` obligations
+   implemented; depends-on PRs.
 5. **Coverage Map** — for a Breakdown plan, map each `FR-`/`UC-`/`NFR-`/`AT-`/`JT-`/
    `COMP-` to child `WORK-` items and required child artifacts, and map each design `TEST-`
    obligation to the child work that will make it executable. For an Implementation plan,
@@ -335,9 +340,11 @@ Pass-with-fixes.
   plans are allowed to pass as Decomposable; Implementation plans marked Code-ready must
   contain PR-level Planned Touch Sets, test levels, and Red/Green steps.
 - Every implementation PR states Test Levels, Red steps, Green steps, and an estimated
-  changed LOC. PRs normally target about 500 changed LOC, but larger PRs are allowed with a
-  clear rationale when that preserves cohesion, readability, test quality, or documentation
-  quality. No PR depends on a later one.
+  changed LOC, unless it declares one narrow TDD exception with replacement verification:
+  generated code only, docs-only, formatting-only, build/deploy config validation, or
+  characterization before legacy refactor. PRs normally target about 500 changed LOC, but
+  larger PRs are allowed with a clear rationale when that preserves cohesion, readability,
+  test quality, or documentation quality. No PR depends on a later one.
 - Every FR, UC, NFR, AT, JT, COMP, and TEST maps to ≥1 child work item or implementation
   PR. No orphan or duplicate IDs.
 - Every `AT-` maps to an executable acceptance/e2e/API workflow test PR or to a justified

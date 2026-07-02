@@ -131,6 +131,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   verification, documentation updates/checks, rollback, dependencies, and worktree guidance.
 - **TDD discipline** — planned Red steps precede Green steps and are meaningful, not coverage
   theater. The structural checker only verifies Red/Green step text; use judgment here.
+  Missing Red/Green is acceptable only for a narrow declared exception with replacement
+  verification: generated code only, docs-only, formatting-only, build/deploy config
+  validation, or characterization before legacy refactor.
 - **Coverage** — no requirement/component silently skipped; NFRs and journey tests are
   scheduled.
 - **Test-level allocation** — each `AT-` maps to an executable acceptance/e2e/API workflow
