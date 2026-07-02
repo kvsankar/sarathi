@@ -18,10 +18,10 @@ from. If requirements, acceptance criteria, component boundaries, interfaces, de
 logging/error-handling strategy, build/deployment strategy, documentation strategy, or
 slicing constraints are defective, stop with an upstream blocker.
 
-Use an adversarial posture: try to refute the slicing, find missing upstream changes,
-oversized PRs, fake TDD steps, unsafe parallelism, touch-set drift, dependency traps, and
-traceability theater. Prefer fresh context, a separate reviewer, or a different model/tool
-when available. If the same agent created the plan, state that the review is not
+Use an adversarial posture: try to refute the slicing, find missing upstream changes, large
+or incoherent PRs, fake TDD steps, unsafe parallelism, touch-set drift, dependency traps,
+and traceability theater. Prefer fresh context, a separate reviewer, or a different
+model/tool when available. If the same agent created the plan, state that the review is not
 independent.
 
 ## Qualitative Review
@@ -31,7 +31,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Upstream fitness: spec and design are ready enough for this plan.
 - Plan type/readiness: breakdown, implementation, or lightweight plan matches the declared
   scope and readiness.
-- PR slicing: PRs are coherent, reviewable, one focused concern, and normally <=300 LOC.
+- PR slicing: PRs are coherent, reviewable, one focused concern, and normally around the
+  advisory 500 changed-LOC target. Larger PRs may pass with a clear rationale; cutting
+  useful comments, tests, docs, JSDoc/docstrings, or readable structure to satisfy the
+  target is a review finding.
 - Planned Touch Sets: files/sections are explicit enough to bound implementation and catch
   scope drift.
 - TDD discipline: Red and Green steps would produce meaningful failing tests before code,

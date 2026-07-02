@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -27,6 +28,7 @@ def run_check_code(
     capsys,
     test_body: str | None = None,
     spec_body: str | None = None,
+    approvals_body: str | None = None,
     extra_args: list[str] | None = None,
 ):
     plan = tmp_path / "plan.md"
@@ -41,6 +43,10 @@ def run_check_code(
         spec_body or "- FR-AUTH-SIGNIN\n- AT-AUTH-SIGNIN\n", encoding="utf-8"
     )
     design.write_text("- COMP-AUTH\n- TEST-AUTH-POLICY\n", encoding="utf-8")
+    if approvals_body is not None:
+        sdlc = tmp_path / ".sdlc"
+        sdlc.mkdir(exist_ok=True)
+        (sdlc / "approvals.yaml").write_text(approvals_body, encoding="utf-8")
     (tests / "test_auth.py").write_text(
         test_body
         or (
@@ -100,7 +106,11 @@ def test_check_code_default_coverage_threshold_is_80(tmp_path, monkeypatch, caps
         monkeypatch,
         capsys,
     )
-    assert rc == 0
+    assert rc == 0, {
+        "gates": report["gates"],
+        "approval_requirements": report["approval_requirements"],
+        "approval_ledger": report["approval_ledger"],
+    }
     assert report["cov_min"] == 80.0
     assert report["coverage_pct"] == 80.0
 
@@ -180,7 +190,11 @@ def test_check_code_requires_journey_test_traceability(tmp_path, monkeypatch, ca
         monkeypatch,
         capsys,
     )
-    assert rc == 0
+    assert rc == 0, {
+        "gates": report["gates"],
+        "approval_requirements": report["approval_requirements"],
+        "approval_ledger": report["approval_ledger"],
+    }
 
     rc, report = run_check_code(
         tmp_path,
@@ -193,6 +207,47 @@ def test_check_code_requires_journey_test_traceability(tmp_path, monkeypatch, ca
     assert rc == 1
     assert "JT-AUTH-LOGIN" in report["uncovered_ids"]
     assert "JT-AUTH-LOGIN" in report["ids_without_nearby_assertion"]
+
+
+def test_check_code_requires_plan_approval_when_enabled(tmp_path, monkeypatch, capsys):
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        extra_args=["--require-approvals"],
+    )
+
+    assert rc == 1
+    assert report["gates"]["required_approvals_present"] is False
+    assert report["approval_requirements"][0]["gate"] == "plan.approved"
+
+    plan_hash = hashlib.sha256((tmp_path / "plan.md").read_bytes()).hexdigest()
+    approvals = f"""version: 1
+approvals:
+  - id: APR-PLAN
+    gate: plan.approved
+    scope: slice/change
+    artifact:
+      kind: plan
+      path: plan.md
+      sha256: {plan_hash}
+    status: approved
+    approved_by: Test User
+    approved_at: "2026-07-01T12:00:00Z"
+"""
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        approvals_body=approvals,
+        extra_args=["--require-approvals"],
+    )
+
+    assert report["approval_requirements"][0]["issues"] == []
+    assert report["gates"]["required_approvals_present"] is True
+    assert rc == 0
 
 
 def test_check_code_rejects_tautological_assertion(tmp_path, monkeypatch, capsys):

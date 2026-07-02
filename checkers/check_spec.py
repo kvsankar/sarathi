@@ -27,6 +27,11 @@ CHECKER_DIR = Path(__file__).resolve().parent
 if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
+from approvals import (  # noqa: E402
+    approval_gate_passed,
+    approval_requirement,
+    load_approval_context,
+)
 from schemas import SPEC_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
@@ -205,6 +210,17 @@ def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
     feature = "--feature" in sys.argv
+    require_approvals = "--require-approvals" in sys.argv
+    approvals_path = (
+        sys.argv[sys.argv.index("--approvals") + 1]
+        if "--approvals" in sys.argv
+        else ".sdlc/approvals.yaml"
+    )
+    gates_path = (
+        sys.argv[sys.argv.index("--gates-policy") + 1]
+        if "--gates-policy" in sys.argv
+        else ".sdlc/gates.yaml"
+    )
     parent_ids: set[str] = set()
     if "--parent" in sys.argv:
         p = sys.argv[sys.argv.index("--parent") + 1]
@@ -242,6 +258,19 @@ def main() -> int:
     nfr_bad_unit = unit_mismatches(nfr_blocks)
     weak_ats = ats_missing_scenario_shape(at_blocks)
     weak_jts = jts_missing_sequence(jt_blocks)
+    approval_requirements = []
+    approval_context = {}
+    if require_approvals:
+        approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
+        approval_requirements.append(
+            approval_requirement(
+                approval_context,
+                Path.cwd(),
+                "spec.approved",
+                path,
+                "feature/component" if feature else "product/system",
+            )
+        )
 
     uc, fr = defined["UC"], defined["FR"]
     uc_cov = covered_by(uc, ats, {"UC"})
@@ -260,8 +289,11 @@ def main() -> int:
         "nfr_units_match_quality": not nfr_bad_unit,
         "ats_have_scenario_shape": not weak_ats,
         "jts_compose_multiple_ats": not weak_jts,
+        "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
     }
+    if not require_approvals:
+        gates.pop("required_approvals_present")
     if not feature:
         gates["sections_present"] = sections_present_in_order(text, SPEC_SECTIONS)
     report = {
@@ -278,6 +310,17 @@ def main() -> int:
         "nfr_unit_mismatches": nfr_bad_unit,
         "ats_missing_scenario_shape": weak_ats,
         "jts_missing_sequence": weak_jts,
+        "approval_requirements": approval_requirements,
+        "approval_ledger": {
+            "path": approvals_path,
+            "exists": approval_context.get("exists") if approval_context else None,
+            "load_error": approval_context.get("load_error")
+            if approval_context
+            else None,
+            "invalid_records": (
+                approval_context.get("invalid_records") if approval_context else []
+            ),
+        },
         "vague_hits": vague,
         "gates": gates,
         "passed": sum(gates.values()),

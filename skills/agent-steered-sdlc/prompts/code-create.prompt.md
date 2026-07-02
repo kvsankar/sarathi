@@ -13,7 +13,10 @@ Optimize so `/code-assess` finds nothing to fix.
 
 1. **TDD always** — for each PR: write a failing test (**Red**), minimal code to pass
    (**Green**), then **Refactor** with tests green. Never write prod code without a red test.
-2. **One PR at a time** — implement the lowest unbuilt PR whose deps are met; keep ≤300 LOC.
+2. **One PR at a time** — implement the lowest unbuilt PR whose deps are met; target about
+   500 changed LOC for reviewability, but treat that as a guideline. Exceed it with a
+   rationale when needed for cohesive, clear work. Never trim useful comments, tests, docs,
+   JSDoc/docstrings, or readable structure merely to satisfy the target.
 3. **Always green** — the full suite passes before a PR is done; never leave red on trunk.
 4. **Traceable** — tests name the FR/AT/JT/COMP/TEST and PR they cover; nothing built off-plan.
 5. **Production quality** — error handling, input validation, useful structured logging/
@@ -370,7 +373,8 @@ first completed PR boundary.
 
 ## Quality rules
 
-- Every PR maps 1:1 to a plan `PR-`; tests cover its FR/AT/JT/COMP/TEST. ≤300 LOC per PR.
+- Every PR maps 1:1 to a plan `PR-`; tests cover its FR/AT/JT/COMP/TEST. PRs normally stay
+  near the advisory 500 changed-LOC target or carry a clear rationale for exceeding it.
 - Each PR implements the test levels assigned in the plan, including executable acceptance
   coverage for assigned `AT-` items and executable `TEST-` obligations for the affected
   core, component, contract, integration, UI, quality, migration, or operational behavior.

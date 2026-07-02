@@ -29,6 +29,11 @@ For focused specs:
 python checkers/check_spec.py <spec.md> --feature --parent <parent-spec.md> --json
 ```
 
+When verifying that an already-reviewed spec has a valid local approval before downstream
+work, add `--require-approvals`. This checks `.sdlc/approvals.yaml` for a hash-matched
+`spec.approved` record with a UTC `approved_at` timestamp. Do not require approvals while
+drafting a spec that still needs human review.
+
 If `python` is unavailable or fails because the launcher is missing, retry with `python3`;
 if that is unavailable, retry with `uv run python`.
 
@@ -41,6 +46,8 @@ Report:
 - UC and FR acceptance coverage percentages.
 - Any uncovered IDs, orphan refs, duplicates, bad ID format, NFR unit issues,
   acceptance-test shape issues, journey-test sequence/composition issues, or vague hits.
+- Approval requirements and stale/missing approval records when `--require-approvals` is
+  used.
 
 ## Output
 

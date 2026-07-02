@@ -103,6 +103,22 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 - After creating or materially revising any spec, design, ADR, plan, code slice, or review
   report, pause for human review before starting the next downstream stage. The pause is a
   hard collaboration boundary, even when the generated artifact passes mechanical checks.
+- When a project has `.sdlc/approvals.yaml`, use it as the deterministic approval ledger for
+  downstream gates. Approval records must include gate, scope, artifact path, artifact
+  SHA-256, status, approver, and UTC `approved_at` timestamp such as
+  `2026-07-01T14:32:18Z`. Run checkers with `--require-approvals` when crossing into a
+  downstream phase. Do not require approvals while drafting the artifact that is about to be
+  reviewed by the user.
+- When the user explicitly approves an artifact or mock, create or update the matching
+  `.sdlc/approvals.yaml` record immediately: `spec.approved` for specs, `design.approved`
+  for designs, `plan.approved` for plans, `ux.mock.approved` for required mock UI artifacts,
+  and `plan.approved` or `code_slice.approved` for code-slice handoffs as appropriate.
+  Compute the SHA-256 from the current file bytes and use the current UTC timestamp ending
+  in `Z`. If the user says to auto-approve low-risk work, record `status: auto-approved`
+  only when `.sdlc/gates.yaml` allows that gate and scope.
+- Auto-approvals are allowed only when `.sdlc/gates.yaml` explicitly enables a bounded
+  policy with expiry, allowed scopes, allowed gates, and forbidden gates. Never silently
+  treat an auto-approved gate as a human approval.
 - Use the three-scope model: product/system, feature/component, slice/change. Every artifact
   should declare Implementation Readiness as Exploratory, Decomposable, or Code-ready.
   Parent artifacts may pass as Decomposable; `/code-create` must only proceed from a
@@ -244,15 +260,18 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   that is missing, search likely installed skill/workspace locations, and stop for user
   direction or reinstall unless the user explicitly approves a qualitative-only pass.
 - Treat checker results as structural evidence, not proof of correctness. The checkers catch
-  missing sections, malformed IDs, orphan references, missing trace links, declared oversize
+  missing sections, malformed IDs, orphan references, missing trace links, large declared
   PRs, missing Red/Green step text, unlabeled coverage output, missing same-test-block
-  assertion trace IDs, oversize git diffs against the resolved review base, and obvious
-  skip/TODO markers. Git diff-size and TDD evidence are required by default in code verify/assess;
-  use allow-missing flags only when the repo cannot provide that evidence and the report
-  states the limitation. Red/Green text, AT scenario shape, and commit-message TDD evidence
-  are presence checks; they do not prove semantic correctness, test implementation quality,
-  or true TDD history. Qualitative review must judge those from artifact content, code,
-  tests, and available review/git evidence.
+  assertion trace IDs, large advisory git diffs against the resolved review base, and
+  obvious skip/TODO markers. LOC and diff size are reviewability signals, not hard quality
+  gates; agents must not cut useful comments, tests, docs, JSDoc/docstrings, or readable
+  structure merely to fit the target. Git diff-size is reported by default in code
+  verify/assess; TDD evidence is required by default. Use allow-missing flags only when the
+  repo cannot provide that evidence and the report states the limitation. Red/Green text,
+  AT scenario shape, and commit-message TDD evidence are presence checks; they do not prove
+  semantic correctness, test implementation quality, or true TDD history. Qualitative
+  review must judge those from artifact content, code, tests, and available review/git
+  evidence.
 - Configure and run language-appropriate local quality gates for code work. Prefer
   repository-native tooling and pre-commit hooks where practical. For code-ready work, also
   run planned build/package commands and deployment dry-run/lint/plan/smoke/rollback checks

@@ -28,6 +28,11 @@ CHECKER_DIR = Path(__file__).resolve().parent
 if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
+from approvals import (  # noqa: E402
+    approval_gate_passed,
+    approval_requirement,
+    load_approval_context,
+)
 from schemas import DESIGN_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
@@ -47,6 +52,8 @@ ID_CANDIDATE = re.compile(
     re.I,
 )
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)
+UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
+UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
 # Leading markdown list markers that precede a defining ID (not table pipes).
 LEAD = re.compile(r"^[\s#>\-\*\+\d\.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
@@ -173,6 +180,17 @@ def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
     component = "--component" in sys.argv
+    require_approvals = "--require-approvals" in sys.argv
+    approvals_path = (
+        sys.argv[sys.argv.index("--approvals") + 1]
+        if "--approvals" in sys.argv
+        else ".sdlc/approvals.yaml"
+    )
+    gates_path = (
+        sys.argv[sys.argv.index("--gates-policy") + 1]
+        if "--gates-policy" in sys.argv
+        else ".sdlc/gates.yaml"
+    )
     parent_ids: set[str] = set()
     req_ids: set[str] = set()
     if "--parent" in sys.argv:
@@ -181,9 +199,8 @@ def main() -> int:
         parent_ids = set().union(*pd.values())
     if "--spec" in sys.argv:
         s = sys.argv[sys.argv.index("--spec") + 1]
-        req_ids = {
-            m.group(0) for m in REQ.finditer(Path(s).read_text(encoding="utf-8"))
-        }
+        spec_text = Path(s).read_text(encoding="utf-8")
+        req_ids = {m.group(0) for m in REQ.finditer(spec_text)}
     path = Path(args[0] if args else "design.md")
     text = path.read_text(encoding="utf-8")
     defined, refs = defs_and_refs(text)
@@ -294,6 +311,42 @@ def main() -> int:
         return cycles
 
     cycles = dependency_cycles(deps)
+    approval_requirements = []
+    approval_context = {}
+    if require_approvals:
+        approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
+        if "--spec" in sys.argv:
+            approval_requirements.append(
+                approval_requirement(
+                    approval_context,
+                    Path.cwd(),
+                    "spec.approved",
+                    sys.argv[sys.argv.index("--spec") + 1],
+                )
+            )
+        if "--spec" in sys.argv and UI_MOCK_REQUIRED.search(spec_text):
+            mock_match = UI_MOCK_ARTIFACT.search(text)
+            if mock_match:
+                approval_requirements.append(
+                    approval_requirement(
+                        approval_context,
+                        Path.cwd(),
+                        "ux.mock.approved",
+                        mock_match.group(1),
+                    )
+                )
+            else:
+                approval_requirements.append(
+                    {
+                        "gate": "ux.mock.approved",
+                        "artifact": None,
+                        "scope": None,
+                        "approved": False,
+                        "approval_id": None,
+                        "status": None,
+                        "issues": ["UI Mock Artifact is required by the spec"],
+                    }
+                )
 
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
@@ -308,8 +361,11 @@ def main() -> int:
         "test_obligation_traceability_100": not untraced_tests,
         "iface_single_owner": not iface_dupes and not iface_owner_issues,
         "no_dependency_cycles": not cycles,
+        "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
     }
+    if not require_approvals:
+        gates.pop("required_approvals_present")
     if not component:
         gates["sections_present"] = sections_present_in_order(text, DESIGN_SECTIONS)
     report = {
@@ -324,6 +380,17 @@ def main() -> int:
         "untraced_test_obligations": sorted(untraced_tests),
         "iface_owner_count": len(iface_owners),
         "dependency_cycles": cycles,
+        "approval_requirements": approval_requirements,
+        "approval_ledger": {
+            "path": approvals_path,
+            "exists": approval_context.get("exists") if approval_context else None,
+            "load_error": approval_context.get("load_error")
+            if approval_context
+            else None,
+            "invalid_records": (
+                approval_context.get("invalid_records") if approval_context else []
+            ),
+        },
         "orphan_refs": orphans,
         "duplicates": dupes,
         "bad_id_format": bad_fmt,

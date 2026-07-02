@@ -92,9 +92,9 @@ features. The gate fails if no test command runs or if no coverage percentage is
 labeled coverage output. By default, the checker tries to resolve a review base using the
 merge-base with the remote/local default branch. Provide `--diff-base <base>` when the
 review target is known and automatic resolution is not right. If no review base can be
-resolved, actual PR size is reported as unverified and the gate fails; use
-`--allow-missing-git-evidence` only for non-git or intentionally evidence-poor reviews and
-state that limitation. TDD evidence from git log is also required by default; use
+resolved, actual PR size is reported as unverified; use `--allow-missing-git-evidence` only
+for non-git or intentionally evidence-poor reviews and state that limitation. TDD evidence
+from git log is also required by default; use
 `--allow-missing-tdd-evidence` only when Red/Green history is unavailable and state that
 limitation. The checker exits `0` only if every structural gate passes and emits metrics:
 
@@ -108,9 +108,10 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 - **id_assertion_traceability_pct** — every FR/AT/JT/COMP/TEST appears in the same
   test/function block as a non-trivial assertion-like statement. Must be 100%.
 - **oversized_modules** — files exceeding the LOC ceiling. Must be empty.
-- **diff_loc / diff_evidence / oversized_diff** — actual added+deleted lines from
-  `git diff --numstat` when git evidence is available. If unavailable, qualitative review
-  must say actual PR size was not independently verified.
+- **diff_loc / diff_evidence / oversized_diff / diff_size_advisory** — actual added+deleted
+  lines from `git diff --numstat` when git evidence is available. This is advisory
+  reviewability evidence, not a hard gate. If unavailable, qualitative review must say
+  actual PR size was not independently verified.
 - **tdd_evidence** — Red/Green presence markers from git log between the review base and
   `HEAD`. This is a presence check, not proof that tests really failed before implementation;
   qualitative review must confirm TDD authenticity.
@@ -119,7 +120,9 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 
 Present the JSON, then `passed/total`, coverage %, traceability %, assertion-traceability %,
 diff evidence, and TDD evidence. List every uncovered PR/ID, ID without nearby assertion,
-failing/skipped test, oversized module, and oversize diff explicitly.
+failing/skipped test, oversized module, and large diff explicitly. Do not recommend cutting
+useful comments, tests, docs, JSDoc/docstrings, or readable structure merely to fit a diff
+target.
 
 ## Verification A2 — Pre-Commit / Local Quality Gates
 

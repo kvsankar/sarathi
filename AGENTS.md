@@ -54,8 +54,8 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   Runs `/design-verify` plus `/design-review` as the full design gate.
 - **`/plan-create`** — [prompts/plan-create.prompt.md](prompts/plan-create.prompt.md)
   Interviews the user one question per turn, then writes a work plan that slices spec +
-  design into reviewable, Red/Green TDD pull requests of ≤300 LOC each, including Planned
-  Touch Sets, logging/error-handling work, documentation/build/deployment work, and
+  design into reviewable, Red/Green TDD pull requests with advisory LOC targets, including
+  Planned Touch Sets, logging/error-handling work, documentation/build/deployment work, and
   parallel/worktree guidance. Writes `plan.md` in the target product workspace.
 - **`/plan-verify`** — [prompts/plan-verify.prompt.md](prompts/plan-verify.prompt.md)
   Runs upstream artifact and plan structural checks and reports evidence only.
@@ -305,6 +305,39 @@ bypass readiness gates, Planned Touch Sets, upstream-blocker stops, safety const
 the default human-review pause after each generated artifact unless the user separately asks
 for end-to-end continuation.
 
+## Deterministic approval gates
+
+Human gates can be made mechanically checkable with project-local YAML files:
+
+- `.sdlc/approvals.yaml` records `gate`, `scope`, artifact `path`, artifact `sha256`,
+  `status`, `approved_by`, and UTC `approved_at` timestamps such as
+  `2026-07-01T14:32:18Z`.
+- `.sdlc/gates.yaml` optionally enables bounded `status: auto-approved` policy for low-risk
+  modes such as internal prototypes. Auto-approval must have an expiry, allowed scopes,
+  allowed gates, and forbidden gates.
+
+Use checker `--require-approvals` on downstream gate checks. Approval is valid only when the
+ledger entry matches the gate and current artifact hash; changed artifacts make approvals
+stale. Do not require approvals while drafting the artifact that is about to be reviewed by
+the user.
+
+When the user explicitly approves an artifact or mock, create or update the matching
+approval record immediately. Use `spec.approved` for specs, `design.approved` for designs,
+`plan.approved` for plans, `ux.mock.approved` for required mock UI artifacts, and
+`code_slice.approved` for optional code-slice handoffs. Compute the SHA-256 from the current
+file bytes and use the current UTC timestamp ending in `Z`. Use `status: auto-approved`
+only when `.sdlc/gates.yaml` allows that gate and scope.
+
+Default gate ownership:
+
+- `spec.approved` before downstream design gate checks.
+- `design.approved` before downstream plan gate checks.
+- `plan.approved` before downstream code gate checks.
+- `ux.mock.approved` before planning or production UI work when
+  `UI Mock Preference: Required`.
+- Release/deployment/security/privacy gates must not be auto-approved unless a project
+  explicitly defines and accepts that policy.
+
 ## Artifact matrix
 
 | Scope | Spec carries | Design carries | Plan carries |
@@ -371,8 +404,8 @@ design), `--spec <file>` (resolve FR/UC/JT refs). Exits non-zero on any gate fai
 
 [checkers/check_plan.py](checkers/check_plan.py) enforces structural plan hygiene:
 slug-only `KIND-AREA-NAME` plan ID format, duplicates, orphan refs, FR/AT/JT/COMP/TEST
-reference coverage, declared 300-LOC PR estimates, Red/Green step text, no forward
-dependencies, and banned vague terms.
+reference coverage, advisory PR LOC estimates, Red/Green step text, no forward dependencies,
+and banned vague terms.
 
 ```pwsh
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
@@ -399,16 +432,18 @@ command with `python3`; if that is unavailable, retry with `uv run python`.
 Flags: `--json`, `--tests-argv <json-array>`, `--tests <cmd>`, `--tests-shell`,
 `--cov-min <n>`, `--tests-dir <dir>`, `--src <dir>`, `--max-loc <n>`,
 `--max-diff-loc <n>`, `--diff-base <ref>`, `--allow-missing-git-evidence`,
-`--allow-missing-tdd-evidence`, `--spec <file>`, `--design <file>`. Git diff-size and TDD
-evidence are required by default; use the allow flags only when the repository cannot
-provide that evidence and the verification/assessment report will state the limitation.
-Exits non-zero on any gate failure.
+`--allow-missing-tdd-evidence`, `--spec <file>`, `--design <file>`. Git diff-size is
+reported as advisory reviewability evidence. TDD evidence is required by default; use the
+allow flags only when the repository cannot provide that evidence and the verification/
+assessment report will state the limitation. Exits non-zero on any gate failure.
 
 Checker limits: these scripts are deterministic structural gates. They catch missing
-sections, malformed IDs, orphan references, missing trace links, declared oversize PRs,
+sections, malformed IDs, orphan references, missing trace links, large declared PRs,
 missing Red/Green step text, unlabeled coverage output, missing same-test-block assertion
-trace IDs, oversize git diffs against the resolved review base, and obvious skip/TODO
-markers. Red/Green text, AT scenario shape, and commit-message TDD evidence are presence
+trace IDs, large advisory git diffs against the resolved review base, and obvious skip/TODO
+markers. LOC and diff size are reviewability signals, not hard quality gates; agents must
+not cut useful comments, tests, docs, JSDoc/docstrings, or readable structure merely to fit
+the target. Red/Green text, AT scenario shape, and commit-message TDD evidence are presence
 checks; they do not prove semantic correctness, test implementation quality, or true TDD
 history. The qualitative review prompts must judge those concerns from the artifact content,
 code, tests, and available review/git evidence.

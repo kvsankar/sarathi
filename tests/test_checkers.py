@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import json
 import sys
@@ -21,6 +22,42 @@ def run_main(module, args, monkeypatch, capsys, cwd: Path):
     rc = module.main()
     out = capsys.readouterr().out
     return rc, json.loads(out)
+
+
+def file_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def write_approval_ledger(
+    root: Path,
+    entries: list[dict[str, str]],
+    gates_yaml: str | None = None,
+) -> None:
+    sdlc = root / ".sdlc"
+    sdlc.mkdir()
+    lines = ["version: 1", "approvals:"]
+    for entry in entries:
+        lines.extend(
+            [
+                f"  - id: {entry['id']}",
+                f"    gate: {entry['gate']}",
+                f"    scope: {entry['scope']}",
+                "    artifact:",
+                f"      kind: {entry['kind']}",
+                f"      path: {entry['path']}",
+                f"      sha256: {entry['sha256']}",
+                f"    status: {entry.get('status', 'approved')}",
+                f"    approved_by: {entry.get('approved_by', 'Test User')}",
+                f"    approved_at: {entry.get('approved_at', '2026-07-01T12:00:00Z')}",
+            ]
+        )
+        if "policy" in entry:
+            lines.append(f"    policy: {entry['policy']}")
+        if "reason" in entry:
+            lines.append(f"    reason: {entry['reason']}")
+    (sdlc / "approvals.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if gates_yaml:
+        (sdlc / "gates.yaml").write_text(gates_yaml, encoding="utf-8")
 
 
 def write_valid_spec(path: Path) -> None:
@@ -160,6 +197,133 @@ def test_check_spec_accepts_complete_structural_spec(tmp_path, monkeypatch, caps
     assert rc == 0
     assert report["uc_at_coverage_pct"] == 100.0
     assert report["fr_at_coverage_pct"] == 100.0
+
+
+def test_check_spec_requires_hash_matched_approval_when_enabled(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["required_approvals_present"] is False
+    assert report["approval_requirements"][0]["issues"] == [
+        "approval ledger missing: .sdlc/approvals.yaml"
+    ]
+
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-SPEC-PRODUCT",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+            }
+        ],
+    )
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["gates"]["required_approvals_present"] is True
+
+
+def test_check_spec_rejects_stale_or_non_utc_approval(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-SPEC-PRODUCT",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": "0" * 64,
+                "approved_at": "2026-07-01T17:30:00+05:30",
+            }
+        ],
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    issues = report["approval_requirements"][0]["issues"]
+    assert "artifact hash is stale: spec.md" in issues
+    assert "approved_at must be UTC ISO-8601 like 2026-07-01T14:32:18Z" in issues
+
+
+def test_check_spec_accepts_bounded_auto_approval(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-AUTO-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+                "status": "auto-approved",
+                "approved_by": "AUTO",
+                "policy": "internal-prototype",
+                "reason": "Allowed by local policy.",
+            }
+        ],
+        gates_yaml="""version: 1
+auto_approval:
+  enabled: true
+  mode: internal-prototype
+  expires_at: "2999-01-01T00:00:00Z"
+  allowed_scopes:
+    - product/system
+  allowed_gates:
+    - spec.approved
+  forbidden_gates:
+    - release.approved
+    - production-deployment.approved
+""",
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["approval_requirements"][0]["status"] == "auto-approved"
 
 
 def test_check_spec_rejects_nfr_without_units(tmp_path, monkeypatch, capsys):
@@ -470,6 +634,99 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["test_obligation_coverage_pct"] == 100.0
 
 
+def test_check_plan_requires_upstream_and_mock_approvals(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    mock_path = tmp_path / "mock-ui.html"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    mock_path.write_text("<main>Approved mock</main>\n", encoding="utf-8")
+    spec_path.write_text(
+        spec_path.read_text(encoding="utf-8") + "\nUI Mock Preference: Required\n",
+        encoding="utf-8",
+    )
+    design_path.write_text(
+        design_path.read_text(encoding="utf-8") + "\nUI Mock Artifact: mock-ui.html\n",
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            "plan.md",
+            "--spec",
+            "spec.md",
+            "--design",
+            "design.md",
+            "--require-approvals",
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["required_approvals_present"] is False
+    assert [item["gate"] for item in report["approval_requirements"]] == [
+        "spec.approved",
+        "ux.mock.approved",
+        "design.approved",
+    ]
+
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-SPEC",
+                "gate": "spec.approved",
+                "scope": "slice/change",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+            },
+            {
+                "id": "APR-MOCK",
+                "gate": "ux.mock.approved",
+                "scope": "slice/change",
+                "kind": "mock-ui",
+                "path": "mock-ui.html",
+                "sha256": file_hash(mock_path),
+            },
+            {
+                "id": "APR-DESIGN",
+                "gate": "design.approved",
+                "scope": "slice/change",
+                "kind": "design",
+                "path": "design.md",
+                "sha256": file_hash(design_path),
+            },
+        ],
+    )
+
+    rc, report = run_main(
+        module,
+        [
+            "plan.md",
+            "--spec",
+            "spec.md",
+            "--design",
+            "design.md",
+            "--require-approvals",
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["gates"]["required_approvals_present"] is True
+
+
 def test_check_plan_rejects_uncovered_design_test_obligation(
     tmp_path, monkeypatch, capsys
 ):
@@ -556,14 +813,16 @@ def test_check_plan_requires_journey_test_coverage(tmp_path, monkeypatch, capsys
     assert report["uncovered_jts"] == ["JT-AUTH-LOGIN"]
 
 
-def test_check_plan_rejects_declared_pr_over_300_loc(tmp_path, monkeypatch, capsys):
+def test_check_plan_reports_declared_pr_over_loc_target_as_advisory(
+    tmp_path, monkeypatch, capsys
+):
     spec_path = tmp_path / "spec.md"
     design_path = tmp_path / "design.md"
     plan_path = tmp_path / "plan.md"
     write_valid_spec(spec_path)
     write_valid_design(design_path)
     write_valid_plan(plan_path)
-    text = plan_path.read_text(encoding="utf-8").replace("LOC 120", "LOC 301")
+    text = plan_path.read_text(encoding="utf-8").replace("LOC 120", "LOC 501")
     plan_path.write_text(text, encoding="utf-8")
     module = load_checker("check_plan")
 
@@ -582,8 +841,10 @@ def test_check_plan_rejects_declared_pr_over_300_loc(tmp_path, monkeypatch, caps
         tmp_path,
     )
 
-    assert rc == 1
-    assert report["oversized_prs"] == ["PR-AUTH-SIGNIN"]
+    assert rc == 0
+    assert "pr_size_le_300" not in report["gates"]
+    assert report["large_prs"] == ["PR-AUTH-SIGNIN"]
+    assert report["loc_advisory"]["status"] == "review"
 
 
 def test_check_plan_rejects_numbered_pr_ids(tmp_path, monkeypatch, capsys):

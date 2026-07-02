@@ -11,7 +11,7 @@ Usage:
     python check_code.py --plan plan.md [--tests-argv '["pytest","-q"]']
                          [--tests "pytest -q"] [--tests-shell]
                          [--cov-min 80] [--tests-dir tests] [--src .]
-                         [--max-loc 600] [--max-diff-loc 300]
+                         [--max-loc 600] [--max-diff-loc 500]
                          [--diff-base <ref>] [--allow-missing-git-evidence]
                          [--allow-missing-tdd-evidence]
                          [--src-ext .py,.ts,.tsx,.js,.jsx]
@@ -27,6 +27,16 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+
+CHECKER_DIR = Path(__file__).resolve().parent
+if str(CHECKER_DIR) not in sys.path:
+    sys.path.insert(0, str(CHECKER_DIR))
+
+from approvals import (  # noqa: E402
+    approval_gate_passed,
+    approval_requirement,
+    load_approval_context,
+)
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 PR = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
@@ -45,6 +55,9 @@ ID_CANDIDATE = re.compile(
 )
 SKIP = re.compile(r"\b(skip|skipif|xfail)\b", re.I)
 VAGUE = re.compile(r"\b(TODO|FIXME|XXX|etc\.)\b", re.I)
+UI_WORK = re.compile(r"^\s*UI Work\s*:\s*Yes\s*$", re.I | re.M)
+MOCK_DEP = re.compile(r"^\s*Mock UI Dependency\s*:\s*(?!None\b)(.+)$", re.I | re.M)
+UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
 COV_TOTAL = re.compile(r"(?im)^\s*TOTAL\b.*?(\d+(?:\.\d+)?)\s*%\s*$")
 COV_LABEL = re.compile(
     r"(?im)^\s*(?:coverage|total coverage|line coverage)\s*[:=]\s*"
@@ -260,10 +273,13 @@ def main() -> int:
     src = Path(arg("--src", "."))
     cov_min = float(arg("--cov-min", "80"))
     max_loc = int(arg("--max-loc", "600"))
-    max_diff_loc = int(arg("--max-diff-loc", "300"))
+    max_diff_loc = int(arg("--max-diff-loc", "500"))
     diff_base = arg("--diff-base")
     require_git = "--allow-missing-git-evidence" not in sys.argv
     require_tdd = "--allow-missing-tdd-evidence" not in sys.argv
+    require_approvals = "--require-approvals" in sys.argv
+    approvals_path = arg("--approvals", ".sdlc/approvals.yaml")
+    gates_path = arg("--gates-policy", ".sdlc/gates.yaml")
     src_ext = {
         e.strip()
         for e in arg("--src-ext", ".py,.ts,.tsx,.js,.jsx").split(",")
@@ -287,6 +303,7 @@ def main() -> int:
     )
 
     plan_prs = ids(plan, PR)
+    plan_text = Path(plan).read_text(encoding="utf-8") if Path(plan).exists() else ""
     seen_prs = {
         p for p in plan_prs if p.replace("-", "_") in test_text or p in test_text
     }
@@ -311,11 +328,47 @@ def main() -> int:
     cwd = Path.cwd()
     diff_loc, diff_evidence = git_diff_loc(cwd, diff_base)
     tdd_evidence = git_tdd_evidence(cwd, diff_base)
-    diff_ok = diff_loc is not None and diff_loc <= max_diff_loc
     oversized_diff = diff_loc is not None and diff_loc > max_diff_loc
     tdd_ok = bool(tdd_evidence.get("red_marker")) and bool(
         tdd_evidence.get("green_marker")
     )
+    approval_requirements = []
+    approval_context = {}
+    if require_approvals:
+        approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
+        approval_requirements.append(
+            approval_requirement(approval_context, Path.cwd(), "plan.approved", plan)
+        )
+        design_text = (
+            Path(design_path).read_text(encoding="utf-8")
+            if Path(design_path).exists()
+            else ""
+        )
+        mock_match = UI_MOCK_ARTIFACT.search(design_text)
+        if (UI_WORK.search(plan_text) or MOCK_DEP.search(plan_text)) and mock_match:
+            approval_requirements.append(
+                approval_requirement(
+                    approval_context,
+                    Path.cwd(),
+                    "ux.mock.approved",
+                    mock_match.group(1),
+                )
+            )
+        elif UI_WORK.search(plan_text) or MOCK_DEP.search(plan_text):
+            approval_requirements.append(
+                {
+                    "gate": "ux.mock.approved",
+                    "artifact": None,
+                    "scope": None,
+                    "approved": False,
+                    "approval_id": None,
+                    "status": None,
+                    "issues": [
+                        "UI work declares a mock dependency, but no design "
+                        "mock artifact was found"
+                    ],
+                }
+            )
 
     pr_pct = round(100 * len(seen_prs) / len(plan_prs), 1) if plan_prs else 100.0
     id_pct = round(100 * len(seen) / len(want), 1) if want else 100.0
@@ -330,10 +383,12 @@ def main() -> int:
         "id_traceability_100": seen == want,
         "id_assertion_traceability_100": assertion_seen == want,
         "no_oversized_modules": not oversized,
-        "diff_size_ok": diff_ok if require_git else diff_loc is None or diff_ok,
         "tdd_evidence_ok": tdd_ok if require_tdd else True,
+        "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": len(vague) == 0,
     }
+    if not require_approvals:
+        gates.pop("required_approvals_present")
     report = {
         "tests_pass": gates["tests_pass"],
         "coverage_pct": cov,
@@ -351,8 +406,27 @@ def main() -> int:
         "diff_evidence": diff_evidence,
         "git_evidence_required": require_git,
         "oversized_diff": oversized_diff,
+        "diff_size_advisory": {
+            "status": "review" if oversized_diff else "ok",
+            "message": (
+                "Diff size is an advisory reviewability signal. Exceeding the "
+                "target is allowed with rationale; do not remove useful comments, "
+                "tests, docs, or readable structure merely to fit the target."
+            ),
+        },
         "tdd_evidence": tdd_evidence,
         "tdd_evidence_required": require_tdd,
+        "approval_requirements": approval_requirements,
+        "approval_ledger": {
+            "path": approvals_path,
+            "exists": approval_context.get("exists") if approval_context else None,
+            "load_error": approval_context.get("load_error")
+            if approval_context
+            else None,
+            "invalid_records": (
+                approval_context.get("invalid_records") if approval_context else []
+            ),
+        },
         "vague_hits": len(vague),
         "gates": gates,
         "passed": sum(gates.values()),

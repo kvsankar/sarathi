@@ -3,18 +3,20 @@
 
 Parses a plan markdown file, validates IDs/structure, and computes structural
 metrics: every spec FR/AT/JT, design COMP, and design TEST obligation is referenced
-by child WORK items or PRs; implementation PRs declare no more than 300 LOC,
-include Red+Green step text, and do not depend on a later PR. Exits 0 only when
-every structural gate passes. No semantic judgment, reproducible.
+by child WORK items or PRs; implementation PRs include Red+Green step text, do not
+depend on a later PR, and report LOC sizing as advisory reviewability evidence.
+Exits 0 only when every structural gate passes. No semantic judgment, reproducible.
 
 Usage:
     python check_plan.py [plan.md] [--json] [--feature] [--parent product.md]
                          [--spec spec.md] [--design design.md]
+                         [--loc-target 500]
 
 --feature  Treat as a feature-level plan (subset of a product).
 --parent   A product plan whose IDs may be referenced.
 --spec     Spec file: every FR-/AT-/JT- must be covered by a WORK item or PR.
 --design   Design file: every COMP-/TEST- must be covered by a WORK item or PR.
+--loc-target  Advisory changed-LOC target for reviewable PR sizing. Default: 500.
 """
 
 from __future__ import annotations
@@ -29,6 +31,11 @@ CHECKER_DIR = Path(__file__).resolve().parent
 if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
+from approvals import (  # noqa: E402
+    approval_gate_passed,
+    approval_requirement,
+    load_approval_context,
+)
 from schemas import PLAN_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
@@ -51,10 +58,12 @@ ID_CANDIDATE = re.compile(
 )
 LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.", re.I)
+UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
+UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
 LEAD = re.compile(r"^[\s#>\-\*\+0-9.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 DEF_MARKER = re.compile(r"^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[\.)]\s+)")
-MAX_LOC = 300
+DEFAULT_LOC_TARGET = 500
 
 
 def _defline(line: str):
@@ -151,6 +160,22 @@ def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
     feature = "--feature" in sys.argv
+    require_approvals = "--require-approvals" in sys.argv
+    loc_target = (
+        int(sys.argv[sys.argv.index("--loc-target") + 1])
+        if "--loc-target" in sys.argv
+        else DEFAULT_LOC_TARGET
+    )
+    approvals_path = (
+        sys.argv[sys.argv.index("--approvals") + 1]
+        if "--approvals" in sys.argv
+        else ".sdlc/approvals.yaml"
+    )
+    gates_path = (
+        sys.argv[sys.argv.index("--gates-policy") + 1]
+        if "--gates-policy" in sys.argv
+        else ".sdlc/gates.yaml"
+    )
     parent_ids: set[str] = set()
     if "--parent" in sys.argv:
         parent_text = Path(sys.argv[sys.argv.index("--parent") + 1]).read_text(
@@ -169,16 +194,12 @@ def main() -> int:
     spec_nfrs = spec_ids(NFR)
     spec_ats = spec_ids(AT)
     spec_jts = spec_ids(JT)
-    design_comps = (
-        ids_from(sys.argv[sys.argv.index("--design") + 1], COMP)
-        if "--design" in sys.argv
-        else set()
+    design_path = (
+        sys.argv[sys.argv.index("--design") + 1] if "--design" in sys.argv else None
     )
-    design_tests = (
-        ids_from(sys.argv[sys.argv.index("--design") + 1], TEST)
-        if "--design" in sys.argv
-        else set()
-    )
+    design_text = Path(design_path).read_text(encoding="utf-8") if design_path else ""
+    design_comps = ids_from(design_path, COMP) if design_path else set()
+    design_tests = ids_from(design_path, TEST) if design_path else set()
     path = Path(args[0] if args else "plan.md")
     text = path.read_text(encoding="utf-8")
     defined, refs = defs_and_refs(text)
@@ -213,8 +234,8 @@ def main() -> int:
     if cur:
         (pr_blocks if cur.startswith("PR-") else work_blocks)[cur] = "\n".join(buf)
 
-    oversized = [
-        p for p, b in pr_blocks.items() if any(n > MAX_LOC for n in loc_values(b))
+    large_prs = [
+        p for p, b in pr_blocks.items() if any(n > loc_target for n in loc_values(b))
     ]
     missing_loc = [p for p, b in pr_blocks.items() if not loc_values(b)]
     no_tdd = [
@@ -254,6 +275,46 @@ def main() -> int:
     bad = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
     vague = len(VAGUE.findall(text))
+    approval_requirements = []
+    approval_context = {}
+    if require_approvals:
+        approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
+        if "--spec" in sys.argv:
+            spec_path = sys.argv[sys.argv.index("--spec") + 1]
+            approval_requirements.append(
+                approval_requirement(
+                    approval_context, Path.cwd(), "spec.approved", spec_path
+                )
+            )
+            if UI_MOCK_REQUIRED.search(Path(spec_path).read_text(encoding="utf-8")):
+                mock_match = UI_MOCK_ARTIFACT.search(design_text)
+                if mock_match:
+                    approval_requirements.append(
+                        approval_requirement(
+                            approval_context,
+                            Path.cwd(),
+                            "ux.mock.approved",
+                            mock_match.group(1),
+                        )
+                    )
+                else:
+                    approval_requirements.append(
+                        {
+                            "gate": "ux.mock.approved",
+                            "artifact": None,
+                            "scope": None,
+                            "approved": False,
+                            "approval_id": None,
+                            "status": None,
+                            "issues": ["UI Mock Artifact is required by the spec"],
+                        }
+                    )
+        if design_path:
+            approval_requirements.append(
+                approval_requirement(
+                    approval_context, Path.cwd(), "design.approved", design_path
+                )
+            )
 
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
@@ -270,11 +331,13 @@ def main() -> int:
         "jt_coverage_100": jt_c == spec_jts,
         "comp_coverage_100": comp_c == design_comps,
         "test_obligation_coverage_100": test_c == design_tests,
-        "pr_size_le_300": not oversized and not missing_loc,
         "pr_tdd_red_green": not no_tdd,
         "no_forward_deps": not fwd,
+        "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
     }
+    if not require_approvals:
+        gates.pop("required_approvals_present")
     if not feature:
         gates["sections_present"] = sections_present_in_order(text, PLAN_SECTIONS)
     report = {
@@ -298,10 +361,30 @@ def main() -> int:
         "uncovered_jts": sorted(spec_jts - jt_c),
         "uncovered_comps": sorted(design_comps - comp_c),
         "uncovered_test_obligations": sorted(design_tests - test_c),
-        "oversized_prs": sorted(oversized),
+        "loc_target": loc_target,
+        "large_prs": sorted(large_prs),
         "prs_missing_loc": sorted(missing_loc),
+        "loc_advisory": {
+            "status": "ok" if not large_prs and not missing_loc else "review",
+            "message": (
+                "LOC estimates are advisory reviewability signals. Exceeding the "
+                "target is allowed with rationale; do not remove useful comments, "
+                "tests, docs, or readable structure merely to fit the target."
+            ),
+        },
         "prs_missing_tdd": sorted(no_tdd),
         "forward_deps": sorted(fwd),
+        "approval_requirements": approval_requirements,
+        "approval_ledger": {
+            "path": approvals_path,
+            "exists": approval_context.get("exists") if approval_context else None,
+            "load_error": approval_context.get("load_error")
+            if approval_context
+            else None,
+            "invalid_records": (
+                approval_context.get("invalid_records") if approval_context else []
+            ),
+        },
         "orphan_refs": orphans,
         "duplicates": dupes,
         "bad_id_format": bad,

@@ -264,6 +264,21 @@ assumptions, risks, and trade-offs. YOLO does not bypass readiness gates, planne
 quality gates, safety constraints, or the default review pause unless you explicitly ask for
 end-to-end unattended continuation.
 
+## Deterministic Approval Gates
+
+Projects can make human gates mechanically checkable with local YAML files:
+
+- `.sdlc/approvals.yaml` records approved artifacts, approvers, UTC timestamps, and SHA-256
+  hashes.
+- `.sdlc/gates.yaml` optionally enables bounded auto-approval for low-risk modes such as
+  internal prototypes.
+
+Checkers support `--require-approvals` for downstream gate runs. The approval is valid only
+when the ledger entry matches the gate, artifact path, status, UTC `approved_at`, and current
+artifact hash. Stale hashes fail. No ticketing system is required.
+
+See [docs/approval-gates.md](docs/approval-gates.md).
+
 ## Tests And Verification
 
 Test responsibility is split by artifact:
@@ -343,4 +358,5 @@ for GitHub Copilot project-scoped prompts.
 - Overview page: [docs/agent-steered-sdlc.html](docs/agent-steered-sdlc.html)
 - Review checklist: [docs/review-verification-checklist.md](docs/review-verification-checklist.md)
 - Slug ID migration: [docs/slug-id-migration.md](docs/slug-id-migration.md)
+- Approval gates: [docs/approval-gates.md](docs/approval-gates.md)
 - Agent-facing repository guidance: [AGENTS.md](AGENTS.md)

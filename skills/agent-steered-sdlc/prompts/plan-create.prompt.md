@@ -1,5 +1,5 @@
 ---
-description: Interview the user, then author a work plan that translates the spec and design into reviewable, test-first PRs (≤300 LOC each), including planned logging/error-handling/docs/build/deploy work.
+description: Interview the user, then author a work plan that translates the spec and design into reviewable, test-first PRs, including planned logging/error-handling/docs/build/deploy work.
 agent: agent
 ---
 
@@ -12,7 +12,11 @@ nothing to fix.
 
 ## Core principles (the plan is judged against these)
 
-1. **Small reviewable PRs** — each PR changes **≤300 LOC** (prod + test), one focused concern.
+1. **Small reviewable PRs** — target about **500 changed LOC** (prod + test) per PR, with
+   one focused concern. This is a guideline, not a hard ceiling: exceed it when a cohesive
+   change would become worse by splitting. Never remove useful comments, tests, docs,
+   JSDoc/docstrings, or readable structure merely to fit the target; split, justify, or
+   ask for human input instead.
 2. **Red/Green TDD** — every PR writes failing tests first (Red), then minimal code to pass
    (Green), then refactor. The plan states both Red and Green steps per PR.
 3. **Full coverage** — every `FR-`/`UC-`, every `NFR-`, every `AT-`, every `JT-`, every design
@@ -86,7 +90,8 @@ reasonable assumptions", or "proceed without questions". In YOLO mode, make the 
 reasonable planning decisions yourself, continue without blocking on normal clarification
 questions, and record every material assumption, trade-off, risk, and deferred question in
 `plan.md`. YOLO mode does not bypass upstream spec/design blockers, code-readiness limits,
-the 300-LOC PR ceiling, Planned Touch Set discipline, or safety/security/compliance concerns.
+reviewability discipline, Planned Touch Set discipline, or safety/security/compliance
+concerns.
 
 ## Lightweight exploratory track
 
@@ -216,7 +221,8 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
   migrations, logging/telemetry config, error-handling modules, build/deployment scripts,
   CI/CD/IaC/manifests, user/developer docs, examples, runbooks, release notes, generated
   reference docs, and spec/design/plan sections each PR is allowed or expected to touch.
-- **Slicing limits**: anything that must not exceed the 300-LOC PR ceiling.
+- **Slicing limits**: any repo/team size target for reviewable PRs and when a larger PR is
+  preferable to splitting cohesive work.
 
 State assumptions explicitly and list them. Keep asking until slicing is unambiguous. In
 YOLO mode, prefer proceeding with explicit planning assumptions over continuing the
@@ -237,10 +243,11 @@ work.
 1. **Overview** — goal, stack, branching/CI model, Git worktree policy if parallel work is
    useful, and done-definition in one paragraph. Include explicit `Work Scope:`,
    `Plan Type: Breakdown | Implementation`, and `Implementation Readiness:` lines.
-2. **Strategy** — Red/Green TDD loop, the ≤300-LOC PR rule, flags, always-green ordering,
-   branch/worktree isolation, integration cadence, logging/error-handling strategy, build
-   artifact strategy, deployment strategy, documentation strategy, and whether this plan
-   decomposes parent work or implements code-ready work.
+2. **Strategy** — Red/Green TDD loop, the reviewable-PR size target and exception rule,
+   flags, always-green ordering, branch/worktree isolation, integration cadence,
+   logging/error-handling strategy, build artifact strategy, deployment strategy,
+   documentation strategy, and whether this plan decomposes parent work or implements
+   code-ready work.
 3. **Milestones** — list (`MILE-<AREA>-<NAME>`); each groups child work or PRs toward a
    coherent delivery slice.
 4. **Pull Requests / Child Work Items** — for a Breakdown plan, list
@@ -264,8 +271,8 @@ work.
    `None` with rationale); **Verification Oracle** (return value/state/event/API/DOM/
    screenshot/log/metric/artifact/deployment/external-call evidence, as applicable);
    **Red** (failing tests, naming the level and linked `TEST-`/`JT-`/`AT-`/`FR-` IDs);
-   **Green** (impl); est LOC (≤300); `COMP-` built; `FR-`/`AT-`/`JT-` delivered; `TEST-`
-   obligations implemented; depends-on PRs.
+   **Green** (impl); estimated changed LOC with rationale when above target; `COMP-` built;
+   `FR-`/`AT-`/`JT-` delivered; `TEST-` obligations implemented; depends-on PRs.
 5. **Coverage Map** — for a Breakdown plan, map each `FR-`/`UC-`/`NFR-`/`AT-`/`JT-`/
    `COMP-` to child `WORK-` items and required child artifacts, and map each design `TEST-`
    obligation to the child work that will make it executable. For an Implementation plan,
@@ -327,8 +334,10 @@ Pass-with-fixes.
 - Work scope, plan type, and implementation readiness are explicit and realistic. Breakdown
   plans are allowed to pass as Decomposable; Implementation plans marked Code-ready must
   contain PR-level Planned Touch Sets, test levels, and Red/Green steps.
-- Every implementation PR ≤300 LOC and states Test Levels, Red steps, and Green steps. No
-  PR depends on a later one.
+- Every implementation PR states Test Levels, Red steps, Green steps, and an estimated
+  changed LOC. PRs normally target about 500 changed LOC, but larger PRs are allowed with a
+  clear rationale when that preserves cohesion, readability, test quality, or documentation
+  quality. No PR depends on a later one.
 - Every FR, UC, NFR, AT, JT, COMP, and TEST maps to ≥1 child work item or implementation
   PR. No orphan or duplicate IDs.
 - Every `AT-` maps to an executable acceptance/e2e/API workflow test PR or to a justified

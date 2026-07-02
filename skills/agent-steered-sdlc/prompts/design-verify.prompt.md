@@ -26,6 +26,11 @@ Then run:
 python checkers/check_design.py design.md --spec spec.md --json
 ```
 
+When verifying a downstream gate that depends on an already-approved spec or required mock
+UI, add `--require-approvals`. This checks `.sdlc/approvals.yaml` for hash-matched
+`spec.approved` and, when applicable, `ux.mock.approved` records with UTC `approved_at`
+timestamps. Do not require approvals while drafting a design that still needs human review.
+
 For a component/slice design, add `--component` and `--parent <parent-design.md>` when
 applicable.
 
@@ -43,6 +48,8 @@ Report:
   obligation gaps, missing/untraced `TEST-` obligations, missing `JT-`-to-`TEST` journey
   coverage visible in the design, ambiguous interface ownership, dependency cycles, or
   vague hits.
+- Approval requirements and stale/missing approval records when `--require-approvals` is
+  used.
 
 ## Output
 

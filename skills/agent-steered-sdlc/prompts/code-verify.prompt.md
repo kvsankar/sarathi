@@ -41,6 +41,11 @@ Prefer `--tests-argv`. Use `--tests-shell` only for trusted commands that genuin
 shell behavior. Provide `--diff-base <base>` when the review target is known and automatic
 merge-base resolution is not right.
 
+When verifying a code gate that depends on an approved plan, add `--require-approvals`.
+This checks `.sdlc/approvals.yaml` for a hash-matched `plan.approved` record and, when the
+plan declares UI work with a mock dependency, a hash-matched `ux.mock.approved` record. UTC
+`approved_at` timestamps are required.
+
 Report:
 
 - Exact command executed.
@@ -51,10 +56,14 @@ Report:
 - Coverage percentage.
 - PR and FR/AT/JT/COMP/TEST traceability percentages.
 - Assertion-traceability percentage.
-- Diff LOC and evidence source.
+- Diff LOC and evidence source, as advisory reviewability evidence.
 - TDD evidence source.
-- Bad ID format, oversized modules/diffs, failing/skipped tests, TODO/FIXME/vague markers,
-  and uncovered IDs.
+- Approval requirements and stale/missing approval records when `--require-approvals` is
+  used.
+- Bad ID format, oversized modules, large advisory diffs, failing/skipped tests,
+  TODO/FIXME/vague markers, and uncovered IDs. A large diff is not by itself a verification
+  failure; never recommend cutting useful comments, tests, docs, JSDoc/docstrings, or
+  readable structure merely to fit the diff target.
 
 ## Local Quality Gates
 

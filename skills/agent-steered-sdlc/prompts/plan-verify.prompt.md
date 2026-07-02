@@ -27,6 +27,11 @@ Then run:
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
 ```
 
+When verifying a downstream gate that depends on approved upstream artifacts, add
+`--require-approvals`. This checks `.sdlc/approvals.yaml` for hash-matched `spec.approved`,
+`design.approved`, and, when applicable, `ux.mock.approved` records with UTC `approved_at`
+timestamps. Do not require approvals while drafting a plan that still needs human review.
+
 For focused feature/component or slice/change plans, add `--feature` and `--parent` when
 applicable.
 
@@ -40,8 +45,13 @@ Report:
 - Exit codes.
 - `passed/total`.
 - Any upstream spec/design failures.
-- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, oversize
-  declared PRs, missing Red/Green text, forward dependencies, or vague hits.
+- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, large declared
+  PRs, missing LOC estimates, missing Red/Green text, forward dependencies, or vague hits.
+- LOC sizing is advisory reviewability evidence; do not treat a large PR as a mechanical
+  failure or recommend trimming useful comments, tests, docs, JSDoc/docstrings, or readable
+  structure merely to fit the target.
+- Approval requirements and stale/missing approval records when `--require-approvals` is
+  used.
 
 ## Output
 

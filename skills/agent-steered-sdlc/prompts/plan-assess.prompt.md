@@ -1,13 +1,14 @@
 ---
-description: Assess a Work Plan with a deterministic mechanical pass and a qualitative pass, checking PR size, TDD, logging/error-handling/docs/build/deploy allocation, and full spec/design coverage.
+description: Assess a Work Plan with a deterministic mechanical pass and a qualitative pass, checking PR reviewability, TDD, logging/error-handling/docs/build/deploy allocation, and full spec/design coverage.
 agent: agent
 ---
 
 # Plan Assess
 
-Assess a Work Plan against its principles: small reviewable PRs (≤300 LOC), Red/Green TDD,
-full coverage of spec and design, explicit Planned Touch Sets, planned build/deployment
-work, planned user/developer documentation work, and always-shippable ordering.
+Assess a Work Plan against its principles: small reviewable PRs with an advisory size
+target, Red/Green TDD, full coverage of spec and design, explicit Planned Touch Sets,
+planned build/deployment work, planned user/developer documentation work, and
+always-shippable ordering.
 Produce the verification sequence below.
 
 Do not stop after checker JSON. This assessment must include:
@@ -68,9 +69,10 @@ A or B for the plan until the upstream issue is resolved.
 
 Run the bundled checker and report its output verbatim. This is a deterministic
 **structural** check: it catches section, ID, orphan-reference, declared coverage, declared
-LOC, Red/Green-step, dependency-order, and banned-word issues. It does not prove PR size from
-the actual diff, prove TDD history, or prove the plan slices are substantively good;
-Verification B must judge that.
+LOC estimates, Red/Green-step, dependency-order, and banned-word issues. LOC sizing is
+advisory reviewability evidence, not a hard gate. It does not prove PR size from the actual
+diff, prove TDD history, or prove the plan slices are substantively good; Verification B
+must judge that.
 
 ```pwsh
 python checkers/check_plan.py <plan.md> --spec spec.md --design design.md --json
@@ -85,9 +87,14 @@ It exits `0` only if every structural gate passes (non-zero otherwise) and emits
 - **fr_coverage_pct / uc_coverage_pct / nfr_coverage_pct / at_coverage_pct / comp_coverage_pct** — must each be **100%**, meaning each required ID is referenced by child `WORK-` items in a Breakdown plan or `PR-` items in an Implementation plan.
 - **uncovered_frs / uncovered_ucs / uncovered_nfrs / uncovered_ats / uncovered_comps** — must be empty.
 - **work_items** — child work items for a Breakdown plan.
-- **oversized_prs** — implementation PRs declaring more than 300 LOC. This is a declared
-  plan estimate, not measured diff size. Must be empty.
-- **prs_missing_loc** — implementation PRs without an estimated LOC declaration. Must be empty.
+- **large_prs** — implementation PRs declaring more than the advisory LOC target. This is a
+  declared plan estimate, not measured diff size. It requires qualitative review, not
+  automatic failure.
+- **prs_missing_loc** — implementation PRs without an estimated LOC declaration. This
+  requires qualitative review, not automatic failure.
+- **loc_advisory** — checker explanation for the reviewability signal. Never recommend
+  deleting useful comments, tests, docs, JSDoc/docstrings, or readable structure merely to
+  satisfy the LOC target.
 - **prs_missing_tdd** — implementation PRs lacking Red and Green step text. This is a
   presence check; qualitative review must still judge whether the Red step would be a
   meaningful failing test. Must be empty.
@@ -96,14 +103,18 @@ It exits `0` only if every structural gate passes (non-zero otherwise) and emits
 - **vague_hits** — count of "etc.", "and/or", "tbd", "as appropriate", "various".
 - **gates** + `passed/total`.
 
-Present the JSON, then `passed/total` and the five coverage percentages. List every
-uncovered/oversized/missing-LOC/non-TDD/orphan ID explicitly.
+Present the JSON, then `passed/total` and the coverage percentages. List every uncovered,
+large, missing-LOC, non-TDD, or orphan ID explicitly.
 
 ## Verification B — Qualitative
 
 Reasoned judgment, scored 1–5 with one concrete fix each:
 
-- **PR sizing** — slices are coherent, ≤300 LOC, single-concern, reviewable.
+- **PR reviewability** — slices are coherent, single-concern, and normally around the
+  advisory 500 changed-LOC target. Larger slices may pass when the plan explains why
+  splitting would harm cohesion, readability, test quality, or documentation quality.
+  Reject attempts to meet the target by cutting useful comments, tests, docs, JSDoc/
+  docstrings, or clear structure.
 - **Plan type and readiness fit** — the plan declares product/system, feature/component, or
   slice/change scope; declares Breakdown or Implementation plan type; and marks
   Implementation Readiness realistically. Breakdown plans may pass as Decomposable, but only
