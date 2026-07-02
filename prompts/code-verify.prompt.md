@@ -66,9 +66,10 @@ Report:
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 - Bad ID format, oversized modules, large advisory diffs, failing/skipped tests,
-  TODO/FIXME/vague markers, and uncovered IDs. A large diff is not by itself a verification
-  failure; never recommend cutting useful comments, tests, docs, JSDoc/docstrings, or
-  readable structure merely to fit the diff target.
+  TODO/FIXME/vague markers, and uncovered IDs. Large modules and large diffs are advisory
+  unless `--enforce-max-loc` or a project-specific hard gate is used; never recommend
+  cutting useful comments, tests, docs, JSDoc/docstrings, readable structure, or cohesive
+  module boundaries merely to fit a size target.
 
 ## Local Quality Gates
 

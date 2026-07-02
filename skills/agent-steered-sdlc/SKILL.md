@@ -271,15 +271,17 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   PRs, missing Red/Green step text, unlabeled coverage output, missing same-test-block
   assertion trace IDs, large advisory git diffs against the resolved review base, and
   obvious skip/TODO markers. Test traceability should come from
-  `.sdlc/test-traceability.yaml`, not artifact ID comments in test code. LOC and diff size
-  are reviewability signals, not hard quality gates; agents must not cut useful comments,
-  tests, docs, JSDoc/docstrings, or readable structure merely to fit the target. Git
-  diff-size is reported by default in code verify/assess; TDD evidence is required by
-  default. Use allow-missing flags only when the repo cannot provide that evidence and the
-  report states the limitation. Red/Green text, AT scenario shape, and commit-message TDD
-  evidence are presence checks; they do not prove semantic correctness, test implementation
-  quality, or true TDD history. Qualitative review must judge those from artifact content,
-  code, tests, and available review/git evidence.
+  `.sdlc/test-traceability.yaml`, not artifact ID comments in test code. LOC, module size,
+  and diff size are reviewability signals, not hard quality gates unless the project
+  explicitly opts into `--enforce-max-loc` or a stricter repo standard. Agents must not cut
+  useful comments, tests, docs, JSDoc/docstrings, readable structure, or cohesive module
+  boundaries merely to fit the target. Git diff-size is reported by default in code
+  verify/assess; TDD evidence is required by default. Use allow-missing flags only when the
+  repo cannot provide that evidence and the report states the limitation. Red/Green text,
+  AT scenario shape, and commit-message TDD evidence are presence checks; they do not prove
+  semantic correctness, test implementation quality, or true TDD history. Qualitative
+  review must judge those from artifact content, code, tests, and available review/git
+  evidence.
 - Configure and run language-appropriate local quality gates for code work. Prefer
   repository-native tooling and pre-commit hooks where practical. For code-ready work, also
   run planned build/package commands and deployment dry-run/lint/plan/smoke/rollback checks

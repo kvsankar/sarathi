@@ -427,7 +427,8 @@ Flags: `--json`, `--feature` (focused feature/component or slice/change mode), `
 
 [checkers/check_code.py](checkers/check_code.py) runs the test suite and enforces structural
 code/test hygiene: tests pass, labeled coverage output ≥ threshold, PR-ID and
-FR/AT/JT/COMP/TEST traceability, the per-module LOC ceiling, and no TODO/FIXME/skip markers.
+FR/AT/JT/COMP/TEST traceability, advisory per-module LOC reporting, and no TODO/FIXME/skip
+markers.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json
@@ -438,8 +439,8 @@ command with `python3`; if that is unavailable, retry with `uv run python`.
 
 Flags: `--json`, `--tests-argv <json-array>`, `--tests <cmd>`, `--tests-shell`,
 `--cov-min <n>`, `--tests-dir <dir>`, `--src <dir>`, `--max-loc <n>`,
-`--max-diff-loc <n>`, `--diff-base <ref>`, `--allow-missing-git-evidence`,
-`--allow-missing-tdd-evidence`, `--traceability <file>`,
+`--enforce-max-loc`, `--max-diff-loc <n>`, `--diff-base <ref>`,
+`--allow-missing-git-evidence`, `--allow-missing-tdd-evidence`, `--traceability <file>`,
 `--allow-inline-test-traceability`, `--spec <file>`, `--design <file>`. Test traceability
 defaults to `.sdlc/test-traceability.yaml`; inline test traceability is a migration-only
 compatibility flag. Git diff-size is reported as advisory reviewability evidence. TDD
@@ -452,12 +453,14 @@ sections, malformed IDs, orphan references, missing trace links, large declared 
 missing Red/Green step text, unlabeled coverage output, missing same-test-block assertion
 trace IDs, large advisory git diffs against the resolved review base, and obvious skip/TODO
 markers. Test traceability should come from `.sdlc/test-traceability.yaml`, not artifact ID
-comments in test code. LOC and diff size are reviewability signals, not hard quality gates;
-agents must not cut useful comments, tests, docs, JSDoc/docstrings, or readable structure
-merely to fit the target. Red/Green text, AT scenario shape, and commit-message TDD evidence
-are presence checks; they do not prove semantic correctness, test implementation quality, or
-true TDD history. The qualitative review prompts must judge those concerns from the artifact
-content, code, tests, and available review/git evidence.
+comments in test code. LOC, module size, and diff size are reviewability signals, not hard
+quality gates unless the project explicitly opts into `--enforce-max-loc` or a stricter repo
+standard. Agents must not cut useful comments, tests, docs, JSDoc/docstrings, readable
+structure, or cohesive module boundaries merely to fit the target. Red/Green text, AT
+scenario shape, and commit-message TDD evidence are presence checks; they do not prove
+semantic correctness, test implementation quality, or true TDD history. The qualitative
+review prompts must judge those concerns from the artifact content, code, tests, and
+available review/git evidence.
 
 ## Installation
 

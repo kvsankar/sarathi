@@ -113,7 +113,9 @@ limitation. The checker exits `0` only if every structural gate passes and emits
   `.sdlc/test-traceability.yaml` or an equivalent project traceability map. Must be 100%.
 - **id_assertion_traceability_pct** — every FR/AT/JT/COMP/TEST maps to a test that contains
   a non-trivial assertion-like statement. Must be 100%.
-- **oversized_modules** — files exceeding the LOC ceiling. Must be empty.
+- **oversized_modules / module_size_advisory** — files exceeding `--max-loc`. This is
+  advisory by default; it fails only when the project explicitly uses `--enforce-max-loc`.
+  Do not recommend mechanically splitting cohesive modules merely to fit the target.
 - **diff_loc / diff_evidence / oversized_diff / diff_size_advisory** — actual added+deleted
   lines from `git diff --numstat` when git evidence is available. This is advisory
   reviewability evidence, not a hard gate. If unavailable, qualitative review must say
@@ -187,7 +189,9 @@ minimum review expectations:
   where supported, with documented exceptions.
 - Security/dependency scans: no critical/high findings; medium findings require accepted
   mitigation or follow-up.
-- Module size: within the checker's `--max-loc` or stricter repo standard.
+- Module size: review files over the checker's `--max-loc` as maintainability signals.
+  Treat them as failures only when the project opted into `--enforce-max-loc` or a stricter
+  repo standard; do not mechanically split cohesive modules merely to satisfy the target.
 - Build/deployment: planned build command succeeds, expected artifact path/name/version is
   produced or validated, deployment manifests/scripts pass lint/dry-run/plan checks, smoke
   and rollback checks are run where planned, and no production deploy happened without

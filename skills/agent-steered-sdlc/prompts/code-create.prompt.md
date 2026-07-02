@@ -227,7 +227,9 @@ repo lacks thresholds, use these defaults unless the user chooses different stan
   70% branch coverage where available, and 90% line coverage for pure functional core modules.
 - Complexity: cyclomatic complexity ≤10 per function/method and cognitive complexity ≤15
   where the tool supports it; document any exception with a reason and test coverage.
-- Module size: stay within the checker's `--max-loc` or a stricter repo standard.
+- Module size: treat the checker's `--max-loc` as an advisory maintainability signal unless
+  the project explicitly opts into `--enforce-max-loc` or a stricter repo standard. Do not
+  mechanically split cohesive modules merely to satisfy the target.
 - Security/dependency scans: no critical/high findings; medium findings need documented
   acceptance, mitigation, or follow-up.
 - Build/deployment: planned build command succeeds, expected artifact path/name/version is

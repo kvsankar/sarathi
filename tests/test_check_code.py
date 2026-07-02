@@ -369,6 +369,48 @@ def test_check_code_allows_inline_traceability_only_with_legacy_flag(
     assert report["test_traceability"]["source"] == "inline_legacy"
 
 
+def test_check_code_reports_oversized_modules_as_advisory_by_default(
+    tmp_path, monkeypatch, capsys
+):
+    source = tmp_path / "src" / "large.py"
+    source.parent.mkdir(exist_ok=True)
+    source.write_text("x = 1\nx = 2\n", encoding="utf-8")
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        extra_args=["--max-loc", "1"],
+    )
+
+    assert rc == 0
+    assert report["module_size_enforced"] is False
+    assert report["module_size_advisory"]["status"] == "review"
+    assert str(source) in report["oversized_modules"]
+    assert report["gates"]["module_size_ok"] is True
+
+
+def test_check_code_enforces_oversized_modules_when_requested(
+    tmp_path, monkeypatch, capsys
+):
+    source = tmp_path / "src" / "large.py"
+    source.parent.mkdir(exist_ok=True)
+    source.write_text("x = 1\nx = 2\n", encoding="utf-8")
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        extra_args=["--max-loc", "1", "--enforce-max-loc"],
+    )
+
+    assert rc == 1
+    assert report["module_size_enforced"] is True
+    assert report["gates"]["module_size_ok"] is False
+
+
 def test_git_diff_loc_measures_actual_changed_lines(tmp_path):
     check_code = load_check_code()
     git(tmp_path, "init")

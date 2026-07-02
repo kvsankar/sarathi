@@ -12,7 +12,8 @@ Usage:
     python check_code.py --plan plan.md [--tests-argv '["pytest","-q"]']
                          [--tests "pytest -q"] [--tests-shell]
                          [--cov-min 80] [--tests-dir tests] [--src .]
-                         [--max-loc 600] [--max-diff-loc 500]
+                         [--max-loc 600] [--enforce-max-loc]
+                         [--max-diff-loc 500]
                          [--diff-base <ref>] [--allow-missing-git-evidence]
                          [--allow-missing-tdd-evidence]
                          [--allow-inline-test-traceability]
@@ -374,6 +375,7 @@ def main() -> int:
     src = Path(arg("--src", "."))
     cov_min = float(arg("--cov-min", "80"))
     max_loc = int(arg("--max-loc", "600"))
+    enforce_max_loc = "--enforce-max-loc" in sys.argv
     max_diff_loc = int(arg("--max-diff-loc", "500"))
     diff_base = arg("--diff-base")
     require_git = "--allow-missing-git-evidence" not in sys.argv
@@ -500,7 +502,7 @@ def main() -> int:
                 and not traceability["unresolved_tests"]
             )
         ),
-        "no_oversized_modules": not oversized,
+        "module_size_ok": not oversized if enforce_max_loc else True,
         "tdd_evidence_ok": tdd_ok if require_tdd else True,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": len(vague) == 0,
@@ -528,7 +530,19 @@ def main() -> int:
             "allow_inline_legacy": allow_inline_trace,
         },
         "bad_id_format": sorted(bad_ids),
+        "max_loc": max_loc,
+        "module_size_enforced": enforce_max_loc,
         "oversized_modules": oversized,
+        "module_size_advisory": {
+            "status": "review" if oversized else "ok",
+            "message": (
+                "Module size is an advisory maintainability signal by default. "
+                "Exceeding the target is allowed with rationale; do not split "
+                "cohesive modules mechanically merely to fit the target. Pass "
+                "--enforce-max-loc only when the project has opted into a hard "
+                "module-size gate."
+            ),
+        },
         "diff_loc": diff_loc,
         "max_diff_loc": max_diff_loc,
         "diff_evidence": diff_evidence,
