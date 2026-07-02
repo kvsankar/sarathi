@@ -41,6 +41,15 @@ nothing to fix.
 9. **Logging and error handling are planned work** — structured logging, telemetry,
    correlation/support IDs, redaction, alert hooks, error mapping, retry/fallback, degraded
    behavior, and safe UI/API messages are assigned to explicit work items or PRs.
+10. **Test environments are planned work** — developer-local verification is always planned;
+    shared integration/test, staging/pre-production, production canary/smoke, synthetic
+    monitoring, environment data/secrets, reset/cleanup, and promotion checks are assigned
+    when the design recommends them or the context requires them.
+11. **Context-driven concerns become explicit work or explicit deferrals** — if the spec,
+    design, domain, data, integrations, or deployment model imply performance/load,
+    security/threat-model, privacy/compliance, accessibility, resilience/DR, migration,
+    localization, abuse/fraud/safety, cost, compatibility, or operational reviews/tests,
+    allocate them to work items/PRs or record a user-visible deferral with risk.
 
 ## Work scope, plan type, and readiness
 
@@ -149,6 +158,9 @@ For each PR, list the test levels it will add or update:
 - **Quality-attribute checks** for performance, reliability, security, privacy, resilience,
   observability, logging/telemetry, error handling, offline/sync, rollout/rollback, and
   operational behavior.
+- **Environment checks** for developer-local, shared integration/test, staging or
+  pre-production, production canary/smoke, and synthetic-monitor environments when planned
+  or recommended by the design.
 - **Build/deployment checks** for reproducible artifact creation, package metadata,
   container/image/static/mobile build output, migration validation, deployment dry runs,
   infrastructure/deployment manifest validation, smoke checks, and rollback verification.
@@ -219,6 +231,15 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
   boundary-facing tests, which shared fixtures, schemas, generated clients, captured
   examples, real-boundary checks, type-conformance checks, or contract tests will prevent
   mock drift; for each planned test, what oracle proves pass/fail.
+- **Test environments**: what runs in the developer environment; whether shared integration/
+  test, staging/pre-production, production canary/smoke, or synthetic-monitor environments
+  are required, recommended, deferred, or out of scope; what data, secrets, external
+  systems, reset/cleanup, deployment validation, smoke/canary/rollback checks, and owners
+  each environment needs.
+- **Context-driven review/test needs**: whether this work needs dedicated performance/load,
+  security/threat-model, privacy/compliance, accessibility, resilience/DR, migration,
+  localization, abuse/fraud/safety, cost, compatibility, or operational review/test work,
+  and which PR/work item owns it.
 - **UX/presentation work**: For UI-facing work, which stylesheet/design-token/component
   library/layout/error-state/responsive/accessibility work is in scope, and which PR owns
   non-brittle checks for it?
@@ -256,8 +277,9 @@ work.
 2. **Strategy** — Red/Green TDD loop, the reviewable-PR size target and exception rule,
    flags, always-green ordering, branch/worktree isolation, integration cadence,
    logging/error-handling strategy, build artifact strategy, deployment strategy,
-   documentation strategy, narrow TDD exception policy, and whether this plan decomposes
-   parent work or implements code-ready work.
+   documentation strategy, test environment strategy, context-driven review/test strategy,
+   narrow TDD exception policy, and whether this plan decomposes parent work or implements
+   code-ready work.
 3. **Milestones** — list (`MILE-<AREA>-<NAME>`); each groups child work or PRs toward a
    coherent delivery slice.
 4. **Pull Requests / Child Work Items** — for a Breakdown plan, list
@@ -278,7 +300,12 @@ work.
    (acceptance/e2e/journey, unit, component, contract, integration, UI/accessibility/visual,
    quality/NFR, build/deploy, docs, migration/ops as applicable); **Contract Fixtures**
    (shared fixture/schema/generated-client/contract-test source for boundary payloads, or
-   `None` with rationale); **Verification Oracle** (return value/state/event/API/DOM/
+   `None` with rationale); **Test Environment(s)** (developer, shared integration/test,
+   staging/pre-production, production canary/smoke, synthetic monitor, or `None` with
+   rationale); **Context-Driven Reviews/Tests** (performance/load, security/threat-model,
+   privacy/compliance, accessibility, resilience/DR, migration, localization, abuse/fraud/
+   safety, cost, compatibility, operational review/test, or `None` with rationale);
+   **Verification Oracle** (return value/state/event/API/DOM/
    screenshot/log/metric/artifact/deployment/external-call evidence, as applicable);
    **Red** (failing tests, naming the level and linked `TEST-`/`JT-`/`AT-`/`FR-` IDs);
    **Green** (impl); or **TDD Exception** (`Generated code only`, `Docs-only`,
@@ -364,6 +391,15 @@ Pass-with-fixes.
   executable unit, component, contract, integration, UI, quality, logging/telemetry,
   error-handling, build/deploy, docs, migration, or operational check; lower-level tests
   from the design are scheduled near the code they protect.
+- Every planned or design-recommended test environment maps to a PR or child work item that
+  configures, documents, runs, or validates it. Developer-local verification is always
+  covered. Shared integration/test, staging/pre-production, production canary/smoke, and
+  synthetic-monitor environments are allocated when warranted or explicitly deferred with
+  user-visible rationale and residual risk.
+- Context-driven reviews/tests implied by the product risk are allocated to PRs/work items:
+  performance/load, security/threat-model, privacy/compliance, accessibility, resilience/
+  DR, migration, localization, abuse/fraud/safety, cost, compatibility, and operational
+  checks. If the plan omits one, it says why it is not needed now.
 - Every PR-level test assignment states a verification oracle concrete enough for
   `/code-create` to write a meaningful failing test and for `/code-review` to reject weak or
   indirect assertions.

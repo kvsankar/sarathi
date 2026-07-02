@@ -136,6 +136,12 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Quality attribute design** — performance, availability, modifiability, security, privacy,
   usability, accessibility, observability, diagnosability, deployability, interoperability,
   scalability, and cost are addressed with concrete scenarios, tactics, or explicit trade-offs.
+- **Context-driven missed-concern scan** — given the domain, data, integrations, platform,
+  deployment model, users, and risk profile, the design has identified needed dedicated
+  performance/load tests, security review/threat modeling, privacy/compliance review,
+  accessibility audit, resilience/DR/backup-restore checks, migration rehearsal,
+  localization review, abuse/fraud/safety review, cost guardrails, compatibility tests, or
+  operational reviews. Missing material concerns are design defects or upstream spec blockers.
 - **Architecture views** — static structure, runtime behavior, data, build/release,
   deployment/operations, documentation, and cross-cutting concepts are documented at the
   right level of detail.
@@ -204,6 +210,13 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   applicable; critical `JT-` stories are mapped to executable obligations with ordered
   steps, state handoff, environment, and oracle details; observability, failure handling,
   rollout/rollback, and operational checks exist.
+- **Test environment strategy** — the design covers a developer test environment and
+  recommends or explicitly defers shared integration/test, staging/pre-production,
+  production canary/smoke, and synthetic-monitor environments based on risk. Each planned
+  environment has purpose, realism, data/secrets handling, external dependency mode,
+  isolation/reset, owner, cost/risk, deployment validation, smoke/canary/rollback checks,
+  and linked `TEST-` obligations. If the design omits an environment that the context
+  clearly needs, fail or block for revision.
 - **Verification-oracle design** — each `TEST-` obligation names the observable evidence
   that will prove pass/fail, such as return values, state changes, persisted records, events,
   API responses, DOM/accessibility output, screenshots, artifacts, logs, metrics, traces,

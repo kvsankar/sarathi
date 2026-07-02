@@ -206,6 +206,19 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   package, release, environment, deployment, validation, smoke, and rollback strategy; plans
   assign build/deployment files and checks to work items or PRs; code runs the planned build
   and deployment validation, without live production deployment unless explicitly requested.
+- Treat test environments as part of artifact ownership: specs capture externally relevant
+  environment needs or non-goals; designs always define a developer test environment and
+  recommend shared integration/test, staging/pre-production, production canary/smoke, or
+  synthetic-monitor environments when risk warrants them; plans assign setup, data/secrets,
+  reset/cleanup, validation, smoke/canary/rollback, and ownership; code runs planned
+  environment checks and never runs live production checks without explicit approval.
+- Treat context-driven concern scanning as part of every phase. Based on domain, data,
+  users, integrations, platform, scale, deployment model, and operational risk, surface
+  likely performance/load, security/threat-model, privacy/compliance, accessibility,
+  resilience/DR, backup/restore, migration, localization, abuse/fraud/safety, cost,
+  compatibility, and operational reviews/tests. Capture them as requirements, tactics,
+  `TEST-` obligations, ADRs, risks, PRs, checks, or explicit deferrals. If code/review
+  reveals a material unplanned concern, stop for upstream artifact revision.
 - Treat user and developer documentation ownership as part of artifact ownership: specs
   define documentation audiences, needs, acceptance criteria, or non-goals; designs define
   documentation architecture, source locations, generated/reference docs, publishing,
@@ -252,10 +265,12 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
     `/plan-review`: qualitatively review upstream fitness and plan quality; `/plan-assess`:
     do both.
   - `/code-verify`: run upstream checkers, `check_code.py`, pre-commit/equivalent gates,
-    and planned logging/error-handling/build/docs/deployment checks; `/code-review`:
+    and planned logging/error-handling/build/docs/deployment/environment/context-driven
+    checks; `/code-review`:
     qualitatively review code-readiness, implementation quality, test implementation
-    quality, verification-oracle rigor, logging/telemetry/error-handling fitness, TDD
-    evidence, scope fidelity, and gate fitness; `/code-assess`: do both.
+    quality, verification-oracle rigor, logging/telemetry/error-handling fitness,
+    test-environment execution, context-driven concern verification, TDD evidence, scope
+    fidelity, and gate fitness; `/code-assess`: do both.
 - Use the lightweight track for spikes, throwaway prototypes, exploratory data/ML work,
   proof-of-concept integrations, or infrastructure investigations. Mark these artifacts
   Exploratory, timebox them, record goal/non-goals/risks/evidence/disposal criteria, and do

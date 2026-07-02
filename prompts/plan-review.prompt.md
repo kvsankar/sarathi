@@ -20,7 +20,8 @@ slicing constraints are defective, stop with an upstream blocker.
 
 Use an adversarial posture: try to refute the slicing, find missing upstream changes, large
 or incoherent PRs, fake TDD steps, unsafe parallelism, touch-set drift, dependency traps,
-and traceability theater. Prefer fresh context, a separate reviewer, or a different
+missing test-environment allocation, context-driven concerns the work likely needs, and
+traceability theater. Prefer fresh context, a separate reviewer, or a different
 model/tool when available. If the same agent created the plan, state that the review is not
 independent.
 
@@ -45,6 +46,13 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   `TEST-` obligations for lower-level unit/component/contract/integration/UI/quality/
   operational tests are assigned to appropriate PRs. `JT-` PRs preserve ordered steps,
   state handoff, data/setup/cleanup, and final/intermediate oracles.
+- Test environment allocation: developer-local verification is planned, and shared
+  integration/test, staging/pre-production, production canary/smoke, or synthetic-monitor
+  environments are assigned or explicitly deferred with rationale when context warrants.
+- Context-driven review/test allocation: performance/load, security/threat-model,
+  privacy/compliance, accessibility, resilience/DR, migration, localization, abuse/fraud/
+  safety, cost, compatibility, and operational checks are assigned when risk requires them
+  or explicitly deferred as user-visible risk.
 - Inner-test discovery: the plan leaves room for code-discovered supplemental inner tests
   inside each PR without relying on them to cover missing `AT-`/`JT-`/`TEST-` obligations or
   permitting product-scope creep.

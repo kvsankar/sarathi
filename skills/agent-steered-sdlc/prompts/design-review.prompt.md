@@ -19,8 +19,9 @@ intent, missing build/deployment or documentation needs, or scope issues block f
 review, stop with an upstream spec blocker.
 
 Use an adversarial posture: try to refute the design, find missing upstream changes,
-unowned interfaces, weak trade-offs, excessive coupling, testability gaps, and traceability
-theater. Prefer fresh context, a separate reviewer, or a different model/tool when
+unowned interfaces, weak trade-offs, excessive coupling, testability gaps, missing
+test-environment strategy, context-driven concerns the system likely needs, and
+traceability theater. Prefer fresh context, a separate reviewer, or a different model/tool when
 available. If the same agent created the design, state that the review is not independent.
 
 ## Qualitative Review
@@ -60,6 +61,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Quality attributes: performance, security, privacy, reliability, accessibility,
   observability, operations, build/release/deployment, and documentation tactics fit the
   spec.
+- Context-driven missed-concern scan: identify any dedicated performance/load, security/
+  threat-model, privacy/compliance, accessibility, resilience/DR, migration, localization,
+  abuse/fraud/safety, cost, compatibility, or operational review/test implied by context but
+  absent from the design. If material, fail or block with the required upstream/design change.
 - Logging and telemetry design: structured logs, events, metrics, traces, audit/support IDs,
   correlation, sinks, retention/sampling, redaction/privacy, alert hooks, and human/agent
   consumers are explicit where relevant.
@@ -73,6 +78,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   quality-attribute tests. Critical `JT-` stories from the spec are mapped to executable
   journey/e2e/workflow obligations with ordered steps, state handoff, environment, and
   oracle details.
+- Test environment strategy: developer test environment is defined; shared integration/test,
+  staging/pre-production, production canary/smoke, or synthetic-monitor environments are
+  recommended or deferred with rationale based on risk, data, integrations, and deployment
+  model.
 - Verification-oracle design: each `TEST-` obligation names the observable evidence that
   will prove pass/fail, such as return value, state, event, API response, DOM/accessibility
   output, screenshot, artifact, log, metric, trace, deployment signal, or external call.

@@ -331,6 +331,12 @@ answer, then ask the next. Never batch questions. Keep going until gaps close. C
 - **Supplementary/NFR constraints**: Performance, security, privacy, reliability, usability,
   accessibility, interoperability, compliance, data, platform, logging/telemetry,
   error handling, operational, and budget limits.
+- **Context-driven concern scan**: Given the domain, data, users, integrations, deployment
+  model, and risk profile, what might otherwise be missed? Consider whether dedicated
+  performance, load, security/threat-model, privacy, accessibility, compliance, resilience,
+  disaster-recovery, backup/restore, migration, localization, abuse/fraud/safety, cost,
+  compatibility, or operational tests/reviews are needed, explicitly out of scope, or
+  deferred to child artifacts.
 - **User experience quality**: For UI-facing work, what baseline styling, layout,
   responsiveness, loading/empty/error states, accessibility, and human-readable feedback are
   expected? What is explicitly out of scope?
@@ -437,6 +443,11 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
 - NFRs include numbers/units and a verification method where possible. No orphan or duplicate IDs.
 - Build/release/deployment expectations are either captured as requirements/acceptance
   criteria or explicitly deferred as non-goals/open questions.
+- Context-driven concerns suggested by the product domain, data sensitivity, integration
+  risk, scale, deployment model, or user impact are captured as requirements, acceptance
+  criteria, non-goals, assumptions, or open questions. Do not silently omit likely
+  performance, security, privacy, accessibility, reliability, compliance, migration,
+  resilience, operational, or cost concerns merely because the user did not name them.
 - User/developer documentation expectations are either captured as requirements/acceptance
   criteria or explicitly deferred as non-goals/open questions.
 - UI/presentation quality, loading/empty/error states, accessibility, and responsive behavior

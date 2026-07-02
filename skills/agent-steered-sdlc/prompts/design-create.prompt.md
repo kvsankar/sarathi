@@ -46,7 +46,17 @@ such as arc42, C4-style views, and SEI quality-attribute/attribute-driven design
    component should have an isolation strategy, contract/integration test approach,
    build/package path, documentation owner and audience where relevant, structured
    logging/telemetry hooks, deployment checks, and operational checks.
-11. **Decisions carry rationale and consequences** — record alternatives considered,
+11. **Test environments are design decisions** — define the environments needed to gain
+    confidence before release. A developer test environment is the baseline; recommend
+    shared integration/test, staging/pre-production, production canary, production smoke,
+    or synthetic-monitor environments when the product risk, integrations, deployment model,
+    data sensitivity, or operational impact justifies them.
+12. **Context should surface missing concerns** — at each design pass, ask what the product
+    context implies beyond the named requirements: performance/load, security/threat
+    modeling, privacy, accessibility, compliance, resilience, disaster recovery, backup/
+    restore, migration, localization, abuse/fraud/safety, cost, compatibility, and
+    operational reviews/tests.
+13. **Decisions carry rationale and consequences** — record alternatives considered,
     why the chosen option fits now, rejected options, trade-offs, and expected change points.
 
 ## Research and source grounding
@@ -160,6 +170,10 @@ that do not appear in the spec but are needed for safe implementation:
 - **Quality-attribute tests/checks** for performance, reliability, security, privacy,
   accessibility, observability, resilience, offline/sync, build/package reproducibility,
   deployment validation, migration/rollback, and operations.
+- **Environment-specific checks** for developer-local, shared integration/test, staging or
+  pre-production, production canary/smoke, and synthetic-monitor environments when relevant.
+  State which environments are required now, recommended later, deliberately omitted, or
+  blocked by cost/risk/tooling constraints.
 - **Documentation checks** for user guidance, developer onboarding, API/reference output,
   examples, diagrams, runbooks, troubleshooting, accessibility/readability, links, generated
   docs, and versioned release/migration notes.
@@ -194,6 +208,19 @@ producer/consumer payloads for success and error cases unless the boundary is ex
 out of scope. Prefer shared fixtures, generated schemas/clients, OpenAPI/AsyncAPI examples,
 consumer-driven contract tests, or integration tests over hand-written mocks that invent a
 different shape.
+
+Define a **test environment strategy** in the design. Always cover the developer test
+environment: local commands, seed data, secrets/config handling, external dependency mode,
+reset/cleanup, and which tests run there. Then recommend additional environments when the
+context calls for them: shared integration/test for multi-service collaboration, staging or
+pre-production for production-like deployment and data shape, production canary or smoke
+tests for safe rollout validation, and synthetic monitoring for long-running production
+confidence. For each environment, state purpose, realism, data/privacy constraints,
+external systems, isolation, cost, ownership, refresh/reset, deployment validation, smoke/
+canary/rollback checks, and linked `TEST-` obligations. If an environment is not needed or
+not feasible, record the reason and residual risk. If the choice materially changes cost,
+delivery time, compliance posture, or production risk, ask the user for approval before
+finalizing the design.
 
 When the design uses a mock, fake, stub, test double, local mirror, or locally re-declared
 interface for an external system, record it as a verification risk in **Risks & Trade-offs**
@@ -532,10 +559,18 @@ Interview the user **one question at a time**: ask, wait, then ask the next. Cov
 - **Quality tactics and trade-offs**: how the design meets performance, reliability,
   security, modifiability, usability, observability, diagnosability, deployability, build
   reproducibility, deployment, and cost goals.
+- **Context-driven missed concerns**: based on domain, users, data, integrations, platform,
+  deployment, and risk, whether the design needs dedicated performance/load testing,
+  security review or threat modeling, privacy/compliance review, accessibility audit,
+  resilience/chaos test, disaster-recovery or backup/restore exercise, migration rehearsal,
+  localization review, abuse/fraud/safety review, cost guardrail, or compatibility testing.
 - **Decision points**: what trade-offs require user input, what options are viable, which
   option is recommended, and whether an ADR is needed.
 - **Test and verification strategy**: how components, contracts, quality attributes, data
   migrations, failure modes, and critical flows are verified.
+- **Test environment strategy**: developer test environment by default; shared integration,
+  staging/pre-production, production canary/smoke, or synthetic-monitor environments when
+  justified by risk. Confirm the environments to plan and any explicit deferrals.
 - **Risks and evolution**: technical debt, migration path, rollout/rollback, likely change
   points, and alternatives rejected.
 
@@ -571,7 +606,8 @@ Use **prefix + slug**, no numeric suffix:
 3. **Drivers & Constraints** — the FRs/NFRs/use cases, quality-attribute scenarios,
    stakeholder concerns, logging/telemetry/error-handling constraints, build/release/
    deployment constraints, documentation constraints, UI mock preference/approval status,
-   external constraints, risks, and assumptions that shape the design.
+   external constraints, context-driven missed-concern scan results, risks, and assumptions
+   that shape the design.
 4. **Layers** — (`LAYER-<SLUG>`); each names its responsibility, allowed dependencies,
    boundary rules, ownership, and whether it belongs to core policy, application orchestration,
    adapter/shell, presentation, data, or infrastructure. Dependencies should be acyclic and justified.
@@ -621,6 +657,16 @@ Use **prefix + slug**, no numeric suffix:
    isolation and in collaboration, including logging/telemetry assertions, observability,
    failure injection, error-mapping tests, contract-realistic mocks, and migration/rollback
    checks where relevant.
+   Include a **Test Environment Strategy** subsection covering the developer test
+   environment and any recommended shared integration/test, staging/pre-production,
+   production canary/smoke, or synthetic-monitor environments. For each environment, state
+   purpose, realism, data/secrets policy, external dependency mode, isolation/reset, owner,
+   cost/risk, deployment validation, smoke/canary/rollback checks, and linked `TEST-`
+   obligations. Also include a **Context-Driven Review/Test Recommendations** subsection
+   naming any dedicated performance/load, security/threat-model, privacy/compliance,
+   accessibility, resilience/DR, migration, localization, abuse/fraud/safety, cost,
+   compatibility, or operational review/test that should be planned, or why it is not
+   needed now.
 12. **Risks & Trade-offs** — (`RISK-<SLUG>`); risk or technical debt, impact, likelihood,
    mitigation, owner, trigger, and residual risk.
 13. **Traceability Matrix** — requirements (`FR-`/`NFR-`/`UC-`/`AT-`/`JT-`) → components →
@@ -676,6 +722,14 @@ Pass-with-fixes.
 - Every component, interface, deployable artifact, documentation artifact, critical `AT-`,
   critical `JT-`, and important `NFR-` has a named `TEST-` obligation or check level and
   relevant build, deployment, documentation, observability, or operational checks.
+- The design includes a test environment strategy. A developer test environment is always
+  addressed. Shared integration/test, staging/pre-production, production canary/smoke, and
+  synthetic-monitor environments are recommended, explicitly deferred, or ruled out based on
+  context, with rationale and residual risk.
+- The design includes a context-driven missed-concern scan. Dedicated performance/load,
+  security/threat-model, privacy/compliance, accessibility, resilience/DR, migration,
+  localization, abuse/fraud/safety, cost, compatibility, or operational reviews/tests are
+  planned when context warrants them, or explicitly deferred with rationale.
 - Logging and telemetry design names the structured signals, correlation/support IDs,
   sinks, retention/sampling, redaction/privacy rules, and consumers that matter for humans,
   agents, debugging, support, or operations.

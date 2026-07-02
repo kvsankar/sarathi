@@ -263,6 +263,15 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Build/deployment completeness** — assigned build/package work produces or validates the
   expected artifact; deployment scripts, manifests, IaC, migrations, smoke checks, rollback
   checks, and release docs are implemented and verified where planned.
+- **Test-environment verification** — planned developer-local, shared integration/test,
+  staging/pre-production, production canary/smoke, and synthetic-monitor checks were run or
+  explicitly reported as unavailable. Any omitted environment that the design/plan required
+  is a finding; any live production check requires explicit approval evidence.
+- **Context-driven concern verification** — performance/load, security/threat-model,
+  privacy/compliance, accessibility, resilience/DR, migration, localization, abuse/fraud/
+  safety, cost, compatibility, and operational reviews/tests required by the artifacts were
+  performed or explicitly blocked. If code changes reveal a material unplanned concern,
+  fail or block for upstream artifact revision.
 - **Documentation completeness** — assigned user/developer docs, README/API/reference output,
   examples, tutorials, diagrams, runbooks, troubleshooting, release/migration notes, and doc
   generation are implemented and verified where planned.

@@ -15,7 +15,8 @@ explicitly asked.
 
 Use an adversarial posture: try to refute the spec, find missing stakeholder needs,
 ambiguous behavior, weak acceptance criteria, missing non-goals, missing build/deployment
-or documentation intent, missing logging/error-handling intent, and traceability theater.
+or documentation intent, missing logging/error-handling intent, context-driven concerns the
+product likely needs, and traceability theater.
 Prefer fresh context, a separate reviewer, or a different model/tool when available. If the
 same agent created the spec, state that the review is not independent.
 
@@ -43,6 +44,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   accessibility, interoperability, compliance, data, platform, operational,
   logging/telemetry, error handling, build/deployment, and documentation constraints are
   considered and measurable where applicable.
+- Context-driven missed-concern scan: identify any performance, security, privacy,
+  accessibility, compliance, resilience, migration, operational, cost, compatibility, or
+  domain-specific review/test need implied by context but absent from the spec. If material,
+  fail or block with the required upstream change.
 - UX/presentation quality: UI-facing work has explicit expectations for baseline styling,
   layout, responsive behavior, accessibility, and readable loading/empty/error/validation
   states, or scopes them out deliberately.

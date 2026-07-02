@@ -105,6 +105,12 @@ Run planned commands where present:
 - Build/package command and artifact existence/version check.
 - Documentation build/generation/link/example checks.
 - Deployment lint/dry-run/plan/template/smoke/rollback checks.
+- Test-environment checks named by the plan, including developer-local and any shared
+  integration/test, staging/pre-production, production canary/smoke, or synthetic-monitor
+  checks.
+- Context-driven checks named by the plan, such as performance/load, security,
+  privacy/compliance, accessibility, resilience/DR, migration, compatibility, cost, or
+  operational checks.
 
 Do not perform a live production deployment unless the user explicitly asked for it.
 

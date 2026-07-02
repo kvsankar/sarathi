@@ -47,7 +47,9 @@ Before writing tests or code, confirm all of the following:
   Green steps, dependencies, quality gates, logging/error-handling work or an explicit
   rationale that no logging/error-handling change is required, build/deployment work or an
   explicit rationale that no build/deployment change is required, plus documentation work or
-  an explicit rationale that no documentation change is required.
+  an explicit rationale that no documentation change is required, test-environment work or
+  an explicit rationale that only developer-local verification is needed, and any
+  context-driven review/test work or an explicit rationale that it is out of scope.
 
 If any item is missing, **stop** and tell the user which artifact is not code-ready and what
 is needed next: breakdown plan, child spec, HLD, LLD, ADR, interface contract, test
@@ -125,6 +127,10 @@ TDD exception above applies:
 - Write **quality-attribute checks** for performance, reliability, security, privacy,
   resilience, observability, logging/telemetry, error handling, offline/sync,
   rollout/rollback, and operational behavior when planned.
+- Write or run **environment-specific checks** when planned: developer-local test commands,
+  shared integration/test checks, staging/pre-production validation, production canary/smoke
+  checks, and synthetic-monitor checks. Do not run live production checks unless explicitly
+  requested and approved.
 - Write or run **build/deployment checks** when planned: reproducible package/image/static
   bundle/mobile build output, generated artifact validation, migration validation,
   deployment dry-run/plan/lint, manifest/IaC validation, smoke checks, and rollback checks.
@@ -184,6 +190,12 @@ captured real fixture, or explicit user-approved limitation. A test double must 
 only verification of an external contract.
 For UI-facing work, keep presentation changes decoupled from behavior tests; add visual,
 accessibility, responsive, or role/text-based assertions only where planned.
+
+If implementation reveals a material context-driven concern that the artifacts did not
+plan, stop before broadening scope. Examples include a newly discovered need for load tests,
+security review/threat modeling, privacy/compliance review, accessibility audit,
+resilience/DR check, migration rehearsal, production canary, synthetic monitor, or extra
+test environment. Tell the user which upstream artifact should be updated and why.
 
 ## Quality gates and pre-commit
 

@@ -19,7 +19,8 @@ upstream blocker and name the affected IDs/sections.
 
 Use an adversarial posture: try to refute correctness, test implementation quality, TDD claims,
 planned-scope fidelity, implementation/design fit, logging/telemetry and error-handling
-fitness, deployment safety, documentation completeness, and quality-gate adequacy. Prefer
+fitness, deployment safety, documentation completeness, test-environment execution,
+context-driven concerns the implementation exposed, and quality-gate adequacy. Prefer
 fresh context, a separate reviewer, or a different model/tool when available. If the same
 agent implemented the code, state that the review is not independent.
 
@@ -82,6 +83,13 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Build/deployment completeness: assigned artifacts, deployment scripts/manifests,
   migrations, smoke checks, rollback checks, and release docs are credible and verified
   where planned.
+- Test environments: planned developer-local, shared integration/test, staging/pre-production,
+  production canary/smoke, and synthetic-monitor checks were run or explicitly reported as
+  unavailable; live production checks have explicit approval.
+- Context-driven concerns: any performance/load, security/threat-model, privacy/compliance,
+  accessibility, resilience/DR, migration, localization, abuse/fraud/safety, cost,
+  compatibility, or operational review/test implied by the implementation is either already
+  planned and verified or blocks for upstream artifact revision.
 - Documentation completeness: user/developer docs, examples, generated/reference docs,
   runbooks, troubleshooting, and release/migration notes match behavior where planned.
 - Production quality: validation, error handling, logging/telemetry, security/privacy,

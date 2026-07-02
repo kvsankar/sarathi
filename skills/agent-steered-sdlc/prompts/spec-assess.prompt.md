@@ -111,6 +111,13 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   accessibility, interoperability, compliance, data, platform, logging/telemetry, error
   handling, build/release/deployment, and operational constraints are considered and
   measurable where applicable.
+- **Context-driven missed-concern scan** — given the product domain, users, data,
+  integrations, deployment model, and risk profile, the spec has considered likely
+  performance/load, security/threat-model, privacy, accessibility, compliance, resilience,
+  disaster-recovery, backup/restore, migration, localization, abuse/fraud/safety, cost,
+  compatibility, and operational needs. Material concerns are captured as requirements,
+  acceptance criteria, non-goals, assumptions, or open questions; otherwise this is a spec
+  defect or upstream blocker.
 - **UX/presentation quality** — UI-facing work captures baseline styling/layout,
   responsive behavior, accessibility, and readable loading/empty/error/validation states as
   measurable requirements or explicitly scopes them out.

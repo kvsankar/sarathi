@@ -142,6 +142,16 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   state handoff, while each design `TEST-` obligation for unit/pure-core, component,
   contract, integration, UI/accessibility/visual, quality-attribute, migration, and
   operational checks is scheduled near the code it protects.
+- **Test-environment allocation** — developer-local verification is planned. Shared
+  integration/test, staging/pre-production, production canary/smoke, and synthetic-monitor
+  environments recommended by the design or implied by risk are assigned to PRs/work items,
+  including data/secrets handling, external dependency mode, reset/cleanup, deployment
+  validation, smoke/canary/rollback checks, owner, and residual risk for deferrals.
+- **Context-driven review/test allocation** — the plan allocates needed performance/load,
+  security/threat-model, privacy/compliance, accessibility, resilience/DR, migration,
+  localization, abuse/fraud/safety, cost, compatibility, and operational reviews/tests, or
+  explicitly explains why each material concern is out of scope. Missing material work is a
+  plan defect or upstream blocker.
 - **Inner-test discovery guidance** — the plan identifies likely implementation-local
   supplemental test zones where useful, without using them as a substitute for required
   `AT-`/`JT-`/`TEST-` coverage or allowing new product-visible scope to bypass upstream

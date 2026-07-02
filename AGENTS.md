@@ -160,6 +160,44 @@ unless the artifact explicitly scopes them out.
 - Review commands check the same chain and stop with an upstream blocker when build or
   deployment intent is missing from the artifact that should own it.
 
+## Test environment responsibility by command
+
+Test environments are first-class confidence decisions. Do not assume one local test run is
+enough when the product context points to integration, staging, canary, or production-smoke
+risk.
+
+- `/spec-create` captures externally relevant environment needs or non-goals when they
+  affect acceptance, release safety, data, integrations, or operations.
+- `/design-create` always defines the developer test environment and recommends additional
+  environments when justified: shared integration/test, staging or pre-production,
+  production canary/smoke, and synthetic monitoring. Record purpose, realism, data/secrets,
+  external dependency mode, isolation/reset, owner, cost/risk, deployment validation, smoke/
+  canary/rollback checks, and linked `TEST-` obligations.
+- `/plan-create` assigns environment setup, configuration, data/secret handling, reset/
+  cleanup, validation commands, and ownership to child `WORK-` items or PRs.
+- `/code-create` runs or implements the planned environment checks. It must not run live
+  production checks unless the user explicitly approves them.
+- Review commands check the same chain and stop with an upstream blocker when a needed
+  environment strategy or allocation is missing.
+
+## Context-driven concern scan by command
+
+Every phase should ask what the context implies beyond the user's initial wording. Depending
+on domain, data sensitivity, users, integrations, platform, scale, deployment model, and
+operational risk, agents should surface dedicated performance/load tests, security review or
+threat modeling, privacy/compliance review, accessibility audit, resilience/DR or backup/
+restore checks, migration rehearsal, localization review, abuse/fraud/safety review, cost
+guardrails, compatibility tests, or operational reviews.
+
+- `/spec-create` captures material concerns as requirements, acceptance criteria, non-goals,
+  assumptions, or open questions.
+- `/design-create` turns material concerns into tactics, `TEST-` obligations, ADRs, risks,
+  or explicit deferrals.
+- `/plan-create` assigns the resulting reviews/tests to work items or PRs.
+- `/code-create` verifies the planned checks and stops for upstream revision if
+  implementation reveals a material concern that was not planned.
+- Review commands explicitly ask what important concern might be missing given the context.
+
 ## User and developer documentation responsibility by command
 
 User and developer documentation are also first-class SDLC concerns. Do not leave them as a
@@ -280,10 +318,10 @@ canonical checklist is
 
 | Assessment | Mechanical verification | Qualitative review |
 | --- | --- | --- |
-| `/spec-assess` | `/spec-verify`: `check_spec.py` on the target spec. | `/spec-review`: spec quality, problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, UI mock preference, external contracts and real-boundary testability, logging/error-handling intent, build/deployment intent, documentation intent, traceability. |
-| `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, UI mock artifact/approval when required, logging/telemetry and error-handling design, build/deployment design, documentation design, decisions, risks, external-double verification risk/mitigation, testability, verification-oracle design, and traceability. |
-| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, verification-oracle allocation, external-double mitigation allocation, UI mock approval allocation, logging/error-handling allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
-| `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned logging/error-handling/build/docs/deployment checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test implementation quality, verification-oracle rigor, external-double verification risk, mock UI fidelity when required, logging/telemetry and error-handling verification, build/deployment verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
+| `/spec-assess` | `/spec-verify`: `check_spec.py` on the target spec. | `/spec-review`: spec quality, problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, UI mock preference, external contracts and real-boundary testability, logging/error-handling intent, build/deployment intent, documentation intent, context-driven missed concerns, traceability. |
+| `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, UI mock artifact/approval when required, logging/telemetry and error-handling design, build/deployment design, test-environment strategy, context-driven review/test recommendations, documentation design, decisions, risks, external-double verification risk/mitigation, testability, verification-oracle design, and traceability. |
+| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, test-environment allocation, context-driven review/test allocation, verification-oracle allocation, external-double mitigation allocation, UI mock approval allocation, logging/error-handling allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
+| `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned logging/error-handling/build/docs/deployment/environment/context-driven checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test implementation quality, verification-oracle rigor, external-double verification risk, mock UI fidelity when required, logging/telemetry and error-handling verification, build/deployment verification, test-environment execution, context-driven concern verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
 
 Agents should infer the likely scope from the user's request and state it explicitly:
 broad product/platform/app requests map to Product/system, one capability/subsystem maps to

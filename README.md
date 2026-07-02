@@ -193,6 +193,38 @@ Builds and deployment are covered from the beginning:
 Reviews stop with an upstream blocker when build or deployment intent is missing from the
 artifact that should own it.
 
+## Test Environments
+
+The process treats test environments as design and planning decisions:
+
+- Specs capture externally relevant environment needs or non-goals when they affect
+  acceptance, release safety, data, integrations, or operations.
+- Designs always define the developer test environment and recommend additional
+  environments when context warrants them: shared integration/test, staging or
+  pre-production, production canary/smoke, and synthetic monitoring.
+- Plans assign setup, data/secrets handling, reset/cleanup, deployment validation, smoke/
+  canary/rollback checks, and ownership for each planned environment.
+- Code runs the planned environment checks. Live production checks require explicit user
+  approval.
+
+Not every product needs every environment. The design should explain which environments are
+required now, recommended later, deliberately deferred, or unnecessary, including residual
+risk.
+
+## Context-Driven Reviews And Tests
+
+At every phase, agents should ask what the context implies beyond the user's first words.
+Depending on the domain, data, users, integrations, platform, and deployment risk, the
+process may need dedicated performance/load tests, security review or threat modeling,
+privacy/compliance review, accessibility audit, resilience or disaster-recovery checks,
+backup/restore rehearsal, migration rehearsal, localization review, abuse/fraud/safety
+review, cost guardrails, compatibility tests, or operational reviews.
+
+Specs capture these as requirements, acceptance criteria, non-goals, assumptions, or open
+questions. Designs turn them into tactics, `TEST-` obligations, ADRs, or risks. Plans assign
+them to work items or PRs. Code verifies the planned checks and stops for upstream revision
+if implementation reveals a material concern that was not planned.
+
 ## User And Developer Documentation
 
 Documentation is also covered from the beginning:
@@ -289,6 +321,9 @@ Test responsibility is split by artifact:
 - Designs define the test architecture and explicit `TEST-<AREA>-<NAME>` executable test
   obligations for unit, component, contract, integration, UI, journey/e2e, quality,
   docs/build/deploy, migration, and operational checks.
+- Designs also define the test environment strategy: developer environment always, plus
+  shared integration/test, staging/pre-production, production canary/smoke, and synthetic
+  monitoring when context warrants them.
 - External systems should be tested against the real dependency or its official conformance
   surface whenever feasible. If a mock, fake, stub, local mirror, or locally re-declared
   interface replaces the real system, the artifacts must flag that as verification risk and
@@ -327,7 +362,9 @@ Test responsibility is split by artifact:
   unrealistic mocks, or other latent spec/design/plan gaps.
 - Documentation, logging/telemetry, error-handling, build, and deployment checks are
   assigned through the same spec/design/plan chain and verified during code creation,
-  `/code-verify`, or `/code-assess` when planned.
+  `/code-verify`, or `/code-assess` when planned. The same is true for environment-specific
+  checks and context-driven reviews/tests such as performance, security, privacy,
+  accessibility, resilience, migration, compatibility, cost, and operational checks.
 
 Use `/code-verify` when you simply want a confidence run after a change: test suite,
 coverage, pre-commit/equivalent gates, logging/error-handling checks, build checks,
