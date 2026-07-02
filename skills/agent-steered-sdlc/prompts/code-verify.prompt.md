@@ -66,10 +66,15 @@ Report:
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 - Bad ID format, oversized modules, large advisory diffs, failing/skipped tests,
-  TODO/FIXME/vague markers, and uncovered IDs. Large modules and large diffs are advisory
-  unless `--enforce-max-loc` or a project-specific hard gate is used; never recommend
-  cutting useful comments, tests, docs, JSDoc/docstrings, readable structure, or cohesive
-  module boundaries merely to fit a size target.
+  TODO/FIXME/XXX/skip/xfail markers awaiting approval, and uncovered IDs. Large modules and
+  large diffs are advisory unless `--enforce-max-loc` or a
+  project-specific hard gate is used; never recommend cutting useful comments, tests, docs,
+  JSDoc/docstrings, readable structure, or cohesive module boundaries merely to fit a size
+  target.
+
+Do not add SDLC-specific annotations to app code. If markers remain, surface their file,
+line, marker, and text to the user and require `code.markers.approved` before downstream
+progress.
 
 ## Local Quality Gates
 

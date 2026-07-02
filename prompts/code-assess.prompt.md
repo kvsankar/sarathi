@@ -123,14 +123,16 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 - **tdd_evidence** — Red/Green presence markers from git log between the review base and
   `HEAD`. This is a presence check, not proof that tests really failed before implementation;
   qualitative review must confirm TDD authenticity.
-- **vague_hits** — TODO/FIXME/"etc."/skipped markers. Must be 0.
+- **code_markers / marker_approval_requirements** — TODO/FIXME/XXX/skip/xfail markers
+  found in code or tests. These must be surfaced to the user and approved through
+  `code.markers.approved` before proceeding.
 - **gates** + `passed/total`.
 
 Present the JSON, then `passed/total`, coverage %, traceability %, assertion-traceability %,
 diff evidence, and TDD evidence. List every uncovered PR/ID, ID without nearby assertion,
-failing/skipped test, oversized module, and large diff explicitly. Do not recommend cutting
-useful comments, tests, docs, JSDoc/docstrings, or readable structure merely to fit a diff
-target.
+failing test, marker awaiting approval, oversized module, and large diff explicitly. Do not
+recommend cutting useful comments, tests, docs,
+JSDoc/docstrings, or readable structure merely to fit a diff target.
 Flag artifact IDs in test names, docstrings, or comments as code clutter unless the project
 has explicitly chosen inline metadata. If `--allow-inline-test-traceability` was used, state
 that the run used legacy compatibility and recommend migration to `.sdlc/test-traceability.yaml`.
@@ -182,7 +184,8 @@ Verify thresholds are explicit and met. If the repo does not define thresholds, 
 minimum review expectations:
 
 - Formatter, linter, type checker, dependency audit, and secret scan: zero errors.
-- Tests: pass with no skips/xfails unless each is justified.
+- Tests: pass with no skips/xfails unless each is surfaced to the user and approved before
+  proceeding.
 - Coverage: use the plan's threshold; if absent, at least 80% line coverage overall,
   70% branch coverage where available, and 90% line coverage for pure functional core modules.
 - Complexity: cyclomatic complexity ≤10 per function/method and cognitive complexity ≤15

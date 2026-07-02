@@ -39,15 +39,13 @@ def run_check_code(
     src = tmp_path / "src"
     tests.mkdir(exist_ok=True)
     src.mkdir(exist_ok=True)
-    plan.write_text("- PR-AUTH-SIGNIN\n", encoding="utf-8")
+    plan.write_text("- PR-AUTH-SIGNIN\n", encoding="utf-8", newline="\n")
     spec.write_text(
         spec_body or "- FR-AUTH-SIGNIN\n- AT-AUTH-SIGNIN\n", encoding="utf-8"
     )
     design.write_text("- COMP-AUTH\n- TEST-AUTH-POLICY\n", encoding="utf-8")
     sdlc = tmp_path / ".sdlc"
     sdlc.mkdir(exist_ok=True)
-    if approvals_body is not None:
-        (sdlc / "approvals.yaml").write_text(approvals_body, encoding="utf-8")
     if traceability_body is None:
         (sdlc / "test-traceability.yaml").write_text(
             """version: 1
@@ -75,6 +73,8 @@ tests:
         ),
         encoding="utf-8",
     )
+    if approvals_body is not None:
+        (sdlc / "approvals.yaml").write_text(approvals_body, encoding="utf-8")
     module = load_check_code()
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(
@@ -409,6 +409,65 @@ def test_check_code_enforces_oversized_modules_when_requested(
     assert rc == 1
     assert report["module_size_enforced"] is True
     assert report["gates"]["module_size_ok"] is False
+
+
+def test_check_code_surfaces_markers_for_approval(tmp_path, monkeypatch, capsys):
+    test_body = (
+        "def test_auth():\n"
+        "    result = 'granted'  # TODO remove fixture shortcut\n"
+        "    assert result == 'granted'\n"
+    )
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        test_body=test_body,
+    )
+
+    assert rc == 1
+    assert report["code_markers"][0]["marker"] == "TODO"
+    assert report["gates"]["markers_approved"] is False
+    assert report["marker_approval_requirements"][0]["gate"] == (
+        "code.markers.approved"
+    )
+    assert report["marker_approval_requirements"][0]["artifact"].endswith("plan.md")
+
+
+def test_check_code_accepts_approved_markers(tmp_path, monkeypatch, capsys):
+    test_body = (
+        "def test_auth():\n"
+        "    result = 'granted'  # TODO remove fixture shortcut\n"
+        "    assert result == 'granted'\n"
+    )
+    plan_hash = hashlib.sha256(b"- PR-AUTH-SIGNIN\n").hexdigest()
+    approvals = f"""version: 1
+approvals:
+  - id: APR-MARKERS
+    gate: code.markers.approved
+    scope: slice/change
+    artifact:
+      kind: plan
+      path: plan.md
+      sha256: {plan_hash}
+    status: approved
+    approved_by: Test User
+    approved_at: "2026-07-01T12:00:00Z"
+"""
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        test_body=test_body,
+        approvals_body=approvals,
+    )
+
+    assert rc == 0
+    assert report["gates"]["markers_approved"] is True
+    assert report["marker_approval_requirements"][0]["issues"] == []
 
 
 def test_git_diff_loc_measures_actual_changed_lines(tmp_path):

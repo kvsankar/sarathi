@@ -346,6 +346,9 @@ still carry artifact IDs in test comments or docstrings.
 Module size is advisory by default. Use `--enforce-max-loc` only when a project explicitly
 opts into a hard module-size gate; otherwise review oversized modules as maintainability
 signals and avoid mechanical file splitting.
+TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not
+add SDLC-specific annotations to app code. If markers remain, downstream progress requires
+explicit human approval through `code.markers.approved`.
 
 The checkers do not prove semantic correctness. Assessment commands pair verification
 evidence with qualitative review of requirements, design, plan quality, test implementation

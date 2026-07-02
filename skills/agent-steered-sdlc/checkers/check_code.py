@@ -58,8 +58,7 @@ ID_CANDIDATE = re.compile(
     r"(?:-[A-Za-z0-9]+)+\b",
     re.I,
 )
-SKIP = re.compile(r"\b(skip|skipif|xfail)\b", re.I)
-VAGUE = re.compile(r"\b(TODO|FIXME|XXX|etc\.)\b", re.I)
+MARKER = re.compile(r"\b(skip|skipif|xfail|TODO|FIXME|XXX|etc\.)\b", re.I)
 UI_WORK = re.compile(r"^\s*UI Work\s*:\s*Yes\s*$", re.I | re.M)
 MOCK_DEP = re.compile(r"^\s*Mock UI Dependency\s*:\s*(?!None\b)(.+)$", re.I | re.M)
 UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
@@ -139,6 +138,23 @@ def source_files(root: Path, suffixes: set[str]):
             continue
         if f.is_file() and f.suffix in suffixes:
             yield f
+
+
+def marker_hits(files: list[Path], root: Path) -> list[dict]:
+    hits: list[dict] = []
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for line_no, line in enumerate(text.splitlines(), 1):
+            for match in MARKER.finditer(line):
+                hits.append(
+                    {
+                        "path": rel_path(path, root),
+                        "line": line_no,
+                        "marker": match.group(0).upper(),
+                        "text": line.strip(),
+                    }
+                )
+    return hits
 
 
 def extract_coverage(text: str) -> float | None:
@@ -393,9 +409,11 @@ def main() -> int:
     cmd, use_shell = test_command()
 
     test_text = ""
+    test_files: list[Path] = []
     if tests_dir.exists():
         for f in tests_dir.rglob("*.*"):
             if f.suffix in (".py", ".ts", ".js", ".tsx", ".jsx"):
+                test_files.append(f)
                 test_text += f.read_text(encoding="utf-8", errors="ignore") + "\n"
 
     spec_path = arg("--spec", "spec.md")
@@ -422,13 +440,14 @@ def main() -> int:
         | set(traceability["bad_id_format"])
     )
 
+    source_file_list = list(source_files(src, src_ext))
     oversized = sorted(
         str(f)
-        for f in source_files(src, src_ext)
+        for f in source_file_list
         if f.is_file()
         and len(f.read_text(encoding="utf-8", errors="ignore").splitlines()) > max_loc
     )
-    vague = VAGUE.findall(test_text) + SKIP.findall(test_text)
+    code_markers = marker_hits(sorted({*test_files, *source_file_list}), Path.cwd())
 
     tests_pass, cov = None, None
     if cmd:
@@ -445,8 +464,9 @@ def main() -> int:
     )
     approval_requirements = []
     approval_context = {}
-    if require_approvals:
+    if require_approvals or code_markers:
         approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
+    if require_approvals:
         approval_requirements.append(
             approval_requirement(approval_context, Path.cwd(), "plan.approved", plan)
         )
@@ -481,6 +501,17 @@ def main() -> int:
                 }
             )
 
+    marker_approval_requirements = []
+    if code_markers:
+        marker_approval_requirements.append(
+            approval_requirement(
+                approval_context,
+                Path.cwd(),
+                "code.markers.approved",
+                plan,
+            )
+        )
+
     pr_pct = round(100 * len(seen_prs) / len(plan_prs), 1) if plan_prs else 100.0
     id_pct = round(100 * len(seen) / len(want), 1) if want else 100.0
     assertion_id_pct = (
@@ -505,7 +536,7 @@ def main() -> int:
         "module_size_ok": not oversized if enforce_max_loc else True,
         "tdd_evidence_ok": tdd_ok if require_tdd else True,
         "required_approvals_present": approval_gate_passed(approval_requirements),
-        "no_vagueness": len(vague) == 0,
+        "markers_approved": approval_gate_passed(marker_approval_requirements),
     }
     if not require_approvals:
         gates.pop("required_approvals_present")
@@ -559,6 +590,7 @@ def main() -> int:
         "tdd_evidence": tdd_evidence,
         "tdd_evidence_required": require_tdd,
         "approval_requirements": approval_requirements,
+        "marker_approval_requirements": marker_approval_requirements,
         "approval_ledger": {
             "path": approvals_path,
             "exists": approval_context.get("exists") if approval_context else None,
@@ -569,7 +601,8 @@ def main() -> int:
                 approval_context.get("invalid_records") if approval_context else []
             ),
         },
-        "vague_hits": len(vague),
+        "code_markers": code_markers,
+        "vague_hits": len(code_markers),
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),

@@ -275,11 +275,14 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   and diff size are reviewability signals, not hard quality gates unless the project
   explicitly opts into `--enforce-max-loc` or a stricter repo standard. Agents must not cut
   useful comments, tests, docs, JSDoc/docstrings, readable structure, or cohesive module
-  boundaries merely to fit the target. Git diff-size is reported by default in code
-  verify/assess; TDD evidence is required by default. Use allow-missing flags only when the
-  repo cannot provide that evidence and the report states the limitation. Red/Green text,
-  AT scenario shape, and commit-message TDD evidence are presence checks; they do not prove
-  semantic correctness, test implementation quality, or true TDD history. Qualitative
+  boundaries merely to fit the target. TODO/FIXME/XXX/skip/xfail markers are rejected unless
+  the user explicitly approves them for the current code slice. Do not add SDLC-specific
+  annotations to app code. If markers remain, surface their file, line, marker, and text,
+  then require `code.markers.approved` before downstream progress. Git diff-size is reported by default
+  in code verify/assess; TDD evidence is required by default. Use allow-missing flags only
+  when the repo cannot provide that evidence and the report states the limitation. Red/Green
+  text, AT scenario shape, and commit-message TDD evidence are presence checks; they do not
+  prove semantic correctness, test implementation quality, or true TDD history. Qualitative
   review must judge those from artifact content, code, tests, and available review/git
   evidence.
 - Configure and run language-appropriate local quality gates for code work. Prefer

@@ -332,6 +332,8 @@ the user.
 When the user explicitly approves an artifact or mock, create or update the matching
 approval record immediately. Use `spec.approved` for specs, `design.approved` for designs,
 `plan.approved` for plans, `ux.mock.approved` for required mock UI artifacts, and
+`code.markers.approved` when TODO/FIXME/XXX/skip/xfail markers remain in the current code
+slice, and
 `code_slice.approved` for optional code-slice handoffs. Compute the SHA-256 from the current
 file bytes and use the current UTC timestamp ending in `Z`. Use `status: auto-approved`
 only when `.sdlc/gates.yaml` allows that gate and scope.
@@ -343,6 +345,8 @@ Default gate ownership:
 - `plan.approved` before downstream code gate checks.
 - `ux.mock.approved` before planning or production UI work when
   `UI Mock Preference: Required`.
+- `code.markers.approved` before downstream progress when TODO/FIXME/XXX/skip/xfail
+  markers remain in the current code slice.
 - Release/deployment/security/privacy gates must not be auto-approved unless a project
   explicitly defines and accepts that policy.
 
@@ -427,8 +431,8 @@ Flags: `--json`, `--feature` (focused feature/component or slice/change mode), `
 
 [checkers/check_code.py](checkers/check_code.py) runs the test suite and enforces structural
 code/test hygiene: tests pass, labeled coverage output ≥ threshold, PR-ID and
-FR/AT/JT/COMP/TEST traceability, advisory per-module LOC reporting, and no TODO/FIXME/skip
-markers.
+FR/AT/JT/COMP/TEST traceability, advisory per-module LOC reporting, no unjustified
+TODO/FIXME/XXX/skip/xfail markers, and human-approved remaining markers.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json
@@ -452,11 +456,14 @@ Checker limits: these scripts are deterministic structural gates. They catch mis
 sections, malformed IDs, orphan references, missing trace links, large declared PRs,
 missing Red/Green step text, unlabeled coverage output, missing same-test-block assertion
 trace IDs, large advisory git diffs against the resolved review base, and obvious skip/TODO
-markers. Test traceability should come from `.sdlc/test-traceability.yaml`, not artifact ID
-comments in test code. LOC, module size, and diff size are reviewability signals, not hard
-quality gates unless the project explicitly opts into `--enforce-max-loc` or a stricter repo
-standard. Agents must not cut useful comments, tests, docs, JSDoc/docstrings, readable
-structure, or cohesive module boundaries merely to fit the target. Red/Green text, AT
+markers. Do not add SDLC-specific marker annotations to app code. If markers remain, the
+checker surfaces their file, line, marker, and text; downstream progress requires explicit
+human approval through `code.markers.approved`. Test traceability should come from
+`.sdlc/test-traceability.yaml`, not artifact ID comments in test code. LOC, module size, and
+diff size are reviewability signals, not hard quality gates unless the project explicitly
+opts into `--enforce-max-loc` or a stricter repo standard. Agents must not cut useful
+comments, tests, docs, JSDoc/docstrings, readable structure, or cohesive module boundaries
+merely to fit the target. Red/Green text, AT
 scenario shape, and commit-message TDD evidence are presence checks; they do not prove
 semantic correctness, test implementation quality, or true TDD history. The qualitative
 review prompts must judge those concerns from the artifact content, code, tests, and

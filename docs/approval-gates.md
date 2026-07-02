@@ -38,6 +38,10 @@ approvals:
 - `plan.approved`: required before downstream code gate checks.
 - `ux.mock.approved`: required before planning or production UI work when the spec says
   `UI Mock Preference: Required`.
+- `code.markers.approved`: required before downstream progress when code/tests contain
+  TODO/FIXME/XXX/skip/xfail markers that the user explicitly accepts for the current code
+  slice. The checker reports the marker locations; do not add SDLC-specific annotations to
+  app code.
 - `code_slice.approved`: for teams that want a checked handoff between code slices.
 - `release.approved` and `production-deployment.approved`: for release/deploy workflows;
   these should not be auto-approved by default.

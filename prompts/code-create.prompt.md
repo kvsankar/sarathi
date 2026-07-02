@@ -222,7 +222,8 @@ Set explicit thresholds in the plan, pre-commit config, tool config, or test com
 repo lacks thresholds, use these defaults unless the user chooses different standards:
 
 - Formatter, linter, type checker, dependency audit, and secret scan: zero errors.
-- Unit/integration tests: pass with no skips or xfails unless each is explicitly justified.
+- Unit/integration tests: pass with no skips or xfails unless each is explicitly justified,
+  surfaced to the user, and approved before proceeding.
 - Coverage: use the plan's `--cov-min`; if absent, require at least 80% line coverage overall,
   70% branch coverage where available, and 90% line coverage for pure functional core modules.
 - Complexity: cyclomatic complexity ≤10 per function/method and cognitive complexity ≤15
@@ -458,4 +459,7 @@ first completed PR boundary.
 - Formatter, lint, type, complexity, dependency/security, coverage, and test thresholds are
   explicit and met, with documented exceptions only when the user accepts them.
 - Test names stay readable; IDs live in `.sdlc/test-traceability.yaml`, not in test code.
-- No vague TODOs, no skipped tests, no commented-out code.
+- No TODO/FIXME/XXX markers, skipped tests, or xfails unless the user explicitly accepts
+  them for the current code slice. Do not add SDLC-specific annotations to app code. If a
+  marker remains, surface its file, line, marker, and text in the handoff and obtain human
+  approval before proceeding. No commented-out code.
