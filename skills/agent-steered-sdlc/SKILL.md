@@ -175,17 +175,18 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   supplemental inner tests discovered during Red/Green/Refactor, such as helper, pure-core,
   parser, mapper, regression, characterization, table/property, adapter, or edge-case
   tests. These supplement, never replace, planned `AT-`/`JT-`/`TEST-` coverage. They must
-  stay within the current `PR-` and Planned Touch Set, cite the nearest `PR-` plus relevant
-  `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-` when applicable, and use a concrete oracle. If a supplemental
-  test implies new externally visible behavior, a changed contract, a UX/NFR expectation,
-  or broader scope, stop and revise the spec/design/plan before coding it. Executable tests
-  are implementation code: their verification oracles, assertions, fixtures, helpers,
-  mocks, data, selectors, determinism, and maintainability must be reviewed in
-  `/code-review` and `/code-assess`, not merely executed in `/code-verify`. Every test
-  should have a concrete oracle for pass/fail: return value, state, persisted record,
-  event, API response, DOM/accessibility output, screenshot/visual baseline, artifact,
-  structured log, metric, trace, deployment signal, or captured external call as
-  appropriate.
+  stay within the current `PR-` and Planned Touch Set, map to the nearest `PR-` plus
+  relevant `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-` in `.sdlc/test-traceability.yaml` when
+  applicable, and use a concrete oracle. Keep artifact IDs out of test names, docstrings,
+  and comments unless the project explicitly adopts inline metadata. If a supplemental test
+  implies new externally visible behavior, a changed contract, a UX/NFR expectation, or
+  broader scope, stop and revise the spec/design/plan before coding it. Executable tests are
+  implementation code: their verification oracles, assertions, fixtures, helpers, mocks,
+  data, selectors, determinism, and maintainability must be reviewed in `/code-review` and
+  `/code-assess`, not merely executed in `/code-verify`. Every test should have a concrete
+  oracle for pass/fail: return value, state, persisted record, event, API response,
+  DOM/accessibility output, screenshot/visual baseline, artifact, structured log, metric,
+  trace, deployment signal, or captured external call as appropriate.
 - Treat build and deployment ownership as part of artifact ownership: specs define
   externally relevant build/release/deployment needs or non-goals; designs define artifact,
   package, release, environment, deployment, validation, smoke, and rollback strategy; plans
@@ -263,15 +264,16 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   missing sections, malformed IDs, orphan references, missing trace links, large declared
   PRs, missing Red/Green step text, unlabeled coverage output, missing same-test-block
   assertion trace IDs, large advisory git diffs against the resolved review base, and
-  obvious skip/TODO markers. LOC and diff size are reviewability signals, not hard quality
-  gates; agents must not cut useful comments, tests, docs, JSDoc/docstrings, or readable
-  structure merely to fit the target. Git diff-size is reported by default in code
-  verify/assess; TDD evidence is required by default. Use allow-missing flags only when the
-  repo cannot provide that evidence and the report states the limitation. Red/Green text,
-  AT scenario shape, and commit-message TDD evidence are presence checks; they do not prove
-  semantic correctness, test implementation quality, or true TDD history. Qualitative
-  review must judge those from artifact content, code, tests, and available review/git
-  evidence.
+  obvious skip/TODO markers. Test traceability should come from
+  `.sdlc/test-traceability.yaml`, not artifact ID comments in test code. LOC and diff size
+  are reviewability signals, not hard quality gates; agents must not cut useful comments,
+  tests, docs, JSDoc/docstrings, or readable structure merely to fit the target. Git
+  diff-size is reported by default in code verify/assess; TDD evidence is required by
+  default. Use allow-missing flags only when the repo cannot provide that evidence and the
+  report states the limitation. Red/Green text, AT scenario shape, and commit-message TDD
+  evidence are presence checks; they do not prove semantic correctness, test implementation
+  quality, or true TDD history. Qualitative review must judge those from artifact content,
+  code, tests, and available review/git evidence.
 - Configure and run language-appropriate local quality gates for code work. Prefer
   repository-native tooling and pre-commit hooks where practical. For code-ready work, also
   run planned build/package commands and deployment dry-run/lint/plan/smoke/rollback checks

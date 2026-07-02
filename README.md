@@ -291,15 +291,17 @@ Test responsibility is split by artifact:
   docs/build/deploy, migration, and operational checks.
 - Plans assign `AT-` acceptance coverage, `JT-` journey coverage, and `TEST-` obligations
   to PRs.
-- Code writes the executable tests and implementation, citing the assigned `AT-`, `JT-`,
-  and `TEST-` IDs where applicable. This is where unit, component, contract, integration,
-  UI, journey/e2e, quality, migration, build/deploy, docs, and operational test
-  implementations are created when planned.
+- Code writes the executable tests and implementation, and records executable-test
+  traceability in `.sdlc/test-traceability.yaml` rather than cluttering test code with
+  artifact IDs. This is where unit, component, contract, integration, UI, journey/e2e,
+  quality, migration, build/deploy, docs, and operational test implementations are created
+  when planned.
 - Code may also add implementation-local supplemental inner tests discovered during
   Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
   characterization, table/property, adapter, or edge-case tests. These supplement, never
   replace, planned `AT-`/`JT-`/`TEST-` coverage; they stay within the current `PR-` and
-  Planned Touch Set, cite the nearest trace IDs when applicable, and use a concrete oracle.
+  Planned Touch Set, map to the nearest trace IDs in `.sdlc/test-traceability.yaml` when
+  applicable, and use a concrete oracle.
   If they imply new externally visible behavior, contract, UX/NFR, or scope, revise the
   upstream artifact first.
 - Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
@@ -332,6 +334,11 @@ python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --co
 ```
 
 If `python` is unavailable, try `python3`, then `uv run python`.
+
+`check_code.py` reads executable-test traceability from `.sdlc/test-traceability.yaml` by
+default. Use `--traceability <file>` for a project-specific map location. Use
+`--allow-inline-test-traceability` only as a temporary migration flag for older repos that
+still carry artifact IDs in test comments or docstrings.
 
 The checkers do not prove semantic correctness. Assessment commands pair verification
 evidence with qualitative review of requirements, design, plan quality, test implementation

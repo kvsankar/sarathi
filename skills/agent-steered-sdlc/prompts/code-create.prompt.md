@@ -18,7 +18,10 @@ Optimize so `/code-assess` finds nothing to fix.
    rationale when needed for cohesive, clear work. Never trim useful comments, tests, docs,
    JSDoc/docstrings, or readable structure merely to satisfy the target.
 3. **Always green** — the full suite passes before a PR is done; never leave red on trunk.
-4. **Traceable** — tests name the FR/AT/JT/COMP/TEST and PR they cover; nothing built off-plan.
+4. **Traceable without clutter** — keep tests clean and behavior-focused. Record which
+   `PR-`/`FR-`/`AT-`/`JT-`/`COMP-`/`TEST-` each test covers in
+   `.sdlc/test-traceability.yaml`; do not put traceability IDs in test names, docstrings,
+   or comments.
 5. **Production quality** — error handling, input validation, useful structured logging/
    telemetry where planned, reproducible build artifacts, deployable configuration/scripts
    when planned, accurate user/developer documentation when planned, no dead code, lint clean.
@@ -102,6 +105,13 @@ test levels before or alongside the production code using Red/Green/Refactor:
   release/migration notes, doc build, link checks, accessibility/readability, and freshness
   or version checks.
 
+Maintain `.sdlc/test-traceability.yaml` as the source of truth for executable test
+traceability. Add or update an entry for every test file/function/case introduced or
+materially changed by the PR. The map should identify the test location and the covered
+`PR-`, `FR-`, `AT-`, `JT-`, `COMP-`, and `TEST-` IDs as applicable. Keep artifact IDs out of
+test names, docstrings, and comments unless the production language or framework already
+requires metadata annotations and the team has explicitly chosen that convention.
+
 Follow the plan's test mix. Treat each assigned `TEST-` as an executable obligation, not a
 suggestion. If the planned tests are insufficient to prove the linked
 `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather
@@ -113,10 +123,11 @@ include helper or pure-core edge cases, table/property cases, parser/mapper/redu
 regression tests for a discovered bug, characterization tests around legacy boundaries, local
 adapter/error-normalization tests, and boundary fixture variations. These tests supplement,
 never replace, planned `AT-`/`JT-`/`TEST-` coverage. They must stay within the current `PR-`
-and Planned Touch Set, cite the nearest `PR-` plus relevant `FR-`/`AT-`/`JT-`/`TEST-`/
-`COMP-` when applicable, and state a concrete oracle. If a supplemental test implies new externally
-visible behavior, a changed API/event/schema/error contract, a UX/NFR expectation, or
-broader scope, stop and request the appropriate spec/design/plan update before coding it.
+and Planned Touch Set, map them to the nearest `PR-` plus relevant `FR-`/`AT-`/`JT-`/
+`TEST-`/`COMP-` in `.sdlc/test-traceability.yaml` when applicable, and state a concrete
+oracle. If a supplemental test implies new externally visible behavior, a changed API/event/
+schema/error contract, a UX/NFR expectation, or broader scope, stop and request the
+appropriate spec/design/plan update before coding it.
 
 Treat test implementation as production-quality code. Keep assertions meaningful and
 behavior-focused; make fixtures realistic and maintainable; keep helpers readable; avoid
@@ -249,11 +260,12 @@ Touch Set, stop and ask for a plan/design/spec update before editing them.
 ## Step 2 — Red
 
 Write the failing tests first. Run them; show they fail for the right reason. Test names
-must be plain, readable behaviour (e.g. `test_win_detected_on_full_row`). Put the covered
-IDs in a docstring or comment — never in the function name. One concise `Covers:` line is
-enough (e.g. `"""Covers FR-GAME-WINROW, AT-GAME-WINROW, TEST-GAME-WINROW (PR-CORE-WINROW)."""`).
-For supplemental inner tests without a direct `AT-`/`TEST-`, cite the owning `PR-` and
-nearest `COMP-`/`FR-` and state why the test is supplemental.
+must be plain, readable behaviour (e.g. `test_win_detected_on_full_row`). Do not put covered
+artifact IDs in the function name, docstring, or comments. Add the coverage mapping in
+`.sdlc/test-traceability.yaml` instead.
+For supplemental inner tests without a direct `AT-`/`TEST-`, map the owning `PR-` and
+nearest `COMP-`/`FR-` in `.sdlc/test-traceability.yaml` and state why the test is
+supplemental.
 Include a concise `Verifies:` note when it improves readability, naming the oracle being
 asserted, such as returned value, persisted row, emitted event, DOM text, screenshot
 baseline, structured log, metric, artifact, deployment dry-run result, or external call.
@@ -312,6 +324,9 @@ Use `--tests-argv` (for example `["pytest","-q","--cov=src"]`) for safe command 
 Use `--tests "<cmd>"` only for simple commands that split cleanly; use `--tests-shell` only
 when the project genuinely requires shell syntax such as pipes or compound commands, and
 document the trust boundary. Use the coverage threshold from `plan.md`/the done-definition.
+The checker reads `.sdlc/test-traceability.yaml` by default; pass `--traceability <path>`
+only when the project uses a different map location. Do not use
+`--allow-inline-test-traceability` for new work.
 Omit `--diff-base` when the checker can resolve a merge-base against the default branch;
 provide `--diff-base <base>` when the review target is known and automatic resolution is not
 right. Git diff-size and TDD evidence are required by default. Use
@@ -373,15 +388,16 @@ first completed PR boundary.
 
 ## Quality rules
 
-- Every PR maps 1:1 to a plan `PR-`; tests cover its FR/AT/JT/COMP/TEST. PRs normally stay
-  near the advisory 500 changed-LOC target or carry a clear rationale for exceeding it.
+- Every PR maps 1:1 to a plan `PR-`; `.sdlc/test-traceability.yaml` maps tests to the
+  covered FR/AT/JT/COMP/TEST IDs. PRs normally stay near the advisory 500 changed-LOC target
+  or carry a clear rationale for exceeding it.
 - Each PR implements the test levels assigned in the plan, including executable acceptance
   coverage for assigned `AT-` items and executable `TEST-` obligations for the affected
   core, component, contract, integration, UI, quality, migration, or operational behavior.
 - Supplemental inner tests discovered during implementation are allowed when they stay
-  within the current `PR-` and Planned Touch Set, cite the nearest trace IDs, use concrete
-  oracles, and do not introduce new externally visible behavior or scope without upstream
-  artifact updates.
+  within the current `PR-` and Planned Touch Set, are mapped to the nearest trace IDs in
+  `.sdlc/test-traceability.yaml`, use concrete oracles, and do not introduce new externally
+  visible behavior or scope without upstream artifact updates.
 - Test code is reviewable: meaningful assertions, realistic fixtures, clear helpers,
   deterministic setup, no tautologies, no accidental network/time/order dependence, and no
   brittle selectors except where style itself is under test.
@@ -409,5 +425,5 @@ first completed PR boundary.
 - Pre-commit or an equivalent local quality gate is configured, documented, and green.
 - Formatter, lint, type, complexity, dependency/security, coverage, and test thresholds are
   explicit and met, with documented exceptions only when the user accepts them.
-- Test names stay readable; IDs live in docstrings/comments, not in function names.
+- Test names stay readable; IDs live in `.sdlc/test-traceability.yaml`, not in test code.
 - No vague TODOs, no skipped tests, no commented-out code.

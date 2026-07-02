@@ -38,8 +38,11 @@ python checkers/check_code.py --plan plan.md --tests-argv '<json-array>' --cov-m
 ```
 
 Prefer `--tests-argv`. Use `--tests-shell` only for trusted commands that genuinely need
-shell behavior. Provide `--diff-base <base>` when the review target is known and automatic
-merge-base resolution is not right.
+shell behavior. By default, traceability is read from `.sdlc/test-traceability.yaml`; pass
+`--traceability <path>` only when the project uses a different map location. Use
+`--allow-inline-test-traceability` only as a temporary migration flag for older repos that
+still have artifact IDs in test comments/docstrings. Provide `--diff-base <base>` when the
+review target is known and automatic merge-base resolution is not right.
 
 When verifying a code gate that depends on an approved plan, add `--require-approvals`.
 This checks `.sdlc/approvals.yaml` for a hash-matched `plan.approved` record and, when the
@@ -54,8 +57,10 @@ Report:
 - `passed/total`.
 - Test pass/fail.
 - Coverage percentage.
-- PR and FR/AT/JT/COMP/TEST traceability percentages.
+- PR and FR/AT/JT/COMP/TEST traceability percentages, sourced from
+  `.sdlc/test-traceability.yaml` or the project-equivalent traceability map.
 - Assertion-traceability percentage.
+- Test traceability file status, invalid entries, and unresolved mapped test names.
 - Diff LOC and evidence source, as advisory reviewability evidence.
 - TDD evidence source.
 - Approval requirements and stale/missing approval records when `--require-approvals` is

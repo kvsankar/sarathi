@@ -2,10 +2,11 @@
 """Deterministic mechanical verifier for TDD code against a Work Plan.
 
 Runs the test suite, checks labeled coverage output, verifies every plan PR-ID
-and every spec/design FR/AT/JT/COMP/TEST is referenced by a named test, looks for
-nearby assertions, and reports git diff/TDD evidence when available. These are
-structural gates, not proof of semantic correctness. Exits 0 only when every
-gate passes. No semantic judgment, reproducible.
+and every spec/design FR/AT/JT/COMP/TEST is mapped to a test in
+.sdlc/test-traceability.yaml, looks for assertions in mapped test blocks, and
+reports git diff/TDD evidence when available. These are structural gates, not
+proof of semantic correctness. Exits 0 only when every gate passes. No semantic
+judgment, reproducible.
 
 Usage:
     python check_code.py --plan plan.md [--tests-argv '["pytest","-q"]']
@@ -14,7 +15,9 @@ Usage:
                          [--max-loc 600] [--max-diff-loc 500]
                          [--diff-base <ref>] [--allow-missing-git-evidence]
                          [--allow-missing-tdd-evidence]
+                         [--allow-inline-test-traceability]
                          [--src-ext .py,.ts,.tsx,.js,.jsx]
+                         [--traceability .sdlc/test-traceability.yaml]
                          [--spec spec.md] [--design design.md] [--json]
 """
 
@@ -36,6 +39,7 @@ from approvals import (  # noqa: E402
     approval_gate_passed,
     approval_requirement,
     load_approval_context,
+    load_yaml_file,
 )
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
@@ -85,6 +89,7 @@ TEST_START = re.compile(
     r"(?:it|test|describe)\s*\(|[\w.]+\.test\s*\()",
     re.I,
 )
+NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_ .:/\\-]{0,200}$")
 
 
 def arg(flag, default=None):
@@ -174,8 +179,30 @@ def test_blocks(test_text: str) -> list[str]:
     return ["\n".join(block) for block in blocks]
 
 
+def rel_path(path: Path, root: Path) -> str:
+    try:
+        return path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def block_matches(block: str, name: str) -> bool:
+    return name in block
+
+
 def has_nontrivial_assertion(block: str) -> bool:
     return bool(ASSERTION.search(block)) and not bool(WEAK_ASSERTION.search(block))
+
+
+def inline_traceability(
+    test_text: str, plan_prs: set[str], wanted: set[str]
+) -> tuple[set[str], set[str], set[str]]:
+    """Legacy fallback for repos that have not adopted test-traceability.yaml."""
+    seen_prs = {
+        p for p in plan_prs if p.replace("-", "_") in test_text or p in test_text
+    }
+    seen = {i for i in wanted if i in test_text or i.replace("-", "_") in test_text}
+    return seen_prs, seen, assertion_linked_ids(test_text, wanted)
 
 
 def assertion_linked_ids(test_text: str, wanted: set[str]) -> set[str]:
@@ -189,6 +216,80 @@ def assertion_linked_ids(test_text: str, wanted: set[str]) -> set[str]:
             continue
         linked.update(ids_here)
     return linked
+
+
+def _as_list(value) -> list:
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
+def traceability_from_file(
+    path: Path, test_text: str, plan_prs: set[str], wanted: set[str]
+) -> dict[str, object]:
+    """Read the external test traceability map.
+
+    Supported shape:
+
+    tests:
+      - name: test_auth
+        path: tests/test_auth.py
+        covers: [PR-AUTH-SIGNIN, FR-AUTH-SIGNIN]
+    """
+    result: dict[str, object] = {
+        "path": path.as_posix(),
+        "exists": path.exists(),
+        "load_error": None,
+        "entries": 0,
+        "invalid_entries": [],
+        "unresolved_tests": [],
+        "seen_prs": set(),
+        "seen_ids": set(),
+        "assertion_seen": set(),
+        "bad_id_format": set(),
+    }
+    if not path.exists():
+        return result
+    try:
+        data = load_yaml_file(path)
+    except Exception as exc:  # pragma: no cover - defensive error reporting
+        result["load_error"] = str(exc)
+        return result
+    entries = data.get("tests") if isinstance(data, dict) else None
+    if not isinstance(entries, list):
+        result["load_error"] = "traceability file must contain a tests list"
+        return result
+    blocks = test_blocks(test_text)
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            result["invalid_entries"].append(f"tests[{index}] must be a mapping")
+            continue
+        name = entry.get("name") or entry.get("test")
+        entry_path = entry.get("path")
+        covers = _as_list(entry.get("covers"))
+        if not isinstance(name, str) or not NAME.fullmatch(name):
+            result["invalid_entries"].append(f"tests[{index}] has invalid name")
+            continue
+        if entry_path is not None and not isinstance(entry_path, str):
+            result["invalid_entries"].append(f"tests[{index}] has invalid path")
+            continue
+        if not covers or not all(isinstance(item, str) for item in covers):
+            result["invalid_entries"].append(f"tests[{index}] has invalid covers")
+            continue
+        result["entries"] = int(result["entries"]) + 1
+        covered = set(covers)
+        result["bad_id_format"].update(
+            item for item in covered if not VALID_ANY.fullmatch(item)
+        )
+        result["seen_prs"].update(covered & plan_prs)
+        result["seen_ids"].update(covered & wanted)
+        matching_blocks = [block for block in blocks if block_matches(block, name)]
+        if not matching_blocks:
+            result["unresolved_tests"].append(name)
+            continue
+        if any(has_nontrivial_assertion(block) for block in matching_blocks):
+            result["assertion_seen"].update(covered & wanted)
+    return result
 
 
 def git_output(args: list[str], cwd: Path) -> tuple[int, str]:
@@ -277,9 +378,11 @@ def main() -> int:
     diff_base = arg("--diff-base")
     require_git = "--allow-missing-git-evidence" not in sys.argv
     require_tdd = "--allow-missing-tdd-evidence" not in sys.argv
+    allow_inline_trace = "--allow-inline-test-traceability" in sys.argv
     require_approvals = "--require-approvals" in sys.argv
     approvals_path = arg("--approvals", ".sdlc/approvals.yaml")
     gates_path = arg("--gates-policy", ".sdlc/gates.yaml")
+    traceability_path = Path(arg("--traceability", ".sdlc/test-traceability.yaml"))
     src_ext = {
         e.strip()
         for e in arg("--src-ext", ".py,.ts,.tsx,.js,.jsx").split(",")
@@ -295,21 +398,27 @@ def main() -> int:
 
     spec_path = arg("--spec", "spec.md")
     design_path = arg("--design", "design.md")
+    plan_prs = ids(plan, PR)
+    plan_text = Path(plan).read_text(encoding="utf-8") if Path(plan).exists() else ""
+    want = ids(spec_path, ID) | ids(design_path, ID)
+    traceability = traceability_from_file(traceability_path, test_text, plan_prs, want)
+    if traceability["exists"]:
+        traceability_source = "external"
+        seen_prs = set(traceability["seen_prs"])
+        seen = set(traceability["seen_ids"])
+        assertion_seen = set(traceability["assertion_seen"])
+    elif allow_inline_trace:
+        traceability_source = "inline_legacy"
+        seen_prs, seen, assertion_seen = inline_traceability(test_text, plan_prs, want)
+    else:
+        traceability_source = "missing"
+        seen_prs, seen, assertion_seen = set(), set(), set()
     bad_ids = (
         malformed_ids(plan)
         | malformed_ids(spec_path)
         | malformed_ids(design_path)
-        | malformed_ids_in_text(test_text)
+        | set(traceability["bad_id_format"])
     )
-
-    plan_prs = ids(plan, PR)
-    plan_text = Path(plan).read_text(encoding="utf-8") if Path(plan).exists() else ""
-    seen_prs = {
-        p for p in plan_prs if p.replace("-", "_") in test_text or p in test_text
-    }
-    want = ids(spec_path, ID) | ids(design_path, ID)
-    seen = {i for i in want if i in test_text or i.replace("-", "_") in test_text}
-    assertion_seen = assertion_linked_ids(test_text, want)
 
     oversized = sorted(
         str(f)
@@ -382,6 +491,15 @@ def main() -> int:
         "pr_traceability_100": seen_prs == plan_prs,
         "id_traceability_100": seen == want,
         "id_assertion_traceability_100": assertion_seen == want,
+        "test_traceability_file_ok": (
+            traceability_source == "inline_legacy"
+            or (
+                bool(traceability["exists"])
+                and traceability["load_error"] is None
+                and not traceability["invalid_entries"]
+                and not traceability["unresolved_tests"]
+            )
+        ),
         "no_oversized_modules": not oversized,
         "tdd_evidence_ok": tdd_ok if require_tdd else True,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -399,6 +517,16 @@ def main() -> int:
         "uncovered_prs": sorted(plan_prs - seen_prs),
         "uncovered_ids": sorted(want - seen),
         "ids_without_nearby_assertion": sorted(want - assertion_seen),
+        "test_traceability": {
+            "source": traceability_source,
+            "path": traceability["path"],
+            "exists": traceability["exists"],
+            "load_error": traceability["load_error"],
+            "entries": traceability["entries"],
+            "invalid_entries": traceability["invalid_entries"],
+            "unresolved_tests": traceability["unresolved_tests"],
+            "allow_inline_legacy": allow_inline_trace,
+        },
         "bad_id_format": sorted(bad_ids),
         "oversized_modules": oversized,
         "diff_loc": diff_loc,

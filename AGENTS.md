@@ -102,13 +102,17 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   obligations. This is where unit, component, contract, integration,
   UI/accessibility/visual, quality/NFR, migration, build/deploy, docs, and operational test
   implementations are written when planned.
+- `/code-create` records executable-test traceability in `.sdlc/test-traceability.yaml`.
+  Test names, docstrings, and comments should stay behavior-focused and should not carry
+  artifact IDs unless the project explicitly adopts inline metadata.
 - `/code-create` may also add implementation-local supplemental inner tests discovered
   during Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
   characterization, table/property, adapter, or edge-case tests. These supplement, never
-  replace, planned `AT-`/`JT-`/`TEST-` coverage; they must cite the nearest `PR-` plus
-  relevant `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-` when applicable, stay inside the Planned Touch Set, and use a
-  concrete oracle. If they imply new user-visible behavior, a changed contract, a UX/NFR
-  expectation, or broader scope, stop and update the upstream artifacts first.
+  replace, planned `AT-`/`JT-`/`TEST-` coverage; they must map to the nearest `PR-` plus
+  relevant `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-` in `.sdlc/test-traceability.yaml` when
+  applicable, stay inside the Planned Touch Set, and use a concrete oracle. If they imply
+  new user-visible behavior, a changed contract, a UX/NFR expectation, or broader scope,
+  stop and update the upstream artifacts first.
 - Verify and assess commands verify the same ownership chain. Review and assess commands
   stop if a downstream artifact exposes missing or incorrect upstream test intent.
 - Test implementations are code and are reviewed as code. `/code-review` and
@@ -419,8 +423,7 @@ Flags: `--json`, `--feature` (focused feature/component or slice/change mode), `
 
 [checkers/check_code.py](checkers/check_code.py) runs the test suite and enforces structural
 code/test hygiene: tests pass, labeled coverage output ≥ threshold, PR-ID and
-FR/AT/JT/COMP/TEST test-text traceability, the per-module LOC ceiling, and no
-TODO/FIXME/skip markers.
+FR/AT/JT/COMP/TEST traceability, the per-module LOC ceiling, and no TODO/FIXME/skip markers.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json
@@ -432,21 +435,25 @@ command with `python3`; if that is unavailable, retry with `uv run python`.
 Flags: `--json`, `--tests-argv <json-array>`, `--tests <cmd>`, `--tests-shell`,
 `--cov-min <n>`, `--tests-dir <dir>`, `--src <dir>`, `--max-loc <n>`,
 `--max-diff-loc <n>`, `--diff-base <ref>`, `--allow-missing-git-evidence`,
-`--allow-missing-tdd-evidence`, `--spec <file>`, `--design <file>`. Git diff-size is
-reported as advisory reviewability evidence. TDD evidence is required by default; use the
-allow flags only when the repository cannot provide that evidence and the verification/
-assessment report will state the limitation. Exits non-zero on any gate failure.
+`--allow-missing-tdd-evidence`, `--traceability <file>`,
+`--allow-inline-test-traceability`, `--spec <file>`, `--design <file>`. Test traceability
+defaults to `.sdlc/test-traceability.yaml`; inline test traceability is a migration-only
+compatibility flag. Git diff-size is reported as advisory reviewability evidence. TDD
+evidence is required by default; use the allow flags only when the repository cannot provide
+that evidence and the verification/assessment report will state the limitation. Exits
+non-zero on any gate failure.
 
 Checker limits: these scripts are deterministic structural gates. They catch missing
 sections, malformed IDs, orphan references, missing trace links, large declared PRs,
 missing Red/Green step text, unlabeled coverage output, missing same-test-block assertion
 trace IDs, large advisory git diffs against the resolved review base, and obvious skip/TODO
-markers. LOC and diff size are reviewability signals, not hard quality gates; agents must
-not cut useful comments, tests, docs, JSDoc/docstrings, or readable structure merely to fit
-the target. Red/Green text, AT scenario shape, and commit-message TDD evidence are presence
-checks; they do not prove semantic correctness, test implementation quality, or true TDD
-history. The qualitative review prompts must judge those concerns from the artifact content,
-code, tests, and available review/git evidence.
+markers. Test traceability should come from `.sdlc/test-traceability.yaml`, not artifact ID
+comments in test code. LOC and diff size are reviewability signals, not hard quality gates;
+agents must not cut useful comments, tests, docs, JSDoc/docstrings, or readable structure
+merely to fit the target. Red/Green text, AT scenario shape, and commit-message TDD evidence
+are presence checks; they do not prove semantic correctness, test implementation quality, or
+true TDD history. The qualitative review prompts must judge those concerns from the artifact
+content, code, tests, and available review/git evidence.
 
 ## Installation
 

@@ -74,10 +74,10 @@ or B for the code until the upstream issue is resolved.
 ## Verification A — Mechanical / Deterministic (run the tool)
 
 Run the checker and report its output verbatim. This is a deterministic **structural**
-check: it runs the supplied test command, parses labeled coverage output, checks ID
-traceability text in tests, and checks per-module size/TODO/skip markers. It does not prove
-test assertions are meaningful, prove real TDD order, or measure PR diff size; Verification B
-must judge those from the code, tests, and available git/review evidence.
+check: it runs the supplied test command, parses labeled coverage output, checks test
+traceability evidence, and checks per-module size/TODO/skip markers. It does not prove test
+assertions are meaningful, prove real TDD order, or measure PR diff size; Verification B
+must judge those from the code, traceability map, tests, and available git/review evidence.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '<json-array>' --cov-min <n> --json
@@ -88,13 +88,16 @@ failures and fall back to manual checks where possible.
 
 Always provide `--tests-argv` when possible. Use `--tests` only for simple split-safe
 commands, and use `--tests-shell` only for trusted commands that genuinely need shell
-features. The gate fails if no test command runs or if no coverage percentage is found in
-labeled coverage output. By default, the checker tries to resolve a review base using the
-merge-base with the remote/local default branch. Provide `--diff-base <base>` when the
-review target is known and automatic resolution is not right. If no review base can be
-resolved, actual PR size is reported as unverified; use `--allow-missing-git-evidence` only
-for non-git or intentionally evidence-poor reviews and state that limitation. TDD evidence
-from git log is also required by default; use
+features. By default, traceability is read from `.sdlc/test-traceability.yaml`; pass
+`--traceability <path>` only when the project uses a different map location. Use
+`--allow-inline-test-traceability` only as a temporary migration flag for older repos that
+still have artifact IDs in test comments/docstrings. The gate fails if no test command runs
+or if no coverage percentage is found in labeled coverage output. By default, the checker
+tries to resolve a review base using the merge-base with the remote/local default branch.
+Provide `--diff-base <base>` when the review target is known and automatic resolution is not
+right. If no review base can be resolved, actual PR size is reported as unverified; use
+`--allow-missing-git-evidence` only for non-git or intentionally evidence-poor reviews and
+state that limitation. TDD evidence from git log is also required by default; use
 `--allow-missing-tdd-evidence` only when Red/Green history is unavailable and state that
 limitation. The checker exits `0` only if every structural gate passes and emits metrics:
 
@@ -102,11 +105,14 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 - **coverage_pct** — line coverage ≥ `--cov-min` (default 80).
 - **bad_id_format** — ID-looking tokens that are not slug-only, including trailing numeric
   IDs, must be empty.
-- **pr_traceability_pct** — every plan PR-ID is referenced by ≥1 test. Must be 100%.
-- **id_traceability_pct** — every FR/AT/JT/COMP/TEST appears in a test docstring/comment. Must
-  be 100%.
-- **id_assertion_traceability_pct** — every FR/AT/JT/COMP/TEST appears in the same
-  test/function block as a non-trivial assertion-like statement. Must be 100%.
+- **test_traceability** — source/path/status for `.sdlc/test-traceability.yaml`, including
+  invalid entries or test names that could not be matched to executable test blocks.
+- **pr_traceability_pct** — every plan PR-ID maps to ≥1 test in the external traceability
+  evidence. Must be 100%.
+- **id_traceability_pct** — every FR/AT/JT/COMP/TEST maps to ≥1 test in
+  `.sdlc/test-traceability.yaml` or an equivalent project traceability map. Must be 100%.
+- **id_assertion_traceability_pct** — every FR/AT/JT/COMP/TEST maps to a test that contains
+  a non-trivial assertion-like statement. Must be 100%.
 - **oversized_modules** — files exceeding the LOC ceiling. Must be empty.
 - **diff_loc / diff_evidence / oversized_diff / diff_size_advisory** — actual added+deleted
   lines from `git diff --numstat` when git evidence is available. This is advisory
@@ -123,6 +129,9 @@ diff evidence, and TDD evidence. List every uncovered PR/ID, ID without nearby a
 failing/skipped test, oversized module, and large diff explicitly. Do not recommend cutting
 useful comments, tests, docs, JSDoc/docstrings, or readable structure merely to fit a diff
 target.
+Flag artifact IDs in test names, docstrings, or comments as code clutter unless the project
+has explicitly chosen inline metadata. If `--allow-inline-test-traceability` was used, state
+that the run used legacy compatibility and recommend migration to `.sdlc/test-traceability.yaml`.
 
 ## Verification A2 — Pre-Commit / Local Quality Gates
 
@@ -206,9 +215,10 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   readability, maintainability, and false-positive/false-negative risk.
 - **Supplemental inner test quality** — code-discovered helper, pure-core, parser, mapper,
   regression, characterization, property/table, adapter, or edge-case tests supplement the
-  planned coverage, cite the nearest `PR-` and relevant `FR-`/`AT-`/`JT-`/`TEST-`/
-  `COMP-`, stay within the Planned Touch Set, use concrete oracles, and do not smuggle
-  product-visible behavior or contract/UX/NFR changes past the upstream artifacts.
+  planned coverage, are mapped in `.sdlc/test-traceability.yaml` to the nearest `PR-` and
+  relevant `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-`, stay within the Planned Touch Set, use concrete
+  oracles, and do not smuggle product-visible behavior or contract/UX/NFR changes past the
+  upstream artifacts.
 - **Verification-oracle rigor** — every test has a concrete pass/fail oracle aligned with
   the design/plan, such as return values, state changes, persisted records, emitted events,
   API responses, DOM/accessibility output, screenshots/visual baselines, generated
@@ -245,9 +255,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Design fidelity** — matches COMP boundaries; pure core stays pure; no layering breaks.
 - **Planned scope fidelity** — changed files/sections stay within each PR's Planned Touch Set;
   any out-of-scope edit is flagged as a plan/design/spec revision need, not accepted silently.
-- **Readability** — plain test names (IDs in docstrings, not crammed into names), clear
-  structure, no dead code. Test helpers and fixtures should reduce drift and duplication
-  without obscuring the behavior being asserted.
+- **Readability** — plain test names, clear structure, no dead code, and no traceability ID
+  clutter in test names, docstrings, or comments. Test helpers and fixtures should reduce
+  drift and duplication without obscuring the behavior being asserted.
 - **Production quality** — error handling, validation, logging/telemetry, NFRs met,
   artifacts are reproducible, config/secrets are handled safely, documentation matches
   behavior, and deployment/rollback behavior is credible.
