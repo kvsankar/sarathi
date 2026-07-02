@@ -7,7 +7,9 @@ agent: agent
 
 Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
 tested, documented, production code. Build **one PR at a time**, in plan order, using TDD
-for behavior changes. Optimize so `/code-assess` finds nothing to fix.
+for behavior changes. Aim to pass `/code-assess` honestly: do not tailor code,
+traceability maps, approval records, boundary declarations, or git history to checker
+blind spots. The assessment is supposed to find risks that structural gates cannot.
 
 ## Core principles (the code is judged against these)
 
@@ -22,7 +24,8 @@ for behavior changes. Optimize so `/code-assess` finds nothing to fix.
 4. **Traceable without clutter** — keep tests clean and behavior-focused. Record which
    `PR-`/`FR-`/`AT-`/`JT-`/`COMP-`/`TEST-` each test covers in
    `.sdlc/test-traceability.yaml`; do not put traceability IDs in test names, docstrings,
-   or comments.
+   or comments. Treat this file as a structured traceability claim, not independent proof;
+   the tests themselves must still contain meaningful oracles.
 5. **Production quality** — error handling, input validation, useful structured logging/
    telemetry where planned, reproducible build artifacts, deployable configuration/scripts
    when planned, accurate user/developer documentation when planned, no dead code, lint clean.
@@ -144,7 +147,9 @@ traceability. Add or update an entry for every test file/function/case introduce
 materially changed by the PR. The map should identify the test location and the covered
 `PR-`, `FR-`, `AT-`, `JT-`, `COMP-`, and `TEST-` IDs as applicable. Keep artifact IDs out of
 test names, docstrings, and comments unless the production language or framework already
-requires metadata annotations and the team has explicitly chosen that convention.
+requires metadata annotations and the team has explicitly chosen that convention. The map is
+a local project claim used by checkers and reviewers; it must be accurate, but it does not by
+itself prove that a test exercises the claimed behavior.
 
 Follow the plan's test mix. Treat each assigned `TEST-` as an executable obligation, not a
 suggestion. If the planned tests are insufficient to prove the linked

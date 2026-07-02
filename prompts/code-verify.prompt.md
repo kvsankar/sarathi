@@ -47,7 +47,8 @@ review target is known and automatic merge-base resolution is not right.
 When verifying a code gate that depends on an approved plan, add `--require-approvals`.
 This checks `.sdlc/approvals.yaml` for a hash-matched `plan.approved` record and, when the
 plan declares UI work with a mock dependency, a hash-matched `ux.mock.approved` record. UTC
-`approved_at` timestamps are required.
+`approved_at` timestamps are required. This verifies the structure and freshness of a local
+attestation record; it does not prove human intent or external consent.
 
 Report:
 
@@ -59,14 +60,19 @@ Report:
 - Coverage percentage.
 - PR and FR/AT/JT/COMP/TEST traceability percentages, sourced from
   `.sdlc/test-traceability.yaml` or the project-equivalent traceability map.
+- Note that the traceability map is a structured project claim, not independent proof of
+  semantic coverage.
 - Assertion-traceability percentage.
 - Test traceability file status, invalid entries, and unresolved mapped test names.
 - External boundary verification from `.sdlc/test-traceability.yaml`: each entry may declare
   `boundary`, `level`, `uses_double`, `real_boundary`, and `type_conformance`. If a boundary
   has tests that use a double, at least one mapped test for the same boundary must be a
-  real-boundary or type-conformance check.
+  real-boundary or type-conformance check. Treat these flags as declarations and report the
+  concrete command/test evidence behind them.
 - Diff LOC and evidence source, as advisory reviewability evidence.
-- TDD evidence source.
+- TDD evidence source. The checker recognizes explicit `TDD: red` and `TDD: green`
+  commit-message lines/trailers; ordinary words such as "implementation" or "failing test"
+  do not count.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 - Bad ID format, oversized modules, large advisory diffs, failing/skipped tests,

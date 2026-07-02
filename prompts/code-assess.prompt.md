@@ -78,6 +78,10 @@ check: it runs the supplied test command, parses labeled coverage output, checks
 traceability evidence, and checks per-module size/TODO/skip markers. It does not prove test
 assertions are meaningful, prove real TDD order, or measure PR diff size; Verification B
 must judge those from the code, traceability map, tests, and available git/review evidence.
+Traceability maps, approval ledgers, and `real_boundary`/`type_conformance` flags are local
+structured claims. The checker can validate shape, freshness, and internal consistency; it
+cannot prove human intent, semantic coverage, or that a boundary really ran against the
+vendor/system named by the claim.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '<json-array>' --cov-min <n> --json
@@ -108,11 +112,15 @@ limitation. The checker exits `0` only if every structural gate passes and emits
 - **test_traceability** — source/path/status for `.sdlc/test-traceability.yaml`, including
   invalid entries or test names that could not be matched to executable test blocks.
 - **pr_traceability_pct** — every plan PR-ID maps to ≥1 test in the external traceability
-  evidence. Must be 100%.
+  evidence. Structural completeness must be 100%, but this is a claim map that still needs
+  qualitative spot-checking against test bodies.
 - **id_traceability_pct** — every FR/AT/JT/COMP/TEST maps to ≥1 test in
-  `.sdlc/test-traceability.yaml` or an equivalent project traceability map. Must be 100%.
+  `.sdlc/test-traceability.yaml` or an equivalent project traceability map. Structural
+  completeness must be 100%, but this does not prove the mapped tests are semantically
+  sufficient.
 - **id_assertion_traceability_pct** — every FR/AT/JT/COMP/TEST maps to a test that contains
-  a non-trivial assertion-like statement. Must be 100%.
+  a non-trivial assertion-like statement. Structural completeness must be 100%; review must
+  still judge whether the assertion is a real oracle.
 - **oversized_modules / module_size_advisory** — files exceeding `--max-loc`. This is
   advisory by default; it fails only when the project explicitly uses `--enforce-max-loc`.
   Do not recommend mechanically splitting cohesive modules merely to fit the target.
@@ -121,11 +129,14 @@ limitation. The checker exits `0` only if every structural gate passes and emits
   reviewability evidence, not a hard gate. If unavailable, qualitative review must say
   actual PR size was not independently verified.
 - **tdd_evidence** — Red/Green presence markers from git log between the review base and
-  `HEAD`. This is a presence check, not proof that tests really failed before implementation;
+  `HEAD`. The checker recognizes explicit `TDD: red` and `TDD: green` lines or trailers.
+  This is a presence check, not proof that tests really failed before implementation;
   qualitative review must confirm TDD authenticity.
 - **code_markers / marker_approval_requirements** — TODO/FIXME/XXX/skip/xfail markers
-  found in code or tests. These must be surfaced to the user and approved through
-  `code.markers.approved` before proceeding.
+  found in code or tests. Plain English words such as "skip blank lines" are not markers;
+  explicit skip/xfail constructs and TODO-style markers are. These must be surfaced to the
+  user and approved through `code.markers.approved`, keyed to the current marker inventory,
+  before proceeding.
 - **gates** + `passed/total`.
 
 Present the JSON, then `passed/total`, coverage %, traceability %, assertion-traceability %,
@@ -136,6 +147,10 @@ JSDoc/docstrings, or readable structure merely to fit a diff target.
 Flag artifact IDs in test names, docstrings, or comments as code clutter unless the project
 has explicitly chosen inline metadata. If `--allow-inline-test-traceability` was used, state
 that the run used legacy compatibility and recommend migration to `.sdlc/test-traceability.yaml`.
+Spot-check the traceability map by reading at least three mapped tests, or all mapped tests
+when fewer than three exist. For each external boundary flagged as `real_boundary` or
+`type_conformance`, identify the concrete command/test evidence that would fail if the local
+mirror drifted from the real contract. If the answer is "none," fail the assessment.
 
 ## Verification A2 — Pre-Commit / Local Quality Gates
 

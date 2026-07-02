@@ -24,6 +24,10 @@ generating an artifact.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
 
+Shared lifecycle policy lives in [docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md).
+Prompt authors should use [docs/process-maintenance.md](docs/process-maintenance.md) to keep
+new concerns from bloating every stage prompt.
+
 ## Install
 
 Run from the cloned repository root.
@@ -301,18 +305,20 @@ assumptions, risks, and trade-offs. YOLO does not bypass readiness gates, planne
 quality gates, safety constraints, or the default review pause unless you explicitly ask for
 end-to-end unattended continuation.
 
-## Deterministic Approval Gates
+## Approval Attestation Gates
 
-Projects can make human gates mechanically checkable with local YAML files:
+Projects can make gate attestations mechanically checkable with local YAML files:
 
-- `.sdlc/approvals.yaml` records approved artifacts, approvers, UTC timestamps, and SHA-256
-  hashes.
+- `.sdlc/approvals.yaml` records local approval attestations, approvers, UTC timestamps, and
+  SHA-256 hashes.
 - `.sdlc/gates.yaml` optionally enables bounded auto-approval for low-risk modes such as
   internal prototypes.
 
 Checkers support `--require-approvals` for downstream gate runs. The approval is valid only
 when the ledger entry matches the gate, artifact path, status, UTC `approved_at`, and current
-artifact hash. Stale hashes fail. No ticketing system is required.
+artifact hash. Stale hashes fail. No ticketing system is required. This proves structure and
+freshness of a local record, not human identity, intent, or external consent; reports must
+show whether a gate was approved by a named user or by local auto-approval policy.
 
 See [docs/approval-gates.md](docs/approval-gates.md).
 
@@ -342,7 +348,8 @@ Test responsibility is split by artifact:
   traceability in `.sdlc/test-traceability.yaml` rather than cluttering test code with
   artifact IDs. This is where unit, component, contract, integration, UI, journey/e2e,
   quality, migration, build/deploy, docs, and operational test implementations are created
-  when planned.
+  when planned. The traceability file is a structured project claim; reviewers still
+  spot-check mapped tests and oracles.
 - Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
   when planned or explicitly accepted: generated code only, docs-only, formatting-only,
   build/deploy config validation, and characterization before legacy refactor. Each
@@ -397,13 +404,16 @@ default. Use `--traceability <file>` for a project-specific map location. Use
 still carry artifact IDs in test comments or docstrings.
 Traceability entries may also include `boundary`, `level`, `uses_double`, `real_boundary`,
 and `type_conformance`. If tests for a boundary use a double, at least one test for that
-same boundary must be marked as a real-boundary or type-conformance check.
+same boundary must be marked as a real-boundary or type-conformance check. Those fields are
+declarations, not proof; `/code-review` and `/code-assess` must identify the concrete
+command/test evidence behind them.
 Module size is advisory by default. Use `--enforce-max-loc` only when a project explicitly
 opts into a hard module-size gate; otherwise review oversized modules as maintainability
 signals and avoid mechanical file splitting.
 TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not
 add SDLC-specific annotations to app code. If markers remain, downstream progress requires
-explicit human approval through `code.markers.approved`.
+explicit approval attestation through `code.markers.approved`, keyed to the marker inventory
+hash.
 
 The checkers do not prove semantic correctness. Assessment commands pair verification
 evidence with qualitative review of requirements, design, plan quality, test implementation

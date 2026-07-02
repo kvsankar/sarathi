@@ -28,6 +28,10 @@ Command verbs have distinct meanings:
 - `review`: make the qualitative adversarial judgment using available evidence.
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
+For cross-cutting concerns and prompt maintenance, prefer the shared source docs in this
+repository (`docs/cross-cutting-concerns.md` and `docs/process-maintenance.md`) over copying
+long policy blocks into every stage prompt.
+
 ## Workflow
 
 Select the narrowest command that matches the user's current artifact:
@@ -103,12 +107,14 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 - After creating or materially revising any spec, design, ADR, plan, code slice, or review
   report, pause for human review before starting the next downstream stage. The pause is a
   hard collaboration boundary, even when the generated artifact passes mechanical checks.
-- When a project has `.sdlc/approvals.yaml`, use it as the deterministic approval ledger for
+- When a project has `.sdlc/approvals.yaml`, use it as the local approval attestation ledger for
   downstream gates. Approval records must include gate, scope, artifact path, artifact
   SHA-256, status, approver, and UTC `approved_at` timestamp such as
   `2026-07-01T14:32:18Z`. Run checkers with `--require-approvals` when crossing into a
   downstream phase. Do not require approvals while drafting the artifact that is about to be
-  reviewed by the user.
+  reviewed by the user. The ledger proves only that a local attestation record is
+  well-formed and hash-current; it does not prove human intent, identity, or external
+  consent. Reports must make the approval source visible, including auto-approval.
 - When the user explicitly approves an artifact or mock, create or update the matching
   `.sdlc/approvals.yaml` record immediately: `spec.approved` for specs, `design.approved`
   for designs, `plan.approved` for plans, `ux.mock.approved` for required mock UI artifacts,
@@ -177,8 +183,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   tests. These supplement, never replace, planned `AT-`/`JT-`/`TEST-` coverage. They must
   stay within the current `PR-` and Planned Touch Set, map to the nearest `PR-` plus
   relevant `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-` in `.sdlc/test-traceability.yaml` when
-  applicable, and use a concrete oracle. Keep artifact IDs out of test names, docstrings,
-  and comments unless the project explicitly adopts inline metadata. If a supplemental test
+  applicable, and use a concrete oracle. Treat the traceability file as a structured local
+  claim that reviewers must spot-check against test bodies and oracles. Keep artifact IDs
+  out of test names, docstrings, and comments unless the project explicitly adopts inline
+  metadata. If a supplemental test
   implies new externally visible behavior, a changed contract, a UX/NFR expectation, or
   broader scope, stop and revise the spec/design/plan before coding it. Executable tests are
   implementation code: their verification oracles, assertions, fixtures, helpers, mocks,
@@ -193,8 +201,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   evidence must flag the residual risk and tie the double back to reality through a
   real-boundary smoke/integration test, official conformance harness, type-conformance
   check, generated schema/client, vendor sandbox/emulator, captured real fixture, or
-  explicit user-approved limitation. A primary integration seam must not be covered only by
-  a self-authored double unless the user explicitly accepts that risk.
+  explicit user-approved limitation. Treat `real_boundary` and `type_conformance` fields as
+  declarations; verification/review must name the concrete command or test evidence behind
+  them. A primary integration seam must not be covered only by a self-authored double unless
+  the user explicitly accepts that risk.
 - Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
   when planned or explicitly accepted: generated code only, docs-only, formatting-only,
   build/deploy config validation, and characterization before legacy refactor. Generated
@@ -297,14 +307,17 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   PRs, missing Red/Green step text, unlabeled coverage output, missing same-test-block
   assertion trace IDs, large advisory git diffs against the resolved review base, and
   obvious skip/TODO markers. Test traceability should come from
-  `.sdlc/test-traceability.yaml`, not artifact ID comments in test code. LOC, module size,
+  `.sdlc/test-traceability.yaml`, not artifact ID comments in test code. Treat that file,
+  approval ledgers, and boundary flags as structured claims, not proof of semantic
+  correctness or human consent. LOC, module size,
   and diff size are reviewability signals, not hard quality gates unless the project
   explicitly opts into `--enforce-max-loc` or a stricter repo standard. Agents must not cut
   useful comments, tests, docs, JSDoc/docstrings, readable structure, or cohesive module
   boundaries merely to fit the target. TODO/FIXME/XXX/skip/xfail markers are rejected unless
   the user explicitly approves them for the current code slice. Do not add SDLC-specific
   annotations to app code. If markers remain, surface their file, line, marker, and text,
-  then require `code.markers.approved` before downstream progress. Git diff-size is reported by default
+  then require `code.markers.approved` keyed to the current marker inventory before
+  downstream progress. Git diff-size is reported by default
   in code verify/assess; TDD evidence is required by default. Use allow-missing flags only
   when the repo cannot provide that evidence and the report states the limitation. Red/Green
   text, AT scenario shape, and commit-message TDD evidence are presence checks; they do not

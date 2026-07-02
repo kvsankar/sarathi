@@ -1,16 +1,21 @@
 # Approval Gates
 
-Agent-Steered SDLC supports local, deterministic approval gates through YAML files under
+Agent-Steered SDLC supports local approval attestation gates through YAML files under
 `.sdlc/`. These files are project-local and do not depend on Jira, GitHub Issues, Azure
 Boards, or any other ticketing system.
 
+The checker verifies that an approval record is well-formed, UTC timestamped, and current
+for the artifact bytes it names. It does **not** prove human intent, identity, or external
+consent. Treat the ledger as a structured local attestation that must be visible in reports,
+not as an authority system.
+
 ## Files
 
-- `.sdlc/approvals.yaml` records human or auto approvals.
+- `.sdlc/approvals.yaml` records local human or auto approval attestations.
 - `.sdlc/gates.yaml` optionally enables bounded auto-approval policy.
 
-Approval records approve exact artifact bytes. If an approved artifact changes, its hash no
-longer matches and the approval is stale.
+Approval records attest to exact artifact bytes. If an approved artifact changes, its hash
+no longer matches and the approval is stale.
 
 ## Approval Ledger
 
@@ -97,7 +102,8 @@ auto_approval:
 ```
 
 An auto-approved record uses `status: auto-approved`, `approved_by: AUTO`, a UTC
-`approved_at`, and a reason.
+`approved_at`, and a reason. Auto approval is a local policy shortcut, not human approval;
+reports must say when a gate passed through auto approval.
 
 ## Checker Use
 
@@ -111,3 +117,7 @@ python checkers/check_code.py --plan plan.md --require-approvals --tests-argv '[
 
 Use `--approvals <path>` or `--gates-policy <path>` when a project stores the YAML files
 somewhere other than `.sdlc/`.
+
+Marker approvals use the same ledger but bind to a marker inventory hash rather than a
+source file hash. This prevents an approval for one TODO/skip inventory from silently
+covering a different inventory later.

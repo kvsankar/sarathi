@@ -10,7 +10,9 @@ This is a prompt, skill, and checker repository. Canonical source files live in:
 - [docs](docs): user-facing overview pages, including
   [agent-steered-sdlc.html](docs/agent-steered-sdlc.html) and
   [review-verification-checklist.md](docs/review-verification-checklist.md). Numbered-ID
-  migration guidance lives in [slug-id-migration.md](docs/slug-id-migration.md).
+  migration guidance lives in [slug-id-migration.md](docs/slug-id-migration.md). Shared
+  concern ownership lives in [cross-cutting-concerns.md](docs/cross-cutting-concerns.md);
+  prompt maintenance guidance lives in [process-maintenance.md](docs/process-maintenance.md).
 - [prompts](prompts): reusable stage prompt definitions. Some host tools expose these as
   slash commands; others expose them as prompt files, skills, or natural-language stages.
 - [skills](skills): native skill bundles such as `agent-steered-sdlc`.
@@ -113,10 +115,14 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
 - For external systems, prefer tests against the real dependency or its official conformance
   surface. A test double is a liability until something ties it to reality. A primary
   integration seam must not be covered only by a self-authored double unless the user
-  explicitly accepts the residual verification risk.
+  explicitly accepts the residual verification risk. Treat `real_boundary` and
+  `type_conformance` traceability fields as declarations; verification/review must name the
+  concrete command or test evidence behind them.
 - `/code-create` records executable-test traceability in `.sdlc/test-traceability.yaml`.
   Test names, docstrings, and comments should stay behavior-focused and should not carry
-  artifact IDs unless the project explicitly adopts inline metadata.
+  artifact IDs unless the project explicitly adopts inline metadata. Treat the traceability
+  file as a structured local claim that reviewers must spot-check against test bodies and
+  oracles.
 - `/code-create` may also add implementation-local supplemental inner tests discovered
   during Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
   characterization, table/property, adapter, or edge-case tests. These supplement, never
@@ -363,9 +369,9 @@ bypass readiness gates, Planned Touch Sets, upstream-blocker stops, safety const
 the default human-review pause after each generated artifact unless the user separately asks
 for end-to-end continuation.
 
-## Deterministic approval gates
+## Approval attestation gates
 
-Human gates can be made mechanically checkable with project-local YAML files:
+Gate attestations can be made mechanically checkable with project-local YAML files:
 
 - `.sdlc/approvals.yaml` records `gate`, `scope`, artifact `path`, artifact `sha256`,
   `status`, `approved_by`, and UTC `approved_at` timestamps such as
@@ -377,7 +383,9 @@ Human gates can be made mechanically checkable with project-local YAML files:
 Use checker `--require-approvals` on downstream gate checks. Approval is valid only when the
 ledger entry matches the gate and current artifact hash; changed artifacts make approvals
 stale. Do not require approvals while drafting the artifact that is about to be reviewed by
-the user.
+the user. The ledger proves only that a local attestation record is well-formed and
+hash-current; it does not prove human intent, identity, or external consent. Reports must
+make the approval source visible, including any `status: auto-approved` policy use.
 
 When the user explicitly approves an artifact or mock, create or update the matching
 approval record immediately. Use `spec.approved` for specs, `design.approved` for designs,
@@ -511,8 +519,11 @@ missing Red/Green step text, unlabeled coverage output, missing same-test-block 
 trace IDs, large advisory git diffs against the resolved review base, and obvious skip/TODO
 markers. Do not add SDLC-specific marker annotations to app code. If markers remain, the
 checker surfaces their file, line, marker, and text; downstream progress requires explicit
-human approval through `code.markers.approved`. Test traceability should come from
-`.sdlc/test-traceability.yaml`, not artifact ID comments in test code. LOC, module size, and
+approval attestation through `code.markers.approved`, keyed to the current marker inventory.
+Test traceability should come from
+`.sdlc/test-traceability.yaml`, not artifact ID comments in test code. Treat that file,
+approval ledgers, and boundary flags as structured claims, not proof of semantic correctness
+or human consent. LOC, module size, and
 diff size are reviewability signals, not hard quality gates unless the project explicitly
 opts into `--enforce-max-loc` or a stricter repo standard. Agents must not cut useful
 comments, tests, docs, JSDoc/docstrings, readable structure, or cohesive module boundaries

@@ -7,8 +7,10 @@ agent: agent
 
 Your job is to produce a **Work Plan** that either decomposes broad work into smaller
 code-ready work items or turns an already code-ready slice/change into tested,
-production-quality code delivered as small pull requests. Optimize so `/plan-assess` finds
-nothing to fix.
+production-quality code delivered as small pull requests. Aim to pass `/plan-assess`
+honestly: do not tailor the plan, traceability intent, approval records, boundary
+declarations, or review evidence to checker blind spots. The assessment is supposed to find
+risks that structural gates cannot.
 
 ## Core principles (the plan is judged against these)
 

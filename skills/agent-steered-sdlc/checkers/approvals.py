@@ -2,7 +2,8 @@
 
 The approval ledger is intentionally local and tool-agnostic. Projects may store
 ticket or PR links as evidence, but the mechanical gate only trusts local YAML,
-UTC timestamps, and artifact hashes.
+UTC timestamps, and artifact hashes. The ledger proves that a local attestation
+record is well-formed and hash-current; it does not prove human intent or consent.
 """
 
 from __future__ import annotations
@@ -61,7 +62,7 @@ def _yaml_subset(text: str) -> Any:
 
     Supports nested mappings, lists of mappings, scalars, quoted strings,
     booleans, integers, nulls, and simple inline lists. It is not a general YAML
-    parser; if PyYAML is installed, `load_yaml_file` uses that instead.
+    parser.
     """
 
     lines: list[tuple[int, str]] = []
@@ -240,12 +241,18 @@ def validate_approval_record(
     for key in ("kind", "path", "sha256"):
         if not artifact.get(key):
             issues.append(f"artifact missing {key}")
-    artifact_path = project_root / str(artifact.get("path", ""))
-    actual_hash = sha256_file(artifact_path)
-    if actual_hash is None:
-        issues.append(f"artifact path does not exist: {artifact.get('path')}")
-    elif artifact.get("sha256") != actual_hash:
-        issues.append(f"artifact hash is stale: {artifact.get('path')}")
+    if artifact.get("kind") == "marker-inventory":
+        if not re.fullmatch(r"[0-9a-f]{64}", str(artifact.get("sha256", ""))):
+            issues.append(
+                "marker inventory sha256 must be a lowercase SHA-256 hex digest"
+            )
+    else:
+        artifact_path = project_root / str(artifact.get("path", ""))
+        actual_hash = sha256_file(artifact_path)
+        if actual_hash is None:
+            issues.append(f"artifact path does not exist: {artifact.get('path')}")
+        elif artifact.get("sha256") != actual_hash:
+            issues.append(f"artifact hash is stale: {artifact.get('path')}")
     if record.get("status") == "auto-approved":
         issues.extend(_policy_allows(record, gates_policy or {}))
     return issues
@@ -303,6 +310,8 @@ def approval_requirement(
     gate: str,
     artifact_path: str | Path,
     scope: str | None = None,
+    artifact_kind: str | None = None,
+    expected_sha256: str | None = None,
 ) -> dict[str, Any]:
     wanted = _norm_project_path(project_root, artifact_path)
     result: dict[str, Any] = {
@@ -312,6 +321,9 @@ def approval_requirement(
         "approved": False,
         "approval_id": None,
         "status": None,
+        "evidence_semantics": (
+            "hash-current local attestation, not proof of human consent"
+        ),
         "issues": [],
     }
     if context.get("load_error"):
@@ -333,7 +345,11 @@ def approval_requirement(
             continue
         if scope is not None and record.get("scope") != scope:
             continue
+        if artifact_kind is not None and artifact.get("kind") != artifact_kind:
+            continue
         if _norm_project_path(project_root, str(artifact.get("path", ""))) != wanted:
+            continue
+        if expected_sha256 is not None and artifact.get("sha256") != expected_sha256:
             continue
         result["approval_id"] = record.get("id")
         result["status"] = record.get("status")

@@ -117,6 +117,18 @@ def test_extract_coverage_prefers_total_line_over_later_percent():
     assert check_code.extract_coverage(output) == 100.0
 
 
+def test_extract_coverage_reads_istanbul_all_files_row():
+    check_code = load_check_code()
+    output = """
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   85.71 |       50 |     100 |   85.71 |
+-------------------|---------|----------|---------|---------|-------------------
+"""
+    assert check_code.extract_coverage(output) == 85.71
+
+
 def test_check_code_default_coverage_threshold_is_80(tmp_path, monkeypatch, capsys):
     rc, report = run_check_code(
         tmp_path,
@@ -268,6 +280,38 @@ approvals:
 
 def test_check_code_rejects_tautological_assertion(tmp_path, monkeypatch, capsys):
     weak_test = "def test_auth():\n    assert 1 == 1\n"
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        weak_test,
+    )
+
+    assert rc == 1
+    assert report["gates"]["id_assertion_traceability_100"] is False
+
+
+def test_check_code_rejects_symbolic_tautological_assertions(
+    tmp_path, monkeypatch, capsys
+):
+    weak_test = "def test_auth():\n    x = 'granted'\n    assert x == x\n"
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        weak_test,
+    )
+
+    assert rc == 1
+    assert report["gates"]["id_assertion_traceability_100"] is False
+
+
+def test_check_code_rejects_non_negative_length_oracle(tmp_path, monkeypatch, capsys):
+    weak_test = "def test_auth():\n    result = []\n    assert len(result) >= 0\n"
 
     rc, report = run_check_code(
         tmp_path,
@@ -434,7 +478,32 @@ def test_check_code_surfaces_markers_for_approval(tmp_path, monkeypatch, capsys)
     assert report["marker_approval_requirements"][0]["gate"] == (
         "code.markers.approved"
     )
-    assert report["marker_approval_requirements"][0]["artifact"].endswith("plan.md")
+    assert report["marker_approval_requirements"][0]["artifact"] == (
+        "code-marker-inventory"
+    )
+    assert report["marker_inventory_sha256"]
+
+
+def test_check_code_does_not_treat_plain_english_skip_as_marker(
+    tmp_path, monkeypatch, capsys
+):
+    test_body = (
+        "def test_auth():\n"
+        "    # we skip blank lines in the parser fixture\n"
+        "    result = 'granted'\n"
+        "    assert result == 'granted'\n"
+    )
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        test_body=test_body,
+    )
+
+    assert rc == 0
+    assert report["code_markers"] == []
 
 
 def test_check_code_accepts_approved_markers(tmp_path, monkeypatch, capsys):
@@ -443,16 +512,25 @@ def test_check_code_accepts_approved_markers(tmp_path, monkeypatch, capsys):
         "    result = 'granted'  # TODO remove fixture shortcut\n"
         "    assert result == 'granted'\n"
     )
-    plan_hash = hashlib.sha256(b"- PR-AUTH-SIGNIN\n").hexdigest()
+    module = load_check_code()
+    marker_inventory = [
+        {
+            "path": "tests/test_auth.py",
+            "line": 2,
+            "marker": "TODO",
+            "text": "result = 'granted'  # TODO remove fixture shortcut",
+        }
+    ]
+    marker_hash = module.marker_inventory_hash(marker_inventory)
     approvals = f"""version: 1
 approvals:
   - id: APR-MARKERS
     gate: code.markers.approved
     scope: slice/change
     artifact:
-      kind: plan
-      path: plan.md
-      sha256: {plan_hash}
+      kind: marker-inventory
+      path: code-marker-inventory
+      sha256: {marker_hash}
     status: approved
     approved_by: Test User
     approved_at: "2026-07-01T12:00:00Z"
@@ -470,6 +548,44 @@ approvals:
     assert rc == 0
     assert report["gates"]["markers_approved"] is True
     assert report["marker_approval_requirements"][0]["issues"] == []
+
+
+def test_check_code_rejects_stale_marker_inventory_approval(
+    tmp_path, monkeypatch, capsys
+):
+    test_body = (
+        "def test_auth():\n"
+        "    result = 'granted'  # TODO remove fixture shortcut\n"
+        "    assert result == 'granted'\n"
+    )
+    approvals = """version: 1
+approvals:
+  - id: APR-MARKERS
+    gate: code.markers.approved
+    scope: slice/change
+    artifact:
+      kind: marker-inventory
+      path: code-marker-inventory
+      sha256: 0000000000000000000000000000000000000000000000000000000000000000
+    status: approved
+    approved_by: Test User
+    approved_at: "2026-07-01T12:00:00Z"
+"""
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 80%')"],
+        monkeypatch,
+        capsys,
+        test_body=test_body,
+        approvals_body=approvals,
+    )
+
+    assert rc == 1
+    assert report["gates"]["markers_approved"] is False
+    assert report["marker_approval_requirements"][0]["issues"] == [
+        "matching approval not found"
+    ]
 
 
 def test_check_code_rejects_double_only_external_boundary(
@@ -608,10 +724,10 @@ def test_git_tdd_evidence_reads_red_and_green_markers(tmp_path):
     git(tmp_path, "commit", "-m", "baseline")
     source.write_text("one\ntest\n", encoding="utf-8")
     git(tmp_path, "add", "app.py")
-    git(tmp_path, "commit", "-m", "red: failing test for auth")
+    git(tmp_path, "commit", "-m", "auth red", "-m", "TDD: red")
     source.write_text("one\ntest\nimpl\n", encoding="utf-8")
     git(tmp_path, "add", "app.py")
-    git(tmp_path, "commit", "-m", "green: implementation passes")
+    git(tmp_path, "commit", "-m", "auth green", "-m", "TDD: green")
 
     evidence = check_code.git_tdd_evidence(tmp_path, "HEAD~2")
     assert evidence == {
@@ -619,4 +735,29 @@ def test_git_tdd_evidence_reads_red_and_green_markers(tmp_path):
         "base": "explicit:HEAD~2",
         "red_marker": True,
         "green_marker": True,
+    }
+
+
+def test_git_tdd_evidence_ignores_ordinary_commit_words(tmp_path):
+    check_code = load_check_code()
+    git(tmp_path, "init")
+    git(tmp_path, "config", "user.email", "test@example.com")
+    git(tmp_path, "config", "user.name", "Test User")
+    source = tmp_path / "app.py"
+    source.write_text("one\n", encoding="utf-8")
+    git(tmp_path, "add", "app.py")
+    git(tmp_path, "commit", "-m", "baseline")
+    source.write_text("one\ntest\n", encoding="utf-8")
+    git(tmp_path, "add", "app.py")
+    git(tmp_path, "commit", "-m", "fix failing test on CI")
+    source.write_text("one\ntest\nimpl\n", encoding="utf-8")
+    git(tmp_path, "add", "app.py")
+    git(tmp_path, "commit", "-m", "Add signin implementation")
+
+    evidence = check_code.git_tdd_evidence(tmp_path, "HEAD~2")
+    assert evidence == {
+        "available": True,
+        "base": "explicit:HEAD~2",
+        "red_marker": False,
+        "green_marker": False,
     }

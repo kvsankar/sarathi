@@ -24,6 +24,7 @@ Usage:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -58,7 +59,27 @@ ID_CANDIDATE = re.compile(
     r"(?:-[A-Za-z0-9]+)+\b",
     re.I,
 )
-MARKER = re.compile(r"\b(skip|skipif|xfail|TODO|FIXME|XXX|etc\.)\b", re.I)
+MARKER_PATTERNS = (
+    ("TODO", re.compile(r"\bTODO\b", re.I)),
+    ("FIXME", re.compile(r"\bFIXME\b", re.I)),
+    ("XXX", re.compile(r"\bXXX\b", re.I)),
+    (
+        "SKIP",
+        re.compile(
+            r"(@pytest\.mark\.skip\b|pytest\.skip\s*\(|"
+            r"\b(?:it|test|describe)\.skip\s*\(|\bskip\s*\()",
+            re.I,
+        ),
+    ),
+    (
+        "SKIPIF",
+        re.compile(r"(@pytest\.mark\.skipif\b|\bskipif\s*\()", re.I),
+    ),
+    (
+        "XFAIL",
+        re.compile(r"(@pytest\.mark\.xfail\b|\bxfail\s*\()", re.I),
+    ),
+)
 UI_WORK = re.compile(r"^\s*UI Work\s*:\s*Yes\s*$", re.I | re.M)
 MOCK_DEP = re.compile(r"^\s*Mock UI Dependency\s*:\s*(?!None\b)(.+)$", re.I | re.M)
 UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
@@ -67,6 +88,7 @@ COV_LABEL = re.compile(
     r"(?im)^\s*(?:coverage|total coverage|line coverage)\s*[:=]\s*"
     r"(\d+(?:\.\d+)?)\s*%\s*$"
 )
+COV_ISTANBUL = re.compile(r"(?im)^\s*(?:All files|Total)\s*\|\s*(\d+(?:\.\d+)?)\s*\|")
 ASSERTION = re.compile(
     r"\b(assert|expect\(|should|toBe\(|toEqual\(|toStrictEqual\(|raises\(|"
     r"pytest\.raises|assertThat|XCTAssert|require\.|verify\()",
@@ -82,8 +104,8 @@ WEAK_ASSERTION = re.compile(
     r"\(\s*(?P=expect_num)\s*\))",
     re.I,
 )
-TDD_RED = re.compile(r"\b(red|failing test|fail(?:ing)? first|test first)\b", re.I)
-TDD_GREEN = re.compile(r"\b(green|pass(?:ing)? test|implement|implementation)\b", re.I)
+TDD_RED = re.compile(r"(?im)^\s*TDD:\s*red\b")
+TDD_GREEN = re.compile(r"(?im)^\s*TDD:\s*green\b")
 TEST_START = re.compile(
     r"^\s*(?:def\s+test_|async\s+def\s+test_|function\s+test|"
     r"(?:it|test|describe)\s*\(|[\w.]+\.test\s*\()",
@@ -145,21 +167,28 @@ def marker_hits(files: list[Path], root: Path) -> list[dict]:
     for path in files:
         text = path.read_text(encoding="utf-8", errors="ignore")
         for line_no, line in enumerate(text.splitlines(), 1):
-            for match in MARKER.finditer(line):
-                hits.append(
-                    {
-                        "path": rel_path(path, root),
-                        "line": line_no,
-                        "marker": match.group(0).upper(),
-                        "text": line.strip(),
-                    }
-                )
+            for marker, pattern in MARKER_PATTERNS:
+                if pattern.search(line):
+                    hits.append(
+                        {
+                            "path": rel_path(path, root),
+                            "line": line_no,
+                            "marker": marker,
+                            "text": line.strip(),
+                        }
+                    )
     return hits
+
+
+def marker_inventory_hash(markers: list[dict]) -> str:
+    """Hash the exact marker inventory that needs user-visible acknowledgement."""
+    payload = json.dumps(markers, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def extract_coverage(text: str) -> float | None:
     """Extract coverage from labeled output, ignoring unrelated percent text."""
-    for pattern in (COV_TOTAL, COV_LABEL):
+    for pattern in (COV_TOTAL, COV_LABEL, COV_ISTANBUL):
         hits = pattern.findall(text)
         if hits:
             return float(hits[-1])
@@ -208,7 +237,31 @@ def block_matches(block: str, name: str) -> bool:
 
 
 def has_nontrivial_assertion(block: str) -> bool:
-    return bool(ASSERTION.search(block)) and not bool(WEAK_ASSERTION.search(block))
+    return bool(ASSERTION.search(block)) and not has_weak_assertion(block)
+
+
+def has_weak_assertion(block: str) -> bool:
+    if WEAK_ASSERTION.search(block):
+        return True
+    for line in block.splitlines():
+        stripped = line.strip()
+        self_compare = re.search(
+            r"\bassert\s+(?P<expr>[A-Za-z_][A-Za-z0-9_().\[\]'\"]*)\s*"
+            r"==\s*(?P=expr)\b",
+            stripped,
+        )
+        if self_compare:
+            return True
+        if re.search(r"\bassert\s+len\([^)]+\)\s*>=\s*0\b", stripped):
+            return True
+        expect_self = re.search(
+            r"\bexpect\(\s*(?P<expr>[A-Za-z_][A-Za-z0-9_().\[\]'\"]*)\s*\)"
+            r"\.to(?:Be|Equal|StrictEqual)\(\s*(?P=expr)\s*\)",
+            stripped,
+        )
+        if expect_self:
+            return True
+    return False
 
 
 def inline_traceability(
@@ -542,13 +595,16 @@ def main() -> int:
             )
 
     marker_approval_requirements = []
+    marker_inventory_sha = marker_inventory_hash(code_markers) if code_markers else None
     if code_markers:
         marker_approval_requirements.append(
             approval_requirement(
                 approval_context,
                 Path.cwd(),
                 "code.markers.approved",
-                plan,
+                "code-marker-inventory",
+                artifact_kind="marker-inventory",
+                expected_sha256=marker_inventory_sha,
             )
         )
 
@@ -646,7 +702,8 @@ def main() -> int:
             ),
         },
         "code_markers": code_markers,
-        "vague_hits": len(code_markers),
+        "marker_inventory_sha256": marker_inventory_sha,
+        "marker_hits": len(code_markers),
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),
