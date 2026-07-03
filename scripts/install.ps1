@@ -499,7 +499,19 @@ fi
 SARATHI_REPO_ROOT="$repo_root" bash "$tmp_script" "${args[@]}"
 '@
 
-    & wsl.exe -e bash -lc $runner "agent-sdlc-install" $ScriptPath $TargetPath $ScopeValue $ToolsValue $skipCheckersFlag
+    $runnerPath = [System.IO.Path]::GetTempFileName()
+    try {
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText(
+            $runnerPath,
+            ($runner -replace "`r`n", "`n"),
+            $utf8NoBom
+        )
+        $runnerWsl = ConvertTo-WslPath $runnerPath
+        & wsl.exe -e bash $runnerWsl $ScriptPath $TargetPath $ScopeValue $ToolsValue $skipCheckersFlag
+    } finally {
+        Remove-Item -LiteralPath $runnerPath -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function Install-WslCompanion {
