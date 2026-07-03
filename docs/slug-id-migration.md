@@ -1,6 +1,6 @@
 # Slug ID Migration
 
-Agent-Steered SDLC now uses slug-only IDs for specs, plans, and design test obligations.
+Sarathi now uses slug-only IDs for specs, plans, and design test obligations.
 
 ## What Changed
 

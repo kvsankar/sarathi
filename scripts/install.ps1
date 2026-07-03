@@ -13,7 +13,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $PromptSource = Join-Path $RepoRoot "prompts"
 $CheckerSource = Join-Path $RepoRoot "checkers"
-$SkillSource = Join-Path $RepoRoot "skills/agent-steered-sdlc"
+$SkillSource = Join-Path $RepoRoot "skills/sarathi"
 $TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).Path
 
 function Test-SamePath {
@@ -92,12 +92,12 @@ function Get-CodexDestinations {
     if ($Scope -eq "user") {
         $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
         return @{
-            Skill = Join-Path $codexHome "skills/agent-steered-sdlc"
+            Skill = Join-Path $codexHome "skills/sarathi"
             Prompts = Join-Path $codexHome "prompts"
         }
     }
     return @{
-        Skill = Join-Path $TargetRoot ".codex/skills/agent-steered-sdlc"
+        Skill = Join-Path $TargetRoot ".codex/skills/sarathi"
         Prompts = Join-Path $TargetRoot ".codex/prompts"
     }
 }
@@ -105,6 +105,9 @@ function Get-CodexDestinations {
 function Get-CopilotPromptDestination {
     if ($Scope -ne "user") {
         return Join-Path $TargetRoot ".github/prompts"
+    }
+    if ($env:SARATHI_COPILOT_PROMPTS_DIR) {
+        return $env:SARATHI_COPILOT_PROMPTS_DIR
     }
     if ($env:AGENT_SDLC_COPILOT_PROMPTS_DIR) {
         return $env:AGENT_SDLC_COPILOT_PROMPTS_DIR
@@ -121,13 +124,13 @@ function Get-CopilotPromptDestination {
 function Get-CopilotSkillDestinations {
     if ($Scope -eq "user") {
         return @(
-            Join-Path $HOME ".copilot/skills/agent-steered-sdlc"
-            Join-Path $HOME ".agents/skills/agent-steered-sdlc"
+            Join-Path $HOME ".copilot/skills/sarathi"
+            Join-Path $HOME ".agents/skills/sarathi"
         )
     }
     return @(
-        Join-Path $TargetRoot ".github/skills/agent-steered-sdlc"
-        Join-Path $TargetRoot ".agents/skills/agent-steered-sdlc"
+        Join-Path $TargetRoot ".github/skills/sarathi"
+        Join-Path $TargetRoot ".agents/skills/sarathi"
     )
 }
 
@@ -155,15 +158,15 @@ function Write-DestinationSummary {
                     Write-Host "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
                 }
                 Write-Host "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
-                Write-Host "    Reload Copilot CLI skills with /skills reload, then check /skills info agent-steered-sdlc."
+                Write-Host "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
             }
             "claude-code" {
                 if ($Scope -eq "user") {
                     $cmdDest = Join-Path $HOME ".claude/commands"
-                    $skillDest = Join-Path $HOME ".claude/skills/agent-steered-sdlc"
+                    $skillDest = Join-Path $HOME ".claude/skills/sarathi"
                 } else {
                     $cmdDest = Join-Path $TargetRoot ".claude/commands"
-                    $skillDest = Join-Path $TargetRoot ".claude/skills/agent-steered-sdlc"
+                    $skillDest = Join-Path $TargetRoot ".claude/skills/sarathi"
                 }
                 Write-Host "  Claude Code commands -> $cmdDest"
                 Write-Host "  Claude Code skill -> $skillDest"
@@ -183,7 +186,7 @@ function Write-DestinationSummary {
                     Join-Path $TargetRoot ".ai-prompts/claude"
                 }
                 Write-Host "  Claude prompt export -> $dest"
-                Write-Host "  Claude skill export -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+                Write-Host "  Claude skill export -> $(Join-Path $dest 'skills/sarathi')"
             }
             "pi" {
                 $dest = if ($Scope -eq "user") {
@@ -192,7 +195,7 @@ function Write-DestinationSummary {
                     Join-Path $TargetRoot ".ai-prompts/pi"
                 }
                 Write-Host "  Pi prompt export -> $dest"
-                Write-Host "  Pi skill export -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+                Write-Host "  Pi skill export -> $(Join-Path $dest 'skills/sarathi')"
             }
         }
     }
@@ -259,7 +262,7 @@ function Copy-CopilotStageSkills {
         $stageDest = Join-Path $skillRoot $stageName
         $promptFileName = $_.Name
         $description = (
-            "Agent-Steered SDLC direct stage skill for $stageName. " +
+            "Sarathi stage skill for $stageName. " +
             (Get-PromptDescription $_.FullName)
         ).Replace('"', '\"')
 
@@ -271,15 +274,14 @@ name: $stageName
 description: "$description"
 ---
 
-# Agent-Steered SDLC Stage: $stageName
+# Sarathi Stage: $stageName
 
-This is a direct GitHub Copilot CLI skill alias for the Agent-Steered SDLC
-$stageName stage.
+This is a direct GitHub Copilot CLI skill alias for the Sarathi $stageName stage.
 
 Follow the bundled prompt file prompts/$promptFileName exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
 
-This stage is part of the broader agent-steered-sdlc workflow. Preserve input gates, human
+This stage is part of the broader Sarathi workflow. Preserve input gates, human
 review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
 limits.
 "@
@@ -328,7 +330,7 @@ function Install-Copilot {
         Write-Host "Installed GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
     }
     Write-Host "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
-    Write-Host "Copilot CLI can load skills after a new session or /skills reload; check with /skills info agent-steered-sdlc."
+    Write-Host "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
     Write-Host "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
 }
 
@@ -349,10 +351,10 @@ function Install-Codex {
 function Install-ClaudeCode {
     if ($Scope -eq "user") {
         $dest = Join-Path $HOME ".claude/commands"
-        $skillDest = Join-Path $HOME ".claude/skills/agent-steered-sdlc"
+        $skillDest = Join-Path $HOME ".claude/skills/sarathi"
     } else {
         $dest = Join-Path $TargetRoot ".claude/commands"
-        $skillDest = Join-Path $TargetRoot ".claude/skills/agent-steered-sdlc"
+        $skillDest = Join-Path $TargetRoot ".claude/skills/sarathi"
     }
     if ($DryRun) {
         Write-Host "Would install Claude Code slash commands -> $dest"
@@ -407,7 +409,7 @@ function Install-ClaudeExport {
     }
     if ($DryRun) {
         Write-Host "Would export Claude prompt pack -> $dest"
-        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -416,7 +418,7 @@ function Install-ClaudeExport {
         $body = Get-PromptBody $_.FullName
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
-    Copy-SkillFolder (Join-Path $dest "skills/agent-steered-sdlc")
+    Copy-SkillFolder (Join-Path $dest "skills/sarathi")
     Write-Host "Exported Claude prompt pack -> $dest"
     Write-Host "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
 }
@@ -429,7 +431,7 @@ function Install-PiExport {
     }
     if ($DryRun) {
         Write-Host "Would export Pi prompt pack -> $dest"
-        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/agent-steered-sdlc')"
+        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -438,7 +440,7 @@ function Install-PiExport {
         $body = Get-PromptBody $_.FullName
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
-    Copy-SkillFolder (Join-Path $dest "skills/agent-steered-sdlc")
+    Copy-SkillFolder (Join-Path $dest "skills/sarathi")
     Write-Host "Exported Pi prompt pack -> $dest"
     Write-Host "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }
@@ -494,7 +496,7 @@ if [ "$skip_checkers" = "1" ]; then
   args=("${args[@]}" --no-checkers)
 fi
 
-AGENT_SDLC_REPO_ROOT="$repo_root" bash "$tmp_script" "${args[@]}"
+SARATHI_REPO_ROOT="$repo_root" bash "$tmp_script" "${args[@]}"
 '@
 
     & wsl.exe -e bash -lc $runner "agent-sdlc-install" $ScriptPath $TargetPath $ScopeValue $ToolsValue $skipCheckersFlag

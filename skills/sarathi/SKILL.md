@@ -1,9 +1,11 @@
 ---
-name: agent-steered-sdlc
-description: End-to-end SDLC workflow for agent-steered creation, review, verification, and reconciliation of requirements, designs, ADRs, plans, code, tests, quality gates, and upstream/downstream artifact consistency. Use when Codex needs to run or review an artifact-governed software delivery lifecycle.
+name: sarathi
+description: Sarathi is Agent-Steered SDLC for resumable, reviewable software delivery. Use when Codex needs to create, verify, review, assess, or resume an artifact-governed software delivery lifecycle.
 ---
 
-# Agent-Steered SDLC
+# Sarathi
+
+Agent-Steered SDLC for resumable, reviewable software delivery
 
 Use the installed stage command, prompt, or skill when the host supports one. Treat this
 `SKILL.md` as the routing kernel: decide project entry mode, select the next stage, enforce
@@ -13,7 +15,7 @@ follow the matching prompt exactly once that stage is selected. This skill bundl
 expected to be self-contained: `SKILL.md`, `agents/`, `prompts/*.prompt.md`, `docs/*.md`,
 and `checkers/*.py` should be present together. If a required bundled stage prompt or
 triggered shared doc is missing, treat the skill installation as incomplete: search the
-current workspace and common user skill locations for another `agent-steered-sdlc` bundle
+current workspace and common user skill locations for another `sarathi` bundle
 or this repository's matching `prompts/` or `docs/` file, report the incomplete install
 clearly, and ask the user to reinstall if no source can be found. Do not silently continue
 as though a required prompt or policy doc were optional.
@@ -22,7 +24,7 @@ GitHub Copilot CLI note: prompt files do not become arbitrary built-in CLI slash
 The installer creates direct stage skill aliases such as `spec-create`, `code-review`, and
 `code-assess` so Copilot CLI can invoke `/code-review` where skill slash invocation is
 supported. If the CLI surface rejects a stage slash name, ask in natural language instead:
-"Use the agent-steered-sdlc skill to run the code-review stage."
+"Use the sarathi skill to run the code-review stage."
 
 Command verbs have distinct meanings:
 

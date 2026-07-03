@@ -1,6 +1,6 @@
 # Bootstrap Instructions
 
-Agent-Steered SDLC may add a short bootstrap instruction to a project's agent guidance file
+Sarathi may add a short bootstrap instruction to a project's agent guidance file
 so future fresh contexts know to load the process and resume from `.sdlc/wip.md`.
 
 Bootstrap injection is consent-gated. Do not create or modify a bootstrap file unless the
@@ -27,18 +27,18 @@ does not use unless the user requests it.
 Use marker comments so the block can be updated idempotently:
 
 ```markdown
-<!-- agent-steered-sdlc:start -->
-## Agent-Steered SDLC
+<!-- sarathi:start -->
+## Sarathi
 
-This project uses the Agent-Steered SDLC process. For SDLC work, first load the
-`agent-steered-sdlc` skill or the installed stage prompt, then read `.sdlc/wip.md` and
+This project uses the Sarathi process. For SDLC work, first load the
+`sarathi` skill or the installed stage prompt, then read `.sdlc/wip.md` and
 `.sdlc/process-decisions.yaml` if present. Resume from the WIP file's next recommended
 action, verify claims against the named artifacts, and preserve the human review gates.
 
 Do not skip required spec/design/plan/code gates for new implementation deltas. A
 retrospective baseline review may skip plan creation only when `.sdlc/process-decisions.yaml`
 records that policy.
-<!-- agent-steered-sdlc:end -->
+<!-- sarathi:end -->
 ```
 
 If the file already contains a block between these markers, replace only that block. If the

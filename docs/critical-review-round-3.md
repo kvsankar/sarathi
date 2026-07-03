@@ -1,6 +1,6 @@
 # Critical Review — Round 3
 
-A third-round assessment of the agent-steered SDLC process definition, following
+A third-round assessment of the Sarathi process definition, following
 [`critical-review.md`](critical-review.md) (round 1, pre-remediation) and
 [`critical-review-round-2.md`](critical-review-round-2.md) (round 2, post-remediation).
 

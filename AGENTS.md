@@ -8,14 +8,14 @@ Guidance for AI coding agents working in this repository. The workflow here is
 This is a prompt, skill, and checker repository. Canonical source files live in:
 
 - [docs](docs): user-facing overview pages, including
-  [agent-steered-sdlc.html](docs/agent-steered-sdlc.html) and
+  [sarathi.html](docs/sarathi.html) and
   [review-verification-checklist.md](docs/review-verification-checklist.md). Numbered-ID
   migration guidance lives in [slug-id-migration.md](docs/slug-id-migration.md). Shared
   concern ownership lives in [cross-cutting-concerns.md](docs/cross-cutting-concerns.md);
   prompt maintenance guidance lives in [process-maintenance.md](docs/process-maintenance.md).
 - [prompts](prompts): reusable stage prompt definitions. Some host tools expose these as
   slash commands; others expose them as prompt files, skills, or natural-language stages.
-- [skills](skills): native skill bundles such as `agent-steered-sdlc`.
+- [skills](skills): native skill bundles such as `sarathi`.
 - [checkers](checkers): deterministic structural verification scripts used by the prompts.
   Shared checker section schemas live in [checkers/schemas.py](checkers/schemas.py).
 - [scripts](scripts): installers for Windows, macOS, and WSL/Linux targets.
@@ -340,7 +340,7 @@ Slice/change. Ask only when the mapping is ambiguous or materially changes the a
 
 ## Human-gated skill flow
 
-When the `agent-steered-sdlc` skill is invoked generally instead of a specific stage,
+When the `sarathi` skill is invoked generally instead of a specific stage,
 agents should run only the next appropriate SDLC stage by default. After creating or
 materially revising any spec, design, ADR, plan, code slice, assessment report, or review
 report, stop for human review before starting the next downstream stage, even if mechanical
@@ -582,8 +582,8 @@ environment.
 
 Install targets:
 
-- Codex: `<target>/.codex/skills/agent-steered-sdlc` or
-  `$CODEX_HOME/skills/agent-steered-sdlc` / `~/.codex/skills/agent-steered-sdlc`, plus
+- Codex: `<target>/.codex/skills/sarathi` or
+  `$CODEX_HOME/skills/sarathi` / `~/.codex/skills/sarathi`, plus
   direct prompt commands in `<target>/.codex/prompts` or `$CODEX_HOME/prompts` /
   `~/.codex/prompts`. Restart Codex, then invoke them as `/prompts:spec-create`,
   `/prompts:design-create`, etc. Codex documents custom prompts as deprecated in favor of
@@ -591,32 +591,33 @@ Install targets:
 - GitHub Copilot: user scope installs VS Code user prompt files under
   `%APPDATA%\Code\User\prompts` on Windows, `~/Library/Application Support/Code/User/prompts`
   on macOS, or `${XDG_CONFIG_HOME:-~/.config}/Code/User/prompts` on Linux. It also installs
-  the `agent-steered-sdlc` skill under `~/.copilot/skills/agent-steered-sdlc` and
-  `~/.agents/skills/agent-steered-sdlc` for Copilot CLI/agent skill loading. Project scope
+  the `sarathi` skill under `~/.copilot/skills/sarathi` and
+  `~/.agents/skills/sarathi` for Copilot CLI/agent skill loading. Project scope
   installs prompts to `<target>/.github/prompts/*.prompt.md` and skills to
-  `<target>/.github/skills/agent-steered-sdlc` plus
-  `<target>/.agents/skills/agent-steered-sdlc`. Set `AGENT_SDLC_COPILOT_PROMPTS_DIR` to
-  override the user prompt folder for another VS Code profile or distribution. Copilot
+  `<target>/.github/skills/sarathi` plus
+  `<target>/.agents/skills/sarathi`. Set `SARATHI_COPILOT_PROMPTS_DIR` to
+  override the user prompt folder for another VS Code profile or distribution; legacy
+  `AGENT_SDLC_COPILOT_PROMPTS_DIR` remains a fallback. Copilot
   prompt exports are written with `mode: agent` and no `tools:` allowlist, but Copilot CLI
   does not treat prompt files as arbitrary built-in slash commands. The installer therefore
   also creates direct stage skill aliases such as `code-review`, `code-verify`, and
   `code-assess` beside the main skill bundle. After skill install, restart Copilot CLI or
-  run `/skills reload`, then verify with `/skills info agent-steered-sdlc` and, where
+  run `/skills reload`, then verify with `/skills info sarathi` and, where
   supported, `/skills info code-review`.
 - Claude Code: `<target>/.claude/commands/*.md` or `~/.claude/commands/*.md`, plus
-  the `agent-steered-sdlc` skill under `<target>/.claude/skills/` or `~/.claude/skills/`.
+  the `sarathi` skill under `<target>/.claude/skills/` or `~/.claude/skills/`.
 - Gemini CLI: `<target>/.gemini/commands/*.toml` or `~/.gemini/commands/*.toml`.
 - Claude and Pi: exported prompt packs under `.ai-prompts/` because they do not expose a
-  stable local slash-command folder. The export also includes the `agent-steered-sdlc`
+  stable local slash-command folder. The export also includes the `sarathi`
   skill bundle for manual import/adaptation.
 - Checkers: copied to `<target>/checkers` unless `--no-checkers` / `-NoCheckers` is used.
 
-Every installed `agent-steered-sdlc` skill bundle should be self-contained: `SKILL.md`,
+Every installed `sarathi` skill bundle should be self-contained: `SKILL.md`,
 agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. The prompts,
 stage skill aliases, and checkers are also installed separately where the host tool or
 target workspace expects direct access.
 
-The source bundle at `skills/agent-steered-sdlc` is also expected to be self-contained so
+The source bundle at `skills/sarathi` is also expected to be self-contained so
 generic skill installers can copy it directly. If an agent reports that stage prompts or
 checker scripts are missing, treat that as an incomplete install or stale checkout, not as a
 normal qualitative-only mode. Verify that the installed skill contains files such as

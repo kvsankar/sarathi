@@ -1,9 +1,11 @@
-# Agent-Steered SDLC
+# Sarathi
 
-Agent-Steered SDLC is a set of reusable prompts, skills, and structural checkers for
-spec-first software delivery with AI coding agents. It helps developers move from a product
-request to requirements, design, planning, implementation, tests, and review without losing
-traceability or skipping human review.
+Agent-Steered SDLC for resumable, reviewable software delivery
+
+Sarathi is a set of reusable prompts, skills, and structural checkers for spec-first
+software delivery with AI coding agents. It helps developers move from a product request to
+requirements, design, planning, implementation, tests, and review without losing
+traceability, resumability, or human review.
 
 The workflow is intentionally artifact-driven:
 
@@ -19,7 +21,7 @@ generating an artifact.
 
 - Slash-command prompts for specs, designs, plans, code, verification, review, and
   assessment.
-- A native `agent-steered-sdlc` skill for agents that support skills.
+- A native `sarathi` skill for agents that support skills.
 - Structural checkers for specs, designs, plans, and code/test traceability.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
@@ -78,15 +80,15 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 
 ## Supported Targets
 
-- **Codex**: installs the `agent-steered-sdlc` skill and direct prompt commands under
+- **Codex**: installs the `sarathi` skill and direct prompt commands under
   `~/.codex/prompts`. Invoke direct prompts as `/prompts:spec-create`,
   `/prompts:design-create`, etc. after restarting Codex.
 - **GitHub Copilot**: installs prompt files for VS Code Copilot Chat and first-class agent
   skills for Copilot CLI/agent surfaces. User scope installs prompts under the VS Code user
-  prompt folder and skills under `~/.copilot/skills/agent-steered-sdlc` plus
-  `~/.agents/skills/agent-steered-sdlc`. Project scope installs prompts to
-  `<project>/.github/prompts` and skills to `<project>/.github/skills/agent-steered-sdlc`
-  plus `<project>/.agents/skills/agent-steered-sdlc`. Copilot CLI does not treat prompt
+  prompt folder and skills under `~/.copilot/skills/sarathi` plus
+  `~/.agents/skills/sarathi`. Project scope installs prompts to
+  `<project>/.github/prompts` and skills to `<project>/.github/skills/sarathi`
+  plus `<project>/.agents/skills/sarathi`. Copilot CLI does not treat prompt
   files as custom built-in slash commands, so the installer also creates direct stage skill
   aliases such as `code-review`, `code-verify`, and `code-assess` under the same skill roots.
 - **Claude Code**: installs slash commands and the skill.
@@ -95,7 +97,7 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 - **Checkers**: installs `checkers/` into the target workspace unless skipped with
   `-NoCheckers` or `--no-checkers`.
 
-Installed skill bundles are self-contained: each `agent-steered-sdlc` skill copy includes
+Installed skill bundles are self-contained: each `sarathi` skill copy includes
 `SKILL.md`, agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. Prompt
 commands or stage skill aliases are also installed separately where host tools can expose
 them directly.
@@ -105,8 +107,8 @@ Every dry or real install prints the destination folders before doing work.
 If an agent reports that `spec-create`, another stage prompt, or `checkers/check_*.py` are
 missing, the installed skill is incomplete or was copied from the wrong folder. A valid
 skill install should contain files such as `prompts/spec-create.prompt.md` and
-`checkers/check_spec.py` under the same `agent-steered-sdlc` skill directory. Re-run the
-installer, or install from this repository's `skills/agent-steered-sdlc` folder after
+`checkers/check_spec.py` under the same `sarathi` skill directory. Re-run the
+installer, or install from this repository's `skills/sarathi` folder after
 updating to a version where that source folder is self-contained.
 
 ## Commands
@@ -144,7 +146,7 @@ Exact invocation syntax depends on the host tool:
 - Codex direct prompts: `/prompts:code-review`, `/prompts:code-assess`, and so on.
 - GitHub Copilot CLI: stage names are installed as skill aliases where supported, so try
   `/code-review` or `/code-assess` after `/skills reload`. If the CLI surface rejects a
-  stage slash name, invoke by natural language: "Use the agent-steered-sdlc skill to run the
+  stage slash name, invoke by natural language: "Use the sarathi skill to run the
   code-review stage."
 - VS Code Copilot Chat: use the installed prompt file from the prompt picker, or ask in
   natural language with the stage name.
@@ -437,7 +439,7 @@ for GitHub Copilot project-scoped prompts.
 
 ## More Detail
 
-- Overview page: [docs/agent-steered-sdlc.html](docs/agent-steered-sdlc.html)
+- Overview page: [docs/sarathi.html](docs/sarathi.html)
 - Review checklist: [docs/review-verification-checklist.md](docs/review-verification-checklist.md)
 - Slug ID migration: [docs/slug-id-migration.md](docs/slug-id-migration.md)
 - Approval gates: [docs/approval-gates.md](docs/approval-gates.md)

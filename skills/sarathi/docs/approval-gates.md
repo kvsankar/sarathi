@@ -1,6 +1,6 @@
 # Approval Gates
 
-Agent-Steered SDLC supports local approval attestation gates through YAML files under
+Sarathi supports local approval attestation gates through YAML files under
 `.sdlc/`. These files are project-local and do not depend on Jira, GitHub Issues, Azure
 Boards, or any other ticketing system.
 

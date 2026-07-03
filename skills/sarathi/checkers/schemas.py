@@ -1,4 +1,4 @@
-"""Shared structural schemas for agent-steered SDLC checker scripts."""
+"""Shared structural schemas for Sarathi checker scripts."""
 
 SPEC_SECTIONS = [
     "Mission Statement",

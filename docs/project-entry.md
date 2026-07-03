@@ -1,6 +1,6 @@
 # Project Entry And Adoption Modes
 
-Agent-Steered SDLC can start with a new project or be adopted in the middle of an
+Sarathi can start with a new project or be adopted in the middle of an
 existing one. Keep the entry decision separate from artifact discovery so the adoption
 choice stays mutually exclusive and collectively exhaustive.
 
@@ -9,7 +9,7 @@ choice stays mutually exclusive and collectively exhaustive.
 Choose exactly one project entry mode before creating or reviewing downstream artifacts
 when the repo is not already operating under an SDLC decision record:
 
-- **Greenfield Adoption**: the project starts under Agent-Steered SDLC now. Use the normal
+- **Greenfield Adoption**: the project starts under Sarathi now. Use the normal
   sequence: spec, design, plan, code. Existing external references may inform the first
   artifacts, but there is no legacy implementation baseline to accept.
 - **Brownfield Baseline Adoption**: the project already exists and the user wants the SDLC

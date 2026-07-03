@@ -1,4 +1,0 @@
-interface:
-  display_name: "Agent-Steered SDLC"
-  short_description: "Agent-steered SDLC workflow"
-  default_prompt: "Use $agent-steered-sdlc to create, verify, review, or assess the current SDLC artifact."

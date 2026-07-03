@@ -1,6 +1,6 @@
 # Process Maintenance
 
-Agent-Steered SDLC should stay usable under real delivery pressure. Additions to the process
+Sarathi should stay usable under real delivery pressure. Additions to the process
 must improve judgment without turning every prompt into a checklist wall.
 
 ## Prompt Budget

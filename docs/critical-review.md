@@ -1,15 +1,15 @@
-# Critical Review: Agent-Steered SDLC
+# Critical Review: Sarathi
 
 A critical assessment of the AI-agent-assisted software development process defined in
 this repository — the eight `spec/design/plan/code` × `create/review` command prompts, the
-four deterministic `checkers/*.py`, the `agent-steered-sdlc` skill, and the multi-tool
+four deterministic `checkers/*.py`, the `sarathi` skill, and the multi-tool
 install tooling.
 
 - **Reviewer scope:** the *process definition itself* — its claims, its enforcement
   mechanisms, and the gap between the two. Not a review of any product built with it.
 - **Date:** 2026-06-29
 - **Sources reviewed:** `AGENTS.md`, `prompts/*.prompt.md` (8), `checkers/*.py` (4),
-  `skills/agent-steered-sdlc/SKILL.md`, `pyproject.toml`, `.pre-commit-config.yaml`.
+  `skills/sarathi/SKILL.md`, `pyproject.toml`, `.pre-commit-config.yaml`.
 - **Verification:** claims about checker behavior below were confirmed by running the
   checker code against probe inputs, not inferred from reading alone.
 - **Remediation note, 2026-06-30:** this review is preserved as the pre-remediation critique.

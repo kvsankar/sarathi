@@ -1,6 +1,6 @@
 # Critical Review — Round 2 (Post-Remediation)
 
-A second-round assessment of the agent-steered SDLC after the remediation described in the
+A second-round assessment of the Sarathi after the remediation described in the
 top note of [`critical-review.md`](critical-review.md). Companion to that document, which is
 preserved as the pre-remediation critique.
 
@@ -11,7 +11,7 @@ preserved as the pre-remediation critique.
 - **Method:** every claim below was **verified by running the code** — the test suite, the
   checker internals against crafted inputs, and git-evidence paths — not inferred from
   reading. Where I say a gate is gameable, I demonstrated it.
-- **Repository state reviewed:** commit `0193380` "Harden agent-steered SDLC workflow."
+- **Repository state reviewed:** commit `0193380` "Harden Sarathi workflow."
 - **Remediation note:** this document is preserved as the round-2 critique. A later hardening
   pass made git diff/TDD evidence default-on for code review, changed no-base diff evidence
   from `HEAD` comparison to "unverified", tightened assertion traceability to the same

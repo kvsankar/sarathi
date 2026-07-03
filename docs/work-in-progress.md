@@ -1,6 +1,6 @@
 # Work In Progress State
 
-Agent-Steered SDLC should keep resumable workflow state in `.sdlc/wip.md`. The file is a
+Sarathi should keep resumable workflow state in `.sdlc/wip.md`. The file is a
 human-readable handoff note for fresh agent contexts. It lets a new context load current
 state and continue without depending on chat history.
 

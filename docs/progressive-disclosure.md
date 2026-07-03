@@ -1,6 +1,6 @@
 # Progressive Disclosure
 
-Agent-Steered SDLC should load the smallest instruction set that can safely decide the next
+Sarathi should load the smallest instruction set that can safely decide the next
 action, then load deeper instructions only when the selected stage or risk requires them.
 This keeps broad process policy from crowding out stage-specific judgment.
 

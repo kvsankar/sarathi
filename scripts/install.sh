@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ -n "${AGENT_SDLC_REPO_ROOT:-}" ]]; then
+if [[ -n "${SARATHI_REPO_ROOT:-}" ]]; then
+  REPO_ROOT="$(cd "$SARATHI_REPO_ROOT" && pwd -P)"
+  SCRIPT_DIR="$REPO_ROOT/scripts"
+elif [[ -n "${AGENT_SDLC_REPO_ROOT:-}" ]]; then
   REPO_ROOT="$(cd "$AGENT_SDLC_REPO_ROOT" && pwd -P)"
   SCRIPT_DIR="$REPO_ROOT/scripts"
 else
@@ -10,7 +13,7 @@ else
 fi
 PROMPT_SOURCE="$REPO_ROOT/prompts"
 CHECKER_SOURCE="$REPO_ROOT/checkers"
-SKILL_SOURCE="$REPO_ROOT/skills/agent-steered-sdlc"
+SKILL_SOURCE="$REPO_ROOT/skills/sarathi"
 
 TARGET_ROOT="$(pwd)"
 SCOPE="user"
@@ -159,9 +162,9 @@ copilot_prompt_body() {
 
 codex_skill_dest() {
   if [[ "$SCOPE" == "user" ]]; then
-    printf '%s\n' "${CODEX_HOME:-$HOME/.codex}/skills/agent-steered-sdlc"
+    printf '%s\n' "${CODEX_HOME:-$HOME/.codex}/skills/sarathi"
   else
-    printf '%s\n' "$TARGET_ROOT/.codex/skills/agent-steered-sdlc"
+    printf '%s\n' "$TARGET_ROOT/.codex/skills/sarathi"
   fi
 }
 
@@ -176,6 +179,10 @@ codex_prompt_dest() {
 copilot_prompt_dest() {
   if [[ "$SCOPE" != "user" ]]; then
     printf '%s\n' "$TARGET_ROOT/.github/prompts"
+    return
+  fi
+  if [[ -n "${SARATHI_COPILOT_PROMPTS_DIR:-}" ]]; then
+    printf '%s\n' "$SARATHI_COPILOT_PROMPTS_DIR"
     return
   fi
   if [[ -n "${AGENT_SDLC_COPILOT_PROMPTS_DIR:-}" ]]; then
@@ -194,11 +201,11 @@ copilot_prompt_dest() {
 
 copilot_skill_dests() {
   if [[ "$SCOPE" == "user" ]]; then
-    printf '%s\n' "$HOME/.copilot/skills/agent-steered-sdlc"
-    printf '%s\n' "$HOME/.agents/skills/agent-steered-sdlc"
+    printf '%s\n' "$HOME/.copilot/skills/sarathi"
+    printf '%s\n' "$HOME/.agents/skills/sarathi"
   else
-    printf '%s\n' "$TARGET_ROOT/.github/skills/agent-steered-sdlc"
-    printf '%s\n' "$TARGET_ROOT/.agents/skills/agent-steered-sdlc"
+    printf '%s\n' "$TARGET_ROOT/.github/skills/sarathi"
+    printf '%s\n' "$TARGET_ROOT/.agents/skills/sarathi"
   fi
 }
 
@@ -232,15 +239,15 @@ write_destination_summary() {
           echo "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
         fi
         echo "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
-        echo "    Reload Copilot CLI skills with /skills reload, then check /skills info agent-steered-sdlc."
+        echo "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
         ;;
       claude-code)
         if [[ "$SCOPE" == "user" ]]; then
           echo "  Claude Code commands -> $HOME/.claude/commands"
-          echo "  Claude Code skill -> $HOME/.claude/skills/agent-steered-sdlc"
+          echo "  Claude Code skill -> $HOME/.claude/skills/sarathi"
         else
           echo "  Claude Code commands -> $TARGET_ROOT/.claude/commands"
-          echo "  Claude Code skill -> $TARGET_ROOT/.claude/skills/agent-steered-sdlc"
+          echo "  Claude Code skill -> $TARGET_ROOT/.claude/skills/sarathi"
         fi
         ;;
       gemini)
@@ -253,19 +260,19 @@ write_destination_summary() {
       claude)
         if [[ "$SCOPE" == "user" ]]; then
           echo "  Claude prompt export -> $HOME/.ai-prompts/claude"
-          echo "  Claude skill export -> $HOME/.ai-prompts/claude/skills/agent-steered-sdlc"
+          echo "  Claude skill export -> $HOME/.ai-prompts/claude/skills/sarathi"
         else
           echo "  Claude prompt export -> $TARGET_ROOT/.ai-prompts/claude"
-          echo "  Claude skill export -> $TARGET_ROOT/.ai-prompts/claude/skills/agent-steered-sdlc"
+          echo "  Claude skill export -> $TARGET_ROOT/.ai-prompts/claude/skills/sarathi"
         fi
         ;;
       pi)
         if [[ "$SCOPE" == "user" ]]; then
           echo "  Pi prompt export -> $HOME/.ai-prompts/pi"
-          echo "  Pi skill export -> $HOME/.ai-prompts/pi/skills/agent-steered-sdlc"
+          echo "  Pi skill export -> $HOME/.ai-prompts/pi/skills/sarathi"
         else
           echo "  Pi prompt export -> $TARGET_ROOT/.ai-prompts/pi"
-          echo "  Pi skill export -> $TARGET_ROOT/.ai-prompts/pi/skills/agent-steered-sdlc"
+          echo "  Pi skill export -> $TARGET_ROOT/.ai-prompts/pi/skills/sarathi"
         fi
         ;;
     esac
@@ -329,7 +336,7 @@ copy_copilot_stage_skills() {
     stage_name="$(command_name "$file")"
     stage_dest="$skill_root/$stage_name"
     prompt_file_name="$(basename "$file")"
-    description="$(printf 'Agent-Steered SDLC direct stage skill for %s. %s' "$stage_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+    description="$(printf 'Sarathi stage skill for %s. %s' "$stage_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
 
     mkdir -p "$stage_dest"
     cat > "$stage_dest/SKILL.md" <<EOF
@@ -338,15 +345,14 @@ name: $stage_name
 description: "$description"
 ---
 
-# Agent-Steered SDLC Stage: $stage_name
+# Sarathi Stage: $stage_name
 
-This is a direct GitHub Copilot CLI skill alias for the Agent-Steered SDLC
-$stage_name stage.
+This is a direct GitHub Copilot CLI skill alias for the Sarathi $stage_name stage.
 
 Follow the bundled prompt file prompts/$prompt_file_name exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
 
-This stage is part of the broader agent-steered-sdlc workflow. Preserve input gates, human
+This stage is part of the broader Sarathi workflow. Preserve input gates, human
 review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
 limits.
 EOF
@@ -386,7 +392,7 @@ install_copilot() {
     echo "Installed GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
   done < <(copilot_skill_dests)
   echo "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
-  echo "Copilot CLI can load skills after a new session or /skills reload; check with /skills info agent-steered-sdlc."
+  echo "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
   echo "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
 }
 
@@ -410,10 +416,10 @@ install_claude_code() {
   local dest skill_dest
   if [[ "$SCOPE" == "user" ]]; then
     dest="$HOME/.claude/commands"
-    skill_dest="$HOME/.claude/skills/agent-steered-sdlc"
+    skill_dest="$HOME/.claude/skills/sarathi"
   else
     dest="$TARGET_ROOT/.claude/commands"
-    skill_dest="$TARGET_ROOT/.claude/skills/agent-steered-sdlc"
+    skill_dest="$TARGET_ROOT/.claude/skills/sarathi"
   fi
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would install Claude Code slash commands -> $dest"
@@ -468,14 +474,14 @@ install_claude_export() {
   fi
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would export Claude prompt pack -> $dest"
-    echo "Would include skill bundle -> $dest/skills/agent-steered-sdlc"
+    echo "Would include skill bundle -> $dest/skills/sarathi"
     return
   fi
   mkdir -p "$dest"
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
     prompt_body "$file" > "$dest/$(command_name "$file").md"
   done
-  copy_skill_folder "$dest/skills/agent-steered-sdlc"
+  copy_skill_folder "$dest/skills/sarathi"
   echo "Exported Claude prompt pack -> $dest"
   echo "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
 }
@@ -489,14 +495,14 @@ install_pi_export() {
   fi
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would export Pi prompt pack -> $dest"
-    echo "Would include skill bundle -> $dest/skills/agent-steered-sdlc"
+    echo "Would include skill bundle -> $dest/skills/sarathi"
     return
   fi
   mkdir -p "$dest"
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
     prompt_body "$file" > "$dest/$(command_name "$file").md"
   done
-  copy_skill_folder "$dest/skills/agent-steered-sdlc"
+  copy_skill_folder "$dest/skills/sarathi"
   echo "Exported Pi prompt pack -> $dest"
   echo "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }
