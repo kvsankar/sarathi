@@ -1,0 +1,22 @@
+#!/bin/sh
+# Sarathi local hook: run pre-commit through uv so the hook does not embed a
+# machine-specific virtualenv path.
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+PATH="$HOME/.local/bin:/home/sankar/.local/bin:/c/Users/kvsan/.local/bin:$PATH"
+
+UV_BIN="$(command -v uv || command -v uv.exe)"
+if [ -z "$UV_BIN" ]; then
+    echo 'uv not found on PATH; install uv or add it to PATH before committing.' 1>&2
+    exit 1
+fi
+
+if [ -r /proc/version ] && grep -qiE 'microsoft|wsl' /proc/version; then
+    export UV_PROJECT_ENVIRONMENT=.venv-wsl
+fi
+
+exec "$UV_BIN" run python -m pre_commit hook-impl \
+    --config=.pre-commit-config.yaml \
+    --hook-type=pre-commit \
+    --hook-dir "$HERE" \
+    -- "$@"

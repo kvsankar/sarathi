@@ -444,10 +444,17 @@ Default gate ownership:
 This repository uses `uv` for tool and environment management. Do not install lint tools
 through pre-commit remote hook repositories, npm, pipx, or global package managers.
 
-Install the Git hook in a valid Git checkout with:
+Install the portable Git hook in a valid Git checkout with PowerShell:
 
 ```pwsh
-uv run python -m pre_commit install
+Copy-Item scripts/pre-commit .git/hooks/pre-commit
+```
+
+Or with WSL/Linux:
+
+```sh
+cp scripts/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 ```
 
 Run the configured hooks manually with:
