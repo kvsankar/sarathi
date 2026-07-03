@@ -9,7 +9,8 @@ must improve judgment without turning every prompt into a checklist wall.
 - Put repeated policy in shared docs such as
   [project-entry.md](project-entry.md), [progressive-disclosure.md](progressive-disclosure.md),
   [work-in-progress.md](work-in-progress.md),
-  [bootstrap-instructions.md](bootstrap-instructions.md), and
+  [bootstrap-instructions.md](bootstrap-instructions.md),
+  [artifact-formatting.md](artifact-formatting.md), and
   [cross-cutting-concerns.md](cross-cutting-concerns.md), and reference it from prompts.
 - Prefer one crisp stage instruction plus one shared reference over copying a concern into
   every create, verify, review, and assess prompt.
@@ -29,6 +30,17 @@ Before adding a new concern, decide:
   command, real system, artifact hash, or observed output.
 - Whether the concern needs a hard human gate, an approval attestation, or just a review
   finding.
+
+## Sub-Agent Independence
+
+- Verification, review, and assessment prompts must require sub-agents when the host exposes
+  sub-agent capability.
+- Do not describe sub-agent use as optional, preferred, or "when convenient" for verify,
+  review, assess, or create-stage self-assessment loops.
+- If a host lacks sub-agent capability, prompts may allow a degraded same-agent path only
+  with explicit disclosure that the result was not independent.
+- Keep the canonical details in [review-verification-checklist.md](review-verification-checklist.md)
+  and reference that shared rule instead of copying long sub-agent policy into every prompt.
 
 ## Evidence Language
 

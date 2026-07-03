@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Perform the qualitative review of a work plan. This command judges planning substance; it
 does not replace `/plan-verify`. If verification evidence is absent, state that gap and
 either use the latest supplied evidence or recommend `/plan-verify`. Use `/plan-assess`
@@ -30,9 +38,11 @@ slicing constraints are defective, stop with an upstream blocker.
 Use an adversarial posture: try to refute the slicing, find missing upstream changes, large
 or incoherent PRs, fake TDD steps, unsafe parallelism, touch-set drift, dependency traps,
 missing test-environment allocation, context-driven concerns the work likely needs, and
-traceability theater. Prefer fresh context, a separate reviewer, or a different
-model/tool when available. If the same agent created the plan, state that the review is not
-independent.
+traceability theater. If the host exposes sub-agent capability, run this review in a
+fresh-context Qualitative Reviewer sub-agent. This is mandatory for review stages. If
+sub-agents are unavailable, state that the host lacks sub-agent capability, mark the review
+as degraded and non-independent when the same agent created the plan, and actively look for
+counterexamples.
 
 ## Qualitative Review
 

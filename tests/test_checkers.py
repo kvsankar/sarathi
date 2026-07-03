@@ -76,7 +76,25 @@ Implementation Readiness: Code-ready
 - FEAT-AUTH-LOGIN Login satisfies UN-AUTH-ACCESS.
 
 # Use Cases
-- UC-AUTH-SIGNIN Actor: user. Goal: sign in. FEAT-AUTH-LOGIN.
+- UC-AUTH-SIGNIN
+  Primary actor: User.
+  Supporting actors/systems: Credential store.
+  Goal: Sign in to access protected functionality.
+  Scope: Authentication boundary.
+  Trigger: The user submits valid credentials.
+  Preconditions: The user has an existing active credential record.
+  Minimal guarantees: Failed attempts do not grant protected access.
+  Success guarantees: The user receives authenticated access.
+  Main success scenario:
+  1. User submits credentials.
+  2. System validates the credentials.
+  3. System grants authenticated access.
+  Alternate flows: If already signed in, the system keeps the current access session.
+  Error/exception flows: Invalid credentials deny access with a safe message.
+  Postconditions: Authenticated access is available for the user.
+  Frequency/importance: High importance; expected on every protected session.
+  Trace links: UN-AUTH-ACCESS, FEAT-AUTH-LOGIN, FR-AUTH-SIGNIN,
+  NFR-PERF-SIGNIN, AT-AUTH-SIGNIN.
 
 # Functional Requirements
 - FR-AUTH-SIGNIN The system shall allow valid users to sign in. UC-AUTH-SIGNIN.
@@ -1035,3 +1053,110 @@ def test_check_plan_rejects_numbered_pr_ids(tmp_path, monkeypatch, capsys):
 
     assert rc == 1
     assert "PR-AUTH-10" in report["bad_id_format"]
+
+
+def test_check_spec_rejects_terse_use_case_missing_full_template(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8")
+    start = text.index("- UC-AUTH-SIGNIN")
+    end = text.index("\n\n# Functional Requirements")
+    text = (
+        text[:start]
+        + "- UC-AUTH-SIGNIN Actor: user. Goal: sign in. FEAT-AUTH-LOGIN."
+        + text[end:]
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["use_cases_have_full_template"] is False
+    assert "primary_actor" in report["use_case_template_issues"]["UC-AUTH-SIGNIN"]
+
+
+def test_check_spec_rejects_obviously_bundled_functional_requirement(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8").replace(
+        "The system shall allow valid users to sign in.",
+        "The system shall allow valid users to sign in and refresh sessions.",
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["bundled_fr_candidates"] == ["FR-AUTH-SIGNIN"]
+
+
+def test_check_spec_rejects_acceptance_test_referencing_too_many_requirements(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    original_fr = (
+        "- FR-AUTH-SIGNIN The system shall allow valid users to sign in. "
+        "UC-AUTH-SIGNIN."
+    )
+    replacement_frs = (
+        "- FR-AUTH-SIGNIN The system shall allow valid users to sign in. "
+        "UC-AUTH-SIGNIN.\n"
+        "- FR-AUTH-LOCKOUT The system shall deny locked users. UC-AUTH-SIGNIN.\n"
+        "- FR-AUTH-AUDIT The system shall record sign-in attempts. UC-AUTH-SIGNIN.\n"
+        "- FR-AUTH-SESSION The system shall preserve active sessions. UC-AUTH-SIGNIN.\n"
+        "- FR-AUTH-REDIRECT The system shall return users to protected content. "
+        "UC-AUTH-SIGNIN."
+    )
+    text = spec_path.read_text(encoding="utf-8").replace(
+        original_fr,
+        replacement_frs,
+    )
+    text = text.replace(
+        "Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, and NFR-PERF-SIGNIN.",
+        "Verifies UC-AUTH-SIGNIN, FR-AUTH-SIGNIN, FR-AUTH-LOCKOUT, "
+        "FR-AUTH-AUDIT, FR-AUTH-SESSION, FR-AUTH-REDIRECT, and NFR-PERF-SIGNIN.",
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["overloaded_acceptance_refs"] == ["AT-AUTH-SIGNIN"]
+
+
+def test_check_spec_requires_source_reconciliation_for_brownfield_baseline(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    text = spec_path.read_text(encoding="utf-8").replace(
+        "Work Scope: Slice/change",
+        "Work Scope: Product/system\nEntry Mode: Brownfield Baseline Adoption",
+    )
+    spec_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["brownfield_sources_reconciled"] is False
+    assert (
+        "missing_source_reconciliation_section"
+        in report["source_reconciliation_issues"]
+    )

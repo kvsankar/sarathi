@@ -303,12 +303,13 @@ signal, use a documented lightweight track instead of bypassing the process sile
 
 ## Verification, review, and assessment independence
 
-Review prompts should be run with an adversarial posture. Prefer a fresh context, separate
-reviewer, or different model/tool when available. If the same agent performs creation and
-review, it must say that review was not independent and actively look for counterexamples,
-missing upstream changes, traceability theater, and unverified claims before passing.
+Review prompts must be run with an adversarial posture. Use fresh-context sub-agents for
+verification, review, and assessment whenever the host exposes sub-agent capability. If a
+host lacks sub-agent capability and the same agent performs creation and review, it must say
+that review was not independent and actively look for counterexamples, missing upstream
+changes, traceability theater, and unverified claims before passing.
 
-When the platform supports sub-agents, split every assessment into two fresh-context
+If the host exposes sub-agent capability, split every assessment into two fresh-context
 sub-agent passes:
 
 - **Mechanical Verifier**: runs deterministic/structural checkers and returns raw command
@@ -316,14 +317,14 @@ sub-agent passes:
 - **Qualitative Reviewer**: starts from the artifact plus mechanical evidence and produces
   the adversarial judgment, upstream blockers, top fixes, and verdict.
 
-If sub-agents are unavailable, disclose that limitation and still keep the mechanical and
-qualitative sections separate.
+If sub-agents are unavailable, disclose that limitation, state that the result is
+degraded/non-independent, and still keep the mechanical and qualitative sections separate.
 
 ## Verification and review checklist
 
-Every assessment must pair structural/mechanical evidence with qualitative review, ideally
-using the two fresh-context sub-agent passes above. Do not stop after checker JSON. The
-canonical checklist is
+Every assessment must pair structural/mechanical evidence with qualitative review. If the
+host exposes sub-agent capability, use the two fresh-context sub-agent passes above. Do not
+stop after checker JSON. The canonical checklist is
 [docs/review-verification-checklist.md](docs/review-verification-checklist.md):
 
 | Assessment | Mechanical verification | Qualitative review |

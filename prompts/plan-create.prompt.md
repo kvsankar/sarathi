@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Your job is to produce a **Work Plan** that either decomposes broad work into smaller
 code-ready work items or turns an already code-ready slice/change into tested,
 production-quality code delivered as small pull requests. Aim to pass `/plan-assess`
@@ -380,14 +388,16 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 
 For feature/component or slice/change plans, include `--feature --parent <product-plan>`.
 
-Then run or perform the corresponding `/plan-assess` against the completed plan. When
-sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
-sub-agents as described in `/plan-assess`; otherwise state that review is not independent and
-use the adversarial posture. Treat any upstream spec/design blocker, qualitative finding,
-missing coverage, weak PR slicing, TDD gap, build/deployment gap, documentation gap,
-sequencing/worktree issue, rollback gap, or production-quality concern as a defect in the
-created plan or its upstream inputs. Revise upstream artifacts if the review says they must
-change; otherwise revise `plan.md`/`plan.html`.
+Then run or perform the corresponding `/plan-assess` against the completed plan. If the host
+exposes sub-agent capability, use fresh-context Mechanical Verifier and Qualitative Reviewer
+sub-agents as described in `/plan-assess`; this is mandatory for the create-stage assessment
+loop. If sub-agents are unavailable, state that the host lacks sub-agent capability, mark
+the assessment as degraded and non-independent where applicable, and use the adversarial
+posture. Treat any upstream spec/design blocker, qualitative finding, missing coverage, weak
+PR slicing, TDD gap, build/deployment gap, documentation gap, sequencing/worktree issue,
+rollback gap, or production-quality concern as a defect in the created plan or its upstream
+inputs. Revise upstream artifacts if the review says they must change; otherwise revise
+`plan.md`/`plan.html`.
 Repeat checker + assessment until `/plan-assess` would return Pass or an explicitly accepted
 Pass-with-fixes.
 

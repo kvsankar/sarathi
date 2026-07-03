@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Assess a Work Plan against its principles: small reviewable PRs with an advisory size
 target, Red/Green TDD, full coverage of spec and design, explicit Planned Touch Sets,
 planned build/deployment work, planned user/developer documentation work, and
@@ -26,15 +34,17 @@ Do not stop after checker JSON. This assessment must include:
 2. Verification A: structural `check_plan.py` evidence.
 3. Verification B: qualitative plan assessment.
 
-When the platform supports sub-agents, run these as two fresh-context passes:
+If the host exposes sub-agent capability, run these as two fresh-context sub-agent passes.
+This split is mandatory for assessment stages:
 
 - **Mechanical Verifier sub-agent**: run upstream spec/design checkers and the plan checker,
   returning raw evidence, metrics, IDs, and command failures.
 - **Qualitative Reviewer sub-agent**: read the plan, upstream artifacts, and mechanical
   evidence, then judge upstream fitness and plan quality adversarially.
 
-If sub-agents are unavailable, state that limitation and keep the mechanical and qualitative
-sections separate.
+If sub-agents are unavailable, state that the host lacks sub-agent capability, mark the
+assessment as degraded and non-independent where applicable, and keep the mechanical and
+qualitative sections separate.
 
 Target the plan file the user provides (default `plan.md`). Do not edit it unless asked;
 report findings only. Pass `--spec spec.md` and `--design design.md` so FR/AT/JT/COMP/TEST
@@ -43,9 +53,9 @@ refs resolve. For a feature/component or slice/change plan, add `--feature` and
 
 Use an adversarial assessment posture: try to refute the slicing, find missing upstream
 spec/design changes, touch-set gaps, PRs that are too large in reality, weak Red steps,
-dependency traps, and traceability theater. Prefer a fresh context, separate reviewer, or
-different model/tool when available. If the same agent that created the plan is assessing it,
-state that the review half of the assessment is not independent.
+dependency traps, and traceability theater. If sub-agents are unavailable and the same agent
+that created the plan is assessing it, state that the review half of the assessment is not
+independent and actively look for counterexamples.
 
 ## Verification 0 — Upstream Consistency Gate
 

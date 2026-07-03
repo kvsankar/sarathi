@@ -14,9 +14,23 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Run mechanical verification for a work plan. This command collects evidence only; it does
 not judge whether the plan slices work well. Use `/plan-review` for qualitative judgment
 and `/plan-assess` for verify + review.
+
+If the host exposes sub-agent capability, run this verification in a fresh-context
+Mechanical Verifier sub-agent. This is mandatory for verify stages. The Mechanical Verifier
+reports deterministic evidence only and does not give a qualitative verdict. If sub-agents
+are unavailable, state that the host lacks sub-agent capability and run the same mechanical
+checks directly.
 
 Target the plan file the user provides, defaulting to `plan.md`. Do not edit it unless
 explicitly asked.

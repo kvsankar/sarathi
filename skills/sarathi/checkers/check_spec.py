@@ -62,6 +62,47 @@ QUALITY_UNITS = [
         {"%", "decimal", "decimals", "dp", "c", "°c"},
     ),
 ]
+UC_REQUIRED_FIELDS = [
+    ("primary_actor", r"\bprimary actor\s*:"),
+    (
+        "supporting_actors_or_systems",
+        r"\bsupporting actors?(?:/systems?| or systems?)?\s*:",
+    ),
+    ("goal", r"\bgoal\s*:"),
+    ("scope", r"\bscope\s*:"),
+    ("trigger", r"\btrigger\s*:"),
+    ("preconditions", r"\bpreconditions?\s*:"),
+    ("minimal_guarantees", r"\bminimal guarantees?\s*:"),
+    ("success_guarantees", r"\bsuccess guarantees?\s*:"),
+    ("main_success_scenario", r"\bmain success scenario\s*:"),
+    ("alternate_flows", r"\balternate flows?\s*:"),
+    ("error_exception_flows", r"\b(?:error|exception|error/exception) flows?\s*:"),
+    ("postconditions", r"\bpostconditions?\s*:"),
+    ("frequency_or_importance", r"\b(?:frequency|importance|frequency/importance)\s*:"),
+    ("trace_links", r"\btrace links?\s*:"),
+]
+NUMBERED_STEP = re.compile(r"(?m)^\s*(?:\d+[\.)]|[-*]\s+\d+[\.)])\s+")
+PLACEHOLDER_FLOW = re.compile(
+    r"\b(?:alternate flows?|error flows?|exception flows?|"
+    r"error/exception flows?)\s*:\s*"
+    r"(?:none|n/a|not applicable|handled normally|standard error)\b",
+    re.I,
+)
+BUNDLE_SIGNAL = re.compile(r";|\b(?:and|or)\b", re.I)
+BROWNFIELD_TRIGGER = re.compile(
+    r"\b(?:brownfield baseline|retrospective baseline|retrospective spec|"
+    r"reconstruct(?:ed|ing)? current|baseline adoption)\b",
+    re.I,
+)
+SOURCE_CLASS_TERMS = [
+    "current governing source",
+    "adopted source",
+    "adapted source",
+    "background proposal",
+    "historical review evidence",
+    "open-decision ledger",
+    "rejected/stale source",
+]
 # Leading markdown list markers that precede a defining ID (not table pipes).
 LEAD = re.compile(r"^[\s#>\-\*\+\d\.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
@@ -206,6 +247,81 @@ def jts_missing_sequence(blocks: dict[str, str]) -> list[str]:
     return sorted(missing)
 
 
+def _definition_text(block: str, item_id: str) -> str:
+    first = block.splitlines()[0] if block.splitlines() else ""
+    first = LEAD.sub("", first.strip())
+    return first.replace(item_id, "", 1).strip(" :-")
+
+
+def bundled_item_candidates(
+    blocks: dict[str, str], *, require_shall: bool = False
+) -> list[str]:
+    bundled = []
+    for item_id, block in blocks.items():
+        statement = _definition_text(block, item_id)
+        statement = re.sub(ID, "", statement)
+        statement = re.sub(
+            r"\b(?:verifies|trace links?|refs?|references)\b.*",
+            "",
+            statement,
+            flags=re.I,
+        )
+        statement = re.sub(r"\s+[.!?]\s*$", "", statement.strip())
+        shall_count = len(re.findall(r"\bshall\b", statement, re.I))
+        sentence_count = len(re.findall(r"[.!?]", statement))
+        if (require_shall and shall_count != 1) or shall_count > 1:
+            bundled.append(item_id)
+        elif sentence_count > 1 or BUNDLE_SIGNAL.search(statement):
+            bundled.append(item_id)
+    return sorted(set(bundled))
+
+
+def use_case_template_issues(blocks: dict[str, str]) -> dict[str, list[str]]:
+    issues = {}
+    for uc, block in blocks.items():
+        missing = [
+            name
+            for name, pattern in UC_REQUIRED_FIELDS
+            if not re.search(pattern, block, re.I)
+        ]
+        if re.search(
+            r"\bmain success scenario\s*:", block, re.I
+        ) and not NUMBERED_STEP.search(block):
+            missing.append("numbered_main_success_scenario")
+        if PLACEHOLDER_FLOW.search(block):
+            missing.append("non_placeholder_alternate_error_flows")
+        if missing:
+            issues[uc] = sorted(set(missing))
+    return issues
+
+
+def overloaded_acceptance_refs(ats: dict[str, set[str]]) -> list[str]:
+    overloaded = []
+    for at, refs in ats.items():
+        uc_refs = {r for r in refs if r.startswith("UC-")}
+        req_refs = {r for r in refs if r.startswith(("FR-", "NFR-"))}
+        if len(uc_refs) > 1 or len(req_refs) > 4:
+            overloaded.append(at)
+    return sorted(overloaded)
+
+
+def brownfield_source_reconciliation_issues(text: str) -> list[str]:
+    if not BROWNFIELD_TRIGGER.search(text):
+        return []
+    issues = []
+    headings = [
+        _norm_heading(m.group(1))
+        for line in text.splitlines()
+        if (m := HEADING.match(line.strip()))
+    ]
+    if "source reconciliation" not in headings:
+        issues.append("missing_source_reconciliation_section")
+    lowered = text.casefold()
+    if not any(term in lowered for term in SOURCE_CLASS_TERMS):
+        issues.append("missing_source_classification_terms")
+    return issues
+
+
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
@@ -238,6 +354,9 @@ def main() -> int:
     }
     at_blocks = item_blocks(text, {"AT"})
     jt_blocks = item_blocks(text, {"JT"})
+    uc_blocks = item_blocks(text, {"UC"})
+    un_blocks = item_blocks(text, {"UN"})
+    fr_blocks = item_blocks(text, {"FR"})
 
     def_ids = []
     in_fence = False
@@ -258,6 +377,11 @@ def main() -> int:
     nfr_bad_unit = unit_mismatches(nfr_blocks)
     weak_ats = ats_missing_scenario_shape(at_blocks)
     weak_jts = jts_missing_sequence(jt_blocks)
+    uc_template_issues = use_case_template_issues(uc_blocks)
+    bundled_uns = bundled_item_candidates(un_blocks)
+    bundled_frs = bundled_item_candidates(fr_blocks, require_shall=True)
+    overloaded_ats = overloaded_acceptance_refs(ats)
+    source_reconciliation_issues = brownfield_source_reconciliation_issues(text)
     approval_requirements = []
     approval_context = {}
     if require_approvals:
@@ -289,6 +413,11 @@ def main() -> int:
         "nfr_units_match_quality": not nfr_bad_unit,
         "ats_have_scenario_shape": not weak_ats,
         "jts_compose_multiple_ats": not weak_jts,
+        "use_cases_have_full_template": not uc_template_issues,
+        "no_obvious_un_bundling": not bundled_uns,
+        "no_obvious_fr_bundling": not bundled_frs,
+        "ats_reference_scenario_sized_scope": not overloaded_ats,
+        "brownfield_sources_reconciled": not source_reconciliation_issues,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
     }
@@ -310,6 +439,11 @@ def main() -> int:
         "nfr_unit_mismatches": nfr_bad_unit,
         "ats_missing_scenario_shape": weak_ats,
         "jts_missing_sequence": weak_jts,
+        "use_case_template_issues": uc_template_issues,
+        "bundled_user_need_candidates": bundled_uns,
+        "bundled_fr_candidates": bundled_frs,
+        "overloaded_acceptance_refs": overloaded_ats,
+        "source_reconciliation_issues": source_reconciliation_issues,
         "approval_requirements": approval_requirements,
         "approval_ledger": {
             "path": approvals_path,

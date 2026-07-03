@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Your job is to produce a **Software Design Document (SDD)** that translates requirements
 into an implementable, evolvable technical approach. The design should explain the system
 boundary, major decisions, quality-attribute trade-offs, runtime behavior, data, interfaces,
@@ -738,9 +746,11 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 
 For component designs, include `--component --parent <product-design>`.
 
-Then run or perform the corresponding `/design-assess` against the completed design. When
-sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
-sub-agents as described in `/design-assess`; otherwise state that review is not independent
+Then run or perform the corresponding `/design-assess` against the completed design. If the
+host exposes sub-agent capability, use fresh-context Mechanical Verifier and Qualitative
+Reviewer sub-agents as described in `/design-assess`; this is mandatory for the
+create-stage assessment loop. If sub-agents are unavailable, state that the host lacks
+sub-agent capability, mark the assessment as degraded and non-independent where applicable,
 and use the adversarial posture. Treat any upstream spec blocker, qualitative finding,
 missing rationale, unaddressed quality attribute, interface issue, testability gap, risk, or
 traceability issue as a defect in the created design/spec set. Revise the upstream artifact

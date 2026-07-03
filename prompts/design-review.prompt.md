@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Perform the qualitative review of a Software Design Document. This command judges design
 substance; it does not replace `/design-verify`. If verification evidence is absent, state
 that gap and either use the latest supplied evidence or recommend `/design-verify`. Use
@@ -30,8 +38,11 @@ review, stop with an upstream spec blocker.
 Use an adversarial posture: try to refute the design, find missing upstream changes,
 unowned interfaces, weak trade-offs, excessive coupling, testability gaps, missing
 test-environment strategy, context-driven concerns the system likely needs, and
-traceability theater. Prefer fresh context, a separate reviewer, or a different model/tool when
-available. If the same agent created the design, state that the review is not independent.
+traceability theater. If the host exposes sub-agent capability, run this review in a
+fresh-context Qualitative Reviewer sub-agent. This is mandatory for review stages. If
+sub-agents are unavailable, state that the host lacks sub-agent capability, mark the review
+as degraded and non-independent when the same agent created the design, and actively look
+for counterexamples.
 
 ## Qualitative Review
 

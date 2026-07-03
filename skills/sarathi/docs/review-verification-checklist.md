@@ -9,7 +9,8 @@ Command verbs have distinct meanings:
 - `review`: make the qualitative adversarial judgment using available evidence.
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
-Run the two parts with fresh context whenever the agent platform supports it:
+Use sub-agents for every verification, review, and assessment command whenever the host
+exposes sub-agent capability. This is mandatory, not an optimization or preference:
 
 1. **Mechanical Verifier sub-agent** — runs deterministic checkers and reports raw evidence,
    IDs, metrics, and command failures without making the final judgment.
@@ -17,8 +18,18 @@ Run the two parts with fresh context whenever the agent platform supports it:
    uses an adversarial posture, and judges correctness, completeness, risks, upstream
    blockers, and the verdict.
 
-If sub-agents are unavailable, the main agent must explicitly say so and still separate the
-mechanical and qualitative passes in the report.
+- `/spec-verify`, `/design-verify`, `/plan-verify`, and `/code-verify` must run in a
+  Mechanical Verifier sub-agent when the host exposes sub-agent capability.
+- `/spec-review`, `/design-review`, `/plan-review`, and `/code-review` must run in a
+  Qualitative Reviewer sub-agent when the host exposes sub-agent capability.
+- `/spec-assess`, `/design-assess`, `/plan-assess`, and `/code-assess` must split into both
+  sub-agent passes when the host exposes sub-agent capability.
+- Creation stages that run their corresponding assessment before handoff must use the same
+  required sub-agent split when the host exposes sub-agent capability.
+
+If sub-agents are unavailable, the main agent must explicitly say sub-agent execution was
+unavailable, state that the result is degraded/non-independent, and still keep the
+mechanical and qualitative passes separate in the report.
 
 ## Required Assessment Verifications
 
@@ -48,4 +59,4 @@ Every non-blocked assessment report must include:
 `/code-assess` additionally includes a pre-commit/local quality-gate scorecard.
 
 Also state whether the mechanical and qualitative passes were run by fresh-context
-sub-agents. If not, state the limitation.
+sub-agents. If not, state the limitation and whether the host lacked sub-agent capability.

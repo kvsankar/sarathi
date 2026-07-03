@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
 tested, documented, production code. Build **one PR at a time**, in plan order, using TDD
 for behavior changes. Aim to pass `/code-assess` honestly: do not tailor code,
@@ -428,15 +436,17 @@ diagnostic signal shape, redaction, correlation/support IDs, event/metric/trace 
 alert hooks, or error mapping/retry/fallback/degraded behavior, run the planned tests or
 checks and record any that cannot run locally and why.
 
-Then run or perform the corresponding `/code-assess` for the completed PR boundary. When
-sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
-sub-agents as described in `/code-assess`; otherwise state that review is not independent and
-use the adversarial posture. Treat any upstream spec/design/plan blocker, failing
-qualitative finding, TDD authenticity issue, design-fidelity issue, missing edge case, NFR
-validation gap, traceability issue, or production-quality concern as a defect. Revise
-upstream artifacts if the review says they must change; otherwise revise tests/code. Repeat
-checker + assessment until `/code-assess` would return Pass or an explicitly accepted
-Pass-with-fixes for that boundary.
+Then run or perform the corresponding `/code-assess` for the completed PR boundary. If the
+host exposes sub-agent capability, use fresh-context Mechanical Verifier and Qualitative
+Reviewer sub-agents as described in `/code-assess`; this is mandatory for the create-stage
+assessment loop. If sub-agents are unavailable, state that the host lacks sub-agent
+capability, mark the assessment as degraded and non-independent where applicable, and use
+the adversarial posture. Treat any upstream spec/design/plan blocker, failing qualitative
+finding, TDD authenticity issue, design-fidelity issue, missing edge case, NFR validation
+gap, traceability issue, or production-quality concern as a defect. Revise upstream
+artifacts if the review says they must change; otherwise revise tests/code. Repeat checker +
+assessment until `/code-assess` would return Pass or an explicitly accepted Pass-with-fixes
+for that boundary.
 
 ## Step 6 — Human review gate (hard stop)
 

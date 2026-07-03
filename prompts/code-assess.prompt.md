@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Assess the implementation against `plan.md`, `design.md`, and `spec.md`. The code was built
 TDD, one PR at a time. Produce the verification sequence below. Do not edit code unless
 asked; report findings only.
@@ -35,7 +43,8 @@ Do not stop after checker JSON. This assessment must include:
 4. Verification B: qualitative implementation, test implementation, TDD, scope,
    production-quality, and quality-gate fitness assessment.
 
-When the platform supports sub-agents, run these as two fresh-context passes:
+If the host exposes sub-agent capability, run these as two fresh-context sub-agent passes.
+This split is mandatory for assessment stages:
 
 - **Mechanical Verifier sub-agent**: run upstream checkers, `check_code.py`, and
   pre-commit/equivalent gates; return raw evidence, metrics, IDs, git evidence, and command
@@ -45,14 +54,14 @@ When the platform supports sub-agents, run these as two fresh-context passes:
   quality, logging/telemetry and error-handling fitness, TDD evidence, scope fidelity, and
   quality-gate fitness adversarially.
 
-If sub-agents are unavailable, state that limitation and keep the mechanical and qualitative
-sections separate.
+If sub-agents are unavailable, state that the host lacks sub-agent capability, mark the
+assessment as degraded and non-independent where applicable, and keep the mechanical and
+qualitative sections separate.
 
 Use an adversarial assessment posture: try to refute correctness, test implementation
-quality, TDD claims, planned-scope fidelity, and upstream artifact fitness. Prefer a fresh
-context, separate reviewer, or different model/tool when available. If the same agent that
-implemented the code is assessing it, state that the review half of the assessment is not
-independent.
+quality, TDD claims, planned-scope fidelity, and upstream artifact fitness. If sub-agents
+are unavailable and the same agent that implemented the code is assessing it, state that the
+review half of the assessment is not independent and actively look for counterexamples.
 
 ## Verification 0 — Upstream Consistency Gate
 

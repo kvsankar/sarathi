@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Perform the qualitative review of a Software Requirements Specification. This command
 judges the substance of the spec; it does not replace `/spec-verify`. If verification
 evidence is absent, state that gap and either use the latest supplied evidence or recommend
@@ -23,11 +31,16 @@ Target the spec file the user provides, defaulting to `spec.md`. Do not edit it 
 explicitly asked.
 
 Use an adversarial posture: try to refute the spec, find missing stakeholder needs,
-ambiguous behavior, weak acceptance criteria, missing non-goals, missing build/deployment
+ambiguous behavior, terse or cryptic use cases, over-bundled needs/requirements/acceptance
+criteria, weak acceptance criteria, missing non-goals, missing build/deployment
 or documentation intent, missing logging/error-handling intent, context-driven concerns the
 product likely needs, and traceability theater.
-Prefer fresh context, a separate reviewer, or a different model/tool when available. If the
-same agent created the spec, state that the review is not independent.
+If the host exposes sub-agent capability, run this review in a fresh-context Qualitative
+Reviewer sub-agent. This is mandatory for review stages. If sub-agents are unavailable,
+state that the host lacks sub-agent capability, mark the review as degraded and
+non-independent when the same agent created the spec, and actively look for counterexamples.
+Load `docs/srs-authoring.md` when reviewing product/system specs, brownfield baseline specs,
+or any spec suspected of passing structurally while being too terse to validate.
 
 ## Qualitative Review
 
@@ -45,10 +58,13 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Scope-specific completeness: the artifact carries the right level of detail for its
   scope, including build/release/deployment and user/developer documentation intent where
   relevant.
-- Use-case quality: actors, goals, preconditions, flows, exceptions, postconditions, and
-  actor value are behavior-focused and complete enough.
+- Use-case quality: primary actor, supporting actors/systems, goal, scope, trigger,
+  preconditions, minimal guarantees, success guarantees, numbered main success scenario,
+  alternate flows, error/exception flows, postconditions, frequency/importance, trace links,
+  and actor value are behavior-focused and complete enough.
 - Requirement quality: FRs are necessary, atomic, feasible, verifiable, unambiguous,
-  design-free, and use "shall" consistently.
+  design-free, and use "shall" consistently. Needs, FRs, NFRs, and ATs fail review when
+  they bundle unrelated stakeholders, behaviors, qualities, or scenarios.
 - Supplementary/NFR coverage: performance, security, privacy, reliability, usability,
   accessibility, interoperability, compliance, data, platform, operational,
   logging/telemetry, error handling, build/deployment, and documentation constraints are
@@ -78,8 +94,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Error-handling quality: UI, API, domain, integration, infrastructure, validation,
   authorization, timeout, offline, and unexpected-failure behavior is specified at the
   externally visible level or explicitly scoped out.
-- Acceptance quality: acceptance tests are black-box, scenario-based, and verify linked
-  UC/FR/NFR intent instead of restating requirements.
+- Acceptance quality: acceptance tests are black-box, scenario-sized, and verify linked
+  UC/FR/NFR intent instead of restating requirements. One AT should not cover a pile of
+  loosely related requirements that need separate scenarios or a journey test.
 - Acceptance granularity: product/system `AT-` items may be broad acceptance intent,
   feature/component `AT-` items should refine bounded behavior, and slice/change `AT-`
   items should be precise enough to map to executable acceptance/e2e/API tests or justified
@@ -90,6 +107,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   gap or require an explicit non-goal/deferment.
 - Traceability and change readiness: links support validation, impact analysis, and future
   revision.
+- Brownfield source reconciliation: retrospective baseline specs classify docs, tests, code,
+  review reports, issue/TODO files, and deployment evidence as governing/adopted/adapted/
+  background/historical/open-decision/stale sources, preserving useful behavioral detail and
+  naming unresolved conflicts.
 
 ## Output
 

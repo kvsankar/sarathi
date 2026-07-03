@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Assess a Software Requirements Specification against the same principles used to write it:
 problem-first requirements, stakeholder need fidelity, use-case behavior in context,
 supplementary/non-functional requirements, deliberate scope management, and end-to-end
@@ -24,21 +32,24 @@ Do not stop after the checker JSON. This assessment must include:
 1. Verification A: structural `check_spec.py` evidence.
 2. Verification B: qualitative spec assessment.
 
-When the platform supports sub-agents, run these as two fresh-context passes:
+If the host exposes sub-agent capability, run these as two fresh-context sub-agent passes.
+This split is mandatory for assessment stages:
 
 - **Mechanical Verifier sub-agent**: run Verification A and return raw checker evidence.
 - **Qualitative Reviewer sub-agent**: read the spec and mechanical evidence, then run
   Verification B adversarially.
 
-If sub-agents are unavailable, state that limitation and keep the two sections separate.
+If sub-agents are unavailable, state that the host lacks sub-agent capability, mark the
+assessment as degraded and non-independent where applicable, and keep the two sections
+separate.
 
 Target the spec file the user provides (default `spec.md`). Do not edit it unless asked;
 report findings only.
 
 Use an adversarial assessment posture: try to refute the spec, find missing stakeholder needs,
-ambiguous behavior, weak acceptance criteria, and traceability theater. Prefer a fresh
-context, separate reviewer, or different model/tool when available. If the same agent that
-created the spec is assessing it, state that the review half of the assessment is not independent.
+ambiguous behavior, weak acceptance criteria, and traceability theater. If sub-agents are
+unavailable and the same agent that created the spec is assessing it, state that the review
+half of the assessment is not independent and actively look for counterexamples.
 
 If the user is assessing a **feature/component spec** or **slice/change spec** (a subset,
 possibly referencing a parent product spec), add `--feature` and point `--parent` at the product

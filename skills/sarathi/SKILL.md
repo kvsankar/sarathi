@@ -34,10 +34,11 @@ Command verbs have distinct meanings:
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
 For project entry, progressive disclosure, resumable WIP state, bootstrap instructions,
-cross-cutting concerns, and prompt maintenance, prefer shared source docs in this repository
+artifact formatting, cross-cutting concerns, and prompt maintenance, prefer shared source docs in this repository
 (`docs/project-entry.md`, `docs/progressive-disclosure.md`, `docs/work-in-progress.md`,
-`docs/bootstrap-instructions.md`, `docs/cross-cutting-concerns.md`, and
-`docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
+`docs/bootstrap-instructions.md`, `docs/artifact-formatting.md`,
+`docs/cross-cutting-concerns.md`, and `docs/process-maintenance.md`) over copying long
+policy blocks into every stage prompt.
 
 ## Instruction Loading
 
@@ -52,6 +53,12 @@ requires them.
   completed stage handoff.
 - Load `docs/project-entry.md` when a repo may be greenfield/brownfield, lacks a recorded
   entry decision, or existing code/artifacts are being adopted or reviewed.
+- Load `docs/artifact-formatting.md` before creating or materially revising any Markdown
+  artifact or report.
+- Load `docs/srs-authoring.md` during `/spec-create`, `/spec-review`, or `/spec-assess`
+  when the user asks for a detailed SRS, when the scope is product/system, when
+  brownfield baseline behavior is being reconstructed, or when a structurally valid spec
+  may be too terse, over-bundled, weak on use-case flows, or weak on acceptance criteria.
 - Load `docs/bootstrap-instructions.md` when offering, adding, updating, or recording a
   project bootstrap instruction in files such as `AGENTS.md` or `CLAUDE.md`.
 - Load exactly one selected `prompts/<stage>.prompt.md` when a stage is invoked or chosen.
@@ -177,6 +184,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   is a recorded Brownfield Baseline Adoption code review of existing code, where
   `/plan-create` and `/plan-review` may be skipped because the review is retrospective and
   must not claim plan conformance.
+- Follow `docs/artifact-formatting.md` for Markdown artifacts and reports. Wrap normal prose
+  and list continuation lines at 80 characters where practical, while allowing longer lines
+  for tables, URLs, code/logs, paths, hashes, IDs, approval records, and syntax where
+  wrapping would reduce correctness or readability.
 - For Brownfield Delta-Only Adoption, baseline code and docs are context, not automatically
   approved upstream artifacts. New implementation deltas still need code-ready upstream
   artifacts unless the user explicitly chooses the lightweight exploratory track.
@@ -338,16 +349,18 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   missing logging/telemetry/error-handling intent, unrealistic tests, or mock drift, update
   the spec/design/plan and record the prevention lesson in the review report, ADR, decision
   log, or retrospective note used by the target repo.
-- Use an adversarial review posture. Prefer a fresh context, separate reviewer, or different
-  model/tool when available. If the same agent performs creation and review, say review was
-  not independent and actively seek counterexamples, traceability theater, and unverified
-  claims before passing.
-- When the platform supports sub-agents, split every assessment into two fresh-context
+- Use an adversarial review posture. Use fresh-context sub-agents for verification, review,
+  assessment, and create-stage self-assessment loops whenever the host exposes sub-agent
+  capability. If sub-agents are unavailable and the same agent performs creation and review,
+  say the review was not independent and actively seek counterexamples, traceability theater,
+  and unverified claims before passing.
+- If the host exposes sub-agent capability, split every assessment into two fresh-context
   sub-agent passes. The Mechanical Verifier runs deterministic/structural checkers and
   returns raw command evidence, metrics, IDs, and failures. The Qualitative Reviewer starts
   from the artifact plus mechanical evidence and produces the adversarial judgment,
   upstream blockers, top fixes, and verdict. If sub-agents are unavailable, disclose that
-  limitation and keep the verification and review sections separate.
+  limitation, state that the result is degraded/non-independent, and keep the verification
+  and review sections separate.
 - Never stop an assessment at checker JSON. Apply the verification/review checklist:
   - `/spec-verify`: run `check_spec.py`; `/spec-review`: qualitatively review spec quality;
     `/spec-assess`: do both.

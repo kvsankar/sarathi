@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Assess a Software Design Document against broad software design practice: requirements and
 stakeholder concerns, context and boundaries, quality attributes and trade-offs, appropriate
 architecture views, cohesive components, explicit interfaces, data/state/side effects,
@@ -26,15 +34,17 @@ Do not stop after checker JSON. This assessment must include:
 2. Verification A: structural `check_design.py` evidence.
 3. Verification B: qualitative design assessment.
 
-When the platform supports sub-agents, run these as two fresh-context passes:
+If the host exposes sub-agent capability, run these as two fresh-context sub-agent passes.
+This split is mandatory for assessment stages:
 
 - **Mechanical Verifier sub-agent**: run the upstream spec checker and design checker,
   returning raw evidence, metrics, IDs, and command failures.
 - **Qualitative Reviewer sub-agent**: read the design, upstream spec, and mechanical
   evidence, then judge upstream fitness and design quality adversarially.
 
-If sub-agents are unavailable, state that limitation and keep the mechanical and qualitative
-sections separate.
+If sub-agents are unavailable, state that the host lacks sub-agent capability, mark the
+assessment as degraded and non-independent where applicable, and keep the mechanical and
+qualitative sections separate.
 
 Use design principles such as single responsibility, cohesion, low coupling, encapsulation,
 separation of concerns, acyclic dependencies, explicit contracts, testability, least
@@ -62,9 +72,9 @@ asked; report findings only.
 
 Use an adversarial assessment posture: try to refute the design, find missing upstream spec
 changes, unaddressed quality attributes, hidden coupling, weak test strategy, and
-traceability theater. Prefer a fresh context, separate reviewer, or different model/tool
-when available. If the same agent that created the design is assessing it, state that the
-review is not independent.
+traceability theater. If sub-agents are unavailable and the same agent that created the
+design is assessing it, state that the review half of the assessment is not independent and
+actively look for counterexamples.
 
 If assessing a **component design** (a subset referencing a parent product design), add
 `--component` and point `--parent` at the product design so its IDs are not orphans. If a

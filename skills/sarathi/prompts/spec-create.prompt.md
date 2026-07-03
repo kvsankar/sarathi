@@ -14,6 +14,14 @@ with the current stage, artifact paths, decisions/assumptions, verification evid
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
+## Artifact formatting
+
+For Markdown artifacts and reports produced or revised in this stage, follow
+`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
+characters where practical, while allowing longer lines for tables, URLs, code/logs,
+paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
+or readability.
+
 Your job is to produce a **Software Requirements Specification (SRS)** grounded in
 strong requirements-engineering practice: understand the problem first, capture real
 stakeholder needs, derive features from those needs, express behavior through use cases,
@@ -35,6 +43,10 @@ management and the requirements pyramid:
 - **Use cases for behavior in context** — use cases name actors, goals, preconditions, main
   success flow, alternatives/exceptions, and postconditions. They should describe observable
   interactions and value, not internal design.
+- **Detail is not design** — a spec may avoid architecture while still being specific about
+  actor-goal flows, alternate/error paths, observable states, external contracts, and acceptance
+  oracles. Load `docs/srs-authoring.md` when product/system scope, brownfield baseline
+  reconstruction, or terse/over-bundled SRS risk calls for stricter detail.
 - **Supplementary requirements for qualities and constraints** — performance, security,
   reliability, usability, interoperability, compliance, data retention, logging, telemetry,
   error handling, build/release, deployment, operability, and other cross-cutting constraints
@@ -267,7 +279,10 @@ Before writing a spec in an existing or unfamiliar repo, apply
   delta touches it or the user asks for baseline review.
 
 Existing specs, tickets, docs, tests, or code are inputs, not a separate mode. Classify
-discovered artifacts as `adopt`, `adapt`, `supersede`, `background`, or `none_found`.
+discovered artifacts as current governing source, adopted source, adapted source, background
+proposal, historical review evidence, open-decision ledger, rejected/stale source, or
+`none_found`. For brownfield baseline adoption, read `docs/srs-authoring.md` and include source
+reconciliation before finalizing the spec.
 Record the user's adoption decision in `.sdlc/process-decisions.yaml` when they choose a
 mode, approve an inferred mode, or accept retrospective baseline review without plan
 creation. Do not use this decision record as an approval ledger.
@@ -435,8 +450,10 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
    `UN-`/`FEAT-`/`UC-`/`FR-` IDs when a non-goal narrows them.
 4. **Features** — list (`FEAT-<AREA>-<NAME>`), each an externally visible capability
    that cites the `UN-` it satisfies.
-5. **Use Cases** — list (`UC-<AREA>-<NAME>`), each expanding a feature with actor, goal,
-   precondition, main success flow, alternates/exceptions, postcondition, and cited `FEAT-`.
+5. **Use Cases** — list (`UC-<AREA>-<NAME>`), each expanding a feature with primary
+   actor, supporting actors/systems, goal, scope, trigger, preconditions, minimal guarantees,
+   success guarantees, numbered main success scenario, alternate flows, error/exception
+   flows, postconditions, frequency/importance, trace links, and cited `FEAT-`.
 6. **Functional Requirements** — list (`FR-<AREA>-<NAME>`), atomic, testable system
    obligations that cite `UC-`/`FEAT-` and avoid design decisions.
 7. **Non-Functional Requirements** — list (`NFR-<AREA>-<NAME>`), measurable supplementary
@@ -467,11 +484,14 @@ Use **descriptive slug-only IDs**. Do not use numeric suffixes.
 
 ## Quality rules
 
-- Every user need maps to ≥1 feature; every feature maps to ≥1 need.
+- Every user need maps to at least one feature; every feature maps to at least one need.
+- User needs, functional requirements, and acceptance tests are atomic enough for human
+  review; do not bundle multiple stakeholders, outcomes, obligations, scenarios, or unrelated
+  quality checks into one item.
 - Work scope and implementation readiness are explicit and realistic. Broad parent specs
   are not mislabeled code-ready when they still require decomposition or child artifacts.
 - Non-goals are explicit enough to prevent accidental implementation or acceptance-test scope.
-- Every use case maps to ≥1 acceptance test; every requirement is testable; critical
+- Every use case maps to at least one acceptance test; every requirement is testable; critical
   multi-step stories have `JT-` coverage or an explicit reason they are out of scope.
 - Each requirement is necessary, atomic, feasible, verifiable, unambiguous, and uses "shall".
 - User needs and use cases stay in the problem/behavior domain; functional requirements state
@@ -521,13 +541,16 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 
 For feature/component or slice/change specs, include `--feature --parent <product-spec>`.
 
-Then run or perform the corresponding `/spec-assess` against the completed spec. When
-sub-agents are available, use fresh-context Mechanical Verifier and Qualitative Reviewer
-sub-agents as described in `/spec-assess`; otherwise state that review is not independent and
-use the adversarial posture. Treat any qualitative finding about problem framing, stakeholder
-needs, non-goals, scope, use cases, requirements, NFRs, acceptance tests, assumptions, or
-traceability as a defect in the spec. Revise the spec and repeat checker + assessment until
-`/spec-assess` would return Pass or an explicitly accepted Pass-with-fixes.
+Then run or perform the corresponding `/spec-assess` against the completed spec. If the
+host exposes sub-agent capability, use fresh-context Mechanical Verifier and Qualitative
+Reviewer sub-agents as described in `/spec-assess`; this is mandatory for the
+create-stage assessment loop. If sub-agents are unavailable, state that the host lacks
+sub-agent capability, mark the assessment as degraded and non-independent where applicable,
+and use the adversarial posture. Treat any qualitative finding about problem framing,
+stakeholder needs, non-goals, scope, use cases, requirements, NFRs, acceptance tests,
+assumptions, or traceability as a defect in the spec. Revise the spec and repeat checker +
+assessment until `/spec-assess` would return Pass or an explicitly accepted
+Pass-with-fixes.
 
 Write the spec to `spec.md` in the workspace unless the user names another file.
 
