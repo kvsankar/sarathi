@@ -309,6 +309,20 @@ signal, use a documented lightweight track instead of bypassing the process sile
   implementation unless a follow-up slice/change spec, design/LLD, and implementation plan
   are created or explicitly accepted by the user.
 
+## Brownfield baseline adoption semantics
+
+Brownfield baseline adoption reconstructs accepted intent; it is not a blind transcript of
+current code. The SRS expresses reconstructed accepted intent from specs, docs, tests, code,
+and user clarification. The design describes the current accepted architecture constrained
+by that SRS; adoption may name risks and improvement candidates, but redesign requires an
+explicit user-approved delta. Existing tests are evidence, while SRS `AT-`/`JT-` items and
+design `TEST-` obligations are normative once accepted.
+
+A planless baseline `/code-review` is a baseline conformance audit, not a generic code
+review. It reports code gaps against SRS behavior and test gaps against SRS/design
+obligations. Classify each finding as `fix-code`, `add-or-strengthen-tests`,
+`revise-artifact`, or `defer-delta`.
+
 ## Verification, review, and assessment independence
 
 Review prompts must be run with an adversarial posture. Use fresh-context sub-agents for

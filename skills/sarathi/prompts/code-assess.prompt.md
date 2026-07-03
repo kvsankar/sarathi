@@ -30,9 +30,10 @@ If `.sdlc/process-decisions.yaml` records **Brownfield Baseline Adoption** and t
 a retrospective review of already-existing code without a plan, use `/code-review` instead
 of `/code-assess`. A planless baseline review may be legitimate, but it is not a full code
 assessment because `check_code.py`, Planned Touch Sets, PR traceability, and TDD evidence
-are plan-dependent. Continue with `/code-assess` only when a code-ready implementation plan
-exists or the user explicitly accepts a degraded assessment and the report states which
-plan-dependent gates were not run.
+are plan-dependent. The `/code-review` report should be a baseline conformance audit with
+separate code gaps against the SRS and test gaps against SRS/design obligations. Continue
+with `/code-assess` only when a code-ready implementation plan exists or the user explicitly
+accepts a degraded assessment and the report states which plan-dependent gates were not run.
 
 Do not stop after checker JSON. This assessment must include:
 

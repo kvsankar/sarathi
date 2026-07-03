@@ -45,6 +45,30 @@ TDD order, and assigned `AT-`/`JT-`/`TEST-` coverage as "not applicable to retro
 baseline review" or as improvement findings, not as false claims of plan conformance. Any
 new implementation delta still requires the normal code-ready plan.
 
+For **Brownfield Baseline Adoption**, shape the review as a **baseline conformance audit**,
+not a generic code review. The accepted SRS/design artifacts are the normative intent; code
+and existing tests are evidence. Produce two primary gap sets:
+
+- **Code gaps against SRS**: behavior missing, different, ambiguous, or accidentally
+  implemented relative to accepted SRS/design intent.
+- **Test gaps against SRS/design**: `AT-`, `JT-`, or design `TEST-` obligations missing,
+  weakly asserted, indirectly covered without a clear oracle, or only covered by risky
+  doubles.
+
+Classify each baseline finding as exactly one of:
+
+- `fix-code`: implementation should change to match accepted SRS/design intent.
+- `add-or-strengthen-tests`: tests should be added or improved to cover accepted
+  SRS/design obligations.
+- `revise-artifact`: the SRS or design appears wrong, overreached, or misread current
+  accepted intent.
+- `defer-delta`: the gap is real but should become an explicit future delta only if the
+  user approves it.
+
+Do not silently propose redesign or implementation work during adoption merely because the
+current architecture is not ideal. Name redesign candidates as risks or future deltas unless
+the user explicitly asks to redesign.
+
 Use an adversarial posture: try to refute correctness, test implementation quality, TDD claims,
 planned-scope fidelity, implementation/design fit, logging/telemetry and error-handling
 fitness, deployment safety, documentation completeness, test-environment execution,
@@ -71,6 +95,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   operational, and quality-attribute risks. Review the test code itself: assertions,
   fixtures, helpers, mocks, generated data, setup/teardown, selectors, determinism, speed,
   isolation, readability, maintainability, and false-positive/false-negative risk.
+- Brownfield baseline conformance: for planless baseline review, report code gaps against
+  accepted SRS behavior separately from test gaps against SRS/design obligations. Existing
+  tests are evidence, not the source of truth; missing or weaker tests do not weaken `AT-`,
+  `JT-`, or `TEST-` obligations.
 - Supplemental inner tests: code-discovered helper, pure-core, parser, mapper, regression,
   characterization, property/table, adapter, or edge-case tests are useful, traceable to the
   nearest `PR-` and relevant `FR-`/`AT-`/`JT-`/`TEST-`/`COMP-`, and stay inside the Planned
@@ -138,9 +166,13 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 
 1. Upstream blockers, if any.
 2. Verification evidence considered, or a clear note that none was available.
-3. Qualitative scorecard.
-4. Top fixes ranked by impact.
-5. **Review verdict**: Pass / Pass-with-fixes / Needs rework / Blocked-upstream.
+3. For brownfield baseline review: baseline conformance audit findings, grouped as
+   **Code gaps against SRS** and **Test gaps against SRS/design**, with each finding
+   classified as `fix-code`, `add-or-strengthen-tests`, `revise-artifact`, or
+   `defer-delta`.
+4. Qualitative scorecard.
+5. Top fixes ranked by impact.
+6. **Review verdict**: Pass / Pass-with-fixes / Needs rework / Blocked-upstream.
 
 After reporting the verdict, stop. Do not move to the next PR, release, deployment, or any
 downstream artifact without explicit user approval.

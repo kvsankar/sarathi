@@ -47,6 +47,45 @@ Classify each discovered artifact set as one of:
 - `background`: use only as context or historical evidence;
 - `none_found`: no relevant artifact was found.
 
+## Brownfield Baseline Semantics
+
+Brownfield baseline adoption reconstructs accepted intent; it is not a blind transcript of
+whatever the current code happens to do.
+
+- The retrospective SRS expresses reconstructed accepted product/system intent from
+  existing specs, docs, tests, code, and user clarification. Existing code is evidence, not
+  the source of truth.
+- After the SRS is drafted, possible outcomes are: current code matches the SRS; current
+  code has implementation gaps; or the SRS overreached, misread, or invented intent and
+  must be revised.
+- The retrospective design describes the current accepted architecture grounded in code and
+  constrained by the approved SRS. It may name risks, technical debt, and improvement
+  candidates, but adoption itself must not silently convert those into redesign work.
+  Redesign requires an explicit user-approved delta.
+- SRS `AT-`/`JT-` items and design `TEST-` obligations are normative verification
+  obligations once the artifacts are accepted. Existing tests are evidence of current
+  coverage, not the source of truth.
+- If existing tests differ from or fall short of the SRS/design obligations, surface the
+  gap rather than rewriting the obligations down to current tests.
+
+A baseline code review is therefore a **baseline conformance audit**, not a generic code
+review. It must report two primary gap sets:
+
+- **Code gaps against SRS**: behavior missing, different, ambiguous, or accidentally
+  implemented relative to reconstructed accepted intent.
+- **Test gaps against SRS/design**: `AT-`, `JT-`, or `TEST-` obligations missing, weakly
+  asserted, indirectly covered without a clear oracle, or only covered by risky doubles.
+
+Classify each finding as exactly one of:
+
+- `fix-code`: implementation should change to match accepted SRS/design intent.
+- `add-or-strengthen-tests`: tests should be added or improved to cover accepted
+  SRS/design obligations.
+- `revise-artifact`: the SRS or design appears wrong, overreached, or misread current
+  accepted intent.
+- `defer-delta`: the gap is real but should become an explicit future delta only if the
+  user approves it.
+
 ## Decision Record
 
 Record the user's adoption decision in `.sdlc/process-decisions.yaml` when the user chooses

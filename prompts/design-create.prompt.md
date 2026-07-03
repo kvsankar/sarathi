@@ -101,8 +101,11 @@ mode with the user before relying on existing artifacts:
 - **Greenfield Adoption**: design from the approved SDLC spec in the normal sequence.
 - **Brownfield Baseline Adoption**: write a retrospective design that reconstructs the
   current architecture from code, runtime behavior, tests, docs, CI/deployment files,
-  contracts, and existing diagrams or ADRs. Clearly label inferred intent, discovered
-  architecture, technical debt, and gaps where design intent cannot be proven.
+  contracts, and existing diagrams or ADRs, constrained by the approved SRS. Describe the
+  current accepted architecture, not an ideal redesign. Clearly label inferred intent,
+  discovered architecture, technical debt, improvement candidates, and gaps where design
+  intent cannot be proven. Adoption itself must not silently convert design weaknesses into
+  redesign work; redesign requires an explicit user-approved delta.
 - **Brownfield Delta-Only Adoption**: design only the requested new slice/change, using the
   existing system as baseline context. Do not turn unrelated legacy architecture into scope
   unless the delta touches it or the user requests baseline review.

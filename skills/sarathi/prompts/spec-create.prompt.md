@@ -271,9 +271,12 @@ Before writing a spec in an existing or unfamiliar repo, apply
 
 - **Greenfield Adoption**: write the normal first spec for a new project.
 - **Brownfield Baseline Adoption**: write a retrospective spec that reconstructs current
-  intended behavior from existing product behavior, code, tests, docs, issues, and other
-  evidence. Clearly label reconstructed intent, evidence sources, inference gaps, and
-  behavior that appears accidental or undocumented.
+  accepted intent from existing specs, docs, tests, code, product behavior, issues, and
+  user clarification. Do not write a blind code transcript. Existing code and tests are
+  evidence, not the source of truth. Clearly label reconstructed intent, evidence sources,
+  inference gaps, and behavior that appears accidental or undocumented. If the resulting SRS
+  appears to overreach or misread accepted intent, revise the SRS rather than treating the
+  code as automatically wrong.
 - **Brownfield Delta-Only Adoption**: write or revise only the slice/change spec for the
   requested new delta. Treat existing behavior outside the delta as baseline unless the
   delta touches it or the user asks for baseline review.

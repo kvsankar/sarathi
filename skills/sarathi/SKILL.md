@@ -79,7 +79,9 @@ operating under a recorded SDLC decision:
   retrospective spec/design creation and review of the current system. A baseline
   `/code-review` may skip `/plan-create` and `/plan-review` only when the decision is
   recorded and the review clearly says it is judging already-written code against
-  reconstructed intent.
+  reconstructed intent. Baseline review is a conformance audit: accepted SRS/design
+  artifacts are normative, existing code/tests are evidence, and findings are classified as
+  code gaps, test gaps, artifact revisions, or explicit future deltas.
 - **Brownfield Delta-Only Adoption**: the project already exists and the user wants SDLC
   control only for new changes. Discover enough baseline context, then create or revise
   slice/change artifacts for the requested delta. Existing behavior outside the delta is
@@ -191,6 +193,13 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 - For Brownfield Delta-Only Adoption, baseline code and docs are context, not automatically
   approved upstream artifacts. New implementation deltas still need code-ready upstream
   artifacts unless the user explicitly chooses the lightweight exploratory track.
+- For Brownfield Baseline Adoption, the SRS expresses reconstructed accepted intent, not a
+  blind code transcript. The design describes the current accepted architecture constrained
+  by that SRS, not an automatic redesign. Existing tests are coverage evidence, while SRS
+  `AT-`/`JT-` items and design `TEST-` obligations are normative once accepted. A baseline
+  code review reports code gaps against the SRS and test gaps against SRS/design, with each
+  finding classified as `fix-code`, `add-or-strengthen-tests`, `revise-artifact`, or
+  `defer-delta`.
 - If existing specs, designs, plans, ADRs, tickets, docs, tests, CI, or deployment files are
   present, classify each set as `adopt`, `adapt`, `supersede`, `background`, or `none_found`
   before relying on it. Only `adopt`ed or `adapt`ed artifacts can satisfy upstream gates.
