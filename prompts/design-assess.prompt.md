@@ -185,6 +185,13 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   doubles/levels, and likely touch candidates.
 - **Cohesion and coupling** — components have focused responsibilities, stable interfaces,
   explicit dependencies, and no unintentional cycles or boundary leaks.
+- **Readable traceability presentation** — human-facing layer/component/interface headings
+  and primary bullets use readable display names first, not trace IDs. Exact IDs remain
+  checker-visible through `sarathi:entity` annotations, collapsed Machine-readable trace
+  anchors, compact Design ID Glossaries, traceability matrices, test obligations,
+  decision/risk identifiers, and required owner/cross-reference fields. Diagrams use
+  readable rendered labels as primary text; Mermaid node IDs may encode stable IDs, but
+  rendered labels are not ID-only. ID-heavy content is visually secondary or collapsed.
 - **Design heuristics** — single responsibility, information hiding, separation of concerns,
   least sufficient mechanism/YAGNI, useful DRY, and fail-safe behavior are applied where
   they reduce real risk without adding speculative abstraction.

@@ -136,25 +136,62 @@ Python.
 FR-AUTH-SIGNIN and UC-AUTH-SIGNIN drive the design.
 
 # Layers
-- LAYER-APP Application orchestration.
+Application Layer handles request orchestration and dependency direction.
+
+<details>
+<summary>Machine-readable trace anchors</summary>
+
+<!-- sarathi:entity id="LAYER-APP" type="layer" name="Application Layer" -->
+
+</details>
 
 # Components
-- COMP-AUTH in LAYER-APP realizes FR-AUTH-SIGNIN and UC-AUTH-SIGNIN through IFACE-AUTH.
+- Authentication Boundary
+  Responsibility: sign-in policy and identity checks.
+
+```mermaid
+flowchart LR
+  COMP_AUTH["Authentication Boundary"] --> IFACE_AUTH["Authentication Contract"]
+```
+
+<details>
+<summary>Machine-readable trace anchors</summary>
+
+<!-- sarathi:entity id="COMP-AUTH" refs="FR-AUTH-SIGNIN UC-AUTH-SIGNIN" -->
+
+</details>
+
+Design ID Glossary:
+
+| ID | Display Name | Type | Responsibility |
+| --- | --- | --- | --- |
+| COMP-AUTH | Authentication Boundary | Component | Auth policy and identity checks. |
 
 # Interfaces
-- IFACE-AUTH owner: COMP-AUTH. Contract: authenticate credentials.
+- Authentication Contract
+  Owner: Authentication Boundary. Contract: authenticate credentials.
+
+<details>
+<summary>Machine-readable trace anchors</summary>
+
+<!-- sarathi:entity id="IFACE-AUTH" type="interface" name="Authentication Contract" -->
+owner: COMP-AUTH
+
+</details>
 
 # Core vs. Shell
-COMP-AUTH keeps credential policy pure and I/O at the shell.
+Authentication Boundary keeps credential policy pure and I/O at the shell.
 
 # Key Flows
-User calls IFACE-AUTH and COMP-AUTH validates credentials.
+User calls the Authentication Contract, then Authentication Boundary validates
+credentials.
 
 # Data Model
 No persistent state is introduced.
 
 # Design Decisions
-- DEC-AUTH Use existing credential store.
+- DEC-AUTH: Existing Credential Store
+  Decision: use existing credential store.
 
 # Test Strategy
 - TEST-AUTH-POLICY Unit/pure-core tests cover COMP-AUTH policy decisions for
@@ -163,7 +200,8 @@ No persistent state is introduced.
   AT-AUTH-SIGNIN.
 
 # Risks & Trade-offs
-- RISK-AUTH Credential-store outage blocks sign-in.
+- RISK-AUTH: Credential Store Outage
+  Risk: credential-store outage blocks sign-in.
 
 # Traceability Matrix
 FR-AUTH-SIGNIN -> COMP-AUTH -> IFACE-AUTH -> DEC-AUTH.
@@ -584,9 +622,12 @@ def test_check_design_accepts_external_double_with_drift_control(
         "  COMP-AUTH, RISK-DRIFT, and the external vendor SDK contract.",
     )
     text = text.replace(
-        "- RISK-AUTH Credential-store outage blocks sign-in.",
-        "- RISK-AUTH Credential-store outage blocks sign-in.\n"
-        "- RISK-DRIFT Test double drift is a verification risk because the fake\n"
+        "- RISK-AUTH: Credential Store Outage\n"
+        "  Risk: credential-store outage blocks sign-in.",
+        "- RISK-AUTH: Credential Store Outage\n"
+        "  Risk: credential-store outage blocks sign-in.\n"
+        "- RISK-DRIFT: Test Double Drift\n"
+        "  Risk: test double drift is a verification risk because the fake\n"
         "  external vendor SDK host can diverge from the real boundary.",
     )
     design_path.write_text(text, encoding="utf-8")

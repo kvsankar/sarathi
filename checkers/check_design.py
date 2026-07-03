@@ -81,13 +81,32 @@ DRIFT_MITIGATION = re.compile(
 LEAD = re.compile(r"^[\s#>\-\*\+\d\.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 DEF_MARKER = re.compile(r"^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[\.)]\s+)")
+SARATHI_ENTITY = re.compile(r"<!--\s*sarathi:entity\b(?P<attrs>.*?)-->", re.I)
+ANNOTATION_ATTR = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)=\"([^\"]*)\"")
+
+
+def annotation_attrs(line: str) -> dict[str, str]:
+    match = SARATHI_ENTITY.search(line)
+    if not match:
+        return {}
+    return {k.casefold(): v for k, v in ANNOTATION_ATTR.findall(match.group("attrs"))}
+
+
+def _def_id(line: str) -> str | None:
+    """Return a checker-visible design ID defined by a line, including annotations."""
+    attrs = annotation_attrs(line)
+    if attrs.get("id") and ID.fullmatch(attrs["id"]):
+        return attrs["id"]
+    if not DEF_MARKER.match(line):
+        return None
+    match = ID.match(LEAD.sub("", line.strip()))
+    return match.group(0) if match else None
 
 
 def _defline(line: str):
     """Match a design ID at the start of a line after stripping list markers."""
-    if not DEF_MARKER.match(line):
-        return None
-    return ID.match(LEAD.sub("", line.strip()))
+    def_id = _def_id(line)
+    return ID.match(def_id) if def_id else None
 
 
 def id_kind(token: str) -> str:
@@ -127,14 +146,14 @@ def item_blocks(text: str, kinds: set[str]) -> dict[str, str]:
     in_fence = False
     for line in text.splitlines():
         fence = line.strip().startswith("```")
-        m = None if in_fence else _defline(line)
+        def_id = None if in_fence else _def_id(line)
         is_heading = HEADING.match(line.strip()) is not None
-        if m and id_kind(m.group(0)) in kinds:
+        if def_id and id_kind(def_id) in kinds:
             if cur:
                 blocks[cur] = "\n".join(buf)
-            cur, buf = m.group(0), [line]
+            cur, buf = def_id, [line]
         elif cur:
-            if is_heading or (m and id_kind(m.group(0)) in kinds):
+            if is_heading or (def_id and id_kind(def_id) in kinds):
                 blocks[cur] = "\n".join(buf)
                 cur, buf = None, []
             else:
@@ -181,9 +200,9 @@ def defs_and_refs(text: str):
             continue
         ids = [m.group(0) for m in ID.finditer(line)]
         if ids:
-            first = None if in_fence else _defline(line)
+            first = None if in_fence else _def_id(line)
             if first:
-                defined[id_kind(first.group(0))].add(first.group(0))
+                defined[id_kind(first)].add(first)
             refs.update(ids)
     return defined, refs
 
@@ -271,8 +290,8 @@ def main() -> int:
         if line.strip().startswith("```"):
             in_fence = not in_fence
             continue
-        if not in_fence and (m := _defline(line)) and id_kind(m.group(0)) == "IFACE":
-            iface_def_ids.append(m.group(0))
+        if not in_fence and (def_id := _def_id(line)) and id_kind(def_id) == "IFACE":
+            iface_def_ids.append(def_id)
     iface_defs = Counter(iface_def_ids)
     iface_dupes = [i for i, n in iface_defs.items() if n > 1]
     iface_owners: dict[str, str] = {}
@@ -298,8 +317,8 @@ def main() -> int:
         if line.strip().startswith("```"):
             in_fence = not in_fence
             continue
-        if not in_fence and (m := _defline(line)):
-            def_ids.append(m.group(0))
+        if not in_fence and (def_id := _def_id(line)):
+            def_ids.append(def_id)
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
     bad_fmt = malformed_ids(text)
     known = all_ids | req_ids

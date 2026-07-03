@@ -224,6 +224,13 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   Design entities use `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Design test
   obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such
   as `FR-AUTH-10` are invalid.
+- Design artifacts preserve machine-checkable IDs without making prose or diagrams hard to
+  read. Human-facing layer/component/interface headings and primary bullets use readable
+  display names first, not trace IDs. Put exact IDs in `sarathi:entity` Markdown
+  annotations, collapsed Machine-readable trace anchors, compact Design ID Glossaries,
+  traceability matrices, test obligations, decision/risk identifiers, and required
+  owner/cross-reference fields. Diagrams use readable rendered labels as primary text;
+  Mermaid node IDs may encode stable IDs, but rendered labels should not be ID-only.
 - Infer the likely scope from the user's request and state it explicitly. Broad
   product/platform/app requests map to product/system, one capability/subsystem maps to
   feature/component, and bug fixes, PR-sized changes, or local behavior deltas map to

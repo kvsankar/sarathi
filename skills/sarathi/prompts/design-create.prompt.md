@@ -639,6 +639,87 @@ Use **prefix + slug**, no numeric suffix:
   `UC-<AREA>-<NAME>` IDs from `spec.md` they realize. Test obligations may also cite
   `AT-<AREA>-<NAME>` and `JT-<AREA>-<NAME>` acceptance intent from the spec.
 
+## Step 2a — Readable traceability presentation
+
+Every design entity has two names:
+
+- A stable trace ID for checkers and downstream traceability, such as `COMP-AUTH`.
+- A readable display name for humans, such as `Authentication Boundary`.
+
+For human-facing design sections, headings and primary bullets must use readable display
+names first. Do not start visible layer, component, or interface descriptions with trace
+IDs. Put checker-visible IDs in a visually secondary place.
+
+Preferred checker-visible anchor:
+
+```markdown
+<!-- sarathi:entity id="COMP-AUTH" type="component" name="Authentication Boundary" refs="FR-AUTH-SIGNIN UC-AUTH-SIGNIN IFACE-AUTH LAYER-APP" -->
+```
+
+Use `sarathi:entity` annotations as the canonical hidden definition mechanism for
+`LAYER-`, `COMP-`, and `IFACE-` IDs. The checker treats the `id` attribute as the entity
+definition and reads IDs in `refs` or `owner` attributes as exact cross-references. Put
+annotations in one of these visually secondary places:
+
+- A collapsed **Machine-readable trace anchors** block.
+- A compact **Design ID Glossary**.
+- A traceability matrix.
+
+Example component section pattern:
+
+```markdown
+## Components
+
+Readable prose and diagrams use:
+
+- Admin Console
+- Moderator Cockpit
+- Participant Room
+
+<details>
+<summary>Machine-readable trace anchors</summary>
+
+<!-- sarathi:entity id="COMP-ADMIN" type="component" name="Admin Console" refs="FR-ADMIN-DASHBOARD UC-ADMIN-REVIEW IFACE-ADMIN LAYER-WEB" -->
+<!-- sarathi:entity id="COMP-MODERATOR" type="component" name="Moderator Cockpit" refs="FR-MOD-QUEUE UC-MOD-TRIAGE IFACE-MOD LAYER-WEB" -->
+
+</details>
+```
+
+Trace IDs should appear only in these places:
+
+- `sarathi:entity` annotations or a collapsed **Machine-readable trace anchors** block.
+- A compact Design ID Glossary.
+- Traceability matrices.
+- Test obligations.
+- Decision and risk identifiers.
+- Owner fields or exact cross-reference fields where the checker requires them.
+
+In normal prose, use display names. Do not repeat `COMP-AUTH`, `LAYER-APP`, or
+`IFACE-AUTH` in every sentence when readable names are clear.
+
+In diagrams, use readable labels as the primary node or participant text. Prefer
+`Authentication Boundary`; avoid making `COMP-AUTH` the main label. If diagrams need trace
+IDs, place them in a legend, footnote, tooltip, side table, or small secondary label. The
+surrounding text, table, or legend must map every readable diagram label back to its trace
+ID. Mermaid node keys may use IDs for stable syntax, but rendered labels should be readable,
+for example `COMP_AUTH["Authentication Boundary"]`.
+
+Rendered diagram labels must not be only `COMP-*`, `LAYER-*`, or `IFACE-*`. Mermaid node
+IDs may encode stable IDs for syntax, but rendered labels must stay readable, for example
+`COMP_AUTH["Authentication Boundary"]`.
+
+When a design has more than a few components or interfaces, include a short **Design ID
+Glossary** table in the relevant section or before the Traceability Matrix:
+
+| ID | Display Name | Type | Responsibility |
+| --- | --- | --- | --- |
+| `COMP-AUTH` | Authentication Boundary | Component | Signed-cookie admin auth and identity checks. |
+
+This readability layer is additive. Checker requirements stay unchanged: all `LAYER-`,
+`COMP-`, `IFACE-`, `DEC-`, `RISK-`, and `TEST-` IDs remain present in checker-visible
+annotations, exact cross-reference fields, test obligations, decisions, risks, and
+traceability tables, but they are not forced into every human-facing label.
+
 ## Step 3 — Author the design with this exact section order
 
 1. **Overview** — what is being built, system boundary/context, principal stakeholders,
@@ -654,21 +735,27 @@ Use **prefix + slug**, no numeric suffix:
    deployment constraints, documentation constraints, UI mock preference/approval status,
    external constraints, context-driven missed-concern scan results, risks, and assumptions
    that shape the design.
-4. **Layers** — (`LAYER-<SLUG>`); each names its responsibility, allowed dependencies,
-   boundary rules, ownership, and whether it belongs to core policy, application orchestration,
-   adapter/shell, presentation, data, or infrastructure. Dependencies should be acyclic and justified.
-5. **Components** — (`COMP-<SLUG>`); responsibility, layer, dependencies
-   (by `IFACE-`), state/side-effect profile, lifecycle, scaling/deployment notes where
-   relevant, core/shell classification, and the `FR-`/`NFR-`/`UC-` it realizes. Include a
-   **component / association diagram** (Mermaid `flowchart` or `classDiagram`) showing
-   layers, components, dependency arrows, and core-vs-shell boundaries.
-6. **Interfaces** — (`IFACE-<SLUG>`); contract, inputs/outputs, `owner: COMP-<SLUG>`,
-   protocol/schema, auth/trust boundary, error behavior, diagnostic/correlation fields,
-   versioning/compatibility, and QoS expectations where relevant. For boundary contracts,
-   include representative success and error payload shapes or cite the formal schema/example
-   source that tests must use. If the interface is mocked, faked, stubbed, mirrored, or
-   locally re-declared instead of using the real external system or vendor types, state that
-   explicitly as verification risk.
+4. **Layers** — readable layer display names first; each names its responsibility, allowed
+   dependencies, boundary rules, ownership, and whether it belongs to core policy,
+   application orchestration, adapter/shell, presentation, data, or infrastructure.
+   Dependencies should be acyclic and justified. Put `LAYER-` IDs in `sarathi:entity`
+   annotations, a glossary, or traceability tables.
+5. **Components** — readable component display names first; responsibility, layer,
+   dependencies by readable interface name, state/side-effect profile, lifecycle,
+   scaling/deployment notes where relevant, core/shell classification, and the
+   requirements/use cases it realizes. Include a **component / association diagram**
+   (Mermaid `flowchart` or `classDiagram`) showing layers, components, dependency arrows,
+   and core-vs-shell boundaries using readable labels as primary text. Put `COMP-` IDs and
+   exact `FR-`/`NFR-`/`UC-`/`IFACE-` references in annotations, a glossary, test
+   obligations, or traceability tables.
+6. **Interfaces** — readable interface display names first; contract, inputs/outputs,
+   owner by readable component name plus exact `owner="COMP-..."` in the annotation,
+   protocol/schema, auth/trust boundary, error behavior,
+   diagnostic/correlation fields, versioning/compatibility, and QoS expectations where
+   relevant. For boundary contracts, include representative success and error payload
+   shapes or cite the formal schema/example source that tests must use. If the interface is
+   mocked, faked, stubbed, mirrored, or locally re-declared instead of using the real
+   external system or vendor types, state that explicitly as verification risk.
 7. **Core vs. Shell** or **Core vs. Shell / Equivalent Separation** — include a table that classifies each `COMP-` as pure core,
    application/orchestration, adapter/shell, presentation, data, infrastructure, or mixed.
    For the core, list pure decisions, rules, validation, state transitions, calculations,
@@ -685,9 +772,10 @@ Use **prefix + slug**, no numeric suffix:
 9. **Data Model** — a **database schema diagram** (Mermaid `erDiagram`) of entities,
    keys, relationships, ownership, consistency, retention, privacy/security classification,
    migrations, and recovery behavior for any persisted state.
-10. **Design Decisions** — (`DEC-<SLUG>`); decision, alternatives considered, user input
-   received or assumption made, rationale, quality attributes affected, consequences,
-   reversibility, ADR link/path when applicable, and expected revisit triggers.
+10. **Design Decisions** — (`DEC-<SLUG>: Display Name`); decision, alternatives
+   considered, user input received or assumption made, rationale, quality attributes
+   affected, consequences, reversibility, ADR link/path when applicable, and expected
+   revisit triggers.
 11. **Test Strategy** — list explicit `TEST-<AREA>-<NAME>` obligations in a matrix covering
    acceptance/e2e/journey, integration, contract, component/module, unit/pure-core,
    UI/accessibility/visual, migration, operational, and quality-attribute checks as
@@ -713,8 +801,8 @@ Use **prefix + slug**, no numeric suffix:
    accessibility, resilience/DR, migration, localization, abuse/fraud/safety, cost,
    compatibility, or operational review/test that should be planned, or why it is not
    needed now.
-12. **Risks & Trade-offs** — (`RISK-<SLUG>`); risk or technical debt, impact, likelihood,
-   mitigation, owner, trigger, and residual risk.
+12. **Risks & Trade-offs** — (`RISK-<SLUG>: Display Name`); risk or technical debt,
+   impact, likelihood, mitigation, owner, trigger, and residual risk.
 13. **Traceability Matrix** — requirements (`FR-`/`NFR-`/`UC-`/`AT-`/`JT-`) → components →
    interfaces → decisions/tactics → `TEST-` obligations/operational checks.
 
@@ -723,8 +811,9 @@ Use **prefix + slug**, no numeric suffix:
 The markdown `design.md` is the machine-checkable source of truth (IDs must parse). In
 addition, emit `design.html` — a single-file HTML companion that renders the same design
 for easy reading: include each Mermaid diagram in a `<pre class="mermaid">` block and load
-Mermaid from a CDN, with the same section order and ID-keyed tables. Keep both files in
-sync; never put IDs only in the HTML.
+Mermaid from a CDN, with the same section order, readable primary diagram labels, and
+ID-keyed traceability/glossary tables. Keep both files in sync; never put IDs only in the
+HTML.
 
 If the work is UI-facing and the spec records `UI Mock Preference: Required`, also emit
 `mock-ui.html` or update the repo's established mock UI artifact. Include enough static or
@@ -804,7 +893,13 @@ Pass-with-fixes.
 - UI-facing designs honor the spec's UI mock preference. If `UI Mock Preference: Required`,
   `mock-ui.html` or the established mock artifact exists, is referenced from the design, and
   awaits or records explicit user approval before downstream implementation.
-- Every diagram uses IDs as node/entity labels so it maps back to the spec and tables.
+- Human-facing layer, component, and interface headings and primary bullets start with
+  readable display names, not trace IDs. Stable trace IDs live in `sarathi:entity`
+  annotations, glossaries, traceability matrices, test obligations, decision/risk IDs, or
+  exact owner/cross-reference fields.
+- Diagrams use readable labels as primary node/entity/participant text. Any trace IDs in
+  diagrams appear in a legend, side table, tooltip, footnote, or small secondary label, and
+  the surrounding text maps labels back to IDs.
 - Record important alternatives, trade-offs, assumptions, risks, and technical debt. No vague verbs, no "etc.".
 - Create/update ADRs for material decisions and keep ADRs synchronized with `DEC-` entries.
 

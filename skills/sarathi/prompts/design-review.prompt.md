@@ -59,6 +59,12 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   orchestration, framework, and side-effect code where practical.
 - Responsibility design: components have cohesive responsibilities, clear ownership, and
   manageable coupling.
+- Readable traceability presentation: human-facing layer/component/interface headings and
+  primary bullets use readable display names first, not trace IDs; `sarathi:entity`
+  annotations, compact glossaries, traceability matrices, test obligations, decision/risk
+  IDs, and exact owner/cross-reference fields preserve checker-visible IDs; diagrams use
+  readable rendered labels as primary text; and ID-heavy content is visually secondary or
+  collapsed.
 - Interfaces and contracts: APIs, schemas, events, errors, versioning, and compatibility
   are explicit, including representative success/error variants and the fixture/schema/
   generated-client source of truth for tests.

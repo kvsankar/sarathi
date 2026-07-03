@@ -287,6 +287,14 @@ Design test obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Nu
 suffixes such as `FR-AUTH-10` are invalid and should be migrated using
 [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
+Design artifacts must preserve machine-checkable IDs without making prose or diagrams hard
+to read. Human-facing layer/component/interface headings and primary bullets use readable
+display names first, not trace IDs. Put exact IDs in `sarathi:entity` Markdown annotations,
+collapsed Machine-readable trace anchors, compact Design ID Glossaries, traceability
+matrices, test obligations, decision/risk identifiers, and required owner/cross-reference
+fields. Diagrams use readable rendered labels as primary text; Mermaid node IDs may encode
+stable IDs, but rendered labels should not be ID-only.
+
 ## Lightweight track
 
 For spikes, throwaway prototypes, exploratory data/ML work, proof-of-concept integrations,
