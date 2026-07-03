@@ -116,7 +116,7 @@ progress.
 Run the repository's configured one-command quality gate, normally:
 
 ```pwsh
-uv run pre-commit run --all-files
+uv run python -m pre_commit run --all-files
 ```
 
 If the project uses another documented equivalent, run that command instead. Report the

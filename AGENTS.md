@@ -447,13 +447,13 @@ through pre-commit remote hook repositories, npm, pipx, or global package manage
 Install the Git hook in a valid Git checkout with:
 
 ```pwsh
-uv run pre-commit install
+uv run python -m pre_commit install
 ```
 
 Run the configured hooks manually with:
 
 ```pwsh
-uv run pre-commit run --all-files
+uv run python -m pre_commit run --all-files
 ```
 
 The local hooks invoke:

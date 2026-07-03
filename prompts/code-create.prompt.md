@@ -414,7 +414,7 @@ report which evidence is unavailable.
 Then run the configured pre-commit/local quality gate, normally:
 
 ```pwsh
-pre-commit run --all-files
+uv run python -m pre_commit run --all-files
 ```
 
 If the project uses an equivalent command, run that command instead and name it in the
