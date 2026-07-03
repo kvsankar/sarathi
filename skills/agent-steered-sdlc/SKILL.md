@@ -28,11 +28,35 @@ Command verbs have distinct meanings:
 - `review`: make the qualitative adversarial judgment using available evidence.
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
-For cross-cutting concerns and prompt maintenance, prefer the shared source docs in this
-repository (`docs/cross-cutting-concerns.md` and `docs/process-maintenance.md`) over copying
-long policy blocks into every stage prompt.
+For project entry, cross-cutting concerns, and prompt maintenance, prefer the shared source
+docs in this repository (`docs/project-entry.md`, `docs/cross-cutting-concerns.md`, and
+`docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
 
 ## Workflow
+
+Before selecting a stage, determine the project entry mode when the repo is not already
+operating under a recorded SDLC decision:
+
+- **Greenfield Adoption**: the project starts under this SDLC process. Use the normal
+  spec-first sequence.
+- **Brownfield Baseline Adoption**: the project already exists and the user wants
+  retrospective spec/design creation and review of the current system. A baseline
+  `/code-review` may skip `/plan-create` and `/plan-review` only when the decision is
+  recorded and the review clearly says it is judging already-written code against
+  reconstructed intent.
+- **Brownfield Delta-Only Adoption**: the project already exists and the user wants SDLC
+  control only for new changes. Discover enough baseline context, then create or revise
+  slice/change artifacts for the requested delta. Existing behavior outside the delta is
+  accepted as baseline unless touched or explicitly reviewed.
+
+Existing specs, designs, plans, ADRs, tickets, tests, docs, CI, or deployment files are
+discovered inputs in any mode, not a fourth mode. Classify them as `adopt`, `adapt`,
+`supersede`, `background`, or `none_found` according to `docs/project-entry.md`.
+
+Record the user's adoption decision in `.sdlc/process-decisions.yaml` when they choose a
+mode, approve an inferred mode, or explicitly accept a plan-skipping retrospective baseline
+review. This file records process scope and rationale; `.sdlc/approvals.yaml` remains the
+approval attestation ledger.
 
 Select the narrowest command that matches the user's current artifact:
 
@@ -102,8 +126,17 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 
 ## Operating Rules
 
-- Preserve the spec-first order: spec, spec assess, design, design assess, plan,
-  plan assess, code, code assess.
+- Preserve the spec-first order inside the selected adoption mode: spec, spec assess,
+  design, design assess, plan, plan assess, code, code assess. The only built-in exception
+  is a recorded Brownfield Baseline Adoption code review of existing code, where
+  `/plan-create` and `/plan-review` may be skipped because the review is retrospective and
+  must not claim plan conformance.
+- For Brownfield Delta-Only Adoption, baseline code and docs are context, not automatically
+  approved upstream artifacts. New implementation deltas still need code-ready upstream
+  artifacts unless the user explicitly chooses the lightweight exploratory track.
+- If existing specs, designs, plans, ADRs, tickets, docs, tests, CI, or deployment files are
+  present, classify each set as `adopt`, `adapt`, `supersede`, `background`, or `none_found`
+  before relying on it. Only `adopt`ed or `adapt`ed artifacts can satisfy upstream gates.
 - After creating or materially revising any spec, design, ADR, plan, code slice, or review
   report, pause for human review before starting the next downstream stage. The pause is a
   hard collaboration boundary, even when the generated artifact passes mechanical checks.

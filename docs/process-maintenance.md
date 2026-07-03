@@ -31,8 +31,9 @@ Use precise language:
 
 - "Structural check passed" means shape, references, hashes, and declared evidence are
   internally consistent.
-- "Claim" means an agent/project-authored file such as `.sdlc/test-traceability.yaml`,
-  `.sdlc/approvals.yaml`, or a `real_boundary: true` field.
+- "Claim" means an agent/project-authored file or field such as
+  `.sdlc/process-decisions.yaml`, `.sdlc/test-traceability.yaml`,
+  `.sdlc/approvals.yaml`, or `real_boundary: true`.
 - "Verified" should be reserved for evidence backed by a command, observed output, real
   dependency, generated artifact, hash-current attestation, or qualitative review.
 

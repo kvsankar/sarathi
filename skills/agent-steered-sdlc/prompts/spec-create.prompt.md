@@ -243,6 +243,26 @@ non-goals, risks, experiment steps, expected evidence, disposal criteria, and th
 that would trigger a normal product/system, feature/component, or slice/change spec. Mark it
 `Implementation Readiness: Exploratory`; do not mark it Code-ready.
 
+## Project entry and existing artifacts
+
+Before writing a spec in an existing or unfamiliar repo, apply
+`docs/project-entry.md`. Determine whether the work is:
+
+- **Greenfield Adoption**: write the normal first spec for a new project.
+- **Brownfield Baseline Adoption**: write a retrospective spec that reconstructs current
+  intended behavior from existing product behavior, code, tests, docs, issues, and other
+  evidence. Clearly label reconstructed intent, evidence sources, inference gaps, and
+  behavior that appears accidental or undocumented.
+- **Brownfield Delta-Only Adoption**: write or revise only the slice/change spec for the
+  requested new delta. Treat existing behavior outside the delta as baseline unless the
+  delta touches it or the user asks for baseline review.
+
+Existing specs, tickets, docs, tests, or code are inputs, not a separate mode. Classify
+discovered artifacts as `adopt`, `adapt`, `supersede`, `background`, or `none_found`.
+Record the user's adoption decision in `.sdlc/process-decisions.yaml` when they choose a
+mode, approve an inferred mode, or accept retrospective baseline review without plan
+creation. Do not use this decision record as an approval ledger.
+
 ## Spec artifact types by scope
 
 Use the same section order for every spec, but tune the content to the declared scope:

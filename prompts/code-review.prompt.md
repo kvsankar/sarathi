@@ -13,9 +13,20 @@ and review together.
 
 Do not edit code unless explicitly asked.
 
-Before judging the code itself, check whether the upstream spec, design, and plan are fit
-for this implementation. If a latent upstream issue prevents fair code review, stop with an
-upstream blocker and name the affected IDs/sections.
+Before judging the code itself, check the project entry decision in
+`.sdlc/process-decisions.yaml` when present. For normal greenfield work and new brownfield
+deltas, check whether the upstream spec, design, and plan are fit for this implementation.
+If a latent upstream issue prevents fair code review, stop with an upstream blocker and
+name the affected IDs/sections.
+
+For **Brownfield Baseline Adoption**, a retrospective baseline code review may proceed
+without `plan.md` only when the decision record or the user's current instruction explicitly
+allows `code_review_without_plan_allowed_for: baseline_review_only`. In that mode, say the
+review is judging existing code against reconstructed spec/design intent, not against a
+pre-approved implementation plan. Review plan-dependent items such as Planned Touch Set,
+TDD order, and assigned `AT-`/`JT-`/`TEST-` coverage as "not applicable to retrospective
+baseline review" or as improvement findings, not as false claims of plan conformance. Any
+new implementation delta still requires the normal code-ready plan.
 
 Use an adversarial posture: try to refute correctness, test implementation quality, TDD claims,
 planned-scope fidelity, implementation/design fit, logging/telemetry and error-handling

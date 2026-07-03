@@ -12,6 +12,14 @@ honestly: do not tailor the plan, traceability intent, approval records, boundar
 declarations, or review evidence to checker blind spots. The assessment is supposed to find
 risks that structural gates cannot.
 
+Before planning in an existing repo, check `.sdlc/process-decisions.yaml` and
+`docs/project-entry.md`. Brownfield Baseline Adoption may skip plan creation only for
+retrospective review of already-written baseline code. Any new brownfield delta requires a
+normal code-ready implementation plan unless the user explicitly chooses the lightweight
+exploratory track. Existing tickets, roadmaps, and implementation notes are inputs; classify
+them as `adopt`, `adapt`, `supersede`, `background`, or `none_found` before relying on them
+as the governing plan.
+
 ## Core principles (the plan is judged against these)
 
 1. **Small reviewable PRs** — target about **500 changed LOC** (prod + test) per PR, with

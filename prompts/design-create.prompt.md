@@ -75,6 +75,25 @@ architecture references. Record source links and the facts they support in **Dri
 Constraints**, **Tech Stack**, **Design Decisions**, ADRs, or **Risks & Trade-offs**. If the
 user declines research, record any external-fact assumptions explicitly.
 
+## Project entry and existing artifacts
+
+Before writing a design in an existing or unfamiliar repo, apply `docs/project-entry.md`.
+Use the recorded `.sdlc/process-decisions.yaml` mode when present; otherwise determine the
+mode with the user before relying on existing artifacts:
+
+- **Greenfield Adoption**: design from the approved SDLC spec in the normal sequence.
+- **Brownfield Baseline Adoption**: write a retrospective design that reconstructs the
+  current architecture from code, runtime behavior, tests, docs, CI/deployment files,
+  contracts, and existing diagrams or ADRs. Clearly label inferred intent, discovered
+  architecture, technical debt, and gaps where design intent cannot be proven.
+- **Brownfield Delta-Only Adoption**: design only the requested new slice/change, using the
+  existing system as baseline context. Do not turn unrelated legacy architecture into scope
+  unless the delta touches it or the user requests baseline review.
+
+Existing designs, ADRs, diagrams, schemas, tickets, and implementation notes are inputs,
+not a separate mode. Classify them as `adopt`, `adapt`, `supersede`, `background`, or
+`none_found`; only `adopt`ed or `adapt`ed artifacts can satisfy upstream gates.
+
 ## Trade-off and ADR workflow
 
 Architecture decisions are part of the deliverable, not side notes.

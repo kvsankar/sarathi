@@ -9,6 +9,14 @@ Assess the implementation against `plan.md`, `design.md`, and `spec.md`. The cod
 TDD, one PR at a time. Produce the verification sequence below. Do not edit code unless
 asked; report findings only.
 
+If `.sdlc/process-decisions.yaml` records **Brownfield Baseline Adoption** and the user wants
+a retrospective review of already-existing code without a plan, use `/code-review` instead
+of `/code-assess`. A planless baseline review may be legitimate, but it is not a full code
+assessment because `check_code.py`, Planned Touch Sets, PR traceability, and TDD evidence
+are plan-dependent. Continue with `/code-assess` only when a code-ready implementation plan
+exists or the user explicitly accepts a degraded assessment and the report states which
+plan-dependent gates were not run.
+
 Do not stop after checker JSON. This assessment must include:
 
 1. Verification 0: upstream spec/design/plan structural evidence plus qualitative
