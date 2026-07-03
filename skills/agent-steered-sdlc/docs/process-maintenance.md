@@ -8,7 +8,9 @@ must improve judgment without turning every prompt into a checklist wall.
 - Keep stage prompts focused on stage-specific actions, gates, and stop conditions.
 - Put repeated policy in shared docs such as
   [project-entry.md](project-entry.md), [progressive-disclosure.md](progressive-disclosure.md),
-  and [cross-cutting-concerns.md](cross-cutting-concerns.md), and reference it from prompts.
+  [work-in-progress.md](work-in-progress.md),
+  [bootstrap-instructions.md](bootstrap-instructions.md), and
+  [cross-cutting-concerns.md](cross-cutting-concerns.md), and reference it from prompts.
 - Prefer one crisp stage instruction plus one shared reference over copying a concern into
   every create, verify, review, and assess prompt.
 - Keep `SKILL.md` as the always-loaded routing kernel. It should select the project entry
@@ -35,7 +37,7 @@ Use precise language:
 - "Structural check passed" means shape, references, hashes, and declared evidence are
   internally consistent.
 - "Claim" means an agent/project-authored file or field such as
-  `.sdlc/process-decisions.yaml`, `.sdlc/test-traceability.yaml`,
+  `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, `.sdlc/test-traceability.yaml`,
   `.sdlc/approvals.yaml`, or `real_boundary: true`.
 - "Verified" should be reserved for evidence backed by a command, observed output, real
   dependency, generated artifact, hash-current attestation, or qualitative review.

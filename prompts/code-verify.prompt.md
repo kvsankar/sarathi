@@ -5,6 +5,15 @@ agent: agent
 
 # Code Verify
 
+## Workflow state
+
+At the start of this stage, follow `docs/work-in-progress.md`: read `.sdlc/wip.md` if it
+exists, verify important claims against the named artifacts, and use it only as a resume
+note. Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
+with the current stage, artifact paths, decisions/assumptions, verification evidence,
+blockers/open questions, bootstrap status, and next recommended action. Do not store
+secrets or long command logs.
+
 Run verification gates for implemented code. This command is the confidence-run command:
 tests, coverage, pre-commit/equivalent quality gates, logging/error-handling checks,
 build/docs/deployment checks where planned, upstream structural checks, and `check_code.py`.

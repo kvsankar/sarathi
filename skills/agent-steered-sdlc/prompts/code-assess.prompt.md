@@ -5,6 +5,15 @@ agent: agent
 
 # Code Assess
 
+## Workflow state
+
+At the start of this stage, follow `docs/work-in-progress.md`: read `.sdlc/wip.md` if it
+exists, verify important claims against the named artifacts, and use it only as a resume
+note. Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
+with the current stage, artifact paths, decisions/assumptions, verification evidence,
+blockers/open questions, bootstrap status, and next recommended action. Do not store
+secrets or long command logs.
+
 Assess the implementation against `plan.md`, `design.md`, and `spec.md`. The code was built
 TDD, one PR at a time. Produce the verification sequence below. Do not edit code unless
 asked; report findings only.

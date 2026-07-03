@@ -31,9 +31,10 @@ Command verbs have distinct meanings:
 - `review`: make the qualitative adversarial judgment using available evidence.
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
-For project entry, progressive disclosure, cross-cutting concerns, and prompt maintenance,
-prefer shared source docs in this repository (`docs/project-entry.md`,
-`docs/progressive-disclosure.md`, `docs/cross-cutting-concerns.md`, and
+For project entry, progressive disclosure, resumable WIP state, bootstrap instructions,
+cross-cutting concerns, and prompt maintenance, prefer shared source docs in this repository
+(`docs/project-entry.md`, `docs/progressive-disclosure.md`, `docs/work-in-progress.md`,
+`docs/bootstrap-instructions.md`, `docs/cross-cutting-concerns.md`, and
 `docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
 
 ## Instruction Loading
@@ -44,8 +45,13 @@ requires them.
 
 - Always use this `SKILL.md` first for routing, project entry, command selection, and hard
   gates.
+- Load `docs/work-in-progress.md` and read `.sdlc/wip.md` when present before choosing or
+  running an SDLC stage. Update `.sdlc/wip.md` before every hard stop, blocker report, or
+  completed stage handoff.
 - Load `docs/project-entry.md` when a repo may be greenfield/brownfield, lacks a recorded
   entry decision, or existing code/artifacts are being adopted or reviewed.
+- Load `docs/bootstrap-instructions.md` when offering, adding, updating, or recording a
+  project bootstrap instruction in files such as `AGENTS.md` or `CLAUDE.md`.
 - Load exactly one selected `prompts/<stage>.prompt.md` when a stage is invoked or chosen.
   Do not preload all stage prompts just because the workflow contains them.
 - Load `docs/cross-cutting-concerns.md`, `docs/review-verification-checklist.md`,
@@ -78,6 +84,20 @@ Record the user's adoption decision in `.sdlc/process-decisions.yaml` when they 
 mode, approve an inferred mode, or explicitly accept a plan-skipping retrospective baseline
 review. This file records process scope and rationale; `.sdlc/approvals.yaml` remains the
 approval attestation ledger.
+
+Maintain `.sdlc/wip.md` as the resumable workflow handoff. At the start of SDLC work, read
+it if present and verify important claims against the named artifacts. Create or update it
+when SDLC work starts, after material artifact/review/check changes, and before every hard
+human gate or blocker stop. Keep it concise, link to artifacts, and never store secrets.
+If WIP conflicts with governing artifacts or the user's latest instruction, the governing
+artifact or latest instruction wins and WIP should be corrected.
+
+When a project is loaded into the process, offer to add a short bootstrap block to the
+project's agent guidance file so future contexts know to load the SDLC process and
+`.sdlc/wip.md`. Do not modify `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
+`.github/copilot-instructions.md`, `.codex/instructions.md`, or similar bootstrap files
+without the user's explicit consent. Record accepted, declined, or deferred bootstrap status
+in `.sdlc/wip.md` and, when present, `.sdlc/process-decisions.yaml`.
 
 Select the narrowest command that matches the user's current artifact:
 
@@ -118,6 +138,9 @@ These gates are mandatory execution stops, not suggestions.
 - After creating, materially revising, or reviewing a spec, design, ADR, plan, or code
   slice, **end the turn immediately after the status report**. Do not start the next
   downstream command in the same turn.
+- Before ending at a hard human gate, update `.sdlc/wip.md` with current stage, artifact
+  paths, decisions/assumptions, verification evidence, blockers/open questions, bootstrap
+  status, and the exact next recommended action.
 - A completed spec gates `/design-create`. A completed design gates `/plan-create`. A
   completed plan gates `/code-create`. A completed code slice gates the next code slice or
   release/deployment activity.

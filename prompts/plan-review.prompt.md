@@ -5,6 +5,15 @@ agent: agent
 
 # Plan Review
 
+## Workflow state
+
+At the start of this stage, follow `docs/work-in-progress.md`: read `.sdlc/wip.md` if it
+exists, verify important claims against the named artifacts, and use it only as a resume
+note. Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
+with the current stage, artifact paths, decisions/assumptions, verification evidence,
+blockers/open questions, bootstrap status, and next recommended action. Do not store
+secrets or long command logs.
+
 Perform the qualitative review of a work plan. This command judges planning substance; it
 does not replace `/plan-verify`. If verification evidence is absent, state that gap and
 either use the latest supplied evidence or recommend `/plan-verify`. Use `/plan-assess`
