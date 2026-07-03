@@ -5,15 +5,18 @@ description: End-to-end SDLC workflow for agent-steered creation, review, verifi
 
 # Agent-Steered SDLC
 
-Use the installed stage command, prompt, or skill when the host supports one. If a stage is
-not directly invokable, use this skill bundle's `prompts/*.prompt.md` files and follow the
-matching prompt exactly. This skill bundle is expected to be self-contained: `SKILL.md`,
-`agents/`, `prompts/*.prompt.md`, and `checkers/*.py` should be present together. If a
-required bundled stage prompt is missing, treat the skill installation as incomplete: search
-the current workspace and common user skill locations for another `agent-steered-sdlc`
-bundle or this repository's `prompts/*.prompt.md`, report the incomplete install clearly,
-and ask the user to reinstall if no prompt can be found. Do not silently continue as though
-the stage prompt were optional.
+Use the installed stage command, prompt, or skill when the host supports one. Treat this
+`SKILL.md` as the routing kernel: decide project entry mode, select the next stage, enforce
+human gates, and then load only the selected stage prompt and triggered shared docs. If a
+stage is not directly invokable, use this skill bundle's `prompts/*.prompt.md` files and
+follow the matching prompt exactly once that stage is selected. This skill bundle is
+expected to be self-contained: `SKILL.md`, `agents/`, `prompts/*.prompt.md`, `docs/*.md`,
+and `checkers/*.py` should be present together. If a required bundled stage prompt or
+triggered shared doc is missing, treat the skill installation as incomplete: search the
+current workspace and common user skill locations for another `agent-steered-sdlc` bundle
+or this repository's matching `prompts/` or `docs/` file, report the incomplete install
+clearly, and ask the user to reinstall if no source can be found. Do not silently continue
+as though a required prompt or policy doc were optional.
 
 GitHub Copilot CLI note: prompt files do not become arbitrary built-in CLI slash commands.
 The installer creates direct stage skill aliases such as `spec-create`, `code-review`, and
@@ -28,9 +31,27 @@ Command verbs have distinct meanings:
 - `review`: make the qualitative adversarial judgment using available evidence.
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
-For project entry, cross-cutting concerns, and prompt maintenance, prefer the shared source
-docs in this repository (`docs/project-entry.md`, `docs/cross-cutting-concerns.md`, and
+For project entry, progressive disclosure, cross-cutting concerns, and prompt maintenance,
+prefer shared source docs in this repository (`docs/project-entry.md`,
+`docs/progressive-disclosure.md`, `docs/cross-cutting-concerns.md`, and
 `docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
+
+## Instruction Loading
+
+Follow `docs/progressive-disclosure.md`: load the smallest instruction set that can safely
+decide the next action, then load deeper instructions only when the selected stage or risk
+requires them.
+
+- Always use this `SKILL.md` first for routing, project entry, command selection, and hard
+  gates.
+- Load `docs/project-entry.md` when a repo may be greenfield/brownfield, lacks a recorded
+  entry decision, or existing code/artifacts are being adopted or reviewed.
+- Load exactly one selected `prompts/<stage>.prompt.md` when a stage is invoked or chosen.
+  Do not preload all stage prompts just because the workflow contains them.
+- Load `docs/cross-cutting-concerns.md`, `docs/review-verification-checklist.md`,
+  `docs/approval-gates.md`, or checker source/help only when the current stage reaches that
+  concern.
+- Load `docs/process-maintenance.md` when modifying the SDLC process itself.
 
 ## Workflow
 

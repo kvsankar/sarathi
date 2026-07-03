@@ -7,9 +7,12 @@ must improve judgment without turning every prompt into a checklist wall.
 
 - Keep stage prompts focused on stage-specific actions, gates, and stop conditions.
 - Put repeated policy in shared docs such as
-  [cross-cutting-concerns.md](cross-cutting-concerns.md) and reference it from prompts.
+  [project-entry.md](project-entry.md), [progressive-disclosure.md](progressive-disclosure.md),
+  and [cross-cutting-concerns.md](cross-cutting-concerns.md), and reference it from prompts.
 - Prefer one crisp stage instruction plus one shared reference over copying a concern into
   every create, verify, review, and assess prompt.
+- Keep `SKILL.md` as the always-loaded routing kernel. It should select the project entry
+  mode and stage, then load the selected stage prompt and triggered shared docs on demand.
 - Treat create prompts over roughly 250 lines and assess prompts over roughly 200 lines as
   candidates for consolidation unless the extra length is demonstrably stage-specific.
 
