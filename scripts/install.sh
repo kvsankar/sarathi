@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  if command -v bash >/dev/null 2>&1; then
+    exec bash "$0" "$@"
+  fi
+  echo "Sarathi installer requires bash. Run: bash scripts/install.sh ..." >&2
+  exit 2
+fi
+
 set -euo pipefail
 
 if [[ -n "${SARATHI_REPO_ROOT:-}" ]]; then
