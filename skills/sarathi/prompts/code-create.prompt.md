@@ -22,6 +22,20 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Cleanup pass
+
+Before ending any code slice, follow `docs/cleanup-pass.md`: run a bounded cleanup pass over
+touched code, tests, docs, config, and traceability. Fix in-scope odd issues and
+test/security/observability/traceability theater, avoid unrelated churn outside the Planned
+Touch Set, and rerun affected checks after cleanup changes.
+
+## Simplify pass
+
+After cleanup, follow `docs/simplify-pass.md`: remove over-engineered abstractions,
+options, fixtures, checks, or code paths that are not justified by accepted scope, risk,
+constraints, or evidence. Preserve necessary detail, reviewability, traceability, and real
+boundaries, and rerun affected checks after simplification changes.
+
 Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
 tested, documented, production code. Build **one PR at a time**, in plan order, using TDD
 for behavior changes. Aim to pass `/code-assess` honestly: do not tailor code,
@@ -259,14 +273,20 @@ Select tools by ecosystem, using the repo's established stack where available:
   validate, serverless/SAM/CDK synth, package publish dry runs, mobile archive/export
   validation, and environment smoke-test commands where available.
 
-Set explicit thresholds in the plan, pre-commit config, tool config, or test command. If the
-repo lacks thresholds, use these defaults unless the user chooses different standards:
+Set explicit thresholds in the plan, pre-commit config, tool config, or test command. Agents
+must choose higher coverage thresholds when the domain warrants it, but must never lower the
+Sarathi floor. If the repo lacks stricter thresholds, use these defaults:
 
 - Formatter, linter, type checker, dependency audit, and secret scan: zero errors.
 - Unit/integration tests: pass with no skips or xfails unless each is explicitly justified,
   surfaced to the user, and approved before proceeding.
-- Coverage: use the plan's `--cov-min`; if absent, require at least 80% line coverage overall,
-  70% branch coverage where available, and 90% line coverage for pure functional core modules.
+- Coverage: use the plan's `--cov-min` only when it is at or above the Sarathi floor. If
+  absent, require at least 80% line coverage overall, 70% branch coverage where available,
+  and 90% line coverage for pure functional core modules. Raise the bar for deterministic,
+  algorithmic, safety-critical, financial, parsing/serialization, security-policy, migration,
+  or pure mathematical/library code; for example, a purely mathematical astronomy library
+  should normally set a near-exhaustive threshold such as 99.5%+ line coverage plus strong
+  branch/property/oracle checks.
 - Complexity: cyclomatic complexity ≤10 per function/method and cognitive complexity ≤15
   where the tool supports it; document any exception with a reason and test coverage.
 - Module size: treat the checker's `--max-loc` as an advisory maintainability signal unless
@@ -400,7 +420,9 @@ with `python3`; if that is unavailable, retry with `uv run python`.
 Use `--tests-argv` (for example `["pytest","-q","--cov=src"]`) for safe command execution.
 Use `--tests "<cmd>"` only for simple commands that split cleanly; use `--tests-shell` only
 when the project genuinely requires shell syntax such as pipes or compound commands, and
-document the trust boundary. Use the coverage threshold from `plan.md`/the done-definition.
+document the trust boundary. Use the coverage threshold from `plan.md`/the done-definition,
+but refuse any threshold below the Sarathi floor and raise it when the implementation domain
+justifies stronger evidence.
 The checker reads `.sdlc/test-traceability.yaml` by default; pass `--traceability <path>`
 only when the project uses a different map location. Do not use
 `--allow-inline-test-traceability` for new work.
@@ -436,6 +458,20 @@ diagnostic signal shape, redaction, correlation/support IDs, event/metric/trace 
 alert hooks, or error mapping/retry/fallback/degraded behavior, run the planned tests or
 checks and record any that cannot run locally and why.
 
+Then run the general cleanup pass from `docs/cleanup-pass.md`. Re-scan touched code, tests,
+docs, config, and traceability for odd issues, dead code, debug leftovers, stale comments,
+misleading claims, brittle tests, and test/security/observability/traceability theater. Fix
+in-scope issues inside the Planned Touch Set. If cleanup reveals behavior, contract, UX,
+NFR, or broader-scope changes, stop for upstream artifact revision instead of hiding them in
+the slice. Re-run affected tests and gates after cleanup changes.
+
+Then run the simplify pass from `docs/simplify-pass.md`. Remove over-engineered
+abstractions, options, fixtures, checks, or code paths that are not justified by accepted
+scope, risk, constraints, or evidence. Preserve necessary detail, reviewability,
+traceability, and real boundaries. If simplification would change accepted behavior,
+contracts, UX, NFRs, deployment posture, or public docs, stop for governing artifact
+revision. Re-run affected tests and gates after simplification changes.
+
 Then run or perform the corresponding `/code-assess` for the completed PR boundary. If the
 host exposes sub-agent capability, use fresh-context Mechanical Verifier and Qualitative
 Reviewer sub-agents as described in `/code-assess`; this is mandatory for the create-stage
@@ -457,6 +493,9 @@ user's latest message explicitly requested unattended continuation across PRs.
 End with a human-review handoff that includes:
 
 - Completed PR/code slice ID and touched files.
+- Cleanup-pass summary: issues fixed, theater removed, and any follow-up findings.
+- Simplify-pass summary: over-engineered pieces removed, justified complexity kept, and any
+  deferred simplification.
 - Test, checker, pre-commit/local gate, build/deploy, and documentation results.
 - Any assumptions, limitations, skipped checks, or follow-up risks.
 - Recommended next command or next PR ID only after the user approves this slice.
@@ -509,7 +548,14 @@ first completed PR boundary.
   replacement evidence above. Suite is green at each PR boundary.
 - Pre-commit or an equivalent local quality gate is configured, documented, and green.
 - Formatter, lint, type, complexity, dependency/security, coverage, and test thresholds are
-  explicit and met, with documented exceptions only when the user accepts them.
+  explicit and met. Coverage thresholds may be raised by the agent or project, but never
+  reduced below the Sarathi floor.
+- A general cleanup pass ran before handoff. In-scope odd issues and test/security/
+  observability/traceability theater were fixed, and out-of-scope cleanup was reported
+  honestly instead of slipped into the slice.
+- A simplify pass ran after cleanup. Unjustified abstractions, options, fixtures, checks, or
+  code paths were removed, while necessary complexity was tied to accepted scope, risk,
+  constraints, or evidence.
 - Test names stay readable; IDs live in `.sdlc/test-traceability.yaml`, not in test code.
 - No TODO/FIXME/XXX markers, skipped tests, or xfails unless the user explicitly accepts
   them for the current code slice. Do not add SDLC-specific annotations to app code. If a

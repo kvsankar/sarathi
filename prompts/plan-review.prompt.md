@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Perform the qualitative review of a work plan. This command judges planning substance; it
 does not replace `/plan-verify`. If verification evidence is absent, state that gap and
 either use the latest supplied evidence or recommend `/plan-verify`. Use `/plan-assess`
@@ -89,6 +98,16 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - UX/presentation allocation: UI-facing PRs assign baseline styling/layout,
   responsive/accessibility checks, and readable loading/empty/error/validation states, or
   explicitly scope them out.
+- Coverage threshold allocation: the plan's done definition must not lower the Sarathi floor
+  and must raise coverage thresholds when deterministic, algorithmic, financial,
+  safety-critical, security-policy, parser/serializer, migration, or pure mathematical/library
+  code needs stronger evidence.
+- Cleanup-pass allocation: the done definition requires a bounded general cleanup pass before
+  code-slice handoff, including removal of in-scope odd issues and test/security/
+  observability/traceability theater without unrelated churn.
+- Simplify-pass allocation: the done definition requires a simplify pass after cleanup when
+  both apply, and PR slices avoid ceremony, speculative infrastructure, duplicated checks, or
+  coordination cost that does not reduce review risk.
 - Mock UI approval: if the spec/design requires a mock UI, UI-facing PRs reference the
   approved mock artifact and block until approval is explicit.
 - Logging/error-handling allocation: PRs assign structured logs, telemetry, correlation/

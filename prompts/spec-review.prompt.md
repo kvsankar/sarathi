@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Perform the qualitative review of a Software Requirements Specification. This command
 judges the substance of the spec; it does not replace `/spec-verify`. If verification
 evidence is absent, state that gap and either use the latest supplied evidence or recommend
@@ -55,6 +64,8 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Non-goal quality: exclusions and deferred work are explicit and non-contradictory.
 - Scope/readiness fit: scope is product/system, feature/component, or slice/change, and
   Implementation Readiness is realistic.
+- Simplicity fit: requirements are no broader or more speculative than accepted intent, and
+  roles, NFRs, acceptance criteria, and future behaviors earn their complexity.
 - Scope-specific completeness: the artifact carries the right level of detail for its
   scope, including build/release/deployment and user/developer documentation intent where
   relevant.

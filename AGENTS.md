@@ -247,6 +247,26 @@ debugging, support, and operations. Do not leave them as incidental implementati
 - Review commands check the same chain and stop with an upstream blocker when logging,
   telemetry, or error-handling intent is missing from the artifact that should own it.
 
+## General cleanup responsibility
+
+Agents must run a bounded cleanup pass at suitable handoff points, and always before ending
+a `/code-create` code slice. The pass scans touched code, tests, docs, config, and
+traceability for odd issues such as dead code, debug leftovers, stale comments, avoidable
+duplication, brittle tests, misleading claims, and test/security/observability/traceability
+theater. Fix in-scope issues inside the Planned Touch Set, rerun affected checks, and report
+out-of-scope cleanup as a follow-up or upstream artifact revision need. Do not use cleanup
+as permission for unrelated refactors or cosmetic churn.
+
+## Simplify pass responsibility
+
+After cleanup when both apply, and before handoff for specs, designs, plans, and code
+slices, agents must run a simplify pass. The pass removes over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision instead of hiding the change.
+
 ## UI mock responsibility by command
 
 Mock UIs are first-class gates for UI-facing products when the user wants them.
@@ -524,6 +544,12 @@ code/test hygiene: tests pass, labeled coverage output ≥ threshold, PR-ID and
 FR/AT/JT/COMP/TEST traceability, advisory per-module LOC reporting, no unjustified
 TODO/FIXME/XXX/skip/xfail markers, external-boundary double-to-reality evidence, and
 human-approved remaining markers.
+
+Sarathi's executable coverage floor is 80% line coverage overall, 70% branch coverage where
+available, and 90% line coverage for pure functional core modules. Agents may and should set
+higher thresholds when the domain warrants it, such as deterministic algorithmic libraries,
+pure mathematical code, financial calculations, parsers/serializers, security policy, safety
+logic, or migration code. Agents must never lower the threshold below the Sarathi floor.
 
 ```pwsh
 python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json

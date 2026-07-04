@@ -273,6 +273,23 @@ Diagnostics and failure behavior are covered across the lifecycle:
 Reviews stop with an upstream blocker when logging, telemetry, or error-handling intent is
 missing from the artifact that should own it.
 
+## General Cleanup
+
+Agents run a bounded cleanup pass at suitable handoff points, and always before ending a code
+slice, to remove odd issues and theater such as tautological tests, mock-only confidence,
+stale traceability claims, superficial security work, debug leftovers, and misleading docs.
+Cleanup stays inside the current scope; larger discoveries become follow-up findings or
+upstream artifact revisions.
+
+## Simplify Pass
+
+After cleanup when both apply, and before handoff for specs, designs, plans, and code
+slices, agents run a simplify pass. The pass removes over-engineered requirements, layers,
+abstractions, extension points, fixtures, checks, or code paths that are not justified by
+accepted scope, risk, constraints, or evidence. Necessary detail, reviewability,
+traceability, and real boundaries stay intact; larger simplifications become governing
+artifact revisions.
+
 ## Human Gates And YOLO Mode
 
 Default behavior is human-gated:
@@ -397,6 +414,11 @@ python checkers/check_design.py design.md --json
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
 python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json
 ```
+
+For code work, Sarathi's executable coverage floor is 80% line coverage overall, 70% branch
+coverage where available, and 90% line coverage for pure functional core modules. Agents may
+raise the threshold when the risk profile warrants it, and must never lower it below that
+floor.
 
 If `python` is unavailable, try `python3`, then `uv run python`.
 

@@ -34,11 +34,12 @@ Command verbs have distinct meanings:
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
 For project entry, progressive disclosure, resumable WIP state, bootstrap instructions,
-artifact formatting, cross-cutting concerns, and prompt maintenance, prefer shared source docs in this repository
+artifact formatting, cleanup and simplify passes, cross-cutting concerns, and prompt maintenance, prefer
+shared source docs in this repository
 (`docs/project-entry.md`, `docs/progressive-disclosure.md`, `docs/work-in-progress.md`,
 `docs/bootstrap-instructions.md`, `docs/artifact-formatting.md`,
-`docs/cross-cutting-concerns.md`, and `docs/process-maintenance.md`) over copying long
-policy blocks into every stage prompt.
+`docs/cleanup-pass.md`, `docs/simplify-pass.md`, `docs/cross-cutting-concerns.md`, and
+`docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
 
 ## Instruction Loading
 
@@ -55,6 +56,12 @@ requires them.
   entry decision, or existing code/artifacts are being adopted or reviewed.
 - Load `docs/artifact-formatting.md` before creating or materially revising any Markdown
   artifact or report.
+- Load `docs/cleanup-pass.md` during `/code-create`, `/code-review`, `/code-assess`, and
+  whenever a stage is about to hand off work that may contain accumulated odd issues.
+- Load `docs/simplify-pass.md` during `/spec-create`, `/spec-review`, `/spec-assess`,
+  `/design-create`, `/design-review`, `/design-assess`, `/plan-create`, `/plan-review`,
+  `/plan-assess`, `/code-create`, `/code-review`, and `/code-assess`, especially before
+  handoff after cleanup when both apply.
 - Load `docs/srs-authoring.md` during `/spec-create`, `/spec-review`, or `/spec-assess`
   when the user asks for a detailed SRS, when the scope is product/system, when
   brownfield baseline behavior is being reconstructed, or when a structurally valid spec
@@ -317,6 +324,18 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   output must not be hand-edited; docs/format/config exceptions need their replacement
   verification checks; characterization tests may pass first only to pin existing legacy
   behavior before refactoring. Any intentional behavior change returns to normal Red/Green.
+- Run a general cleanup pass at suitable handoff points, and always before ending a
+  `/code-create` code slice. The pass looks for odd issues in touched code, tests, docs,
+  config, and traceability: dead code, debug leftovers, stale comments, duplication, brittle
+  tests, misleading claims, and test/security/observability/traceability theater. Fix
+  in-scope issues within the planned touch set, rerun affected checks, and report any
+  out-of-scope cleanup as a follow-up or upstream artifact revision need.
+- Run a simplify pass after cleanup when both apply, and before handoff for specs, designs,
+  plans, and code slices. Remove over-engineered requirements, layers, abstractions,
+  extension points, fixtures, checks, or code paths that are not justified by accepted
+  scope, risk, constraints, or evidence. Preserve necessary detail and reviewability; if
+  simplification changes accepted behavior, contracts, UX, NFRs, deployment posture, or
+  public docs, stop for governing artifact revision instead of hiding the change.
 - Treat build and deployment ownership as part of artifact ownership: specs define
   externally relevant build/release/deployment needs or non-goals; designs define artifact,
   package, release, environment, deployment, validation, smoke, and rollback strategy; plans

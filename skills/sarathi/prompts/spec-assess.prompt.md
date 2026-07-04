@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Assess a Software Requirements Specification against the same principles used to write it:
 problem-first requirements, stakeholder need fidelity, use-case behavior in context,
 supplementary/non-functional requirements, deliberate scope management, and end-to-end
@@ -106,6 +115,8 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   and are prioritized or scoped without silent gold-plating.
 - **Non-goal quality** — explicit exclusions and deferred work prevent accidental scope creep
   and do not contradict user needs, requirements, or acceptance tests.
+- **Simplicity fit** — requirements are no broader or more speculative than accepted intent,
+  and roles, NFRs, acceptance criteria, and future behaviors earn their complexity.
 - **Change-sized scope control** — slice/change specs are limited to the requirement delta,
   reference parent IDs, and clearly state unchanged parent behavior when the change is internal.
 - **Scope and readiness fit** — the spec declares product/system, feature/component, or

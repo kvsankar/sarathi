@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Your job is to produce a **Software Design Document (SDD)** that translates requirements
 into an implementable, evolvable technical approach. The design should explain the system
 boundary, major decisions, quality-attribute trade-offs, runtime behavior, data, interfaces,

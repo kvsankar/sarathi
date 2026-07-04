@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Perform the qualitative review of a Software Design Document. This command judges design
 substance; it does not replace `/design-verify`. If verification evidence is absent, state
 that gap and either use the latest supplied evidence or recommend `/design-verify`. Use
@@ -53,6 +62,8 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   artifact scope and declared readiness.
 - Requirement fit and traceability: design decisions and components trace to FR/NFR/AT/JT
   intent without inventing hidden requirements.
+- Simplicity fit: layers, components, interfaces, ADRs, extension points, and diagrams are
+  justified by accepted requirements, risks, constraints, or quality attributes.
 - Architecture views: context, logical/runtime/deployment/data views are present at the
   right depth.
 - Functional core / imperative shell: pure policy/decision logic is separated from I/O,

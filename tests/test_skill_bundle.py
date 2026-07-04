@@ -6,11 +6,13 @@ SKILL_DOCS = [
     "approval-gates.md",
     "artifact-formatting.md",
     "bootstrap-instructions.md",
+    "cleanup-pass.md",
     "cross-cutting-concerns.md",
     "process-maintenance.md",
     "progressive-disclosure.md",
     "project-entry.md",
     "review-verification-checklist.md",
+    "simplify-pass.md",
     "srs-authoring.md",
     "work-in-progress.md",
 ]

@@ -22,6 +22,21 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Cleanup pass
+
+Use `docs/cleanup-pass.md` during the qualitative pass. A completed code slice should show
+that a bounded cleanup pass happened before handoff and that it removed in-scope odd issues
+and theater without drifting outside the planned scope.
+
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Assess the implementation against `plan.md`, `design.md`, and `spec.md`. The code was built
 TDD, one PR at a time. Produce the verification sequence below. Do not edit code unless
 asked; report findings only.
@@ -133,7 +148,8 @@ state that limitation. TDD evidence from git log is also required by default; us
 limitation. The checker exits `0` only if every structural gate passes and emits metrics:
 
 - **tests_pass** — the suite returns success; **no skipped/xfail** tests.
-- **coverage_pct** — line coverage ≥ `--cov-min` (default 80).
+- **coverage_threshold_not_reduced** — `--cov-min` is at least the Sarathi floor of 80.
+- **coverage_pct** — line coverage ≥ `--cov-min` (default 80, higher when warranted).
 - **bad_id_format** — ID-looking tokens that are not slug-only, including trailing numeric
   IDs, must be empty.
 - **test_traceability** — source/path/status for `.sdlc/test-traceability.yaml`, including
@@ -222,14 +238,20 @@ available. Examples include:
   serverless/SAM/CDK synth, package publish dry runs, mobile archive/export validation, and
   environment smoke-test commands where available.
 
-Verify thresholds are explicit and met. If the repo does not define thresholds, use these
-minimum review expectations:
+Verify thresholds are explicit and met. Agents must choose higher coverage thresholds when the
+domain warrants it, but must never lower the Sarathi floor. If the repo does not define
+stricter thresholds, use these minimum review expectations:
 
 - Formatter, linter, type checker, dependency audit, and secret scan: zero errors.
 - Tests: pass with no skips/xfails unless each is surfaced to the user and approved before
   proceeding.
-- Coverage: use the plan's threshold; if absent, at least 80% line coverage overall,
-  70% branch coverage where available, and 90% line coverage for pure functional core modules.
+- Coverage: use the plan's threshold only when it is at or above the Sarathi floor; if absent,
+  require at least 80% line coverage overall, 70% branch coverage where available, and 90%
+  line coverage for pure functional core modules. Raise the bar for deterministic,
+  algorithmic, safety-critical, financial, parsing/serialization, security-policy, migration,
+  or pure mathematical/library code; for example, a purely mathematical astronomy library
+  should normally set a near-exhaustive threshold such as 99.5%+ line coverage plus strong
+  branch/property/oracle checks.
 - Complexity: cyclomatic complexity ≤10 per function/method and cognitive complexity ≤15
   where supported, with documented exceptions.
 - Security/dependency scans: no critical/high findings; medium findings require accepted
@@ -324,6 +346,12 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Design fidelity** — matches COMP boundaries; pure core stays pure; no layering breaks.
 - **Planned scope fidelity** — changed files/sections stay within each PR's Planned Touch Set;
   any out-of-scope edit is flagged as a plan/design/spec revision need, not accepted silently.
+- **Cleanup-pass quality** — a bounded cleanup pass ran before handoff, removed in-scope odd
+  issues, and avoided unrelated cosmetic churn. Flag dead code, debug leftovers, stale
+  comments, misleading docs, brittle tests, and unnecessary test/security/observability/
+  traceability theater that should have been cleaned up.
+- **Simplify-pass quality** — over-engineered abstractions, options, fixtures, checks, and
+  code paths were removed unless justified by accepted scope, risk, constraints, or evidence.
 - **Readability** — plain test names, clear structure, no dead code, and no traceability ID
   clutter in test names, docstrings, or comments. Test helpers and fixtures should reduce
   drift and duplication without obscuring the behavior being asserted.

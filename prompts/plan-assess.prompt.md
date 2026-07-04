@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Assess a Work Plan against its principles: small reviewable PRs with an advisory size
 target, Red/Green TDD, full coverage of spec and design, explicit Planned Touch Sets,
 planned build/deployment work, planned user/developer documentation work, and
@@ -153,6 +162,16 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   Missing Red/Green is acceptable only for a narrow declared exception with replacement
   verification: generated code only, docs-only, formatting-only, build/deploy config
   validation, or characterization before legacy refactor.
+- **Coverage threshold fitness** — the done definition must not lower the Sarathi floor and
+  must raise coverage thresholds when deterministic, algorithmic, financial, safety-critical,
+  security-policy, parser/serializer, migration, or pure mathematical/library code needs
+  stronger evidence.
+- **Cleanup-pass allocation** — the done definition requires a bounded general cleanup pass
+  before code-slice handoff, including removal of in-scope odd issues and test/security/
+  observability/traceability theater without unrelated churn.
+- **Simplify-pass allocation** — the done definition requires a simplify pass after cleanup
+  when both apply, and PR slices avoid ceremony, speculative infrastructure, duplicated
+  checks, or coordination cost that does not reduce review risk.
 - **Coverage** — no requirement/component silently skipped; NFRs and journey tests are
   scheduled.
 - **Test-level allocation** — each `AT-` maps to an executable acceptance/e2e/API workflow

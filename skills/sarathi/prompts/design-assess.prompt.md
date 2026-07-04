@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Assess a Software Design Document against broad software design practice: requirements and
 stakeholder concerns, context and boundaries, quality attributes and trade-offs, appropriate
 architecture views, cohesive components, explicit interfaces, data/state/side effects,
@@ -171,6 +180,8 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   feature/component design, or slice/change LLD scope and a realistic Implementation
   Readiness. HLDs may pass as Decomposable; only sufficiently local LLD/slice designs should
   be marked Code-ready.
+- **Simplicity fit** — layers, components, interfaces, ADRs, extension points, and diagrams
+  are justified by accepted requirements, risks, constraints, or quality attributes.
 - **Scope-specific content completeness** — product/system HLDs carry context, major
   containers/services/modules, drivers, boundaries, data ownership, quality tactics,
   logging/telemetry strategy, error-handling strategy, build/package/release strategy,

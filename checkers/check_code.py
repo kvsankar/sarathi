@@ -44,6 +44,7 @@ from approvals import (  # noqa: E402
     load_yaml_file,
 )
 
+MIN_COV_MIN = 80.0
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 PR = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 ID = re.compile(
@@ -479,7 +480,7 @@ def main() -> int:
     plan = arg("--plan", "plan.md")
     tests_dir = Path(arg("--tests-dir", "tests"))
     src = Path(arg("--src", "."))
-    cov_min = float(arg("--cov-min", "80"))
+    cov_min = float(arg("--cov-min", str(int(MIN_COV_MIN))))
     max_loc = int(arg("--max-loc", "600"))
     enforce_max_loc = "--enforce-max-loc" in sys.argv
     max_diff_loc = int(arg("--max-diff-loc", "500"))
@@ -616,6 +617,7 @@ def main() -> int:
     gates = {
         "tests_pass": bool(tests_pass),
         "id_format_slug_only": not bad_ids,
+        "coverage_threshold_not_reduced": cov_min >= MIN_COV_MIN,
         "coverage_ok": cov is not None and cov >= cov_min,
         "pr_traceability_100": seen_prs == plan_prs,
         "id_traceability_100": seen == want,
@@ -643,6 +645,7 @@ def main() -> int:
         "tests_pass": gates["tests_pass"],
         "coverage_pct": cov,
         "cov_min": cov_min,
+        "cov_floor": MIN_COV_MIN,
         "pr_traceability_pct": pr_pct,
         "id_traceability_pct": id_pct,
         "id_assertion_traceability_pct": assertion_id_pct,

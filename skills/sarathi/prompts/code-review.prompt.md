@@ -22,6 +22,21 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Cleanup pass
+
+Use `docs/cleanup-pass.md` when judging cleanup quality. A completed code slice should show
+that a bounded cleanup pass happened before handoff and that it removed in-scope odd issues
+and theater without drifting outside the planned scope.
+
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Perform the qualitative review of implemented code, tests, docs, build/deploy work, and
 upstream consistency. This command judges the change; it does not replace `/code-verify`.
 If verification evidence is absent, state that gap and either use the latest supplied
@@ -141,6 +156,12 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   data ownership, failure handling, and dependency direction match the design.
 - Planned scope fidelity: changed files/sections stay within the Planned Touch Set; any
   drift is treated as a plan/design/spec revision need.
+- Cleanup-pass quality: a bounded cleanup pass ran before handoff, removed in-scope odd
+  issues, and avoided unrelated cosmetic churn. Flag dead code, debug leftovers, stale
+  comments, misleading docs, brittle tests, and unnecessary test/security/observability/
+  traceability theater that should have been cleaned up.
+- Simplify-pass quality: over-engineered abstractions, options, fixtures, checks, and code
+  paths were removed unless justified by accepted scope, risk, constraints, or evidence.
 - Build/deployment completeness: assigned artifacts, deployment scripts/manifests,
   migrations, smoke checks, rollback checks, and release docs are credible and verified
   where planned.
@@ -157,7 +178,8 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   observability, configuration/secrets handling, reliability, accessibility, and performance
   concerns are handled to the level required by the spec/design.
 - Quality-gate fitness: pre-commit/equivalent gates are language-appropriate, thresholded,
-  aligned with CI, and not trivially bypassed.
+  aligned with CI, and not trivially bypassed. Coverage thresholds must not be below the
+  Sarathi floor, and the reviewer must judge whether the domain should have raised them.
 - Maintainability: code is readable, cohesive, appropriately factored, and avoids dead or
   speculative code. Test helpers and fixtures are factored enough to prevent drift without
   hiding the behavior being asserted.

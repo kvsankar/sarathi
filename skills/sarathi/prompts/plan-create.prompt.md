@@ -22,6 +22,15 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+## Simplify pass
+
+Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
+layers, abstractions, extension points, fixtures, checks, or code paths that are not
+justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
+reviewability, traceability, and real boundaries. If simplification would change accepted
+behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
+artifact revision.
+
 Your job is to produce a **Work Plan** that either decomposes broad work into smaller
 code-ready work items or turns an already code-ready slice/change into tested,
 production-quality code delivered as small pull requests. Aim to pass `/plan-assess`
@@ -254,7 +263,11 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
   hooks, APM instrumentation, service/resource names, latency/throughput/error/saturation
   metrics, dashboards, SLO/SLI signals, exporter/provider configuration, error mapping,
   retry/fallback/degraded behavior, and safe UI/API messages.
-- **Done definition**: coverage bar, lint/format gates, review rules.
+- **Done definition**: coverage bar, lint/format gates, review rules. Coverage thresholds may
+  be raised above the Sarathi floor when the risk profile warrants it, but must never be set
+  below 80% line coverage overall, 70% branch coverage where available, or 90% line coverage
+  for pure functional core modules. Include the required general cleanup pass before code
+  slice handoff.
 - **Test mix**: which acceptance, unit, component, contract, integration, UI/accessibility,
   quality-attribute, migration, and operational checks are required by the spec/design; for
   boundary-facing tests, which shared fixtures, schemas, generated clients, captured

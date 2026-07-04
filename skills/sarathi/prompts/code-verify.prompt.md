@@ -120,7 +120,19 @@ uv run python -m pre_commit run --all-files
 ```
 
 If the project uses another documented equivalent, run that command instead. Report the
-command, tools covered, thresholds, and pass/fail.
+command, tools covered, thresholds, pass/fail, and whether any coverage threshold is below
+the Sarathi floor.
+
+## Cleanup Evidence
+
+If the code-create handoff, `.sdlc/wip.md`, or review notes mention a cleanup pass, report
+that evidence and any files it claims to have cleaned. Do not make a qualitative judgment in
+verify; `/code-review` and `/code-assess` judge whether the cleanup pass was sufficient.
+
+If the code-create handoff, `.sdlc/wip.md`, or review notes mention a simplify pass, report
+that evidence and any over-engineered pieces it claims to have removed or justified. Do not
+make a qualitative judgment in verify; `/code-review` and `/code-assess` judge whether the
+simplify pass was sufficient.
 
 ## Logging, Error, Build, Documentation, And Deployment Verification
 

@@ -146,6 +146,40 @@ def test_check_code_default_coverage_threshold_is_80(tmp_path, monkeypatch, caps
     assert report["test_traceability"]["source"] == "external"
 
 
+def test_check_code_rejects_reduced_coverage_threshold(tmp_path, monkeypatch, capsys):
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 100%')"],
+        monkeypatch,
+        capsys,
+        extra_args=["--cov-min", "79"],
+    )
+
+    assert rc == 1
+    assert report["cov_min"] == 79.0
+    assert report["cov_floor"] == 80.0
+    assert report["coverage_pct"] == 100.0
+    assert report["gates"]["coverage_threshold_not_reduced"] is False
+    assert report["gates"]["coverage_ok"] is True
+
+
+def test_check_code_accepts_higher_coverage_threshold(tmp_path, monkeypatch, capsys):
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "print('coverage: 99.5%')"],
+        monkeypatch,
+        capsys,
+        extra_args=["--cov-min", "99.5"],
+    )
+
+    assert rc == 0
+    assert report["cov_min"] == 99.5
+    assert report["cov_floor"] == 80.0
+    assert report["coverage_pct"] == 99.5
+    assert report["gates"]["coverage_threshold_not_reduced"] is True
+    assert report["gates"]["coverage_ok"] is True
+
+
 def test_check_code_rejects_unlabeled_percent_as_coverage(
     tmp_path, monkeypatch, capsys
 ):
