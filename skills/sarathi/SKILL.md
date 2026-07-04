@@ -74,6 +74,8 @@ requires them.
   `docs/approval-gates.md`, or checker source/help only when the current stage reaches that
   concern.
 - Load `docs/process-maintenance.md` when modifying the SDLC process itself.
+- Load `docs/release-process.md` when preparing a Sarathi changelog entry, version bump, or
+  release tag.
 
 ## Workflow
 

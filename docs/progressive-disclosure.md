@@ -34,6 +34,7 @@ Load references only when their trigger applies:
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs mechanical verification with qualitative review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |
 | `docs/process-maintenance.md` | Modifying the SDLC process, prompts, skills, checker policy, or shared docs. |
+| `docs/release-process.md` | Preparing `CHANGELOG.md`, a version bump, release commit, or Git tag. |
 | `checkers/check_*.py` help/source | Running, troubleshooting, or changing deterministic verification. |
 
 If a referenced doc is not bundled in an installed skill, fall back to the repository copy

@@ -25,6 +25,8 @@ generating an artifact.
 - Structural checkers for specs, designs, plans, and code/test traceability.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
+- Change history in [CHANGELOG.md](CHANGELOG.md) and release/tagging guidance in
+  [docs/release-process.md](docs/release-process.md).
 
 Shared lifecycle policy lives in [docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md).
 Prompt authors should use [docs/process-maintenance.md](docs/process-maintenance.md) to keep
@@ -461,6 +463,8 @@ for GitHub Copilot project-scoped prompts.
 
 ## More Detail
 
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
+- Release process: [docs/release-process.md](docs/release-process.md)
 - Overview page: [docs/sarathi.html](docs/sarathi.html)
 - Review checklist: [docs/review-verification-checklist.md](docs/review-verification-checklist.md)
 - Slug ID migration: [docs/slug-id-migration.md](docs/slug-id-migration.md)

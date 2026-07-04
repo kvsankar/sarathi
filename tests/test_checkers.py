@@ -778,6 +778,71 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["test_obligation_coverage_pct"] == 100.0
 
 
+def test_check_plan_accepts_test_traceability_filename(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8")
+        + "\nTraceability file: `.sdlc/test-traceability.yaml`.\n",
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["bad_id_format"] == []
+
+
+def test_check_plan_rejects_lowercase_pr_ids(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "PR-AUTH-SIGNIN", "pr-auth-signin"
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert "pr-auth-signin" in report["bad_id_format"]
+
+
 def test_check_plan_flags_external_double_without_mitigation(
     tmp_path, monkeypatch, capsys
 ):

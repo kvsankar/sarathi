@@ -56,8 +56,10 @@ VALID_ANY = re.compile(
     rf"(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|LAYER|COMP|IFACE|DEC|RISK)"
-    r"(?:-[A-Za-z0-9]+)+\b",
+    r"\b(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR)-"
+    r"[A-Za-z0-9]+-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*|"
+    r"(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Za-z0-9]+"
+    r"(?:-[A-Za-z0-9]+)*)\b",
     re.I,
 )
 MARKER_PATTERNS = (

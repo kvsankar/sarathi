@@ -11,6 +11,7 @@ SKILL_DOCS = [
     "process-maintenance.md",
     "progressive-disclosure.md",
     "project-entry.md",
+    "release-process.md",
     "review-verification-checklist.md",
     "simplify-pass.md",
     "srs-authoring.md",

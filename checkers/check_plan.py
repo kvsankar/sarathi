@@ -53,7 +53,9 @@ VALID_ANY = re.compile(
     rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:MILE|WORK|PR|FR|UC|NFR|AT|JT|TEST|COMP)(?:-[A-Za-z0-9]+)+\b",
+    r"\b(?:(?:MILE|WORK|PR|FR|UC|NFR|AT|JT|TEST)-[A-Za-z0-9]+"
+    r"-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*|COMP-[A-Za-z0-9]+"
+    r"(?:-[A-Za-z0-9]+)*)\b",
     re.I,
 )
 LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)

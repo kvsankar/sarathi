@@ -47,8 +47,9 @@ VALID_ANY = re.compile(
     rf"(?:FR|UC|NFR|AT|JT|TEST)-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
 )
 ID_CANDIDATE = re.compile(
-    r"\b(?:LAYER|COMP|IFACE|DEC|RISK|FR|UC|NFR|AT|JT|TEST)"
-    r"(?:-[A-Za-z0-9]+)+\b",
+    r"\b(?:(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Za-z0-9]+"
+    r"(?:-[A-Za-z0-9]+)*|(?:FR|UC|NFR|AT|JT|TEST)-[A-Za-z0-9]+"
+    r"-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)\b",
     re.I,
 )
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)

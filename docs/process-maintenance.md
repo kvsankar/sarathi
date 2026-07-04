@@ -56,3 +56,15 @@ Use precise language:
 
 Do not let a green checker result imply semantic correctness, human consent, true TDD
 history, or real-boundary execution unless the evidence actually proves that.
+
+## Change And Release Records
+
+- Update top-level `CHANGELOG.md` for user-visible prompt, skill, checker, installer, and
+  documentation changes.
+- Use [release-process.md](release-process.md) when preparing a version bump, release
+  commit, or Git tag.
+- Keep release notes focused on behavior, compatibility, install impact, checker policy,
+  and maintainer workflow. Avoid burying important process changes in generic refactor
+  wording.
+- Do not tag a release until `pyproject.toml`, `CHANGELOG.md`, bundled skill docs, and
+  installer dry runs are consistent.
