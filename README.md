@@ -82,8 +82,8 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 
 ## Supported Targets
 
-- **Codex**: installs the `sarathi` skill and direct prompt commands under
-  `~/.codex/prompts`. Invoke direct prompts as `/prompts:spec-create`,
+- **Codex**: installs the `sarathi` and `api-contract-examples` skills and direct prompt
+  commands under `~/.codex/prompts`. Invoke direct prompts as `/prompts:spec-create`,
   `/prompts:design-create`, etc. after restarting Codex.
 - **GitHub Copilot**: installs prompt files for VS Code Copilot Chat and first-class agent
   skills for Copilot CLI/agent surfaces. User scope installs prompts under the VS Code user
@@ -93,7 +93,8 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
   plus `<project>/.agents/skills/sarathi`. Copilot CLI does not treat prompt
   files as custom built-in slash commands, so the installer also creates direct stage skill
   aliases such as `code-review`, `code-verify`, and `code-assess` under the same skill roots.
-- **Claude Code**: installs slash commands and the skill.
+- **Claude Code**: installs slash commands plus the `sarathi` and
+  `api-contract-examples` skills.
 - **Gemini CLI**: installs command TOML files.
 - **Claude and Pi**: exports prompt packs under `.ai-prompts/` for manual import or use.
 - **Checkers**: installs `checkers/` into the target workspace unless skipped with
@@ -102,7 +103,8 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 Installed skill bundles are self-contained: each `sarathi` skill copy includes
 `SKILL.md`, agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. Prompt
 commands or stage skill aliases are also installed separately where host tools can expose
-them directly.
+them directly. The sibling `api-contract-examples` skill includes its ecosystem reference,
+deterministic OpenAPI-to-Markdown renderer, and deterministic Markdown-to-HTML renderer.
 
 Every dry or real install prints the destination folders before doing work.
 

@@ -11,6 +11,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 ### Added
 
 - Add the top-level changelog and maintainer release/tagging process.
+- Add the cross-ecosystem `api-contract-examples` skill, including deterministic OpenAPI 3 to
+  Markdown and Markdown-to-HTML renderers and Sarathi design-to-code obligations for
+  schema-owned examples, conformance, reproducibility, and freshness.
 
 ### Fixed
 

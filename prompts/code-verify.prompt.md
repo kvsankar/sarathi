@@ -147,6 +147,9 @@ Run planned commands where present:
   paths.
 - Build/package command and artifact existence/version check.
 - Documentation build/generation/link/example checks.
+- For `API Surface: Present`, explicit-example conformance, deterministic two-run comparison,
+  generated Markdown and derived HTML freshness diffs, Markdown-to-HTML derivation, and
+  source-of-truth checks required by `api-contract-examples`.
 - Deployment lint/dry-run/plan/template/smoke/rollback checks.
 - Test-environment checks named by the plan, including developer-local and any shared
   integration/test, staging/pre-production, production canary/smoke, or synthetic-monitor

@@ -301,6 +301,10 @@ Sarathi floor. If the repo lacks stricter thresholds, use these defaults:
   examples or snippets are runnable where practical; public API/reference docs match the
   implemented contract; no user/developer-facing behavior change ships undocumented unless
   the plan explicitly says docs are out of scope.
+- API contract examples: when `API Surface: Present`, invoke `api-contract-examples`, keep
+  annotations in the authoritative contract, regenerate Markdown and derive HTML from it,
+  validate explicit examples, prove two-run byte/hash stability for both outputs, and run the
+  stale-output gate. Never hand-edit generated example documentation.
 
 ## Step 1 — Confirm context
 

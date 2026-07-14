@@ -79,6 +79,11 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Interfaces and contracts: APIs, schemas, events, errors, versioning, and compatibility
   are explicit, including representative success/error variants and the fixture/schema/
   generated-client source of truth for tests.
+- API contract examples: when `API Surface: Present`, examples are owned by the authoritative
+  contract, human-readable Markdown is generated deterministically, standalone HTML derives
+  only from that Markdown, explicit examples conform to resolved schemas, and generation,
+  two-run stability, freshness, ownership, publication, and `TEST-` obligations satisfy the
+  `api-contract-examples` skill.
 - Contract realism: boundary tests and mocks are tied to documented producer/consumer
   contracts, shared fixtures, schemas, generated clients, or contract tests, not invented
   convenient shapes.

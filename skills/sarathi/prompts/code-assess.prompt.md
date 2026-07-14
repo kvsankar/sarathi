@@ -267,6 +267,10 @@ stricter thresholds, use these minimum review expectations:
   examples or snippets are runnable where practical; public API/reference docs match the
   implemented contract; no user/developer-facing behavior change ships undocumented unless
   the plan explicitly says docs are out of scope.
+- API contract examples: for `API Surface: Present`, contract annotations are authoritative,
+  explicit examples conform to resolved schemas, generated Markdown covers requests,
+  successes, and errors, HTML derives only from that Markdown, two clean runs are byte/hash
+  stable for both outputs, and regeneration leaves no stale diff.
 
 ## Verification B — Qualitative
 

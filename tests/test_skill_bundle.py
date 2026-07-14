@@ -2,6 +2,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "sarathi"
+API_EXAMPLES_SKILL = ROOT / "skills" / "api-contract-examples"
 SKILL_DOCS = [
     "approval-gates.md",
     "artifact-formatting.md",
@@ -47,3 +48,14 @@ def test_sarathi_skill_bundles_shared_docs() -> None:
         assert (SKILL / "docs" / name).read_bytes() == (
             ROOT / "docs" / name
         ).read_bytes()
+
+
+def test_api_contract_examples_skill_is_self_contained() -> None:
+    required = [
+        "SKILL.md",
+        "agents/openai.yaml",
+        "references/ecosystems.md",
+        "scripts/render_markdown_html.py",
+        "scripts/render_openapi_examples.py",
+    ]
+    assert all((API_EXAMPLES_SKILL / relative).is_file() for relative in required)

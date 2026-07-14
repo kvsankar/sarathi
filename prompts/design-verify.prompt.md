@@ -70,7 +70,10 @@ Report:
 - Any bad IDs, duplicates, orphan refs, component requirement coverage gaps, component test
   obligation gaps, missing/untraced `TEST-` obligations, missing `JT-`-to-`TEST` journey
   coverage visible in the design, ambiguous interface ownership, dependency cycles, or
-  vague hits.
+  declared API-example conformance, Markdown-to-HTML derivation, determinism, and freshness
+  obligations that are structurally missing, plus vague hits. Mechanical verification does
+  not prove example semantics; report the commands and generated-file evidence named by the
+  design for qualitative review.
 - `external_double_mentions`, `external_double_drift_risks`, and
   `external_double_mitigation_tests`. If a design mentions mocked/faked/stubbed or locally
   mirrored external interfaces, the structural gate requires a drift risk plus real-boundary

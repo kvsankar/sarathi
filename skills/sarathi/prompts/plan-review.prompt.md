@@ -119,6 +119,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   smoke, and rollback work is assigned where relevant.
 - Documentation allocation: user/developer docs, generated/reference docs, examples,
   runbooks, and release notes are assigned where relevant.
+- API contract-example allocation: API-facing plans assign the authoritative contract and
+  annotations, deterministic Markdown and derived HTML outputs, conformance and stability
+  tests, freshness gate, ownership, and publication required by `api-contract-examples`.
 - Sequencing and dependencies: prerequisites are ordered, no forward dependency traps, and
   integration points are visible.
 - Parallelism/worktrees: independent tracks are identified safely, with merge risks called

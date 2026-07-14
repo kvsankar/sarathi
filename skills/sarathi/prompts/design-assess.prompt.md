@@ -209,6 +209,11 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
 - **Interfaces and contracts** — APIs/events/schemas/protocols define ownership, inputs,
   outputs, errors, auth/trust, compatibility, quality expectations, representative payload
   variants, and the fixture/schema/generated-client source tests should use.
+- **API contract examples** — when `API Surface: Present`, the authoritative contract owns
+  explicit examples, a human-readable Markdown artifact is generated deterministically,
+  standalone HTML derives only from that Markdown, examples conform after
+  reference/composition resolution, and generation, two-run stability, freshness, ownership,
+  publication, and `TEST-` obligations satisfy `api-contract-examples`.
 - **Logging and telemetry design** — structured logs, events, metrics, traces, audit/support
   IDs, correlation, sinks, retention/sampling, redaction/privacy, alert hooks, and
   human/agent consumers are explicit and compatible with the requirements. When production

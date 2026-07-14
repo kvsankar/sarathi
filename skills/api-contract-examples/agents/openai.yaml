@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Contract Examples"
+  short_description: "Design reproducible API examples and docs"
+  default_prompt: "Use $api-contract-examples to design schema-owned examples with deterministic Markdown and derived HTML for this API."

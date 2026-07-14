@@ -174,6 +174,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   planned and verified or blocks for upstream artifact revision.
 - Documentation completeness: user/developer docs, examples, generated/reference docs,
   runbooks, troubleshooting, and release/migration notes match behavior where planned.
+- API contract examples: when an API surface is present, contract annotations are
+  authoritative, generated Markdown covers representative requests/success/errors, HTML
+  derives only from that Markdown, supported example forms conform, both outputs are
+  reproducible, and freshness enforcement rejects drift and hand edits.
 - Production quality: validation, error handling, logging/telemetry, security/privacy,
   observability, configuration/secrets handling, reliability, accessibility, and performance
   concerns are handled to the level required by the spec/design.

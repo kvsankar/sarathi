@@ -22,7 +22,9 @@ else
 fi
 PROMPT_SOURCE="$REPO_ROOT/prompts"
 CHECKER_SOURCE="$REPO_ROOT/checkers"
+SKILLS_ROOT="$REPO_ROOT/skills"
 SKILL_SOURCE="$REPO_ROOT/skills/sarathi"
+COMPANION_SKILL_NAMES=("api-contract-examples")
 
 TARGET_ROOT="$(pwd)"
 SCOPE="user"
@@ -128,6 +130,12 @@ if [[ ! -d "$SKILL_SOURCE" ]]; then
   echo "Skill source folder not found: $SKILL_SOURCE" >&2
   exit 1
 fi
+for skill_name in "${COMPANION_SKILL_NAMES[@]}"; do
+  if [[ ! -f "$SKILLS_ROOT/$skill_name/SKILL.md" ]]; then
+    echo "Companion skill source folder is incomplete: $SKILLS_ROOT/$skill_name" >&2
+    exit 1
+  fi
+done
 if [[ "$SCOPE" != "project" && "$SCOPE" != "user" ]]; then
   echo "--scope must be project or user" >&2
   exit 2
@@ -335,6 +343,28 @@ copy_skill_folder() {
   fi
 }
 
+copy_additional_skill_folders() {
+  local destination_root="$1" source name destination
+  for name in "${COMPANION_SKILL_NAMES[@]}"; do
+    source="$SKILLS_ROOT/$name"
+    [[ -d "$source" && -f "$source/SKILL.md" ]] || continue
+    destination="$destination_root/$name"
+    rm -rf "$destination"
+    mkdir -p "$destination"
+    cp -R "$source"/. "$destination"/
+    echo "Installed companion skill -> $destination"
+  done
+}
+
+write_additional_skill_dry_run() {
+  local destination_root="$1" source name
+  for name in "${COMPANION_SKILL_NAMES[@]}"; do
+    source="$SKILLS_ROOT/$name"
+    [[ -d "$source" && -f "$source/SKILL.md" ]] || continue
+    echo "Would install companion skill -> $destination_root/$name"
+  done
+}
+
 copy_copilot_stage_skills() {
   local main_skill_dest="$1"
   local skill_root
@@ -386,6 +416,7 @@ install_copilot() {
     while IFS= read -r skill_dest; do
       echo "Would install GitHub Copilot skill -> $skill_dest"
       echo "Would install GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
+      write_additional_skill_dry_run "$(dirname "$skill_dest")"
     done < <(copilot_skill_dests)
     return
   fi
@@ -399,6 +430,7 @@ install_copilot() {
     echo "Installed GitHub Copilot skill -> $skill_dest"
     copy_copilot_stage_skills "$skill_dest"
     echo "Installed GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
+    copy_additional_skill_folders "$(dirname "$skill_dest")"
   done < <(copilot_skill_dests)
   echo "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
   echo "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
@@ -412,10 +444,12 @@ install_codex() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would install Codex skill -> $skill_dest"
     echo "Would install Codex direct prompts -> $prompt_dest"
+    write_additional_skill_dry_run "$(dirname "$skill_dest")"
     return
   fi
   copy_skill_folder "$skill_dest"
   echo "Installed Codex skill -> $skill_dest"
+  copy_additional_skill_folders "$(dirname "$skill_dest")"
   copy_codex_prompt_files "$prompt_dest"
   echo "Installed Codex direct prompts -> $prompt_dest"
   echo "Codex direct prompts are available as /prompts:spec-create, /prompts:design-create, etc. after restart."
@@ -433,6 +467,7 @@ install_claude_code() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would install Claude Code slash commands -> $dest"
     echo "Would install Claude Code skill -> $skill_dest"
+    write_additional_skill_dry_run "$(dirname "$skill_dest")"
     return
   fi
   mkdir -p "$dest"
@@ -442,6 +477,7 @@ install_claude_code() {
   echo "Installed Claude Code slash commands -> $dest"
   copy_skill_folder "$skill_dest"
   echo "Installed Claude Code skill -> $skill_dest"
+  copy_additional_skill_folders "$(dirname "$skill_dest")"
 }
 
 install_gemini() {
@@ -484,6 +520,7 @@ install_claude_export() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would export Claude prompt pack -> $dest"
     echo "Would include skill bundle -> $dest/skills/sarathi"
+    write_additional_skill_dry_run "$dest/skills"
     return
   fi
   mkdir -p "$dest"
@@ -491,6 +528,7 @@ install_claude_export() {
     prompt_body "$file" > "$dest/$(command_name "$file").md"
   done
   copy_skill_folder "$dest/skills/sarathi"
+  copy_additional_skill_folders "$dest/skills"
   echo "Exported Claude prompt pack -> $dest"
   echo "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
 }
@@ -505,6 +543,7 @@ install_pi_export() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would export Pi prompt pack -> $dest"
     echo "Would include skill bundle -> $dest/skills/sarathi"
+    write_additional_skill_dry_run "$dest/skills"
     return
   fi
   mkdir -p "$dest"
@@ -512,6 +551,7 @@ install_pi_export() {
     prompt_body "$file" > "$dest/$(command_name "$file").md"
   done
   copy_skill_folder "$dest/skills/sarathi"
+  copy_additional_skill_folders "$dest/skills"
   echo "Exported Pi prompt pack -> $dest"
   echo "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }

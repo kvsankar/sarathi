@@ -68,6 +68,10 @@ requires them.
   may be too terse, over-bundled, weak on use-case flows, or weak on acceptance criteria.
 - Load `docs/bootstrap-instructions.md` when offering, adding, updating, or recording a
   project bootstrap instruction in files such as `AGENTS.md` or `CLAUDE.md`.
+- Load the companion `api-contract-examples` skill during design, plan, code, verification,
+  or review work whenever an API surface is introduced, changed, generated, or consumed.
+  If it is unavailable, treat an API-facing Sarathi installation as incomplete and ask the
+  user to reinstall the skill bundle.
 - Load exactly one selected `prompts/<stage>.prompt.md` when a stage is invoked or chosen.
   Do not preload all stage prompts just because the workflow contains them.
 - Load `docs/cross-cutting-concerns.md`, `docs/review-verification-checklist.md`,
@@ -361,6 +365,11 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   documentation architecture, source locations, generated/reference docs, publishing,
   ownership, and validation checks; plans assign documentation files and checks to work
   items or PRs; code updates docs with implementation and validates them where practical.
+- Treat machine-readable API examples as part of contract ownership. API-facing designs
+  declare the authoritative schema, example annotations, deterministic Markdown artifact and
+  its derived HTML, generation and freshness commands, and schema-conformance/determinism
+  `TEST-` obligations; plans assign them; code regenerates and verifies them without
+  hand-editing generated output.
 - Treat UI mock ownership as part of artifact ownership for UI-facing products: specs ask
   the user whether a mock UI is required, optional, not needed, or deferred; designs create
   or update `mock-ui.html` or the repo's established mock location when required, covering

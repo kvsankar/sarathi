@@ -15,7 +15,8 @@ This is a prompt, skill, and checker repository. Canonical source files live in:
   prompt maintenance guidance lives in [process-maintenance.md](docs/process-maintenance.md).
 - [prompts](prompts): reusable stage prompt definitions. Some host tools expose these as
   slash commands; others expose them as prompt files, skills, or natural-language stages.
-- [skills](skills): native skill bundles such as `sarathi`.
+- [skills](skills): native skill bundles such as `sarathi` and
+  `api-contract-examples`.
 - [checkers](checkers): deterministic structural verification scripts used by the prompts.
   Shared checker section schemas live in [checkers/schemas.py](checkers/schemas.py).
 - [scripts](scripts): installers for Windows, macOS, and WSL/Linux targets.
@@ -224,6 +225,26 @@ integrators depend on them.
   documenting unimplemented future behavior as current behavior.
 - Review commands check the same chain and stop with an upstream blocker when documentation
   intent is missing from the artifact that should own it.
+
+## API contract example responsibility by command
+
+When an HTTP, RPC, event, or other machine-readable API is involved, invoke and apply the
+`api-contract-examples` skill. Examples live with the authoritative contract and
+human-readable Markdown examples are generated from that source, with deterministic HTML
+derived from the Markdown.
+
+- `/design-create` records `API Surface: Present`, contract source, example annotation
+  convention, generated Markdown and derived HTML paths, deterministic generation command,
+  regenerate-and-diff freshness command, ownership/publication, and explicit conformance,
+  two-run determinism, and freshness `TEST-` obligations. It records
+  `API Surface: None` when no API is involved.
+- `/plan-create` assigns annotations, generator/output, conformance tests,
+  determinism/freshness gates, ownership, and publication to PRs or child work.
+- `/code-create` implements annotations and Markdown-to-HTML generation without hand-editing
+  generated output, validates examples against resolved schemas, compares two clean runs, and
+  requires a clean regeneration diff.
+- Verify, review, and assess commands check the same ownership chain and treat stale,
+  non-conforming, nondeterministic, or independently maintained examples as defects.
 
 ## Logging, telemetry, and error handling responsibility by command
 
@@ -639,8 +660,9 @@ environment.
 Install targets:
 
 - Codex: `<target>/.codex/skills/sarathi` or
-  `$CODEX_HOME/skills/sarathi` / `~/.codex/skills/sarathi`, plus
-  direct prompt commands in `<target>/.codex/prompts` or `$CODEX_HOME/prompts` /
+  `$CODEX_HOME/skills/sarathi` / `~/.codex/skills/sarathi`, plus a sibling
+  `api-contract-examples` skill and direct prompt commands in
+  `<target>/.codex/prompts` or `$CODEX_HOME/prompts` /
   `~/.codex/prompts`. Restart Codex, then invoke them as `/prompts:spec-create`,
   `/prompts:design-create`, etc. Codex documents custom prompts as deprecated in favor of
   skills, but this installer writes both so commands are directly accessible.
@@ -648,7 +670,8 @@ Install targets:
   `%APPDATA%\Code\User\prompts` on Windows, `~/Library/Application Support/Code/User/prompts`
   on macOS, or `${XDG_CONFIG_HOME:-~/.config}/Code/User/prompts` on Linux. It also installs
   the `sarathi` skill under `~/.copilot/skills/sarathi` and
-  `~/.agents/skills/sarathi` for Copilot CLI/agent skill loading. Project scope
+  `~/.agents/skills/sarathi` for Copilot CLI/agent skill loading, with
+  `api-contract-examples` installed beside it. Project scope
   installs prompts to `<target>/.github/prompts/*.prompt.md` and skills to
   `<target>/.github/skills/sarathi` plus
   `<target>/.agents/skills/sarathi`. Set `SARATHI_COPILOT_PROMPTS_DIR` to
@@ -661,11 +684,12 @@ Install targets:
   run `/skills reload`, then verify with `/skills info sarathi` and, where
   supported, `/skills info code-review`.
 - Claude Code: `<target>/.claude/commands/*.md` or `~/.claude/commands/*.md`, plus
-  the `sarathi` skill under `<target>/.claude/skills/` or `~/.claude/skills/`.
+  the `sarathi` and `api-contract-examples` skills under `<target>/.claude/skills/` or
+  `~/.claude/skills/`.
 - Gemini CLI: `<target>/.gemini/commands/*.toml` or `~/.gemini/commands/*.toml`.
 - Claude and Pi: exported prompt packs under `.ai-prompts/` because they do not expose a
-  stable local slash-command folder. The export also includes the `sarathi`
-  skill bundle for manual import/adaptation.
+  stable local slash-command folder. The export also includes the `sarathi` and
+  `api-contract-examples` skill bundles for manual import/adaptation.
 - Checkers: copied to `<target>/checkers` unless `--no-checkers` / `-NoCheckers` is used.
 
 Every installed `sarathi` skill bundle should be self-contained: `SKILL.md`,

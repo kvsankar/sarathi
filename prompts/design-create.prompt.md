@@ -262,6 +262,14 @@ out of scope. Prefer shared fixtures, generated schemas/clients, OpenAPI/AsyncAP
 consumer-driven contract tests, or integration tests over hand-written mocks that invent a
 different shape.
 
+When the design introduces, changes, generates, or consumes an API surface, invoke and apply
+the companion `api-contract-examples` skill. Declare `API Surface: Present` and record its
+required schema source, annotation convention, generated Markdown artifact and derived HTML,
+deterministic generation command, regenerate-and-diff freshness command, ownership,
+publication path, and `TEST-` obligations. Cover schema/example conformance, Markdown-to-HTML
+derivation, every supported singular or named example form, two-run byte/hash stability, and
+stale-output detection. If no API is involved, declare `API Surface: None`.
+
 Define a **test environment strategy** in the design. Always cover the developer test
 environment: local commands, seed data, secrets/config handling, external dependency mode,
 reset/cleanup, and which tests run there. Then recommend additional environments when the
@@ -424,7 +432,8 @@ Candidate design contents:
   transactions, and framework glue in the shell.
 - **API/event contracts**: HTTP/RPC endpoints, commands/events, schemas, auth, errors,
   idempotency, pagination, versioning, compatibility, representative success/error examples,
-  and OpenAPI/AsyncAPI references where useful.
+  OpenAPI/AsyncAPI references where useful, and the deterministic contract-example pipeline
+  required by the `api-contract-examples` skill when an API surface is present.
 - **Data model and state**: entities, relationships, ownership, lifecycle/state machines,
   migrations, indexes, retention, consistency, transactions, and cache behavior.
 - **Runtime flows**: sequence diagrams for core use cases, failure paths, retries, async/event
@@ -613,7 +622,8 @@ Interview the user **one question at a time**: ask, wait, then ask the next. Cov
   randomness, transactions, concurrency, retries, idempotency, and consistency boundaries.
 - **Interfaces and contracts**: APIs, events, commands, schemas, protocols, auth, errors,
   compatibility/versioning, ownership, representative payload examples, and fixture/schema
-  source of truth for tests.
+  source of truth for tests. For APIs, also confirm schema-owned annotations, generated
+  Markdown output, deterministic generation, and stale-output detection.
 - **Quality tactics and trade-offs**: how the design meets performance, reliability,
   security, modifiability, usability, observability, diagnosability, deployability, build
   reproducibility, deployment, and cost goals.
@@ -768,6 +778,10 @@ traceability tables, but they are not forced into every human-facing label.
    shapes or cite the formal schema/example source that tests must use. If the interface is
    mocked, faked, stubbed, mirrored, or locally re-declared instead of using the real
    external system or vendor types, state that explicitly as verification risk.
+   Declare `API Surface: Present` or `API Surface: None`. When present, include the schema
+   source, example annotation convention, generated Markdown artifact and derived HTML,
+   generation and freshness commands, ownership, and publication required by
+   `api-contract-examples`.
 7. **Core vs. Shell** or **Core vs. Shell / Equivalent Separation** — include a table that classifies each `COMP-` as pure core,
    application/orchestration, adapter/shell, presentation, data, infrastructure, or mixed.
    For the core, list pure decisions, rules, validation, state transitions, calculations,

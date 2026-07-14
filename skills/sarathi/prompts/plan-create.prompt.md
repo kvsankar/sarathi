@@ -258,6 +258,11 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
 - **Documentation tooling and ownership**: doc source locations, user/developer doc
   audiences, generated reference docs, doc build command, link checker, publishing path,
   owner/reviewer, and freshness/versioning expectations.
+- **API contract examples**: when `API Surface: Present`, invoke `api-contract-examples` and
+  assign schema annotations, deterministic Markdown generation and derived HTML, example
+  conformance, Markdown-to-HTML checks, two-run hash/byte comparison, regenerate-and-diff
+  freshness, publication, and related design `TEST-` obligations to concrete PRs or child
+  work.
 - **Logging, telemetry, and error-handling ownership**: which PRs own structured log fields,
   events, metrics, traces, audit/support IDs, correlation propagation, redaction, alert
   hooks, APM instrumentation, service/resource names, latency/throughput/error/saturation

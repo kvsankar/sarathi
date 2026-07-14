@@ -13,7 +13,9 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $PromptSource = Join-Path $RepoRoot "prompts"
 $CheckerSource = Join-Path $RepoRoot "checkers"
+$SkillsRoot = Join-Path $RepoRoot "skills"
 $SkillSource = Join-Path $RepoRoot "skills/sarathi"
+$CompanionSkillNames = @("api-contract-examples")
 $TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).Path
 
 function Test-SamePath {
@@ -31,6 +33,12 @@ if (-not $NoCheckers -and -not (Test-Path -LiteralPath $CheckerSource)) {
 }
 if (-not (Test-Path -LiteralPath $SkillSource)) {
     throw "Skill source folder not found: $SkillSource"
+}
+foreach ($skillName in $CompanionSkillNames) {
+    $companionSource = Join-Path $SkillsRoot $skillName
+    if (-not (Test-Path -LiteralPath (Join-Path $companionSource "SKILL.md"))) {
+        throw "Companion skill source folder is incomplete: $companionSource"
+    }
 }
 if (Test-SamePath $TargetRoot $RepoRoot) {
     Write-Warning (
@@ -253,6 +261,33 @@ function Copy-SkillFolder {
     }
 }
 
+function Copy-AdditionalSkillFolders {
+    param([string]$DestinationRoot)
+    Get-ChildItem -LiteralPath $SkillsRoot -Directory | Where-Object {
+        $CompanionSkillNames -contains $_.Name -and
+        (Test-Path -LiteralPath (Join-Path $_.FullName "SKILL.md"))
+    } | ForEach-Object {
+        $destination = Join-Path $DestinationRoot $_.Name
+        if (Test-Path -LiteralPath $destination) {
+            Remove-Item -LiteralPath $destination -Recurse -Force
+        }
+        New-Item -ItemType Directory -Force -Path $destination | Out-Null
+        Get-ChildItem -Force -LiteralPath $_.FullName |
+            Copy-Item -Destination $destination -Recurse -Force
+        Write-Host "Installed companion skill -> $destination"
+    }
+}
+
+function Write-AdditionalSkillDryRun {
+    param([string]$DestinationRoot)
+    Get-ChildItem -LiteralPath $SkillsRoot -Directory | Where-Object {
+        $CompanionSkillNames -contains $_.Name -and
+        (Test-Path -LiteralPath (Join-Path $_.FullName "SKILL.md"))
+    } | ForEach-Object {
+        Write-Host "Would install companion skill -> $(Join-Path $DestinationRoot $_.Name)"
+    }
+}
+
 function Copy-CopilotStageSkills {
     param([string]$MainSkillDestination)
 
@@ -314,6 +349,7 @@ function Install-Copilot {
         foreach ($skillDest in $skillDests) {
             Write-Host "Would install GitHub Copilot skill -> $skillDest"
             Write-Host "Would install GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+            Write-AdditionalSkillDryRun (Split-Path -Parent $skillDest)
         }
         return
     }
@@ -328,6 +364,7 @@ function Install-Copilot {
         Write-Host "Installed GitHub Copilot skill -> $skillDest"
         Copy-CopilotStageSkills $skillDest
         Write-Host "Installed GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+        Copy-AdditionalSkillFolders (Split-Path -Parent $skillDest)
     }
     Write-Host "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
     Write-Host "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
@@ -339,10 +376,12 @@ function Install-Codex {
     if ($DryRun) {
         Write-Host "Would install Codex skill -> $($dest.Skill)"
         Write-Host "Would install Codex direct prompts -> $($dest.Prompts)"
+        Write-AdditionalSkillDryRun (Split-Path -Parent $dest.Skill)
         return
     }
     Copy-SkillFolder $dest.Skill
     Write-Host "Installed Codex skill -> $($dest.Skill)"
+    Copy-AdditionalSkillFolders (Split-Path -Parent $dest.Skill)
     Copy-CodexPromptFiles $dest.Prompts
     Write-Host "Installed Codex direct prompts -> $($dest.Prompts)"
     Write-Host "Codex direct prompts are available as /prompts:spec-create, /prompts:design-create, etc. after restart."
@@ -359,6 +398,7 @@ function Install-ClaudeCode {
     if ($DryRun) {
         Write-Host "Would install Claude Code slash commands -> $dest"
         Write-Host "Would install Claude Code skill -> $skillDest"
+        Write-AdditionalSkillDryRun (Split-Path -Parent $skillDest)
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -370,6 +410,7 @@ function Install-ClaudeCode {
     Write-Host "Installed Claude Code slash commands -> $dest"
     Copy-SkillFolder $skillDest
     Write-Host "Installed Claude Code skill -> $skillDest"
+    Copy-AdditionalSkillFolders (Split-Path -Parent $skillDest)
 }
 
 function Install-Gemini {
@@ -410,6 +451,7 @@ function Install-ClaudeExport {
     if ($DryRun) {
         Write-Host "Would export Claude prompt pack -> $dest"
         Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
+        Write-AdditionalSkillDryRun (Join-Path $dest "skills")
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -419,6 +461,7 @@ function Install-ClaudeExport {
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
     Copy-SkillFolder (Join-Path $dest "skills/sarathi")
+    Copy-AdditionalSkillFolders (Join-Path $dest "skills")
     Write-Host "Exported Claude prompt pack -> $dest"
     Write-Host "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
 }
@@ -432,6 +475,7 @@ function Install-PiExport {
     if ($DryRun) {
         Write-Host "Would export Pi prompt pack -> $dest"
         Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
+        Write-AdditionalSkillDryRun (Join-Path $dest "skills")
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -441,6 +485,7 @@ function Install-PiExport {
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
     Copy-SkillFolder (Join-Path $dest "skills/sarathi")
+    Copy-AdditionalSkillFolders (Join-Path $dest "skills")
     Write-Host "Exported Pi prompt pack -> $dest"
     Write-Host "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }
