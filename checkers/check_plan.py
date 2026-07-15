@@ -36,10 +36,15 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
-from schemas import PLAN_SECTIONS  # noqa: E402
+from schemas import (  # noqa: E402
+    PLAN_ID,
+    PLAN_ID_BY_KIND,
+    PLAN_ID_CANDIDATE,
+    PLAN_SECTIONS,
+    SLUG_TOKEN,
+)
 
-SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
-ID = re.compile(rf"\b(MILE|WORK|PR)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
+ID = PLAN_ID
 FR = re.compile(rf"\bFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 UC = re.compile(rf"\bUC-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 NFR = re.compile(rf"\bNFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
@@ -47,15 +52,16 @@ AT = re.compile(rf"\bAT-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 JT = re.compile(rf"\bJT-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
 COMP = re.compile(rf"\bCOMP-{SLUG_TOKEN}\b")
 TEST = re.compile(rf"\bTEST-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
-PR_REF = re.compile(rf"\bPR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
+PR_REF = PLAN_ID_BY_KIND["PR"]
 VALID_ANY = re.compile(
-    rf"\b(?:(?:MILE|WORK|PR|FR|UC|NFR|AT|JT)-{SLUG_TOKEN}-{SLUG_TOKEN}|"
-    rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})\b"
+    rf"(?:(?:MILE|WORK|PR|FR|UC|NFR|AT|JT)-{SLUG_TOKEN}-{SLUG_TOKEN}|"
+    rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN}|COMP-{SLUG_TOKEN})"
 )
-ID_CANDIDATE = re.compile(
-    r"\b(?:(?:MILE|WORK|PR|FR|UC|NFR|AT|JT|TEST)-[A-Za-z0-9]+"
+NON_PLAN_ID_CANDIDATE = re.compile(
+    r"(?<![A-Za-z0-9-])(?:(?:FR|UC|NFR|AT|JT|TEST)-[A-Za-z0-9]+"
     r"-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*|COMP-[A-Za-z0-9]+"
-    r"(?:-[A-Za-z0-9]+)*)\b",
+    r"(?:-[A-Za-z0-9]+)*)"
+    r"(?![A-Za-z0-9-])",
     re.I,
 )
 LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)
@@ -169,12 +175,12 @@ def ids_from(path: str, pat: re.Pattern) -> set:
 
 def malformed_ids(text: str) -> list[str]:
     """ID-looking tokens that do not follow plan/spec/design slug grammar."""
+    candidates = {
+        *(m.group(0) for m in PLAN_ID_CANDIDATE.finditer(text)),
+        *(m.group(0) for m in NON_PLAN_ID_CANDIDATE.finditer(text)),
+    }
     return sorted(
-        {
-            m.group(0)
-            for m in ID_CANDIDATE.finditer(text)
-            if not VALID_ANY.fullmatch(m.group(0))
-        }
+        identifier for identifier in candidates if not VALID_ANY.fullmatch(identifier)
     )
 
 

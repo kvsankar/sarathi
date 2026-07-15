@@ -34,7 +34,7 @@ Report:
 - the product trunk and progressively disclosed parent-allocation branches, including
   explicit missing Spec/Design/Plan/Code nodes;
 - spec/design/plan presence and hash-current attestation states;
-- parent-plan `WORK-` allocation count, expanded child-plan count, PR-slice count, and PRs
-  with mapped tests;
+- valid and malformed parent-plan `WORK-` allocation counts, expanded child-plan count,
+  PR-slice count, PRs with mapped tests, and assessed/completed branch counts;
 - approval parse errors, stale attestations, missing expected files, or discovery limitations;
 - the evidence limit that mapped tests and WIP claims do not prove completion or quality.

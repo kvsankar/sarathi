@@ -20,6 +20,7 @@ if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
 from approvals import load_yaml_file  # noqa: E402
+from schemas import PLAN_ID_CANDIDATE, is_plan_id  # noqa: E402
 
 APPROVED_STATUSES = {"approved", "auto-approved"}
 EXCLUDED_DIRS = {
@@ -40,8 +41,6 @@ METADATA_FIELDS = (
     "Plan Type",
     "Design Depth",
 )
-WORK_ID = re.compile(r"WORK-[A-Z][A-Z0-9-]*")
-PR_ID = re.compile(r"PR-[A-Z][A-Z0-9-]*")
 GUIDE_FILENAME = "sarathi-process.html"
 
 
@@ -136,6 +135,50 @@ def load_approval_records(root: Path) -> tuple[list[dict[str, Any]], str | None]
     return [record for record in records if isinstance(record, dict)], None
 
 
+def load_code_assessment_records(
+    root: Path,
+) -> tuple[list[dict[str, Any]], str | None]:
+    path = root / ".sdlc" / "code-assessments.yaml"
+    if not path.is_file():
+        return [], None
+    try:
+        loaded = load_yaml_file(path)
+    except (OSError, ValueError) as exc:
+        return [], str(exc)
+    records = loaded.get("assessments") if isinstance(loaded, dict) else None
+    if not isinstance(records, list):
+        return [], "assessments must be a list"
+    return [record for record in records if isinstance(record, dict)], None
+
+
+def code_assessment_for(
+    root: Path,
+    work_item: str,
+    plan_path: Path,
+    records: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    current_hash = sha256_file(plan_path)
+    for record in reversed(records):
+        plan = record.get("plan")
+        if record.get("work_item") != work_item or not isinstance(plan, dict):
+            continue
+        resolved = resolve_ledger_path(root, str(plan.get("path", "")))
+        if resolved is None or resolved.resolve() != plan_path.resolve():
+            continue
+        if (
+            str(record.get("verdict", "")).casefold() == "pass"
+            and plan.get("sha256") == current_hash
+        ):
+            return {
+                "state": "assessed",
+                "id": record.get("id"),
+                "verdict": record.get("verdict"),
+                "hash": current_hash,
+            }
+        return None
+    return None
+
+
 def approval_for(
     root: Path, path: Path, gate: str, records: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -214,15 +257,24 @@ def paragraph_field(block: str, label: str) -> str | None:
     return " ".join(line.strip() for line in match.group(1).splitlines()).strip()
 
 
-def work_items(plan_text: str) -> list[dict[str, Any]]:
+def work_items(plan_text: str) -> tuple[list[dict[str, Any]], list[str]]:
     body = section(plan_text, "Pull Requests / Child Work Items") or section(
         plan_text, "Pull Requests"
     )
     result: list[dict[str, Any]] = []
-    for match in re.finditer(
-        r"(?ms)^-\s+(WORK-[A-Z][A-Z0-9-]*)\s*$\n(.*?)(?=^-\s+WORK-|\Z)", body
-    ):
-        identifier, block = match.groups()
+    malformed: list[str] = []
+    lines = body.splitlines()
+    starts: list[tuple[int, str]] = []
+    for index, line in enumerate(lines):
+        match = re.fullmatch(r"-\s+(\S+)\s*", line)
+        if match and match.group(1).casefold().startswith("work-"):
+            starts.append((index, match.group(1)))
+    for position, (start, identifier) in enumerate(starts):
+        end = starts[position + 1][0] if position + 1 < len(starts) else len(lines)
+        block = "\n".join(lines[start + 1 : end])
+        if not is_plan_id(identifier, "WORK"):
+            malformed.append(identifier)
+            continue
         scope = paragraph_field(block, "Scope")
         result.append(
             {
@@ -242,7 +294,7 @@ def work_items(plan_text: str) -> list[dict[str, Any]]:
                 "risks": paragraph_field(block, "Risks"),
             }
         )
-    return result
+    return result, sorted(dict.fromkeys(malformed))
 
 
 def parse_wip(root: Path) -> dict[str, Any]:
@@ -297,13 +349,18 @@ def child_artifacts(
         text = read_text(path)
         values = metadata(text)
         heading = first_heading(text) or ""
-        parent_match = re.search(
-            r"(?mi)^Parent Work Item:\s*(WORK-[A-Z][A-Z0-9-]*)\s*$", text
+        parent_match = re.search(r"(?mi)^Parent Work Item:\s*(\S+)\s*$", text)
+        heading_match = next(
+            (
+                match
+                for match in PLAN_ID_CANDIDATE.finditer(heading)
+                if is_plan_id(match.group(), "WORK")
+            ),
+            None,
         )
-        heading_match = WORK_ID.search(heading)
         identifier = (
             parent_match.group(1)
-            if parent_match
+            if parent_match and is_plan_id(parent_match.group(1), "WORK")
             else heading_match.group()
             if heading_match
             else None
@@ -366,7 +423,7 @@ def traceability_counts(root: Path) -> tuple[dict[str, int], str | None]:
             continue
         identifier = str(entry.get("plan", ""))
         test_path = resolve_ledger_path(root, str(entry.get("path", "")))
-        if not PR_ID.fullmatch(identifier) or test_path is None:
+        if not is_plan_id(identifier, "PR") or test_path is None:
             continue
         counts[identifier] = counts.get(identifier, 0) + 1
     return counts, None
@@ -385,6 +442,7 @@ def project_title(root: Path, spec: dict[str, Any]) -> str:
 def build_model(root: Path) -> dict[str, Any]:
     root = root.resolve()
     records, approval_error = load_approval_records(root)
+    assessment_records, assessment_error = load_code_assessment_records(root)
     paths = {
         kind: canonical_artifact(root, kind) for kind in ("spec", "design", "plan")
     }
@@ -396,7 +454,7 @@ def build_model(root: Path) -> dict[str, Any]:
     linked_artifacts = child_artifacts(root, paths)
     traces, traceability_error = traceability_counts(root)
     parent_text = read_text(paths["plan"]) if paths["plan"] else ""
-    items = work_items(parent_text)
+    items, malformed_allocations = work_items(parent_text)
     parent_level = scope_level(
         stages["plan"].get("metadata", {}).get("Work Scope")
     ) or scope_level(stages["spec"].get("metadata", {}).get("Work Scope"))
@@ -425,26 +483,51 @@ def build_model(root: Path) -> dict[str, Any]:
                     "prs": [],
                     "evidence_count": 0,
                     "wip_claim": None,
+                    "code_slice_approval": None,
+                    "code_assessment": None,
                 }
             )
             continue
         child_text = read_text(child_path)
         child_relative = relative_path(child_path, root)
         prs = []
+        pr_candidates = (
+            match.group(1)
+            for line in child_text.splitlines()
+            if (match := re.fullmatch(r"-\s+(\S+)\s*", line))
+        )
         for identifier in dict.fromkeys(
-            re.findall(r"(?m)^-\s+(PR-[A-Z][A-Z0-9-]*)\s*$", child_text)
+            candidate for candidate in pr_candidates if is_plan_id(candidate, "PR")
         ):
             prs.append({"id": identifier, "evidence_count": traces.get(identifier, 0)})
         evidence_count = sum(pr["evidence_count"] for pr in prs)
         claim = wip_claim_for(wip, child_relative)
+        code_slice_approval = approval_for(
+            root, child_path, "code_slice.approved", records
+        )
+        assessment = code_assessment_for(
+            root, item["id"], child_path, assessment_records
+        )
+        completion_state = (
+            "completed"
+            if code_slice_approval["state"] == "approved"
+            else "assessed"
+            if assessment
+            else None
+        )
         item.update(
             {
-                "state": "evidence" if evidence_count else "expanded",
+                "state": completion_state
+                or ("evidence" if evidence_count else "expanded"),
                 "child_plan": artifact_model(root, "plan", child_path, records),
                 "child_level": None,
                 "prs": prs,
                 "evidence_count": evidence_count,
                 "wip_claim": claim,
+                "code_slice_approval": code_slice_approval
+                if code_slice_approval["state"] == "approved"
+                else None,
+                "code_assessment": assessment,
             }
         )
         item["child_level"] = child_level(item, item["child_plan"])
@@ -458,6 +541,7 @@ def build_model(root: Path) -> dict[str, Any]:
         root / ".sdlc" / "approvals.yaml",
         root / ".sdlc" / "wip.md",
         root / ".sdlc" / "test-traceability.yaml",
+        root / ".sdlc" / "code-assessments.yaml",
     ):
         if optional.is_file():
             source_paths.append(optional)
@@ -472,17 +556,22 @@ def build_model(root: Path) -> dict[str, Any]:
         "stages": stages,
         "wip": wip,
         "work_items": items,
+        "malformed_allocations": malformed_allocations,
         "summary": {
             "approved_stages": sum(
                 stage["state"] == "approved" for stage in stages.values()
             ),
             "work_items": len(items),
+            "malformed_work_items": len(malformed_allocations),
             "expanded_items": expanded,
             "pr_slices": pr_count,
             "evidenced_prs": evidenced_prs,
+            "assessed_items": sum(item["state"] == "assessed" for item in items),
+            "completed_items": sum(item["state"] == "completed" for item in items),
         },
         "approval_error": approval_error,
         "traceability_error": traceability_error,
+        "assessment_error": assessment_error,
         "sources": [
             {"path": relative_path(path, root), "sha256": sha256_file(path)}
             for path in unique_sources
@@ -516,11 +605,13 @@ def state_label(state: str) -> str:
         "started": "Artifacts started",
         "evidence": "Evidence mapped",
         "planned": "PRs planned",
+        "assessed": "Assessed",
+        "completed": "Completed",
     }.get(state, state.replace("-", " ").title())
 
 
 def badge(state: str, label: str | None = None) -> str:
-    if state == "approved":
+    if state in {"approved", "assessed", "completed"}:
         visual, symbol = "success", "&#10003;"
     elif state in {"stale", "unapproved", "expanded", "started", "evidence", "planned"}:
         visual, symbol = "progress", "&#9679;"
@@ -600,7 +691,9 @@ def render_prs(prs: list[dict[str, Any]]) -> str:
 def render_code_node(item: dict[str, Any]) -> str:
     prs = item["prs"]
     evidence_count = item["evidence_count"]
-    state = "evidence" if evidence_count else "planned" if prs else "missing"
+    state = item.get("state")
+    if state not in {"assessed", "completed"}:
+        state = "evidence" if evidence_count else "planned" if prs else "missing"
     level = item.get("child_level")
     level_class = level if level in {"product", "feature", "slice"} else "unknown"
     if prs:
@@ -625,6 +718,19 @@ def render_flow(nodes: list[str]) -> str:
         + '<span class="arrow" aria-hidden="true"></span>'.join(nodes)
         + "</div>"
     )
+
+
+def render_malformed_warning(identifiers: list[str]) -> str:
+    if not identifiers:
+        return ""
+    count = len(identifiers)
+    listed = " ".join(f"<code>{esc(identifier)}</code>" for identifier in identifiers)
+    return f"""
+<aside class="validation-warning" role="alert">
+  <strong>{count} malformed WORK allocation{"s" if count != 1 else ""} excluded from valid counts</strong>
+  <span>{listed}</span>
+  <small>Use <code>WORK-AREA-NAME</code>; each slug token must be 2-32 uppercase letters or digits and start with a letter.</small>
+</aside>"""
 
 
 def render_tree_branch(
@@ -704,7 +810,11 @@ def render_tree_branch(
         else ""
     )
     is_focus = item["id"] == focus_id
-    branch_status = "Not started" if item["state"] == "frontier" else "In progress"
+    branch_status = {
+        "frontier": "Not started",
+        "assessed": "Assessed",
+        "completed": "Completed",
+    }.get(item["state"], "In progress")
     open_attribute = " open" if is_focus else ""
     focus_label = '<span class="focus-label">Current focus</span>' if is_focus else ""
     return f"""
@@ -774,11 +884,12 @@ def render_html(
     branches = "".join(
         render_tree_branch(root, output, item, focus_id) for item in model["work_items"]
     )
+    malformed_warning = render_malformed_warning(model["malformed_allocations"])
     if not branches:
         branches = """
 <div class="empty-state">
-  <strong>No decomposition discovered</strong>
-  <span>A breakdown plan with WORK identifiers will expand this view.</span>
+  <strong>No valid decomposition discovered</strong>
+  <span>A breakdown plan with valid WORK-AREA-NAME identifiers will expand this view.</span>
 </div>"""
     source_rows = "".join(
         f'<tr><td><a href="{href_for(root, output, source["path"])}">{esc(source["path"])}</a></td>'
@@ -802,7 +913,10 @@ def render_html(
             f"Product/system &rarr; Breakdown plan &rarr; {esc(focus['id'])}"
             f" &rarr; {esc(focus_level)} work"
         )
-        focus_heading = f"{esc(focus_name)} is in progress"
+        focus_heading = {
+            "assessed": f"{esc(focus_name)} is assessed",
+            "completed": f"{esc(focus_name)} is completed",
+        }.get(focus["state"], f"{esc(focus_name)} is in progress")
         focus_detail = (
             f"{len(focus['prs'])} PR slice"
             f"{'s' if len(focus['prs']) != 1 else ''} &middot; "
@@ -829,7 +943,26 @@ def render_html(
         f"{summary['expanded_items']} of {summary['work_items']} allocations "
         f"have child plans; {awaiting_count} await decomposition."
     )
-    if focus:
+    malformed_count = summary["malformed_work_items"]
+    if malformed_count:
+        expansion_text += (
+            f" {malformed_count} malformed allocation"
+            f"{'s are' if malformed_count != 1 else ' is'} excluded."
+        )
+    terminal_states = {"assessed", "completed"}
+    if (
+        summary["work_items"]
+        and not malformed_count
+        and all(item["state"] == "completed" for item in model["work_items"])
+    ):
+        overall_state, overall_label = "completed", "Completed"
+    elif (
+        summary["work_items"]
+        and not malformed_count
+        and all(item["state"] in terminal_states for item in model["work_items"])
+    ):
+        overall_state, overall_label = "assessed", "Assessed"
+    elif focus:
         overall_state, overall_label = "started", "In progress"
     elif summary["work_items"]:
         overall_state, overall_label = "missing", "Ready to decompose"
@@ -851,6 +984,11 @@ def render_html(
     traceability_note = (
         f'<p class="warning">Traceability ledger could not be parsed: {esc(model["traceability_error"])}</p>'
         if model.get("traceability_error")
+        else ""
+    )
+    assessment_note = (
+        f'<p class="warning">Code-assessment ledger could not be parsed: {esc(model["assessment_error"])}</p>'
+        if model.get("assessment_error")
         else ""
     )
     guide_link = (
@@ -924,6 +1062,9 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .read-note {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
 .read-note summary {{ cursor: pointer; font-weight: 700; }}
 .read-note p {{ margin: 0.5rem 0; }}
+.validation-warning {{ display: grid; gap: 0.25rem; margin-top: 0.75rem; padding: 0.75rem 1rem; border: 1px solid #d9a441; border-left: 5px solid var(--stale); background: #fff8df; color: #6f4b00; }}
+.validation-warning span {{ display: flex; flex-wrap: wrap; gap: 0.35rem; }}
+.validation-warning small {{ color: #6f5a2a; }}
 .status {{ display: inline-flex; width: fit-content; align-items: center; gap: 0.3rem; min-height: 1.5rem; padding: 0.12rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 780; white-space: nowrap; }}
 .status-success {{ color: var(--approved); background: var(--approved-bg); }}
 .status-progress {{ color: var(--stale); background: var(--stale-bg); }}
@@ -1017,7 +1158,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   .tree-panel {{ padding: 0.75rem; }}
   .product-heading {{ align-items: start; flex-direction: column; }}
   .flow {{ flex-direction: column; }}
-  .node {{ min-height: 0; }}
+  .node {{ flex: 0 0 auto; min-height: auto; }}
   .arrow {{ min-height: 1rem; transform: rotate(90deg); }}
   .branches {{ margin-left: 0.35rem; padding-left: 0.85rem; }}
   .tree-branch::before {{ left: -1rem; width: 0.85rem; }}
@@ -1055,11 +1196,13 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
     </div>
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean hash-current approval. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Mapped tests are implementation evidence, not a completion estimate; WIP status remains a project-authored claim.</p>
+      <p>Green checks mean hash-current approval, a hash-current passing code assessment, or an approved code-slice handoff. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Mapped tests are implementation evidence, not a completion estimate; WIP status remains a project-authored claim.</p>
       {approval_note}
       {traceability_note}
+      {assessment_note}
     </details>
   </section>
+  {malformed_warning}
   <div class="tree-heading">
     <div><h2>Workflow tree</h2><p>Open an allocation to inspect its artifact path.</p></div>
     <div class="toolbar">

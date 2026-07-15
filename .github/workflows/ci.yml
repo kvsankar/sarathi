@@ -37,3 +37,12 @@ jobs:
         run: >
           uv run pytest -q --cov=checkers --cov-report=term-missing
           --cov-fail-under=80
+
+      - name: Install browser test dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser layout tests
+        run: npm run test:layout

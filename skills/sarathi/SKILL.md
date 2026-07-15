@@ -244,6 +244,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   Compute the SHA-256 from the current file bytes and use the current UTC timestamp ending
   in `Z`. If the user says to auto-approve low-risk work, record `status: auto-approved`
   only when `.sdlc/gates.yaml` allows that gate and scope.
+- When `/code-assess` returns `Pass` for a known `WORK-*` item, record it in
+  `.sdlc/code-assessments.yaml` with the child implementation plan path and current SHA-256.
+  Treat this as a hash-current assessment claim, not human approval. A separate
+  `code_slice.approved` record bound to the same child plan marks the handoff completed.
 - Auto-approvals are allowed only when `.sdlc/gates.yaml` explicitly enables a bounded
   policy with expiry, allowed scopes, allowed gates, and forbidden gates. Never silently
   treat an auto-approved gate as a human approval.

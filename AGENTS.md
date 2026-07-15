@@ -472,6 +472,12 @@ slice, and
 file bytes and use the current UTC timestamp ending in `Z`. Use `status: auto-approved`
 only when `.sdlc/gates.yaml` allows that gate and scope.
 
+When `/code-assess` returns `Pass` for a known `WORK-*` item, record the assessment in
+`.sdlc/code-assessments.yaml` with the child implementation plan path and current SHA-256.
+This supports a hash-current `Assessed` workflow state without pretending the assessment is
+human approval. Bind `code_slice.approved` to that same child plan when the user approves the
+slice handoff; workflow status then displays `Completed`.
+
 Default gate ownership:
 
 - `spec.approved` before downstream design gate checks.

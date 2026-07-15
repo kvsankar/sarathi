@@ -57,12 +57,15 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
     assert model["summary"] == {
         "approved_stages": 0,
         "work_items": 0,
+        "malformed_work_items": 0,
         "expanded_items": 0,
         "pr_slices": 0,
         "evidenced_prs": 0,
+        "assessed_items": 0,
+        "completed_items": 0,
     }
     assert "Not yet done" in rendered
-    assert "No decomposition discovered" in rendered
+    assert "No valid decomposition discovered" in rendered
     assert 'href="sarathi-process.html">Process guide</a>' in rendered
     parser = HTMLParser()
     parser.feed(rendered)
@@ -99,7 +102,7 @@ Implementation Readiness: Decomposable
 
 ## Pull Requests / Child Work Items
 
-- WORK-ALPHA
+- WORK-DEMO-ALPHA
 
   Parent scope: product/system.
 
@@ -119,7 +122,7 @@ Implementation Readiness: Decomposable
 
   Done signal: the public behavior has executable evidence.
 
-- WORK-BETA
+- WORK-DEMO-BETA
 
   Parent scope: product/system.
 
@@ -131,7 +134,7 @@ Implementation Readiness: Decomposable
 
   Required child artifacts: feature spec, design, and plan.
 
-  Dependencies: WORK-ALPHA.
+  Dependencies: WORK-DEMO-ALPHA.
 
   Readiness target: Code-ready after decomposition.
 
@@ -144,7 +147,7 @@ Implementation Readiness: Decomposable
     )
     child = write(
         project / "docs" / "plans" / "work_alpha.md",
-        """# WORK-ALPHA Implementation Plan
+        """# WORK-DEMO-ALPHA Implementation Plan
 
 ## Overview
 
@@ -165,7 +168,7 @@ Implementation Readiness: Code-ready
         project / "docs" / "work" / "alpha" / "spec.md",
         """# Alpha Slice - Software Requirements Specification
 
-Parent Work Item: WORK-ALPHA
+Parent Work Item: WORK-DEMO-ALPHA
 
 Work Scope: slice/change
 
@@ -176,7 +179,7 @@ Implementation Readiness: Code-ready
         project / "docs" / "work" / "alpha" / "design.md",
         """# Alpha Slice Design
 
-Parent Work Item: WORK-ALPHA
+Parent Work Item: WORK-DEMO-ALPHA
 
 Work Scope: slice/change
 
@@ -270,9 +273,12 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
     assert model["summary"] == {
         "approved_stages": 3,
         "work_items": 2,
+        "malformed_work_items": 0,
         "expanded_items": 1,
         "pr_slices": 2,
         "evidenced_prs": 2,
+        "assessed_items": 0,
+        "completed_items": 0,
     }
     alpha, beta = model["work_items"]
     assert alpha["state"] == "evidence"
@@ -304,6 +310,127 @@ def test_stale_approval_is_distinct_from_missing_approval(tmp_path):
     assert model["stages"]["design"]["state"] == "approved"
 
 
+def test_hash_current_code_slice_approval_marks_work_completed(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    approvals = project / ".sdlc" / "approvals.yaml"
+    approvals.write_text(
+        approvals.read_text(encoding="utf-8")
+        + f"""  - id: APR-CODE-DEMO-ALPHA
+    gate: code_slice.approved
+    scope: slice/change
+    artifact:
+      kind: plan
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{digest(child)}"
+    status: approved
+    approved_by: tester
+    approved_at: "2026-07-15T00:00:04Z"
+""",
+        encoding="utf-8",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["work_items"][0]["state"] == "completed"
+    assert model["work_items"][0]["code_slice_approval"]["state"] == "approved"
+    assert model["summary"]["completed_items"] == 1
+    assert "Demo Alpha is completed" in rendered
+    assert "Completed" in rendered
+
+
+def test_hash_current_passing_code_assessment_marks_work_assessed(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    write(
+        project / ".sdlc" / "code-assessments.yaml",
+        f"""version: 1
+assessments:
+  - id: ASSESS-CODE-DEMO-ALPHA
+    work_item: WORK-DEMO-ALPHA
+    plan:
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{digest(child)}"
+    verdict: Pass
+    assessed_at: "2026-07-15T00:00:04Z"
+""",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["work_items"][0]["state"] == "assessed"
+    assert model["work_items"][0]["code_assessment"]["verdict"] == "Pass"
+    assert model["summary"]["assessed_items"] == 1
+    assert "Demo Alpha is assessed" in rendered
+    assert "Assessed" in rendered
+
+
+def test_stale_code_assessment_remains_evidence(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    write(
+        project / ".sdlc" / "code-assessments.yaml",
+        f"""version: 1
+assessments:
+  - id: ASSESS-CODE-DEMO-STALE
+    work_item: WORK-DEMO-ALPHA
+    plan:
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{"0" * 64}"
+    verdict: Pass
+""",
+    )
+
+    model = module.build_model(project)
+
+    assert model["work_items"][0]["state"] == "evidence"
+    assert model["work_items"][0]["code_assessment"] is None
+    assert model["summary"]["assessed_items"] == 0
+
+
+def test_latest_nonpassing_assessment_supersedes_earlier_pass(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    write(
+        project / ".sdlc" / "code-assessments.yaml",
+        f"""version: 1
+assessments:
+  - id: ASSESS-CODE-DEMO-PASS
+    work_item: WORK-DEMO-ALPHA
+    plan:
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{digest(child)}"
+    verdict: Pass
+  - id: ASSESS-CODE-DEMO-FIXES
+    work_item: WORK-DEMO-ALPHA
+    plan:
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{digest(child)}"
+    verdict: Pass-with-fixes
+""",
+    )
+
+    model = module.build_model(project)
+
+    assert model["work_items"][0]["state"] == "evidence"
+    assert model["work_items"][0]["code_assessment"] is None
+
+
 def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     module = load_renderer()
     project = make_decomposed_project(tmp_path)
@@ -320,8 +447,8 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
     assert "Executive summary" in first
-    assert "Alpha is in progress" in first
-    assert "Product/system &rarr; Breakdown plan &rarr; WORK-ALPHA" in first
+    assert "Demo Alpha is in progress" in first
+    assert "Product/system &rarr; Breakdown plan &rarr; WORK-DEMO-ALPHA" in first
     assert "Workflow tree" in first
     assert re.search(
         r'<details class="tree-branch" data-state="evidence"[^>]* open>', first
@@ -364,6 +491,32 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     output.write_text("stale\n", encoding="utf-8")
     assert module.main() == 1
     assert output.read_bytes() != expected
+
+
+def test_malformed_work_allocation_is_visible_but_excluded(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    plan = project / "docs" / "plan.md"
+    plan.write_text(
+        plan.read_text(encoding="utf-8").replace("WORK-DEMO-BETA", "WORK-SHARING"),
+        encoding="utf-8",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert [item["id"] for item in model["work_items"]] == ["WORK-DEMO-ALPHA"]
+    assert model["malformed_allocations"] == ["WORK-SHARING"]
+    assert model["summary"]["work_items"] == 1
+    assert model["summary"]["malformed_work_items"] == 1
+    assert "1 malformed WORK allocation excluded from valid counts" in rendered
+    assert "WORK-SHARING" in rendered
+    assert "Use <code>WORK-AREA-NAME</code>" in rendered
 
 
 def test_check_detects_stale_static_process_guide(tmp_path, monkeypatch):

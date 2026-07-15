@@ -380,6 +380,14 @@ Otherwise:
 4. **Top fixes** ranked by impact.
 5. **Verdict**: Pass / Pass-with-fixes / Needs rework.
 
+For a `Pass` verdict with a known parent `WORK-*` item and child implementation plan,
+create or update `.sdlc/code-assessments.yaml`. Record a stable assessment ID, the exact
+`work_item`, the child plan `path` and current `sha256`, `verdict: Pass`, and a UTC
+`assessed_at` value. Do not record `Pass-with-fixes`, `Needs rework`, or blocked results as
+passing assessments. This ledger is a project-authored assessment claim, not human approval;
+use a separate hash-current `code_slice.approved` record when the user approves the completed
+slice handoff.
+
 ## Human review gate (hard stop)
 
 After reporting the code assessment verdict, **stop**. Do not move to the next PR, release,

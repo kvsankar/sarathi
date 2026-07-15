@@ -18,6 +18,15 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Fixed
 
+- Use one canonical `MILE|WORK|PR-AREA-NAME` grammar in plan verification and workflow
+  rendering; reject one-token and extra-token IDs, avoid valid-prefix matches, and display
+  malformed allocations as excluded repair warnings.
+- Prevent status and process-guide nodes from collapsing below their content height in
+  mobile column layouts; add Chromium assertions for clipping, overlap, and horizontal
+  overflow at mobile and desktop viewports.
+- Distinguish mapped test evidence from assessed or completed code: hash-current passing
+  code-assessment entries display `Assessed`, while hash-current `code_slice.approved`
+  records display `Completed`.
 - Publish installed skill manifests by atomic replacement so agents cannot observe a
   truncated YAML frontmatter block while an installation is running.
 - Avoid treating `.sdlc/test-traceability.yaml` path references as malformed

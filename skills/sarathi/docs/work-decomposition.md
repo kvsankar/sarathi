@@ -44,6 +44,11 @@ Every `WORK-*` item in a Breakdown plan must state:
   Implementation plan as applicable.
 - **Dependencies**, **readiness target**, **risks**, and **done signal**.
 
+The identifier itself must use exactly `WORK-AREA-NAME`. Malformed one-token,
+extra-token, lowercase, or numeric-placeholder forms fail plan verification. Status views
+retain malformed allocation bullets in an explicit warning for repair, but exclude them
+from valid allocation counts and child workflow branches.
+
 `check_plan.py` mechanically rejects allocations missing parent scope, child scope, scope,
 parent IDs/inherited obligations, or required child artifacts. Review still judges whether
 the declared mapping and artifact chain are semantically appropriate.

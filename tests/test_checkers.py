@@ -841,6 +841,64 @@ The child starts after parent approval.
     assert report["incomplete_work_allocations"] == {}
 
 
+def test_check_plan_rejects_malformed_work_ids_without_prefix_matches(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    plan_path.write_text(
+        """# Overview
+Work Scope: Product/system
+Plan Type: Breakdown
+Implementation Readiness: Decomposable
+
+# Strategy
+Allocate valid child work and expose malformed identifiers.
+
+# Milestones
+- MILE-DEMO-DELIVERY
+
+# Pull Requests / Child Work Items
+- WORK-DEMO-VALID
+
+  Parent scope: Product/system.
+  Child scope: Feature/component.
+  Scope: Deliver the valid child.
+  Parent IDs / inherited obligations: FR-DEMO-VALID.
+  Required child artifacts: Feature spec, design, and plan.
+
+- WORK-SHARING
+
+  Dependencies: WORK-SHARING.
+
+- WORK-DATA-SHARING-EXTRA
+
+  Dependencies: WORK-DATA-SHARING-EXTRA.
+
+# Coverage Map
+Coverage incorrectly references WORK-SHARING and WORK-DATA-SHARING-EXTRA.
+
+# Sequencing & Risks
+The valid child has no dependency.
+""",
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["counts"]["WORK"] == 1
+    assert report["work_items"] == ["WORK-DEMO-VALID"]
+    assert report["bad_id_format"] == [
+        "WORK-DATA-SHARING-EXTRA",
+        "WORK-SHARING",
+    ]
+    assert report["gates"]["id_format_slug_only"] is False
+    assert "WORK-DATA-SHARING" not in report["orphan_refs"]
+
+
 def test_check_plan_accepts_test_traceability_filename(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     design_path = tmp_path / "design.md"

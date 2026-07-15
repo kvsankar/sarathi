@@ -17,12 +17,16 @@ substitute for verification and review.
   collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
   backgrounds and Product/Feature/Slice level tags as the static process guide. Missing
   artifacts remain explicit `Not yet done` nodes.
+- **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
+  `WORK-AREA-NAME` remain visible in a repair warning but are excluded from valid
+  allocation counts and workflow branches.
 - **Provenance**: relative source paths and SHA-256 prefixes used for the snapshot.
 
 The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
 designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
-the first heading; `.sdlc/approvals.yaml`; `.sdlc/wip.md`; and
-`.sdlc/test-traceability.yaml`. It ignores common dependency, cache, and VCS directories.
+the first heading; `.sdlc/approvals.yaml`; `.sdlc/code-assessments.yaml`; `.sdlc/wip.md`;
+and `.sdlc/test-traceability.yaml`. It ignores common dependency, cache, and VCS
+directories.
 
 ## Evidence Semantics
 
@@ -36,12 +40,14 @@ the first heading; `.sdlc/approvals.yaml`; `.sdlc/wip.md`; and
 | Plan expanded | A parent `WORK-` item has a child implementation plan. |
 | PRs planned | A child plan declares PR slices without mapped executable-test entries. |
 | Evidence mapped | At least one child `PR-` has entries in test traceability. |
+| Assessed | A hash-current `.sdlc/code-assessments.yaml` entry records a `Pass` verdict for the child plan and `WORK-*` item. |
+| Completed | A hash-current `code_slice.approved` record attests the child plan as an approved slice handoff. |
 | Not yet decomposed | A parent `WORK-` item has no discovered child implementation plan. |
 
-The visual status grammar is deliberately small: a green check means hash-current approval,
-an amber dot means work or evidence is present but not complete, and a gray circle means not
-started. A branch with mapped tests remains amber until a governing assessment establishes a
-stronger state.
+The visual status grammar is deliberately small: a green check means hash-current artifact
+approval, passing code assessment, or approved code-slice handoff; an amber dot means work
+or evidence is present but not complete; and a gray circle means not started. A branch with
+mapped tests remains amber until a governing assessment establishes a stronger state.
 
 `WORK-*` is an allocation in the parent Breakdown plan, not an artifact type. Follow
 [work-decomposition.md](work-decomposition.md): the allocation names a child scope, and the
@@ -52,6 +58,29 @@ allocation, linking discovered artifacts and leaving missing ones visibly blank.
 `Evidence mapped` does not mean complete, correct, merged, deployed, or independently
 verified. WIP statuses are shown only as project-authored claims. The renderer never infers
 completion from source-file counts or ordinary Git activity.
+
+The renderer and `check_plan.py` share the same plan-ID grammar. `MILE-*`, `WORK-*`, and
+`PR-*` identifiers require exactly two uppercase slug tokens after the kind. One-token,
+extra-token, lowercase, numeric-placeholder, and otherwise malformed candidates are not
+valid allocations or delivery items.
+
+A passing code assessment can be recorded without conflating it with human approval:
+
+```yaml
+version: 1
+assessments:
+  - id: ASSESS-CODE-AUTH-SIGNIN
+    work_item: WORK-AUTH-SIGNIN
+    plan:
+      path: docs/plans/work_auth_signin.md
+      sha256: "<current child-plan sha256>"
+    verdict: Pass
+    assessed_at: "2026-07-15T12:00:00Z"
+```
+
+Only `Pass` is green. `Pass-with-fixes`, stale plan hashes, WIP prose, mapped tests, and Git
+or GitHub state do not imply assessment or completion. `Completed` additionally requires a
+hash-current `code_slice.approved` record whose artifact is the child implementation plan.
 
 ## Generate And Check
 
@@ -84,3 +113,12 @@ Regenerate the page after accepted artifact, approval, decomposition, WIP, trace
 process-guide changes. CI may use `--check` to reject a stale status page or static guide.
 Do not hand-edit generated HTML; change governing artifacts, the guide source, or the
 renderer instead.
+
+The canonical repository also runs responsive browser checks for the status page and
+process guide:
+
+```pwsh
+npm ci
+npx playwright install chromium
+npm run test:layout
+```
