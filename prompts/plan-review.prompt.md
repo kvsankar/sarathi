@@ -22,6 +22,8 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+For Breakdown plans, load and apply `docs/work-decomposition.md`.
+
 ## Simplify pass
 
 Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
@@ -60,6 +62,10 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Upstream fitness: spec and design are ready enough for this plan.
 - Plan type/readiness: breakdown, implementation, or lightweight plan matches the declared
   scope and readiness.
+- Decomposition semantics: each `WORK-*` is visibly a parent-plan allocation, names a valid
+  child scope and required child Spec/Design/Plan chain, and never presents parent-level
+  code. Product-to-feature and feature-to-slice mappings are explicit; any direct
+  product-to-slice integration allocation is justified and correctly labeled.
 - PR slicing: PRs are coherent, reviewable, one focused concern, and normally around the
   advisory 500 changed-LOC target. Larger PRs may pass with a clear rationale; cutting
   useful comments, tests, docs, JSDoc/docstrings, or readable structure to satisfy the
@@ -74,6 +80,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   `TEST-` obligations for lower-level unit/component/contract/integration/UI/quality/
   operational tests are assigned to appropriate PRs. `JT-` PRs preserve ordered steps,
   state handoff, data/setup/cleanup, and final/intermediate oracles.
+- Cross-scope integration allocation: ancestor `AT-`/`JT-`/`TEST-` obligations survive
+  decomposition; obligations spanning children have explicit feature/product integration
+  or acceptance work that reaches a code-ready leaf, without a final big-bang test phase.
 - Test environment allocation: developer-local verification is planned, and shared
   integration/test, staging/pre-production, production canary/smoke, or synthetic-monitor
   environments are assigned or explicitly deferred with rationale when context warrants.

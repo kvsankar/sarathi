@@ -40,6 +40,12 @@ mechanical and qualitative passes separate in the report.
 | `/plan-assess` | `/plan-verify`: run `check_spec.py` and `check_design.py` on upstream artifacts when present, then `check_plan.py` on the target plan. | `/plan-review`: judge upstream spec/design fitness first, then score PR sizing, plan type/readiness, scope-specific completeness, TDD discipline, coverage, test-level allocation, test-environment allocation, context-driven review/test allocation, verification-oracle allocation, contract-fixture allocation, external-double mitigation allocation, UX/presentation allocation, mock UI approval allocation, logging/error-handling allocation, build/deployment allocation, documentation allocation, Planned Touch Sets, sequencing, parallelism/worktrees, and production quality. |
 | `/code-assess` | `/code-verify`: run upstream checkers when present, `check_code.py` with the test command, coverage threshold, external-boundary traceability metadata, and default git diff/TDD evidence; run pre-commit or the repository's equivalent local quality gate; run planned logging/telemetry/APM/error-handling/build/docs/deployment/environment/context-driven verification; report cleanup-pass and simplify-pass evidence when present. | `/code-review`: judge upstream code-readiness first, then score implementation correctness, planned and supplemental inner test quality, verification-oracle rigor, contract realism, external-double verification risk, mock UI fidelity when required, logging/telemetry/APM and error-handling fitness, UI quality/selector resilience, build/deployment completeness, test-environment execution, context-driven concern verification, documentation completeness, TDD authenticity, design fidelity, planned-scope fidelity, cleanup-pass quality, simplify-pass quality, theater removal, readability, production quality, and quality-gate fitness. |
 
+For decomposable work, every qualitative pass also follows
+[test-ownership.md](test-ownership.md): ancestor acceptance and design-test intent must
+survive allocation into code-ready descendants; integration must appear incrementally at
+boundaries and explicitly at feature/product composition points when needed; traceability
+claims must remain distinct from execution and passing evidence.
+
 ## Blocking Rule
 
 If an upstream mechanical checker fails, or if qualitative review reveals that an upstream

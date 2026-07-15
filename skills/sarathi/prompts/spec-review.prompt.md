@@ -112,6 +112,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   feature/component `AT-` items should refine bounded behavior, and slice/change `AT-`
   items should be precise enough to map to executable acceptance/e2e/API tests or justified
   non-code verification.
+- Cross-scope test ownership: product and feature acceptance/journey intent is precise
+  enough to survive decomposition and does not falsely imply that only slice-owned criteria
+  can become executable descendant evidence.
 - Journey coverage: critical multi-step stories have `JT-` items that compose multiple
   `AT-` scenarios in order, carry realistic state across steps, and name observable final
   or intermediate oracles. If the product has long workflows but no `JT-` coverage, flag the

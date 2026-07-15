@@ -31,8 +31,16 @@ reviewability, traceability, and real boundaries. If simplification would change
 behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
 artifact revision.
 
-Your job is to produce a **Work Plan** that either decomposes broad work into smaller
-code-ready work items or turns an already code-ready slice/change into tested,
+## Work decomposition
+
+For every Breakdown plan, follow `docs/work-decomposition.md`. Treat `WORK-*` as a
+parent-plan allocation to a named child scope, not as an artifact type or implementation
+level. Require the correctly leveled child Spec/Design/Plan chain before code begins.
+Every child plan includes a plain `Parent Work Item: WORK-<AREA>-<NAME>` line near
+`Work Scope:` so status tooling can link it to the parent allocation deterministically.
+
+Your job is to produce a **Work Plan** that either decomposes broad work into correctly
+leveled child artifact chains or turns an already code-ready slice/change into tested,
 production-quality code delivered as small pull requests. Aim to pass `/plan-assess`
 honestly: do not tailor the plan, traceability intent, approval records, boundary
 declarations, or review evidence to checker blind spots. The assessment is supposed to find
@@ -86,6 +94,10 @@ as the governing plan.
     security/threat-model, privacy/compliance, accessibility, resilience/DR, migration,
     localization, abuse/fraud/safety, cost, compatibility, or operational reviews/tests,
     allocate them to work items/PRs or record a user-visible deferral with risk.
+12. **Decomposition preserves levels** — every `WORK-*` allocation names parent scope,
+    child scope, inherited IDs/obligations, and required child artifacts. Product plans
+    normally allocate feature/component children; feature plans normally allocate
+    slice/change children. Cross-feature integration may allocate directly to a slice child.
 
 ## Work scope, plan type, and readiness
 
@@ -101,9 +113,10 @@ Every plan belongs to one of three work scopes:
 
 Choose one **Plan Type**:
 
-- **Breakdown plan** — identifies child feature/component or slice/change work items, their
-  dependencies, required child specs/designs, risks, and recommended order. It can pass
-  review while **not code-ready**.
+- **Breakdown plan** — identifies parent-owned `WORK-*` allocations, each allocation's
+  child feature/component or slice/change scope, dependencies, inherited IDs/obligations,
+  required child specs/designs/plans, risks, and recommended order. It can pass review
+  while **not code-ready**.
 - **Implementation plan** — defines PR-sized work for a code-ready slice/change, or for a
   small feature/component already decomposed enough to implement safely.
 
@@ -155,13 +168,16 @@ Code-ready.
 Use the same section order for every plan, but tune the content to the declared scope:
 
 - **Product/system plan** is normally a Breakdown plan. It carries milestones, child
-  feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research
-  or decision needs, logging/error-handling tracks, build/release/deployment tracks,
-  documentation tracks, sequencing, parallel tracks, major risks, and readiness targets. It
-  should not list implementation PRs unless the system is trivially small.
+  feature/component `WORK-` allocations with explicit child scope, dependencies, required
+  child specs/designs/ADRs/plans, research or decision needs, logging/error-handling tracks,
+  build/release/deployment tracks, documentation tracks, sequencing, parallel tracks, major
+  risks, and readiness targets. Cross-feature integration/acceptance may allocate directly
+  to a slice/change child. It should not list implementation PRs unless the system is
+  trivially small.
 - **Feature/component plan** carries either child slice/change `WORK-` items or concrete
-  implementation PRs when the feature/component is already code-ready. It identifies child
-  spec/LLD needs, dependencies, integration order, test strategy allocation, touch-scope
+  implementation PRs when the feature/component is already code-ready. Each `WORK-*`
+  allocation names its slice/change child scope and required child spec/LLD/plan. The plan
+  also identifies dependencies, integration order, test strategy allocation, touch-scope
   risks, logging/error-handling impacts, build/deployment impacts, documentation impacts,
   and the point where work becomes PR-ready.
 - **Slice/change plan** is an Implementation plan. It carries `PR-` items, Planned Touch
@@ -175,6 +191,15 @@ Use the same section order for every plan, but tune the content to the declared 
 `/plan-create` turns the spec's acceptance criteria, journey tests, and the design's
 `TEST-` obligations into a PR-by-PR executable test plan. It decides **when** each test is
 written, **which level** it belongs to, and **which PR** owns it.
+
+For decomposable work, follow `docs/test-ownership.md` and
+`docs/work-decomposition.md`. Map every ancestor `AT-`, `JT-`, and design `TEST-`
+obligation to child work, implementation PRs, or justified non-code verification. When
+evidence spans multiple children, create an explicit feature/product integration or
+acceptance `WORK-` allocation, name its child scope, and drive that child's
+Spec/Design/Implementation-plan chain to Code-ready. Plan focused integration as boundaries
+appear as well as composition-level evidence; do not create a final big-bang integration
+phase.
 
 For each PR, list the test levels it will add or update:
 
@@ -325,8 +350,13 @@ work.
 3. **Milestones** — list (`MILE-<AREA>-<NAME>`); each groups child work or PRs toward a
    coherent delivery slice.
 4. **Pull Requests / Child Work Items** — for a Breakdown plan, list
-   `WORK-<AREA>-<NAME>` items with scope, parent IDs, required child spec/design/LLD/plan,
-   dependencies, readiness target, risks, and done signal. For an Implementation plan, list
+   `WORK-<AREA>-<NAME>` allocations with **Parent scope**, **Child scope**, **Scope**,
+   **Parent IDs / inherited obligations**, **Required child artifacts** (child spec,
+   design/HLD/LLD, and Breakdown or Implementation plan), dependencies, readiness target,
+   risks, and done signal. Include explicit integration/acceptance child work when an
+   ancestor obligation spans multiple children; label its resulting artifacts with the
+   child scope even though the parent plan owns the allocation. For an
+   Implementation plan, list
    `PR-<AREA>-<NAME>` items; for each: scope; **Planned Touch Set**
    (files/directories/modules/config/docs/generated artifacts plus any spec/design/plan
    sections allowed to change, including build/deployment/CI/IaC files when relevant);
@@ -427,6 +457,9 @@ Pass-with-fixes.
   test quality, or documentation quality. No PR depends on a later one.
 - Every FR, UC, NFR, AT, JT, COMP, and TEST maps to ≥1 child work item or implementation
   PR. No orphan or duplicate IDs.
+- Every Breakdown-plan `WORK-*` item identifies parent scope, child scope, inherited IDs or
+  obligations, and the required child artifact chain. A work item alone never authorizes
+  code, and code/test artifacts use the child level rather than the allocator's level.
 - Every `AT-` maps to an executable acceptance/e2e/API workflow test PR or to a justified
   non-code verification PR/check.
 - Every `JT-` maps to an executable journey/e2e/API workflow test PR or to a justified

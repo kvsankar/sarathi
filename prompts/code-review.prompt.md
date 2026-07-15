@@ -110,6 +110,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   operational, and quality-attribute risks. Review the test code itself: assertions,
   fixtures, helpers, mocks, generated data, setup/teardown, selectors, determinism, speed,
   isolation, readability, maintainability, and false-positive/false-negative risk.
+- Ancestor test intent: product- or feature-owned `AT-`/`JT-`/`TEST-` obligations assigned
+  to this leaf are implemented and traceable; distinguish mapped/implemented claims from
+  observed execution and passing results.
 - Brownfield baseline conformance: for planless baseline review, report code gaps against
   accepted SRS behavior separately from test gaps against SRS/design obligations. Existing
   tests are evidence, not the source of truth; missing or weaker tests do not weaken `AT-`,

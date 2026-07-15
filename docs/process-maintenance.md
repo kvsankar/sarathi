@@ -11,7 +11,8 @@ must improve judgment without turning every prompt into a checklist wall.
   [work-in-progress.md](work-in-progress.md),
   [bootstrap-instructions.md](bootstrap-instructions.md),
   [artifact-formatting.md](artifact-formatting.md), and
-  [cross-cutting-concerns.md](cross-cutting-concerns.md), and reference it from prompts.
+  [cross-cutting-concerns.md](cross-cutting-concerns.md),
+  [work-decomposition.md](work-decomposition.md), and reference it from prompts.
 - Prefer one crisp stage instruction plus one shared reference over copying a concern into
   every create, verify, review, and assess prompt.
 - Keep `SKILL.md` as the always-loaded routing kernel. It should select the project entry

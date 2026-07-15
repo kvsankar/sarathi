@@ -22,6 +22,10 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+When this is a child artifact allocated by a Breakdown plan, include a plain
+`Parent Work Item: WORK-<AREA>-<NAME>` line near `Work Scope:` so status tooling can link
+the spec to its parent allocation deterministically.
+
 ## Simplify pass
 
 Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
@@ -82,6 +86,10 @@ checks that state how stakeholders will know one requirement or use-case outcome
 satisfied. `JT-` items are long-form, ordered stories that compose multiple `AT-` scenarios
 across a realistic user, operator, API, or business workflow. They are written in the spec,
 not as executable test code.
+
+For decomposable work, follow `docs/test-ownership.md`. Product and feature `AT-`/`JT-`
+intent remains normative after decomposition and must be refined or allocated downstream;
+do not imply that only slice-owned acceptance criteria can become executable evidence.
 
 Write `AT-` items at every spec scope, but match their granularity to that scope:
 

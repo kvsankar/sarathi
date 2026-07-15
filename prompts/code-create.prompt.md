@@ -137,6 +137,15 @@ handling, logging semantics, or UI behavior.
 test levels before or alongside the production code using Red/Green/Refactor unless a narrow
 TDD exception above applies:
 
+Follow `docs/test-ownership.md` and `docs/work-decomposition.md`. The current code-ready PR
+may implement tests whose
+governing `AT-`, `JT-`, or `TEST-` belongs to an ancestor product or feature artifact when
+the plan explicitly assigned that obligation. Preserve those ancestor IDs in traceability.
+Do not invoke `/code-create` from the ancestor Breakdown plan itself: the descendant leaf
+owns the executable test code, while the ancestor owns its intent and `WORK-*` allocation.
+Confirm that the current Spec/Design/Implementation-plan artifacts use the child scope named
+by that allocation.
+
 - Write executable **acceptance/e2e/API workflow tests** for the `AT-` items assigned to the
   PR. These should verify externally visible behavior or measurable NFR outcomes from the
   user's perspective or a public API boundary, and cite the relevant `TEST-` obligation when

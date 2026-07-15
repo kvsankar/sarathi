@@ -79,8 +79,22 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   quality-gate fitness.
 - **`/code-assess`** — [prompts/code-assess.prompt.md](prompts/code-assess.prompt.md)
   Runs `/code-verify` plus `/code-review` as the full code gate.
+- **`/workflow-status`** —
+  [prompts/workflow-status.prompt.md](prompts/workflow-status.prompt.md)
+  Generates a deterministic, read-only HTML tree of artifact gates, decomposition, PR
+  slices, and mapped implementation evidence using the process guide's visual grammar,
+  plus the linked static process guide. It does not advance an SDLC gate.
 
 ## Test responsibility by command
+
+Test intent can originate at product/system, feature/component, or slice/change scope, but
+only a code-ready Implementation plan invokes `/code-create`. A descendant leaf PR may and
+often must implement executable tests governed by ancestor `AT-`, `JT-`, and design `TEST-`
+obligations. Breakdown plans must preserve that ancestry, allocate every obligation to child
+work or justified non-code verification, and create explicit feature/product integration or
+acceptance work when evidence spans multiple children. Follow
+[docs/test-ownership.md](docs/test-ownership.md); do not defer integration into one final
+big-bang test phase.
 
 - `/spec-create` writes `AT-` acceptance tests as requirements-level, black-box acceptance
   criteria in the spec. Specs write `AT-` items at product/system, feature/component, and
@@ -108,6 +122,9 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   obligations. This is where unit, component, contract, integration,
   UI/accessibility/visual, quality/NFR, migration, build/deploy, docs, and operational test
   implementations are written when planned.
+- `/code-create` may implement product- or feature-owned acceptance, journey, integration,
+  and quality tests when a code-ready descendant plan assigns them. Test code is code; the
+  implementation leaf owns the executable file while the ancestor artifact owns the intent.
 - Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
   when planned or explicitly accepted: generated code only, docs-only, formatting-only,
   build/deploy config validation, and characterization before legacy refactor. Each
@@ -298,6 +315,22 @@ next step is a breakdown plan, child spec, LLD, ADR/interface contract, or imple
 plan. `/code-create` must block unless it has a code-ready implementation plan for a
 slice/change or sufficiently small feature/component.
 
+### WORK allocation semantics
+
+A `WORK-*` item is an allocation record in a parent Breakdown plan, not a Spec, Design,
+Plan, Code artifact or implementation level. Product/system Breakdown plans normally
+allocate feature/component children; feature/component Breakdown plans normally allocate
+slice/change children. Cross-feature integration or acceptance work may allocate directly
+from a product plan to a slice/change child when that is the smallest coherent executable
+scope.
+
+Every `WORK-*` item names its parent scope, child scope, inherited IDs/test obligations,
+required child Spec/Design/Plan artifacts, dependencies, readiness target, risks, and done
+signal. Child artifacts may reference parent intent instead of copying it, but the child
+artifact chain must exist before implementation. `/code-create` runs only from the
+code-ready child Implementation plan, never from the Breakdown plan or `WORK-*` item. See
+[docs/work-decomposition.md](docs/work-decomposition.md).
+
 ## ID format
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
@@ -439,6 +472,12 @@ slice, and
 file bytes and use the current UTC timestamp ending in `Z`. Use `status: auto-approved`
 only when `.sdlc/gates.yaml` allows that gate and scope.
 
+When `/code-assess` returns `Pass` for a known `WORK-*` item, record the assessment in
+`.sdlc/code-assessments.yaml` with the child implementation plan path and current SHA-256.
+This supports a hash-current `Assessed` workflow state without pretending the assessment is
+human approval. Bind `code_slice.approved` to that same child plan when the user approves the
+slice handoff; workflow status then displays `Completed`.
+
 Default gate ownership:
 
 - `spec.approved` before downstream design gate checks.
@@ -455,7 +494,7 @@ Default gate ownership:
 
 | Scope | Spec carries | Design carries | Plan carries |
 | --- | --- | --- | --- |
-| Product/system | Mission, stakeholders, boundary, product needs, non-goals, major capabilities, representative use cases, major NFRs, UI mock preference, logging/telemetry and error-handling expectations, build/release/deployment expectations, user/developer documentation expectations, broad acceptance intent, child-artifact needs. | HLD: context, major containers/services/modules, drivers, boundaries, data ownership, quality tactics, mock UI artifact/approval when required, logging/telemetry strategy, error-handling strategy, build/package/release strategy, deployment/operations strategy, documentation strategy, ADRs, risks, decomposition candidates. | Breakdown plan: milestones, feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research/decision needs, mock approval, logging/error-handling tracks, build/deployment tracks, documentation tracks, parallel tracks, readiness targets. |
+| Product/system | Mission, stakeholders, boundary, product needs, non-goals, major capabilities, representative use cases, major NFRs, UI mock preference, logging/telemetry and error-handling expectations, build/release/deployment expectations, user/developer documentation expectations, broad acceptance intent, child-artifact needs. | HLD: context, major containers/services/modules, drivers, boundaries, data ownership, quality tactics, mock UI artifact/approval when required, logging/telemetry strategy, error-handling strategy, build/package/release strategy, deployment/operations strategy, documentation strategy, ADRs, risks, decomposition candidates. | Breakdown plan: milestones and parent-owned `WORK-` allocations that name feature/component child scope and required child artifact chains; cross-feature integration may name a slice/change child; dependencies, research/decision needs, mock approval, logging/error-handling tracks, build/deployment tracks, documentation tracks, parallel tracks, readiness targets. |
 | Feature/component | Parent refs, local goal, actors, concrete behavior, FR/NFR/AT/JT coverage, edge cases, integration/business rules, UI mock preference, logging/telemetry and error-handling constraints, build/deployment constraints, documentation constraints, dependencies, non-goals. | Feature/component design: responsibilities, contracts, local state/data, runtime flows, core/shell split, dependencies, UX/API contracts, mock UI artifact/approval when required, logging/error-handling impacts, build/deployment impacts, documentation impacts, decisions, risks, explicit `TEST-` obligations. | Breakdown or implementation plan: child slice/change work or PRs, child artifact needs, integration order, `AT-`/`JT-`/`TEST-` allocation, mock approval, logging/error-handling allocation, build/deployment allocation, documentation allocation, touch-scope risks. |
 | Slice/change | Exact requirement delta, parent IDs refined/preserved, changed and unchanged behavior, edge cases, UI mock preference/delta, logging/error-handling delta, build/deployment delta, documentation delta, executable or justified non-code acceptance/journey criteria. | LLD: touched components/modules, API/schema/data deltas, failure paths, validation/policy logic, mock UI artifact/approval when required, logging/telemetry deltas, error mapping/recovery paths, build/deployment script or artifact changes, documentation changes, migration/rollback, side effects, `TEST-` obligations/doubles, likely touch candidates. | Implementation plan: `PR-` items, Planned Touch Sets, Red/Green steps, `AT-`/`JT-`/`TEST-` allocation, LOC estimates, quality gates, mock approval, logging/error-handling verification, build/deployment verification, documentation checks, rollback, dependencies, worktree guidance. |
 

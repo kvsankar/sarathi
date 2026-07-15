@@ -22,6 +22,10 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+When this is a child artifact allocated by a Breakdown plan, include a plain
+`Parent Work Item: WORK-<AREA>-<NAME>` line near `Work Scope:` so status tooling can link
+the design to its parent allocation deterministically.
+
 ## Simplify pass
 
 Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
@@ -202,6 +206,12 @@ design's ability to satisfy requirements and quality attributes:
 `/design-create` does not write executable tests. It defines the **test architecture**:
 which kinds of tests are needed, where they sit in the system, what each level proves, and
 which components, interfaces, flows, risks, and NFRs they cover.
+
+For decomposable work, follow `docs/test-ownership.md`. Define separate obligations for
+incremental boundary integration, feature composition, and product/system composition when
+the context requires them. Product- and feature-owned `AT-`/`JT-` intent may become
+executable in descendant integration leaves; preserve the ancestor IDs, environment, and
+oracle instead of treating those tests as unowned end-stage work.
 
 Use the spec's `AT-` items as acceptance intent and its `JT-` items as long-form journey
 intent. Decide how those criteria will be verified later, such as API acceptance tests,

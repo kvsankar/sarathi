@@ -1,0 +1,11 @@
+{
+  "name": "sarathi-layout-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:layout": "playwright test tests/browser/workflow-status-layout.spec.js --workers=1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
+}

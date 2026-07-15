@@ -47,7 +47,9 @@ approvals:
   TODO/FIXME/XXX/skip/xfail markers that the user explicitly accepts for the current code
   slice. The checker reports the marker locations; do not add SDLC-specific annotations to
   app code.
-- `code_slice.approved`: for teams that want a checked handoff between code slices.
+- `code_slice.approved`: for teams that want a checked handoff between code slices. Bind
+  the record to the current child implementation plan path and SHA-256 so workflow status
+  can map the approval to its owning `WORK-*` branch and display `Completed`.
 - `release.approved` and `production-deployment.approved`: for release/deploy workflows;
   these should not be auto-approved by default.
 
