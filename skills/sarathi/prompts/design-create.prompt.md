@@ -22,6 +22,10 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+When this is a child artifact allocated by a Breakdown plan, include a plain
+`Parent Work Item: WORK-<AREA>-<NAME>` line near `Work Scope:` so status tooling can link
+the design to its parent allocation deterministically.
+
 ## Simplify pass
 
 Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,

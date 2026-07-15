@@ -23,8 +23,8 @@ generating an artifact.
   assessment.
 - A native `sarathi` skill for agents that support skills.
 - Structural checkers for specs, designs, plans, and code/test traceability.
-- A deterministic workflow-status HTML view for artifact gates, decomposition, PR slices,
-  and mapped implementation evidence.
+- A deterministic workflow-status HTML tree for artifact gates, decomposition, PR slices,
+  and mapped implementation evidence, using the same visual grammar as the process guide.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
 - Change history in [CHANGELOG.md](CHANGELOG.md) and release/tagging guidance in

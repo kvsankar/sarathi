@@ -160,6 +160,30 @@ Implementation Readiness: Code-ready
 - PR-ALPHA-TWO
 """,
     )
+    write(
+        project / "docs" / "work" / "alpha" / "spec.md",
+        """# Alpha Slice - Software Requirements Specification
+
+Parent Work Item: WORK-ALPHA
+
+Work Scope: slice/change
+
+Implementation Readiness: Code-ready
+""",
+    )
+    write(
+        project / "docs" / "work" / "alpha" / "design.md",
+        """# Alpha Slice Design
+
+Parent Work Item: WORK-ALPHA
+
+Work Scope: slice/change
+
+Design Depth: LLD
+
+Implementation Readiness: Code-ready
+""",
+    )
     approvals = f"""version: 1
 approvals:
   - id: APR-SPEC
@@ -253,12 +277,17 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
     assert alpha["state"] == "evidence"
     assert alpha["parent_scope"] == "product/system."
     assert alpha["child_scope"] == "slice/change."
+    assert alpha["parent_level"] == "product"
+    assert alpha["child_level"] == "slice"
     assert alpha["parent_obligations"] == "FR-ALPHA and TEST-ALPHA."
     assert alpha["child_requirement"] == "slice spec, LLD, and implementation plan."
+    assert alpha["child_spec"]["path"] == "docs/work/alpha/spec.md"
+    assert alpha["child_design"]["path"] == "docs/work/alpha/design.md"
     assert alpha["child_plan"]["approval"]["state"] == "approved"
     assert alpha["evidence_count"] == 3
     assert alpha["wip_claim"]["status"] == "approved and implemented"
     assert beta["state"] == "frontier"
+    assert beta["child_level"] == "feature"
     assert beta["child_plan"] is None
 
 
@@ -289,9 +318,12 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert first.encode() == second.encode()
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
-    assert "Parent allocation" in first
-    assert "Child implementation plan" in first
-    assert "product/system. &rarr; slice/change." in first
+    assert "Real workflow tree" in first
+    assert 'class="tree-branch"' in first
+    assert "Product plan allocation" in first
+    assert "Slice child" in first
+    assert "No child spec discovered" in first
+    assert "Code + executable tests" in first
 
     monkeypatch.setattr(
         sys, "argv", [str(SCRIPT), str(project), "--output", str(output)]

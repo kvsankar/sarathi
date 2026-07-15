@@ -286,20 +286,67 @@ def wip_claim_for(wip: dict[str, Any], path: str) -> dict[str, str] | None:
     return None
 
 
-def implementation_plans(root: Path, parent_plan: Path | None) -> dict[str, Path]:
-    result: dict[str, Path] = {}
+def child_artifacts(
+    root: Path, canonical_paths: dict[str, Path | None]
+) -> dict[str, dict[str, Path]]:
+    result: dict[str, dict[str, Path]] = {}
+    excluded = {path.resolve() for path in canonical_paths.values() if path is not None}
     for path in discover(root, "*.md"):
-        if parent_plan is not None and path.resolve() == parent_plan.resolve():
+        if path.resolve() in excluded:
             continue
         text = read_text(path)
         values = metadata(text)
-        if values.get("Plan Type", "").casefold() != "implementation":
-            continue
         heading = first_heading(text) or ""
-        match = WORK_ID.search(heading)
-        if match:
-            result[match.group()] = path
+        parent_match = re.search(
+            r"(?mi)^Parent Work Item:\s*(WORK-[A-Z][A-Z0-9-]*)\s*$", text
+        )
+        heading_match = WORK_ID.search(heading)
+        identifier = (
+            parent_match.group(1)
+            if parent_match
+            else heading_match.group()
+            if heading_match
+            else None
+        )
+        if identifier is None:
+            continue
+        plan_type = values.get("Plan Type", "").casefold()
+        filename = path.stem.casefold()
+        heading_text = heading.casefold()
+        if plan_type in {"breakdown", "implementation"}:
+            kind = "plan"
+        elif values.get("Design Depth") or "design" in filename:
+            kind = "design"
+        elif (
+            "spec" in filename or "software requirements specification" in heading_text
+        ):
+            kind = "spec"
+        else:
+            continue
+        result.setdefault(identifier, {}).setdefault(kind, path)
     return result
+
+
+def scope_level(value: str | None) -> str | None:
+    normalized = str(value or "").casefold()
+    if "product" in normalized or "system" in normalized:
+        return "product"
+    if "feature" in normalized or "component" in normalized:
+        return "feature"
+    if "slice" in normalized or "change" in normalized:
+        return "slice"
+    return None
+
+
+def child_level(item: dict[str, Any], child: dict[str, Any] | None) -> str | None:
+    declared = scope_level(item.get("child_scope"))
+    if declared:
+        return declared
+    if child:
+        discovered = scope_level(child.get("metadata", {}).get("Work Scope"))
+        if discovered:
+            return discovered
+    return scope_level(item.get("child_requirement"))
 
 
 def traceability_counts(root: Path) -> tuple[dict[str, int], str | None]:
@@ -346,17 +393,35 @@ def build_model(root: Path) -> dict[str, Any]:
         for kind in ("spec", "design", "plan")
     }
     wip = parse_wip(root)
-    children = implementation_plans(root, paths["plan"])
+    linked_artifacts = child_artifacts(root, paths)
     traces, traceability_error = traceability_counts(root)
     parent_text = read_text(paths["plan"]) if paths["plan"] else ""
     items = work_items(parent_text)
+    parent_level = scope_level(
+        stages["plan"].get("metadata", {}).get("Work Scope")
+    ) or scope_level(stages["spec"].get("metadata", {}).get("Work Scope"))
     for item in items:
-        child_path = children.get(item["id"])
+        item["parent_level"] = parent_level
+        linked = linked_artifacts.get(item["id"], {})
+        spec_path = linked.get("spec")
+        design_path = linked.get("design")
+        child_path = linked.get("plan")
+        item["child_spec"] = (
+            artifact_model(root, "spec", spec_path, records) if spec_path else None
+        )
+        item["child_design"] = (
+            artifact_model(root, "design", design_path, records)
+            if design_path
+            else None
+        )
         if child_path is None:
             item.update(
                 {
-                    "state": "frontier",
+                    "state": "started"
+                    if item["child_spec"] or item["child_design"]
+                    else "frontier",
                     "child_plan": None,
+                    "child_level": child_level(item, None),
                     "prs": [],
                     "evidence_count": 0,
                     "wip_claim": None,
@@ -365,7 +430,6 @@ def build_model(root: Path) -> dict[str, Any]:
             continue
         child_text = read_text(child_path)
         child_relative = relative_path(child_path, root)
-        child_approval = approval_for(root, child_path, "plan.approved", records)
         prs = []
         for identifier in dict.fromkeys(
             re.findall(r"(?m)^-\s+(PR-[A-Z][A-Z0-9-]*)\s*$", child_text)
@@ -376,17 +440,14 @@ def build_model(root: Path) -> dict[str, Any]:
         item.update(
             {
                 "state": "evidence" if evidence_count else "expanded",
-                "child_plan": {
-                    "title": first_heading(child_text) or item["id"],
-                    "path": child_relative,
-                    "metadata": metadata(child_text),
-                    "approval": child_approval,
-                },
+                "child_plan": artifact_model(root, "plan", child_path, records),
+                "child_level": None,
                 "prs": prs,
                 "evidence_count": evidence_count,
                 "wip_claim": claim,
             }
         )
+        item["child_level"] = child_level(item, item["child_plan"])
     expanded = sum(item["child_plan"] is not None for item in items)
     pr_count = sum(len(item["prs"]) for item in items)
     evidenced_prs = sum(
@@ -400,7 +461,9 @@ def build_model(root: Path) -> dict[str, Any]:
     ):
         if optional.is_file():
             source_paths.append(optional)
-    source_paths.extend(children.values())
+    source_paths.extend(
+        path for artifacts in linked_artifacts.values() for path in artifacts.values()
+    )
     unique_sources = sorted(
         set(source_paths), key=lambda path: relative_path(path, root)
     )
@@ -450,7 +513,9 @@ def state_label(state: str) -> str:
         "missing": "Not yet done",
         "frontier": "Not yet decomposed",
         "expanded": "Plan expanded",
+        "started": "Artifacts started",
         "evidence": "Evidence mapped",
+        "planned": "PRs planned",
     }.get(state, state.replace("-", " ").title())
 
 
@@ -465,22 +530,48 @@ def artifact_link(root: Path, output: Path, stage: dict[str, Any]) -> str:
     return f'<a href="{href}">{esc(stage["path"])}</a>'
 
 
-def render_stage(root: Path, output: Path, stage: dict[str, Any]) -> str:
-    values = stage.get("metadata", {})
-    detail = values.get("Implementation Readiness") or values.get("Plan Type") or ""
-    approval = stage.get("approval") or {}
-    attestation = (
-        f'<span title="Hash-current local attestation">{esc(approval.get("id"))}</span>'
-        if approval.get("id")
-        else "No current attestation"
+def display_level(level: str | None) -> str:
+    return {"product": "Product", "feature": "Feature", "slice": "Slice"}.get(
+        str(level), "Level unknown"
     )
+
+
+def render_artifact_node(
+    root: Path,
+    output: Path,
+    kind: str,
+    level: str | None,
+    title: str,
+    stage: dict[str, Any] | None,
+    missing_text: str | None = None,
+) -> str:
+    state = stage.get("state", "missing") if stage else "missing"
+    level_class = level if level in {"product", "feature", "slice"} else "unknown"
+    kind_label = {
+        "spec": "Spec",
+        "design": "Design",
+        "plan": "Plan",
+    }[kind]
+    if stage and stage.get("path"):
+        readiness = stage.get("metadata", {}).get("Implementation Readiness")
+        details = artifact_link(root, output, stage)
+        if readiness:
+            details += f"<small>{esc(readiness)}</small>"
+    else:
+        details = (
+            f'<span class="empty">{esc(missing_text)}</span>'
+            if missing_text
+            else f'<span class="empty">No child {esc(kind_label.casefold())} discovered</span>'
+        )
     return f"""
-<li class="stage stage-{esc(stage["state"])}">
-  <div class="stage-top"><span class="stage-name">{esc(stage["kind"].title())}</span>{badge(stage["state"])}</div>
-  <div class="stage-path">{artifact_link(root, output, stage)}</div>
-  <div class="stage-detail">{esc(detail) if detail else '<span class="empty">Not yet known</span>'}</div>
-  <div class="stage-attestation">{attestation}</div>
-</li>"""
+<div class="node artifact-{esc(kind)}">
+  <div class="node-meta">
+    <div class="identity-tags"><span class="level level-{esc(level_class)}">{esc(display_level(level))}</span><span class="kind">{esc(kind_label)}</span></div>
+    {badge(state)}
+  </div>
+  <strong>{esc(title)}</strong>
+  <div class="node-detail">{details}</div>
+</div>"""
 
 
 def render_prs(prs: list[dict[str, Any]]) -> str:
@@ -497,27 +588,74 @@ def render_prs(prs: list[dict[str, Any]]) -> str:
     )
 
 
-def render_work_item(root: Path, output: Path, item: dict[str, Any]) -> str:
+def render_code_node(item: dict[str, Any]) -> str:
+    prs = item["prs"]
+    evidence_count = item["evidence_count"]
+    state = "evidence" if evidence_count else "planned" if prs else "missing"
+    level = item.get("child_level")
+    level_class = level if level in {"product", "feature", "slice"} else "unknown"
+    if prs:
+        detail = f"{len(prs)} PR slice{'s' if len(prs) != 1 else ''}"
+        detail += f" &middot; {evidence_count} mapped test entr{'ies' if evidence_count != 1 else 'y'}"
+    else:
+        detail = '<span class="empty">No implementation PRs discovered</span>'
+    return f"""
+<div class="node artifact-code">
+  <div class="node-meta">
+    <div class="identity-tags"><span class="level level-{esc(level_class)}">{esc(display_level(level))}</span><span class="kind">Code + tests</span></div>
+    {badge(state)}
+  </div>
+  <strong>Code + executable tests</strong>
+  <div class="node-detail">{detail}</div>
+</div>"""
+
+
+def render_flow(nodes: list[str]) -> str:
+    return (
+        '<div class="flow">'
+        + '<span class="arrow" aria-hidden="true"></span>'.join(nodes)
+        + "</div>"
+    )
+
+
+def render_tree_branch(root: Path, output: Path, item: dict[str, Any]) -> str:
     child = item.get("child_plan")
-    if child:
-        href = href_for(root, output, child["path"])
-        child_state = child["approval"]["state"]
-        readiness = child["metadata"].get("Implementation Readiness", "Unknown")
-        child_html = (
-            f'{badge(child_state)}<a href="{href}"><code>{esc(child["path"])}</code></a>'
-            f"<small>{esc(readiness)}</small>"
-        )
+    child_level_value = item.get("child_level")
+    parent_label = display_level(item.get("parent_level"))
+    child_label = display_level(child_level_value)
+    plan_type = (
+        child.get("metadata", {}).get("Plan Type", "").casefold() if child else ""
+    )
+    if plan_type == "breakdown":
+        plan_title = "Breakdown plan"
+    elif plan_type == "implementation" or child_level_value == "slice":
+        plan_title = "Implementation plan"
+    elif child_level_value == "feature":
+        plan_title = "Feature plan"
     else:
-        child_html = '<span class="empty">Not yet decomposed</span>'
-    if item["evidence_count"]:
-        claim = item.get("wip_claim") or {}
-        claim_text = claim.get("status")
-        evidence_html = (
-            f"<strong>{item['evidence_count']}</strong> mapped executable-test entries"
-            + (f"<small>WIP claim: {esc(claim_text)}</small>" if claim_text else "")
-        )
-    else:
-        evidence_html = '<span class="empty">Not yet known</span>'
+        plan_title = "Child plan"
+    nodes = [
+        render_artifact_node(
+            root,
+            output,
+            "spec",
+            child_level_value,
+            f"{child_label} spec",
+            item.get("child_spec"),
+        ),
+        render_artifact_node(
+            root,
+            output,
+            "design",
+            child_level_value,
+            f"{child_label} design / LLD",
+            item.get("child_design"),
+        ),
+        render_artifact_node(
+            root, output, "plan", child_level_value, plan_title, child
+        ),
+        render_code_node(item),
+    ]
     searchable = " ".join(
         str(value or "")
         for value in (
@@ -545,31 +683,25 @@ def render_work_item(root: Path, output: Path, item: dict[str, Any]) -> str:
             ("Risks", "risks"),
         )
     )
+    claim = item.get("wip_claim") or {}
+    claim_html = (
+        f'<p class="wip-claim">WIP claim: {esc(claim.get("status"))}</p>'
+        if claim.get("status")
+        else ""
+    )
     return f"""
-<article class="work-row" data-state="{esc(item["state"])}" data-search="{esc(searchable)}">
-  <div class="work-cell work-identity">
-    <div class="cell-label">Parent allocation</div>
+<article class="tree-branch" data-state="{esc(item["state"])}" data-search="{esc(searchable)}">
+  <div class="allocation-label">
     <code>{esc(item["id"])}</code>
-    <strong>{esc(item["name"])}</strong>
+    <span>{esc(parent_label)} plan allocation</span>
+    <span class="allocation-arrow">&rarr;</span>
+    <strong>{esc(child_label)} child</strong>
     {badge(item["state"])}
-    <p>{esc(item.get("parent_scope") or "Parent scope not recorded")} &rarr; {esc(item.get("child_scope") or "Child scope not recorded")}</p>
-    <p>{esc(item.get("scope") or "Scope not recorded")}</p>
   </div>
-  <div class="work-cell">
-    <div class="cell-label">Child implementation plan</div>
-    {child_html}
-  </div>
-  <div class="work-cell">
-    <div class="cell-label">PR slices</div>
-    {render_prs(item["prs"])}
-  </div>
-  <div class="work-cell">
-    <div class="cell-label">Implementation evidence</div>
-    <div class="evidence-value">{evidence_html}</div>
-  </div>
-  <details class="work-details">
-    <summary>Evidence and frontier</summary>
-    <dl>{details}</dl>
+  {render_flow(nodes)}
+  <details class="branch-details">
+    <summary>Scope, allocation, PRs, and evidence</summary>
+    <div class="detail-layout"><dl>{details}</dl><div><h3>PR evidence</h3>{render_prs(item["prs"])}{claim_html}</div></div>
   </details>
 </article>"""
 
@@ -581,22 +713,44 @@ def render_html(
     guide_href: str | None = None,
 ) -> str:
     stages = model["stages"]
-    stage_html = "".join(
-        render_stage(root, output, stages[kind]) for kind in ("spec", "design", "plan")
+    root_level = (
+        scope_level(stages["spec"].get("metadata", {}).get("Work Scope")) or "product"
     )
-    implementation_state = (
-        "evidence" if model["summary"]["evidenced_prs"] else "missing"
+    root_nodes = [
+        render_artifact_node(
+            root,
+            output,
+            "spec",
+            root_level,
+            "Product spec",
+            stages["spec"],
+            "No product spec discovered",
+        ),
+        render_artifact_node(
+            root,
+            output,
+            "design",
+            root_level,
+            "Product design / HLD",
+            stages["design"],
+            "No product design discovered",
+        ),
+        render_artifact_node(
+            root,
+            output,
+            "plan",
+            root_level,
+            "Product Breakdown plan",
+            stages["plan"],
+            "No product plan discovered",
+        ),
+    ]
+    root_flow = render_flow(root_nodes)
+    branches = "".join(
+        render_tree_branch(root, output, item) for item in model["work_items"]
     )
-    stage_html += f"""
-<li class="stage stage-{implementation_state}">
-  <div class="stage-top"><span class="stage-name">Implementation</span>{badge(implementation_state)}</div>
-  <div class="stage-path">{model["summary"]["evidenced_prs"]} PR slices with mapped tests</div>
-  <div class="stage-detail">{model["summary"]["expanded_items"]} of {model["summary"]["work_items"]} workstreams expanded</div>
-  <div class="stage-attestation">Evidence is not a completion claim</div>
-</li>"""
-    rows = "".join(render_work_item(root, output, item) for item in model["work_items"])
-    if not rows:
-        rows = """
+    if not branches:
+        branches = """
 <div class="empty-state">
   <strong>No decomposition discovered</strong>
   <span>A breakdown plan with WORK identifiers will expand this view.</span>
@@ -633,13 +787,23 @@ def render_html(
 <title>{esc(model["project"])} - Sarathi workflow status</title>
 <style>
 :root {{
-  color-scheme: light dark;
   --bg: #f4f6f8;
   --surface: #ffffff;
   --surface-alt: #edf1f4;
   --text: #17212b;
   --muted: #5d6975;
   --line: #c8d0d7;
+  --product: #2457a6;
+  --feature: #9a6200;
+  --slice: #197653;
+  --spec: #2457a6;
+  --spec-bg: #edf4fd;
+  --design: #9a6200;
+  --design-bg: #fff6e3;
+  --plan: #197653;
+  --plan-bg: #eaf7f1;
+  --code: #6247a8;
+  --code-bg: #f2effc;
   --approved: #18794e;
   --approved-bg: #dff3e8;
   --stale: #9a6700;
@@ -670,18 +834,60 @@ main {{ max-width: 92rem; margin: 0 auto; padding: 1.25rem; }}
 .current-state span {{ color: var(--muted); }}
 .current-state strong {{ color: var(--text); }}
 h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
-.stage-rail {{ list-style: none; display: grid; grid-template-columns: repeat(4, minmax(13rem, 1fr)); gap: 0; margin: 0; padding: 0; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); }}
-.stage {{ min-width: 13rem; padding: 1rem; border-right: 1px solid var(--line); position: relative; }}
-.stage:last-child {{ border-right: 0; }}
-.stage-top {{ display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }}
-.stage-name {{ font-weight: 750; }}
-.stage-path, .stage-detail, .stage-attestation {{ margin-top: 0.55rem; font-size: 0.82rem; overflow-wrap: anywhere; }}
-.stage-detail, .stage-attestation {{ color: var(--muted); }}
 .badge {{ display: inline-flex; width: fit-content; align-items: center; min-height: 1.5rem; padding: 0.12rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 750; white-space: nowrap; }}
 .badge-approved {{ color: var(--approved); background: var(--approved-bg); }}
-.badge-stale, .badge-unapproved, .badge-expanded {{ color: var(--stale); background: var(--stale-bg); }}
+.badge-stale, .badge-unapproved, .badge-expanded, .badge-started {{ color: var(--stale); background: var(--stale-bg); }}
 .badge-evidence {{ color: var(--evidence); background: var(--evidence-bg); }}
+.badge-planned {{ color: var(--stale); background: var(--stale-bg); }}
 .badge-missing, .badge-frontier {{ color: var(--missing); background: var(--missing-bg); }}
+.encoding {{ display: grid; gap: 0.45rem; margin: 1rem 0; color: var(--muted); font-size: 0.78rem; font-weight: 700; }}
+.encoding-row {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.9rem; }}
+.encoding-label {{ flex: 0 0 12rem; color: var(--text); }}
+.key {{ display: inline-flex; align-items: center; gap: 0.35rem; }}
+.key::before {{ width: 1.1rem; height: 0.8rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 2px; content: ""; }}
+.key-spec::before {{ border-left-color: var(--spec); background: var(--spec-bg); }}
+.key-design::before {{ border-left-color: var(--design); background: var(--design-bg); }}
+.key-plan::before {{ border-left-color: var(--plan); background: var(--plan-bg); }}
+.key-code::before {{ border-left-color: var(--code); background: var(--code-bg); }}
+.tree-panel {{ padding: 1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }}
+.flow {{ display: flex; align-items: stretch; gap: 0.5rem; min-width: 0; }}
+.node {{ flex: 1 1 0; min-width: 0; min-height: 8.4rem; padding: 0.75rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 4px; overflow-wrap: anywhere; }}
+.artifact-spec {{ border-left-color: var(--spec); background: var(--spec-bg); }}
+.artifact-design {{ border-left-color: var(--design); background: var(--design-bg); }}
+.artifact-plan {{ border-left-color: var(--plan); background: var(--plan-bg); }}
+.artifact-code {{ border-left-color: var(--code); background: var(--code-bg); }}
+.node-meta, .identity-tags {{ display: flex; align-items: center; gap: 0.35rem; }}
+.node-meta {{ justify-content: space-between; }}
+.identity-tags {{ min-width: 0; flex-wrap: wrap; }}
+.level, .kind {{ display: inline-flex; align-items: center; min-height: 1.25rem; padding: 0.12rem 0.4rem; border-radius: 3px; font-size: 0.64rem; font-weight: 800; line-height: 1; text-transform: uppercase; }}
+.level {{ border: 1px solid currentColor; background: #fff; }}
+.level-product {{ color: var(--product); }}
+.level-feature {{ color: var(--feature); }}
+.level-slice {{ color: var(--slice); }}
+.level-unknown {{ color: var(--missing); }}
+.kind {{ color: #465563; background: rgb(255 255 255 / 72%); }}
+.node > strong {{ display: block; margin-top: 0.55rem; font-size: 0.9rem; }}
+.node-detail {{ margin-top: 0.35rem; color: var(--muted); font-size: 0.75rem; }}
+.node-detail small {{ display: block; margin-top: 0.25rem; }}
+.arrow {{ display: grid; flex: 0 0 1.65rem; place-items: center; color: #758391; font-family: Consolas, monospace; font-size: 1.1rem; font-weight: 800; }}
+.arrow::before {{ content: "\\2192"; }}
+.branches {{ display: grid; gap: 0.9rem; margin: 1rem 0 0 1.25rem; padding-left: 1.25rem; border-left: 2px solid #aab6c0; }}
+.tree-branch {{ position: relative; min-width: 0; }}
+.tree-branch::before {{ position: absolute; top: 1rem; left: -1.4rem; width: 1.25rem; border-top: 2px solid #aab6c0; content: ""; }}
+.tree-branch[hidden] {{ display: none; }}
+.allocation-label {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; margin-bottom: 0.45rem; color: var(--muted); font-size: 0.76rem; font-weight: 700; }}
+.allocation-label code {{ padding: 0.1rem 0.35rem; border: 1px solid #aab6c0; border-radius: 3px; background: var(--surface-alt); color: #52616f; font-weight: 800; }}
+.allocation-label strong {{ color: var(--text); text-transform: uppercase; }}
+.allocation-label .badge {{ margin-left: auto; }}
+.allocation-arrow {{ color: #758391; font-family: Consolas, monospace; font-weight: 800; }}
+.branch-details {{ margin-top: 0.4rem; border-top: 1px dashed var(--line); padding-top: 0.35rem; }}
+.branch-details summary {{ cursor: pointer; color: var(--muted); font-size: 0.75rem; font-weight: 700; }}
+.detail-layout {{ display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(14rem, 0.8fr); gap: 1rem; padding: 0.75rem; background: var(--surface-alt); }}
+.detail-layout dl {{ display: grid; grid-template-columns: 10rem 1fr; gap: 0.35rem 0.75rem; margin: 0; font-size: 0.78rem; }}
+.detail-layout dt {{ color: var(--muted); font-weight: 700; }}
+.detail-layout dd {{ margin: 0; overflow-wrap: anywhere; }}
+.detail-layout h3 {{ margin: 0 0 0.5rem; font-size: 0.82rem; }}
+.wip-claim {{ margin: 0.5rem 0 0; color: var(--muted); font-size: 0.75rem; }}
 .metrics {{ display: grid; grid-template-columns: repeat(4, minmax(9rem, 1fr)); border: 1px solid var(--line); background: var(--surface); }}
 .metric {{ padding: 0.9rem 1rem; border-right: 1px solid var(--line); }}
 .metric:last-child {{ border-right: 0; }}
@@ -692,27 +898,10 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .search input {{ width: 100%; min-height: 2.4rem; border: 1px solid var(--line); background: var(--bg); color: var(--text); padding: 0.5rem 0.65rem; font: inherit; }}
 .filters {{ display: flex; flex-wrap: wrap; gap: 0.75rem; }}
 .filters label {{ display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; }}
-.work-header, .work-row {{ display: grid; grid-template-columns: 1.35fr 1fr 1.25fr 1fr; }}
-.work-header {{ background: #293744; color: #fff; font-size: 0.74rem; font-weight: 750; text-transform: uppercase; }}
-.work-header div {{ padding: 0.6rem 0.75rem; border-right: 1px solid #53616d; }}
-.work-row {{ border: 1px solid var(--line); border-top: 0; background: var(--surface); }}
-.work-row[hidden] {{ display: none; }}
-.work-cell {{ min-width: 0; padding: 0.8rem; border-right: 1px solid var(--line); overflow-wrap: anywhere; }}
-.work-cell:nth-child(4) {{ border-right: 0; }}
-.cell-label {{ display: none; color: var(--muted); font-size: 0.7rem; font-weight: 750; margin-bottom: 0.35rem; text-transform: uppercase; }}
-.work-identity {{ display: grid; align-content: start; gap: 0.35rem; }}
-.work-identity p {{ color: var(--muted); font-size: 0.8rem; margin: 0.2rem 0 0; }}
-.work-cell > a, .work-cell > small, .evidence-value small {{ display: block; margin-top: 0.45rem; }}
-.work-cell small {{ color: var(--muted); }}
 .pr-list {{ display: grid; gap: 0.4rem; }}
 .pr {{ display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; border-bottom: 1px solid var(--surface-alt); padding-bottom: 0.3rem; }}
 .pr small {{ white-space: nowrap; }}
 .empty {{ color: var(--muted); font-style: italic; }}
-.work-details {{ grid-column: 1 / -1; border-top: 1px solid var(--line); padding: 0.55rem 0.8rem; background: var(--surface-alt); }}
-.work-details summary {{ cursor: pointer; font-size: 0.78rem; font-weight: 700; }}
-.work-details dl {{ display: grid; grid-template-columns: 10rem 1fr; gap: 0.35rem 0.75rem; font-size: 0.8rem; }}
-.work-details dt {{ color: var(--muted); font-weight: 700; }}
-.work-details dd {{ margin: 0; }}
 .empty-state {{ padding: 2rem; border: 1px solid var(--line); background: var(--surface); text-align: center; }}
 .empty-state span {{ display: block; color: var(--muted); margin-top: 0.35rem; }}
 .provenance {{ margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }}
@@ -720,10 +909,6 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 table {{ width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.78rem; }}
 th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; overflow-wrap: anywhere; }}
 .warning {{ color: #8a3b12; font-weight: 700; }}
-@media (prefers-color-scheme: dark) {{
-  :root {{ --bg: #11171d; --surface: #192129; --surface-alt: #222c35; --text: #edf2f5; --muted: #aeb9c2; --line: #3b4853; --approved-bg: #143d2c; --stale-bg: #493b10; --evidence-bg: #15374f; --missing-bg: #303a43; }}
-  a {{ color: #79c4f2; }}
-}}
 @media (max-width: 760px) {{
   h1 {{ font-size: 1.5rem; }}
   .topbar-inner {{ align-items: start; flex-direction: column; }}
@@ -732,12 +917,16 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   .metrics {{ grid-template-columns: repeat(2, 1fr); }}
   .metric:nth-child(2) {{ border-right: 0; }}
   .metric:nth-child(-n+2) {{ border-bottom: 1px solid var(--line); }}
-  .work-header {{ display: none; }}
-  .work-row {{ display: block; margin-top: 0.75rem; border-top: 1px solid var(--line); }}
-  .work-cell {{ border-right: 0; border-bottom: 1px solid var(--line); }}
-  .cell-label {{ display: block; }}
-  .work-details dl {{ grid-template-columns: 1fr; }}
-  .work-details dd {{ margin-bottom: 0.45rem; }}
+  .encoding-label {{ flex-basis: 100%; }}
+  .tree-panel {{ padding: 0.75rem; }}
+  .flow {{ flex-direction: column; }}
+  .node {{ min-height: 0; }}
+  .arrow {{ min-height: 1rem; transform: rotate(90deg); }}
+  .branches {{ margin-left: 0.35rem; padding-left: 0.85rem; }}
+  .tree-branch::before {{ left: -1rem; width: 0.85rem; }}
+  .allocation-label .badge {{ margin-left: 0; }}
+  .detail-layout, .detail-layout dl {{ grid-template-columns: 1fr; }}
+  .detail-layout dd {{ margin-bottom: 0.35rem; }}
 }}
 </style>
 </head>
@@ -756,8 +945,6 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
     {approval_note}
     {traceability_note}
   </section>
-  <h2>Artifact gates</h2>
-  <ol class="stage-rail">{stage_html}</ol>
   <h2>Expansion summary</h2>
   <div class="metrics">
     <div class="metric"><strong>{model["summary"]["approved_stages"]} / 3</strong><span>hash-current artifact attestations</span></div>
@@ -765,17 +952,24 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
     <div class="metric"><strong>{model["summary"]["expanded_items"]}</strong><span>allocations with child plans</span></div>
     <div class="metric"><strong>{model["summary"]["evidenced_prs"]} / {model["summary"]["pr_slices"]}</strong><span>PR slices with mapped tests</span></div>
   </div>
-  <h2>Known-unknown expansion map</h2>
+  <h2>Real workflow tree</h2>
+  <div class="encoding" aria-label="Tree encoding">
+    <div class="encoding-row"><span class="encoding-label">Background = artifact type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
+    <div class="encoding-row"><span class="encoding-label">Level tag = work scope</span><span class="level level-product">Product</span><span class="level level-feature">Feature</span><span class="level level-slice">Slice</span><span>Status badge = real state</span></div>
+  </div>
   <div class="toolbar">
     <label class="search"><input id="search" type="search" placeholder="Search allocations, dependencies, or PRs" aria-label="Search allocations"></label>
     <div class="filters" aria-label="Status filters">
       <label><input type="checkbox" data-filter="evidence" checked> Evidence mapped</label>
       <label><input type="checkbox" data-filter="expanded" checked> Expanded</label>
+      <label><input type="checkbox" data-filter="started" checked> Artifacts started</label>
       <label><input type="checkbox" data-filter="frontier" checked> Frontier</label>
     </div>
   </div>
-  <div class="work-header" aria-hidden="true"><div>Parent allocation</div><div>Child implementation plan</div><div>PR slices</div><div>Implementation evidence</div></div>
-  <section id="work-items" aria-label="Workflow expansion">{rows}</section>
+  <section class="tree-panel" aria-label="Workflow expansion tree">
+    {root_flow}
+    <div id="work-items" class="branches">{branches}</div>
+  </section>
   <details class="provenance">
     <summary>Snapshot provenance</summary>
     <table><thead><tr><th>Source</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table>
@@ -786,7 +980,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
 (() => {{
   const query = document.querySelector('#search');
   const filters = [...document.querySelectorAll('[data-filter]')];
-  const rows = [...document.querySelectorAll('.work-row')];
+  const rows = [...document.querySelectorAll('.tree-branch')];
   const apply = () => {{
     const wanted = query.value.trim().toLocaleLowerCase();
     const enabled = new Set(filters.filter(item => item.checked).map(item => item.dataset.filter));

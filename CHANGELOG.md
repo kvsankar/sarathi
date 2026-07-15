@@ -12,9 +12,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 - Add the top-level changelog and maintainer release/tagging process.
 - Add a deterministic workflow-status HTML renderer and `/workflow-status` command that
-  visualize artifact gates, known-unknown decomposition, PR slices, and mapped test evidence;
-  publish a linked static process guide that explains PR-sized and recursively decomposable
-  workflow shapes.
+  visualize real artifact gates, known-unknown decomposition, PR slices, and mapped test
+  evidence as the same branching Spec/Design/Plan/Code tree used by the linked static process
+  guide.
 
 ### Fixed
 

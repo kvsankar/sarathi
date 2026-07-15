@@ -55,9 +55,10 @@ and plan at the level that will authorize implementation.
 ## Scope And Traceability Rules
 
 - The parent plan owns the `WORK-*` identifier and allocation status.
-- The child spec begins the child artifact chain and records its parent plan and `WORK-*`
-  identifier.
-- Child design and plan preserve the same ancestry.
+- The child spec begins the child artifact chain and records its parent plan plus a plain
+  `Parent Work Item: WORK-<AREA>-<NAME>` metadata line.
+- Child design and plan preserve the same plain `Parent Work Item:` line. This gives status
+  renderers a deterministic link without inferring ancestry from prose or directories.
 - Ancestor `AT-`, `JT-`, and `TEST-` obligations remain owned by their governing artifacts
   but are allocated to child implementation PRs through the Coverage Map.
 - `/code-create` runs only from a code-ready child Implementation plan. It never runs from

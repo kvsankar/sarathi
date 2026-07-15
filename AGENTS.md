@@ -81,9 +81,9 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   Runs `/code-verify` plus `/code-review` as the full code gate.
 - **`/workflow-status`** —
   [prompts/workflow-status.prompt.md](prompts/workflow-status.prompt.md)
-  Generates a deterministic, read-only HTML snapshot of artifact gates, decomposition,
-  PR slices, and mapped implementation evidence, plus a linked static process guide. It
-  does not advance an SDLC gate.
+  Generates a deterministic, read-only HTML tree of artifact gates, decomposition, PR
+  slices, and mapped implementation evidence using the process guide's visual grammar,
+  plus the linked static process guide. It does not advance an SDLC gate.
 
 ## Test responsibility by command
 

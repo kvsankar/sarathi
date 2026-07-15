@@ -36,6 +36,8 @@ artifact revision.
 For every Breakdown plan, follow `docs/work-decomposition.md`. Treat `WORK-*` as a
 parent-plan allocation to a named child scope, not as an artifact type or implementation
 level. Require the correctly leveled child Spec/Design/Plan chain before code begins.
+Every child plan includes a plain `Parent Work Item: WORK-<AREA>-<NAME>` line near
+`Work Scope:` so status tooling can link it to the parent allocation deterministically.
 
 Your job is to produce a **Work Plan** that either decomposes broad work into correctly
 leveled child artifact chains or turns an already code-ready slice/change into tested,

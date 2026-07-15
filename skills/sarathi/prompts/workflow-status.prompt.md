@@ -1,5 +1,5 @@
 ---
-description: Render a deterministic HTML snapshot of Sarathi artifact gates, decomposition, PR slices, and implementation evidence.
+description: Render a deterministic HTML tree of Sarathi artifacts, decomposition, PR slices, and implementation evidence.
 agent: agent
 ---
 
@@ -29,6 +29,8 @@ Use `--check` when the user asks for freshness verification or CI integration.
 Report:
 
 - generated status and process-guide paths, plus the snapshot fingerprint;
+- the real product trunk and parent-allocation child branches, including explicit missing
+  Spec/Design/Plan/Code nodes;
 - spec/design/plan presence and hash-current attestation states;
 - parent-plan `WORK-` allocation count, expanded child-plan count, PR-slice count, and PRs
   with mapped tests;

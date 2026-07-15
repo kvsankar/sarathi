@@ -7,18 +7,20 @@ substitute for verification and review.
 
 ## What The View Shows
 
-- **Artifact gates**: canonical spec, design, and plan presence, readiness, and hash-current
-  approval attestations.
+- **Artifact tree trunk**: canonical product spec, design, and plan presence, readiness, and
+  hash-current approval attestations.
 - **Expansion summary**: parent-plan `WORK-` allocations, allocations with child
   implementation plans, discovered `PR-` slices, and PR slices with mapped executable-test
   evidence.
-- **Known-unknown expansion map**: one row per parent-plan `WORK-` allocation, progressing
-  through its child scope and plan, PR slices, and implementation evidence. Missing cells remain
-  explicitly `Not yet decomposed` or `Not yet known`.
+- **Real workflow tree**: one branch per parent-plan `WORK-` allocation, using the same
+  Spec/Design/Plan/Code backgrounds and Product/Feature/Slice level tags as the static
+  process guide. Every branch renders the complete expected child chain; undiscovered
+  artifacts remain explicit `Not yet done` nodes.
 - **Provenance**: relative source paths and SHA-256 prefixes used for the snapshot.
 
-The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child plans
-that declare `Plan Type: Implementation`; `.sdlc/approvals.yaml`; `.sdlc/wip.md`; and
+The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
+designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
+the first heading; `.sdlc/approvals.yaml`; `.sdlc/wip.md`; and
 `.sdlc/test-traceability.yaml`. It ignores common dependency, cache, and VCS directories.
 
 ## Evidence Semantics
@@ -29,16 +31,17 @@ that declare `Plan Type: Implementation`; `.sdlc/approvals.yaml`; `.sdlc/wip.md`
 | Present | The artifact exists without a matching current approval record. |
 | Approval stale | An approval exists for the path, but not for the current bytes. |
 | Not yet done | No canonical artifact was discovered for that stage. |
+| Artifacts started | A child spec or design exists, but no child plan was discovered. |
 | Plan expanded | A parent `WORK-` item has a child implementation plan. |
+| PRs planned | A child plan declares PR slices without mapped executable-test entries. |
 | Evidence mapped | At least one child `PR-` has entries in test traceability. |
 | Not yet decomposed | A parent `WORK-` item has no discovered child implementation plan. |
 
 `WORK-*` is an allocation in the parent Breakdown plan, not an artifact type. Follow
 [work-decomposition.md](work-decomposition.md): the allocation names a child scope, and the
 child's Spec/Design/Plan/Code artifacts retain that child level even when they implement
-ancestor obligations. The status renderer currently links each allocation to its discovered
-child Implementation plan and PR evidence; the static process guide shows the complete
-artifact chain.
+ancestor obligations. The status renderer shows that complete expected chain for every real
+allocation, linking discovered artifacts and leaving missing ones visibly blank.
 
 `Evidence mapped` does not mean complete, correct, merged, deployed, or independently
 verified. WIP statuses are shown only as project-authored claims. The renderer never infers

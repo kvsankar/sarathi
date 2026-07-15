@@ -149,9 +149,9 @@ Select the narrowest command that matches the user's current artifact:
 - `/code-review`: qualitatively review implementation, tests, traceability, quality gates,
   logging/error-handling fitness, and upstream consistency.
 - `/code-assess`: run `/code-verify` plus `/code-review` as the full code gate.
-- `/workflow-status`: generate a deterministic HTML snapshot of artifact gates,
-  decomposition, PR slices, and mapped implementation evidence, plus a linked static
-  process guide, without advancing a gate.
+- `/workflow-status`: generate a deterministic HTML tree of artifact gates, decomposition,
+  PR slices, and mapped implementation evidence using the static process guide's visual
+  grammar, plus the linked guide, without advancing a gate.
 
 `/workflow-status` is a read-only projection command, not an SDLC creation or assessment
 stage. It may run at any point, including when only a spec exists. It does not require or
