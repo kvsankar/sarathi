@@ -9,6 +9,12 @@ for the artifact bytes it names. It does **not** prove human intent, identity, o
 consent. Treat the ledger as a structured local attestation that must be visible in reports,
 not as an authority system.
 
+Approval means the artifact is sufficient and safe for the next learning step. It does not
+mean the artifact is final, complete, frozen, or presumed correct. Approval should consider
+available feedback from appropriate stakeholders, record feedback not yet obtained, and
+expect revision when implementation, integration, deployment, or use produces new evidence.
+See [feedback-and-learning.md](feedback-and-learning.md).
+
 ## Files
 
 - `.sdlc/approvals.yaml` records local human or auto approval attestations.
@@ -54,6 +60,9 @@ approvals:
   these should not be auto-approved by default.
 
 ## Recording Approvals
+
+Do not claim that an approval proves end-user or stakeholder feedback. Record feedback
+source and status separately in the slice handoff and `.sdlc/wip.md`.
 
 When a user explicitly approves an artifact, update `.sdlc/approvals.yaml` immediately.
 Compute the SHA-256 from the current file bytes. On Windows:

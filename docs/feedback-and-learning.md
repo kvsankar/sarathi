@@ -1,0 +1,103 @@
+# Feedback And Learning
+
+Sarathi is iterative. Specs, designs, and plans are the **current accepted artifacts**:
+the best accepted understanding available for the next learning step. They are not a
+one-way handoff chain and approval does not freeze them.
+
+## Approval Meaning
+
+Approval means an artifact is sufficient and safe for the next learning step. It does not
+mean the artifact is final, complete, or presumed correct. Approval should consider
+available feedback from appropriate stakeholders, record feedback not yet obtained, and
+expect revision when implementation, integration, deployment, or use produces new evidence.
+
+An approval ledger attests that a gate record is well formed and hash-current. It does not
+prove that feedback occurred, that an approver represents end users, or that the artifact
+will remain correct after the next slice.
+
+## Feedback Ownership
+
+Every code-ready slice identifies:
+
+- **Learning target**: the important assumption, behavior, boundary, or risk the slice will
+  test.
+- **Feedback target**: the people or evidence able to judge the result, such as end users,
+  a product owner, operators, support, security/privacy reviewers, integrators, a real
+  dependency, telemetry, or an executable acceptance environment.
+- **Feedback method**: demo, usability session, acceptance run, integration result,
+  operational observation, review, or another concrete signal.
+- **Invalidation question**: what result would change an ancestor spec/design/plan or make
+  planned sibling work unsafe to continue.
+
+Use one feedback status at a slice boundary:
+
+- `received`: concrete stakeholder or observed-system evidence was obtained.
+- `requested`: feedback has been requested and is still pending.
+- `unavailable`: the planned source could not be reached; record the residual risk.
+- `not-applicable`: no external feedback is useful for this slice; name the objective
+  evidence used instead.
+
+Never invent stakeholder feedback. Technical checks can support a decision, but they do not
+stand in for end-user or stakeholder judgment when the learning target requires it.
+
+## Inspect And Adapt
+
+After each assessed code slice, and before starting learning-dependent work, inspect the
+new evidence against all affected ancestors and active siblings:
+
+| Area | Ask |
+| --- | --- |
+| Spec | Did observed behavior or feedback change a need, acceptance criterion, non-goal, or constraint? |
+| Design | Did implementation or integration reveal a different boundary, tactic, interface, risk, or test obligation? |
+| Plan | Should remaining slices be reordered, split, cancelled, combined, or newly created? |
+| Code and integration | Did the slice expose compatibility, migration, deployment, observability, or cross-slice work? |
+| Process | Did a checker, prompt, fixture, or evidence rule encourage waste or a false claim? |
+
+Record one outcome per affected area:
+
+- `no-change`: current accepted artifacts still fit; cite the evidence.
+- `revision-proposed`: a useful change is identified but does not block safe learning.
+- `revision-required`: revise and reassess the governing artifact before affected work
+  continues.
+- `feedback-required`: the next decision depends on feedback that has not arrived.
+
+The agent performs this scan and may draft evidence-backed revisions. It must not silently
+redefine accepted product behavior, contracts, safety posture, or scope. Material revisions
+go through the matching create/assess command and human review gate. Small factual updates
+that preserve accepted intent may be included in the current slice when its Planned Touch
+Set permits them.
+
+## Parallel Learning Waves
+
+Agent capacity is not, by itself, a reason to start more slices. Ask:
+
+> Could feedback from this slice materially invalidate another slice already underway?
+
+Classify dependencies explicitly:
+
+- **Execution dependency**: one change or artifact must exist before another can run.
+- **Learning dependency**: evidence from one slice may materially change another slice's
+  requirement, design, or priority.
+- **Integration dependency**: slices can be built separately but need a planned convergence
+  point and shared verification.
+
+Use three parallelism classes:
+
+1. **Intra-slice parallelism** is preferred. Sub-agents may work concurrently on tests,
+   implementation, docs, threat review, or verification inside one governed slice when
+   touch ownership and integration are clear.
+2. **Independent-slice parallelism** is selective. Put slices in the same bounded learning
+   wave only when the invalidation question is answered no, shared touch sets are controlled,
+   integration ownership is explicit, and review/feedback capacity exists.
+3. **Speculative downstream parallelism** is exceptional. Keep it reversible, timeboxed,
+   and easy to discard; do not present it as completed production work before its learning
+   dependency resolves.
+
+Each parallel wave records its WIP limit, feedback/integration checkpoint, and stop/replan
+triggers. Close the wave by assessing its slices, collecting available feedback, running the
+ancestor-impact scan, and revising the next wave. Prefer progressively detailed near-term
+plans over elaborating distant slices whose assumptions have not yet been tested.
+
+Unattended or end-to-end mode may cross human collaboration pauses when explicitly requested,
+but it does not remove learning dependencies. The agent must still stop or replan work whose
+governing assumptions were invalidated.

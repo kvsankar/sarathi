@@ -44,6 +44,18 @@ Every `WORK-*` item in a Breakdown plan must state:
   Implementation plan as applicable.
 - **Dependencies**, **readiness target**, **risks**, and **done signal**.
 
+For work that can advance in parallel, also record the learning controls from
+[feedback-and-learning.md](feedback-and-learning.md):
+
+- learning target and feedback target;
+- execution, learning, and integration dependencies as applicable;
+- the invalidation question for sibling work;
+- learning wave, WIP limit, integration/feedback checkpoint, and stop/replan trigger.
+
+These controls distinguish useful agent parallelism from a speculative batch. Plan review
+must reject a wave when feedback from one active slice could materially invalidate another
+and the plan has no containment or cancellation strategy.
+
 The identifier itself must use exactly `WORK-AREA-NAME`. Malformed one-token,
 extra-token, lowercase, or numeric-placeholder forms fail plan verification. Status views
 retain malformed allocation bullets in an explicit warning for repair, but exclude them
@@ -68,6 +80,10 @@ and plan at the level that will authorize implementation.
   but are allocated to child implementation PRs through the Coverage Map.
 - `/code-create` runs only from a code-ready child Implementation plan. It never runs from
   a parent Breakdown plan or directly from a `WORK-*` item.
+- After each assessed code-ready leaf, run the inspect-and-adapt loop in
+  [feedback-and-learning.md](feedback-and-learning.md) before starting learning-dependent
+  siblings. Revise affected ancestors or the remaining breakdown when new evidence requires
+  it; decomposition is not a promise to execute every originally listed allocation.
 - Diagrams and status views show `WORK-*` as a parent-to-child allocation link. Artifact
   background encodes Spec/Design/Plan/Code; level labels encode the artifact's own scope.
 

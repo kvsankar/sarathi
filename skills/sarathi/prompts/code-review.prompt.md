@@ -1,5 +1,5 @@
 ---
-description: Qualitatively review implemented code, tests, logging/error-handling, docs, build/deploy work, and upstream consistency using existing verification evidence where available.
+description: Qualitatively review implemented code, tests, production concerns, feedback evidence, ancestor impact, and upstream consistency using existing verification evidence.
 agent: agent
 ---
 
@@ -36,6 +36,12 @@ justified by accepted scope, risk, constraints, or evidence. Preserve necessary 
 reviewability, traceability, and real boundaries. If simplification would change accepted
 behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
 artifact revision.
+
+## Feedback and learning
+
+Follow `docs/feedback-and-learning.md`. Review whether the completed slice produced its
+planned learning evidence, represented stakeholder feedback honestly, and surfaced changes
+needed in ancestors or active sibling work.
 
 Perform the qualitative review of implemented code, tests, docs, build/deploy work, and
 upstream consistency. This command judges the change; it does not replace `/code-verify`.
@@ -186,6 +192,11 @@ Score each item 1-5 and give one concrete fix for any score below 5:
 - Maintainability: code is readable, cohesive, appropriately factored, and avoids dead or
   speculative code. Test helpers and fixtures are factored enough to prevent drift without
   hiding the behavior being asserted.
+
+- Feedback and ancestor impact: the slice names its learning target, feedback source and
+  honest status, invalidation result, and evidence-backed effects on the spec, design,
+  remaining plan, code/integration, and process. Learning-dependent sibling work is stopped
+  or replanned when evidence invalidates its assumptions.
 
 ## Output
 

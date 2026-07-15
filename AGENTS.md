@@ -331,6 +331,26 @@ artifact chain must exist before implementation. `/code-create` runs only from t
 code-ready child Implementation plan, never from the Breakdown plan or `WORK-*` item. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
+## Feedback, adaptation, and parallel learning
+
+Specs, designs, and plans are current accepted artifacts, not frozen handoffs. Approval means
+an artifact is sufficient and safe for the next learning step. Every code-ready slice names
+its learning target, appropriate stakeholder or observed-system feedback target and method,
+invalidation question, and post-slice ancestor-impact checkpoint. Never fabricate stakeholder
+feedback; record `received`, `requested`, `unavailable`, or `not-applicable` with evidence or
+residual risk.
+
+After each assessed slice, inspect affected specs, designs, remaining plans, code/integration,
+and process guidance. Record `no-change`, `revision-proposed`, `revision-required`, or
+`feedback-required`, and revise upstream before affected work continues when necessary.
+
+Prefer intra-slice sub-agent parallelism. Run independent slices concurrently only in a
+bounded learning wave whose plan classifies execution, learning, and integration dependencies,
+caps WIP, names feedback/integration checkpoints and convergence ownership, and defines
+stop/replan triggers. Ask whether feedback from one slice could materially invalidate another
+already underway. Speculative downstream work is exceptional, reversible, and timeboxed. See
+[docs/feedback-and-learning.md](docs/feedback-and-learning.md).
+
 ## ID format
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
@@ -425,8 +445,8 @@ checks pass.
 This is a **hard execution gate**. The agent must end its turn after the stopping response
 and must not start the next command in the same turn. A completed spec gates
 `/design-create`; a completed design gates `/plan-create`; a completed plan gates
-`/code-create`; a completed code slice gates the next code slice or release/deployment
-activity.
+`/code-create`; an assessed code slice plus its feedback status and ancestor-impact scan
+gates the next learning-dependent slice or release/deployment activity.
 
 The stopping response should name the artifact path, readiness/status,
 verification/review/assessment result, key open questions, and the recommended next command.
@@ -462,6 +482,9 @@ stale. Do not require approvals while drafting the artifact that is about to be 
 the user. The ledger proves only that a local attestation record is well-formed and
 hash-current; it does not prove human intent, identity, or external consent. Reports must
 make the approval source visible, including any `status: auto-approved` policy use.
+Approval is permission for the next learning step, not proof that an artifact is final or
+correct. Record stakeholder feedback separately; a hash-current approval never proves that
+end-user feedback occurred.
 
 When the user explicitly approves an artifact or mock, create or update the matching
 approval record immediately. Use `spec.approved` for specs, `design.approved` for designs,

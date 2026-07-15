@@ -1,5 +1,5 @@
 ---
-description: Interview the user, then author a work plan that translates the spec and design into reviewable, test-first PRs, including planned logging/error-handling/docs/build/deploy work.
+description: Interview the user, then author a feedback-driven work plan that translates the spec and design into bounded learning waves and reviewable, test-first PRs.
 agent: agent
 ---
 
@@ -38,6 +38,13 @@ parent-plan allocation to a named child scope, not as an artifact type or implem
 level. Require the correctly leveled child Spec/Design/Plan chain before code begins.
 Every child plan includes a plain `Parent Work Item: WORK-<AREA>-<NAME>` line near
 `Work Scope:` so status tooling can link it to the parent allocation deterministically.
+
+## Feedback and learning
+
+Follow `docs/feedback-and-learning.md`. Plan the smallest useful learning step, identify
+appropriate stakeholder or observed-system feedback, and treat approved artifacts as the
+current accepted understanding rather than frozen handoffs. Use bounded learning waves for
+parallel work and progressively elaborate later slices after earlier evidence arrives.
 
 Your job is to produce a **Work Plan** that either decomposes broad work into correctly
 leveled child artifact chains or turns an already code-ready slice/change into tested,
@@ -98,6 +105,10 @@ as the governing plan.
     child scope, inherited IDs/obligations, and required child artifacts. Product plans
     normally allocate feature/component children; feature plans normally allocate
     slice/change children. Cross-feature integration may allocate directly to a slice child.
+13. **Delivery closes a learning loop** — every code-ready slice names its learning target,
+    feedback target and method, invalidation question, and ancestor-impact checkpoint.
+    Parallel work is limited by learning, execution, and integration dependencies rather
+    than available agent count.
 
 ## Work scope, plan type, and readiness
 
@@ -313,8 +324,10 @@ Read `spec.md` and `design.md` first. Then interview the user **one question at 
 - **Mock UI approval**: If the spec/design requires a mock UI, where is the mock artifact,
   has the user approved it, and which PRs are constrained by it?
 - **Sequencing**: which capability ships first; flags vs. trunk; migration order.
-- **Parallel execution**: which PRs can be built concurrently, whether Git worktrees should
-  be used for independent branches, and which files/modules are likely to conflict.
+- **Parallel execution**: prefer intra-slice sub-agent work; for independent slices, ask
+  whether feedback from one could materially invalidate another. Classify execution,
+  learning, and integration dependencies; set a learning-wave WIP limit, feedback and
+  integration checkpoints, stop/replan triggers, worktree ownership, and likely conflicts.
 - **Touch scope**: which files, directories, modules, generated artifacts, config files,
   migrations, logging/telemetry config, error-handling modules, build/deployment scripts,
   CI/CD/IaC/manifests, user/developer docs, examples, runbooks, release notes, generated
@@ -345,8 +358,8 @@ work.
    flags, always-green ordering, branch/worktree isolation, integration cadence,
    logging/error-handling strategy, build artifact strategy, deployment strategy,
    documentation strategy, test environment strategy, context-driven review/test strategy,
-   narrow TDD exception policy, and whether this plan decomposes parent work or implements
-   code-ready work.
+   narrow TDD exception policy, feedback and inspect/adapt cadence, learning-wave WIP limit,
+   and whether this plan decomposes parent work or implements code-ready work.
 3. **Milestones** — list (`MILE-<AREA>-<NAME>`); each groups child work or PRs toward a
    coherent delivery slice.
 4. **Pull Requests / Child Work Items** — for a Breakdown plan, list
@@ -380,6 +393,9 @@ work.
    safety, cost, compatibility, operational review/test, or `None` with rationale);
    **Verification Oracle** (return value/state/event/API/DOM/
    screenshot/log/metric/artifact/deployment/external-call evidence, as applicable);
+   **Learning Target**, **Feedback Target**, **Feedback Method**, and **Invalidation
+   Question**; **Dependency Types** (execution, learning, integration, or `None` with
+   rationale); **Learning Wave**, integration/feedback checkpoint, and stop/replan trigger;
    **Red** (failing tests, naming the level and linked `TEST-`/`JT-`/`AT-`/`FR-` IDs);
    **Green** (impl); or **TDD Exception** (`Generated code only`, `Docs-only`,
    `Formatting-only`, `Build/deploy config validation`, or `Characterization before legacy
@@ -394,9 +410,11 @@ work.
 6. **Sequencing & Risks** — merge order, parallelizable PRs, build before deployment
    dependencies, documentation before/with behavior dependencies, environment promotion
    order, rollback per PR, likely merge conflicts/shared files, planned touch-set overlaps,
-   and worktree recommendations. State the parallel **waves** (sets of PRs runnable at
-   once), which waves are suitable for separate Git worktrees, and the critical path
-   explicitly.
+   and worktree recommendations. State the bounded parallel **learning waves** (sets of PRs
+   runnable at once), their WIP limits, invalidation risks, feedback/integration checkpoint,
+   stop/replan triggers, which waves are suitable for separate Git worktrees, and the
+   critical path explicitly. Mark speculative downstream work as exceptional, reversible,
+   and timeboxed.
 
 ## Step 4 — Render an HTML companion
 
@@ -407,8 +425,9 @@ makes task progression obvious. Load Mermaid from a CDN and include:
 - A **dependency graph** (`flowchart LR`) of PRs, edges = depends-on, nodes labelled with
   the PR's human-readable scope name (PR-ID as the node key); colour-fill PRs on the
   critical path.
-- A **wave / Gantt view** (Mermaid `gantt`) grouping PRs into parallel waves by scope name
-  so concurrent work and the sequential spine are visible at a glance.
+- A **learning-wave / Gantt view** (Mermaid `gantt`) grouping PRs into bounded parallel
+  waves by scope name so concurrency, feedback checkpoints, and the sequential spine are
+  visible at a glance.
 - Worktree notes for each parallel wave when independent PRs can safely be developed in
   separate Git worktrees.
 - ID-keyed PR and coverage tables, same section order as the markdown.
@@ -504,8 +523,11 @@ Pass-with-fixes.
 - Each PR is independently testable and shippable.
 - Each PR has a Planned Touch Set precise enough for `/code-create` to know whether an
   intended edit is in scope. Use globs only when necessary and keep them narrow.
-- Parallel waves identify file/module ownership, expected conflicts, integration order, and
-  whether Git worktrees are recommended or unnecessary.
+- Parallel learning waves identify dependency types, learning/feedback targets, invalidation
+  questions, WIP limits, file/module ownership, expected conflicts, integration order,
+  stop/replan triggers, and whether Git worktrees are recommended or unnecessary.
+- The near-term wave is detailed enough to execute; later learning-dependent work stays at
+  the least detail justified by current evidence.
 - No vague verbs, no "etc.".
 
 Write the plan to `plan.md` (source of truth) and a matching `plan.html` companion in the
@@ -522,7 +544,7 @@ End with a human-review handoff that includes:
 - Plan path(s).
 - Work Scope, Plan Type, and Implementation Readiness.
 - checker/assessment result.
-- PR/work-item count, parallel waves, and known risks.
+- PR/work-item count, active learning wave and WIP limit, feedback targets, and known risks.
 - Recommended next command, normally `/code-create` only after the user approves the plan.
 
 Continue past this gate only if the user's latest message explicitly requested unattended

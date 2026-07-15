@@ -311,6 +311,21 @@ accepted scope, risk, constraints, or evidence. Necessary detail, reviewability,
 traceability, and real boundaries stay intact; larger simplifications become governing
 artifact revisions.
 
+## Feedback And Learning
+
+Sarathi treats specs, designs, and plans as current accepted artifacts, not frozen handoffs.
+Approval means an artifact is sufficient and safe for the next learning step. Each
+code-ready slice names its learning target, appropriate stakeholder or observed-system
+feedback target, invalidation question, and ancestor-impact checkpoint. After assessment,
+the agent reports honest feedback status and checks whether the spec, design, remaining
+plan, code/integration, or process guidance must change.
+
+Agent parallelism is encouraged inside a slice. Independent slices may share a bounded
+learning wave when feedback from one cannot materially invalidate another, dependencies and
+touch ownership are explicit, WIP is capped, and convergence plus stop/replan triggers are
+planned. Speculative downstream work stays exceptional and reversible. See
+[docs/feedback-and-learning.md](docs/feedback-and-learning.md).
+
 ## Human Gates And YOLO Mode
 
 Default behavior is human-gated:
@@ -326,10 +341,11 @@ Default behavior is human-gated:
 
 The human review pause is a hard gate. A completed spec does not automatically flow into
 design; a completed design does not automatically flow into planning; a completed plan does
-not automatically flow into code; and a completed code slice does not automatically flow into
-the next slice or release/deployment work. The agent should end its turn with artifact paths,
-readiness/status, verification/review/assessment results, open questions, and the
-recommended next command.
+not automatically flow into code; and an assessed code slice does not automatically flow
+into the next learning-dependent slice or release/deployment work until its feedback status
+and ancestor-impact scan are visible. The agent should end its turn with artifact paths,
+readiness/status, verification/review/assessment results, open questions, and the recommended
+next command.
 
 You can opt into **YOLO mode** with phrases like:
 
@@ -359,6 +375,9 @@ when the ledger entry matches the gate, artifact path, status, UTC `approved_at`
 artifact hash. Stale hashes fail. No ticketing system is required. This proves structure and
 freshness of a local record, not human identity, intent, or external consent; reports must
 show whether a gate was approved by a named user or by local auto-approval policy.
+Approval is permission for the next learning step, not proof that an artifact is final,
+correct, or informed by end-user feedback. Feedback source and status are recorded
+separately.
 
 See [docs/approval-gates.md](docs/approval-gates.md).
 

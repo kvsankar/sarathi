@@ -1,5 +1,5 @@
 ---
-description: Assess a Work Plan with a deterministic mechanical pass and a qualitative pass, checking PR reviewability, TDD, logging/error-handling/docs/build/deploy allocation, and full spec/design coverage.
+description: Assess a Work Plan mechanically and qualitatively, including feedback loops, learning dependencies, PR reviewability, TDD, production concerns, and full coverage.
 agent: agent
 ---
 
@@ -24,6 +24,12 @@ or readability.
 
 For Breakdown plans, load and apply `docs/work-decomposition.md` in both the mechanical
 evidence interpretation and qualitative review.
+
+## Feedback and learning
+
+Follow `docs/feedback-and-learning.md`. Assess whether the plan creates evidence early,
+names appropriate feedback sources, keeps ancestor artifacts revisable, and uses bounded
+learning waves instead of speculative batch execution.
 
 ## Simplify pass
 
@@ -246,9 +252,15 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   `/code-create` to detect out-of-scope edits.
 - **Sequencing** — always-green, no forward deps, sensible flags/migrations, and clear
   integration order.
-- **Parallelism and worktrees** — waves and critical path are correct; concurrent PRs avoid
-  shared-file conflicts or identify them through touch-set overlaps; independent branches say
-  whether separate Git worktrees are recommended and how they rejoin.
+- **Feedback and inspect/adapt loop** — every code-ready slice names a learning target,
+  appropriate feedback target/method, invalidation question, and ancestor-impact checkpoint;
+  stakeholder feedback is never fabricated and cross-slice learning is not deferred to a
+  final integration phase.
+- **Parallelism and worktrees** — intra-slice parallelism is preferred; independent-slice
+  learning waves classify execution, learning, and integration dependencies, cap WIP,
+  account for review/feedback capacity, avoid unsafe touch-set overlap, name convergence
+  ownership and stop/replan triggers, and state how worktrees rejoin. Speculative downstream
+  work is exceptional, reversible, and timeboxed.
 - **Production quality** — logging/telemetry, error handling, NFR validation, rollback per PR.
 - **Shippability** — the plan introduces build, deployment, and documentation capability
   before dependent feature work, keeps each PR independently buildable and explainable, and

@@ -1,5 +1,5 @@
 ---
-description: Implement a work plan PR-by-PR with strict Red/Green/Refactor TDD for behavior changes, keeping every step shippable, tested, documented, and traceable to the spec, design, and plan.
+description: Implement a work plan in bounded learning waves with Red/Green/Refactor TDD, then report feedback and ancestor impact while keeping each step shippable and traceable.
 agent: agent
 ---
 
@@ -36,6 +36,12 @@ options, fixtures, checks, or code paths that are not justified by accepted scop
 constraints, or evidence. Preserve necessary detail, reviewability, traceability, and real
 boundaries, and rerun affected checks after simplification changes.
 
+## Feedback and learning
+
+Follow `docs/feedback-and-learning.md`. Treat this slice as a learning step, preserve the
+plan's learning target and feedback method, and run the ancestor-impact scan before starting
+learning-dependent work. Never invent stakeholder feedback.
+
 Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
 tested, documented, production code. Build **one PR at a time**, in plan order, using TDD
 for behavior changes. Aim to pass `/code-assess` honestly: do not tailor code,
@@ -47,10 +53,11 @@ blind spots. The assessment is supposed to find risks that structural gates cann
 1. **TDD by default** — for behavior-changing code: write a failing test (**Red**), minimal
    code to pass (**Green**), then **Refactor** with tests green. Do not write
    behavior-changing production code without a red test.
-2. **One PR at a time** — implement the lowest unbuilt PR whose deps are met; target about
-   500 changed LOC for reviewability, but treat that as a guideline. Exceed it with a
-   rationale when needed for cohesive, clear work. Never trim useful comments, tests, docs,
-   JSDoc/docstrings, or readable structure merely to satisfy the target.
+2. **One governed learning wave at a time** — implement the lowest unbuilt PR whose
+   execution and learning dependencies are met. Prefer parallel sub-agent work inside the
+   slice. Run independent slices concurrently only when the approved plan places them in the
+   same bounded wave with clear touch ownership and convergence. Target about 500 changed
+   LOC per PR for reviewability, but treat that as a guideline.
 3. **Always green** — the full suite passes before a PR is done; never leave red on trunk.
 4. **Traceable without clutter** — keep tests clean and behavior-focused. Record which
    `PR-`/`FR-`/`AT-`/`JT-`/`COMP-`/`TEST-` each test covers in
@@ -321,6 +328,11 @@ areas, and the quality-gate command(s) that must pass at the PR boundary. Also s
 mock UI dependency and approval status for UI-facing work. If the spec/design/plan requires
 a mock UI and approval is missing, **stop before editing production UI code** and ask for
 human mock approval.
+State the slice learning target, feedback target/method, invalidation question, active
+learning wave and WIP limit, dependency types, convergence owner, and stop/replan triggers.
+If feedback from an unfinished slice could materially invalidate this PR and the plan does
+not contain that risk, stop for plan revision instead of starting speculative production
+work.
 Also state any
 planned logging/telemetry work: structured fields, events, metrics, traces, correlation/
 support IDs, redaction, alert hooks, APM instrumentation, dashboards, SLO/SLI signals,
@@ -493,6 +505,13 @@ artifacts if the review says they must change; otherwise revise tests/code. Repe
 assessment until `/code-assess` would return Pass or an explicitly accepted Pass-with-fixes
 for that boundary.
 
+Then perform the inspect-and-adapt loop from `docs/feedback-and-learning.md`. Record feedback
+as `received`, `requested`, `unavailable`, or `not-applicable` with its source or residual
+risk. Scan affected spec, design, remaining plan, code/integration, and process guidance;
+record `no-change`, `revision-proposed`, `revision-required`, or `feedback-required` for each
+affected area. Material changes to accepted behavior, contracts, safety, or scope require
+the matching upstream create/assess flow and human review before affected work continues.
+
 ## Step 6 — Human review gate (hard stop)
 
 After completing one PR/code slice and its checker/assessment loop, **stop**. Do not move to the
@@ -506,12 +525,16 @@ End with a human-review handoff that includes:
 - Simplify-pass summary: over-engineered pieces removed, justified complexity kept, and any
   deferred simplification.
 - Test, checker, pre-commit/local gate, build/deploy, and documentation results.
+- Learning target, feedback target/status/evidence, and invalidation result.
+- Ancestor-impact outcomes for spec, design, remaining plan, code/integration, and process;
+  name any active sibling work that must stop or replan.
 - Any assumptions, limitations, skipped checks, or follow-up risks.
 - Recommended next command or next PR ID only after the user approves this slice.
 
-If the user explicitly requested unattended implementation across all PRs, continue in plan
-order and still produce a clear boundary report after each PR. Otherwise, stop after the
-first completed PR boundary.
+If the user explicitly requested unattended implementation across all PRs, continue within
+the approved learning wave and still produce a clear boundary report after each PR. Do not
+start learning-dependent work after `revision-required` or `feedback-required`; revise or
+wait as directed by the plan. Otherwise, stop after the first completed PR boundary.
 
 ## Quality rules
 

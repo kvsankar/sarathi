@@ -71,6 +71,16 @@ One short paragraph describing what a fresh context must know first.
 
 - Command or review performed, date, result, and where details live.
 
+## Feedback And Learning
+
+Learning Target: assumption, behavior, boundary, or risk tested by the current slice
+Feedback Target: stakeholder, real system, environment, or objective evidence source
+Feedback Status: received | requested | unavailable | not-applicable
+Feedback Evidence: path, review, observation, or concise residual-risk note
+Active Learning Wave: wave name or none; WIP limit and active slices
+Ancestor Impact: spec/design/plan/code/process outcome and affected paths
+Stop Or Replan Triggers: conditions that pause or cancel active sibling work
+
 ## Open Questions And Blockers
 
 - Question or blocker, owner, and why it matters.
@@ -98,7 +108,9 @@ A fresh agent context should:
 3. Read `.sdlc/process-decisions.yaml` and `.sdlc/approvals.yaml` when present.
 4. Load the selected stage prompt and triggered docs using `docs/progressive-disclosure.md`.
 5. Re-open the governing artifact paths named in WIP before editing or judging them.
-6. Continue from `Next Recommended Action`, unless the user's latest instruction changes
+6. Check feedback status, active learning dependencies, and ancestor-impact outcomes before
+   starting another slice.
+7. Continue from `Next Recommended Action`, unless the user's latest instruction changes
    the stage or scope.
 
 If WIP is missing in a project that is already using the process, reconstruct the smallest

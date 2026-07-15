@@ -5,8 +5,6 @@ description: Sarathi is Agent-Steered SDLC for resumable, reviewable software de
 
 # Sarathi
 
-Agent-Steered SDLC for resumable, reviewable software delivery
-
 Use the installed stage command, prompt, or skill when the host supports one. Treat this
 `SKILL.md` as the routing kernel: decide project entry mode, select the next stage, enforce
 human gates, and then load only the selected stage prompt and triggered shared docs. If a
@@ -39,7 +37,8 @@ shared source docs in this repository
 (`docs/project-entry.md`, `docs/progressive-disclosure.md`, `docs/work-in-progress.md`,
 `docs/bootstrap-instructions.md`, `docs/artifact-formatting.md`,
 `docs/cleanup-pass.md`, `docs/simplify-pass.md`, `docs/cross-cutting-concerns.md`,
-`docs/test-ownership.md`, `docs/work-decomposition.md`, and
+`docs/test-ownership.md`, `docs/work-decomposition.md`,
+`docs/feedback-and-learning.md`, and
 `docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
 
 ## Instruction Loading
@@ -78,6 +77,8 @@ requires them.
   journey, integration, or quality obligations into code-ready descendants.
 - Load `docs/work-decomposition.md` when a Breakdown plan creates, reviews, visualizes, or
   implements parent `WORK-*` allocations and child artifact chains.
+- Load `docs/feedback-and-learning.md` for plan/code create, review, and assess stages, and
+  whenever parallel slices, stakeholder feedback, or post-slice revisions are involved.
 - Load `docs/process-maintenance.md` when modifying the SDLC process itself.
 - Load `docs/workflow-status.md` and the static `docs/sarathi.html` process guide when
   rendering or explaining the read-only workflow expansion/status page.
@@ -176,8 +177,8 @@ These gates are mandatory execution stops, not suggestions.
   paths, decisions/assumptions, verification evidence, blockers/open questions, bootstrap
   status, and the exact next recommended action.
 - A completed spec gates `/design-create`. A completed design gates `/plan-create`. A
-  completed plan gates `/code-create`. A completed code slice gates the next code slice or
-  release/deployment activity.
+  completed plan gates `/code-create`. An assessed slice plus feedback status and an
+  ancestor-impact scan gates learning-dependent work or release/deployment activity.
 - The stop report must include: artifact path(s), readiness/status, review/check result,
   open questions or assumptions, and the exact recommended next command.
 - Continue past a gate only when the user's latest message explicitly approves the next
@@ -204,11 +205,15 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 
 ## Operating Rules
 
-- Preserve the spec-first order inside the selected adoption mode: spec, spec assess,
-  design, design assess, plan, plan assess, code, code assess. The only built-in exception
-  is a recorded Brownfield Baseline Adoption code review of existing code, where
-  `/plan-create` and `/plan-review` may be skipped because the review is retrospective and
-  must not claim plan conformance.
+- Treat specs, designs, and plans as current accepted artifacts, never frozen by approval.
+  After each assessed slice, record honest feedback status and scan affected ancestors,
+  siblings, integration work, and process guidance before continuing.
+- Preserve the evidence dependency order inside each active scope: spec, spec assess,
+  design, design assess, plan, plan assess, code, code assess. Do not turn this into one
+  project-wide waterfall: progressively elaborate a bounded wave of code-ready leaves,
+  learn, and revise ancestors before detailing later work. A recorded Brownfield Baseline
+  Adoption review may skip planning only because it is retrospective and must not claim plan
+  conformance.
 - Follow `docs/artifact-formatting.md` for Markdown artifacts and reports. Wrap normal prose
   and list continuation lines at 80 characters where practical, while allowing longer lines
   for tables, URLs, code/logs, paths, hashes, IDs, approval records, and syntax where
@@ -229,28 +234,20 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
 - After creating or materially revising any spec, design, ADR, plan, code slice, or review
   report, pause for human review before starting the next downstream stage. The pause is a
   hard collaboration boundary, even when the generated artifact passes mechanical checks.
-- When a project has `.sdlc/approvals.yaml`, use it as the local approval attestation ledger for
-  downstream gates. Approval records must include gate, scope, artifact path, artifact
-  SHA-256, status, approver, and UTC `approved_at` timestamp such as
-  `2026-07-01T14:32:18Z`. Run checkers with `--require-approvals` when crossing into a
-  downstream phase. Do not require approvals while drafting the artifact that is about to be
-  reviewed by the user. The ledger proves only that a local attestation record is
-  well-formed and hash-current; it does not prove human intent, identity, or external
-  consent. Reports must make the approval source visible, including auto-approval.
+- Use `.sdlc/approvals.yaml` as the hash-current local attestation ledger and run downstream
+  checkers with `--require-approvals`; do not require the approval being drafted. Follow
+  `docs/approval-gates.md` for fields and gate names. The ledger does not prove human intent,
+  identity, external consent, correctness, or end-user feedback; expose its source.
+- Approval permits the next learning step. Consider available appropriate feedback and
+  record missing feedback separately; approval never freezes an artifact.
 - When the user explicitly approves an artifact or mock, create or update the matching
-  `.sdlc/approvals.yaml` record immediately: `spec.approved` for specs, `design.approved`
-  for designs, `plan.approved` for plans, `ux.mock.approved` for required mock UI artifacts,
-  and `plan.approved` or `code_slice.approved` for code-slice handoffs as appropriate.
-  Compute the SHA-256 from the current file bytes and use the current UTC timestamp ending
-  in `Z`. If the user says to auto-approve low-risk work, record `status: auto-approved`
-  only when `.sdlc/gates.yaml` allows that gate and scope.
+  ledger record immediately with the matching gate, current file SHA-256, and current UTC
+  timestamp ending in `Z`. Use `status: auto-approved` only when `.sdlc/gates.yaml` allows
+  that gate and scope.
 - When `/code-assess` returns `Pass` for a known `WORK-*` item, record it in
-  `.sdlc/code-assessments.yaml` with the child implementation plan path and current SHA-256.
-  Treat this as a hash-current assessment claim, not human approval. A separate
-  `code_slice.approved` record bound to the same child plan marks the handoff completed.
-- Auto-approvals are allowed only when `.sdlc/gates.yaml` explicitly enables a bounded
-  policy with expiry, allowed scopes, allowed gates, and forbidden gates. Never silently
-  treat an auto-approved gate as a human approval.
+  `.sdlc/code-assessments.yaml` against the child plan hash. This is an assessment claim;
+  only a separate `code_slice.approved` record marks the handoff completed.
+- Never represent policy-bounded auto-approval as human approval.
 - Use the three-scope model: product/system, feature/component, slice/change. Every artifact
   should declare Implementation Readiness as Exploratory, Decomposable, or Code-ready.
   Parent artifacts may pass as Decomposable; `/code-create` must only proceed from a
@@ -259,8 +256,10 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   level. Product plans normally allocate feature/component children; feature plans normally
   allocate slice/change children. Cross-feature integration or acceptance work may allocate
   directly to a slice/change child. Every allocation names parent scope, child scope,
-  inherited IDs/obligations, and required child Spec/Design/Plan artifacts. Child artifacts
-  may reference parent intent to stay concise but must exist before child implementation.
+  inherited obligations, and required child artifact chain before implementation.
+- Prefer intra-slice parallelism. Independent slices need a bounded wave with dependency
+  types, WIP cap, checkpoints, convergence owner, and stop/replan triggers. Speculative
+  downstream work is reversible and timeboxed; agent availability proves no independence.
 - Use slug-only IDs. Specs and plans use `KIND-AREA-NAME`, for example
   `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, and `PR-AUTH-SIGNIN`.
   Design entities use `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Design test
