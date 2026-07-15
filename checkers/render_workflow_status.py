@@ -519,8 +519,17 @@ def state_label(state: str) -> str:
     }.get(state, state.replace("-", " ").title())
 
 
-def badge(state: str) -> str:
-    return f'<span class="badge badge-{esc(state)}">{esc(state_label(state))}</span>'
+def badge(state: str, label: str | None = None) -> str:
+    if state == "approved":
+        visual, symbol = "success", "&#10003;"
+    elif state in {"stale", "unapproved", "expanded", "started", "evidence", "planned"}:
+        visual, symbol = "progress", "&#9679;"
+    else:
+        visual, symbol = "pending", "&#9675;"
+    return (
+        f'<span class="status status-{visual}"><span aria-hidden="true">{symbol}</span>'
+        f"{esc(label or state_label(state))}</span>"
+    )
 
 
 def artifact_link(root: Path, output: Path, stage: dict[str, Any]) -> str:
@@ -618,7 +627,12 @@ def render_flow(nodes: list[str]) -> str:
     )
 
 
-def render_tree_branch(root: Path, output: Path, item: dict[str, Any]) -> str:
+def render_tree_branch(
+    root: Path,
+    output: Path,
+    item: dict[str, Any],
+    focus_id: str | None = None,
+) -> str:
     child = item.get("child_plan")
     child_level_value = item.get("child_level")
     parent_label = display_level(item.get("parent_level"))
@@ -689,21 +703,26 @@ def render_tree_branch(root: Path, output: Path, item: dict[str, Any]) -> str:
         if claim.get("status")
         else ""
     )
+    is_focus = item["id"] == focus_id
+    branch_status = "Not started" if item["state"] == "frontier" else "In progress"
+    open_attribute = " open" if is_focus else ""
+    focus_label = '<span class="focus-label">Current focus</span>' if is_focus else ""
     return f"""
-<article class="tree-branch" data-state="{esc(item["state"])}" data-search="{esc(searchable)}">
-  <div class="allocation-label">
-    <code>{esc(item["id"])}</code>
-    <span>{esc(parent_label)} plan allocation</span>
-    <span class="allocation-arrow">&rarr;</span>
-    <strong>{esc(child_label)} child</strong>
-    {badge(item["state"])}
+<details class="tree-branch" data-state="{esc(item["state"])}" data-search="{esc(searchable)}"{open_attribute}>
+  <summary class="branch-summary">
+    <span class="branch-title"><code>{esc(item["id"])}</code><strong>{esc(item["name"])}</strong></span>
+    <span class="branch-path">{esc(parent_label)} &rarr; {esc(child_label)}</span>
+    {focus_label}
+    {badge(item["state"], branch_status)}
+  </summary>
+  <div class="branch-content">
+    {render_flow(nodes)}
+    <details class="branch-details">
+      <summary>Scope, allocation, PRs, and evidence</summary>
+      <div class="detail-layout"><dl>{details}</dl><div><h3>PR evidence</h3>{render_prs(item["prs"])}{claim_html}</div></div>
+    </details>
   </div>
-  {render_flow(nodes)}
-  <details class="branch-details">
-    <summary>Scope, allocation, PRs, and evidence</summary>
-    <div class="detail-layout"><dl>{details}</dl><div><h3>PR evidence</h3>{render_prs(item["prs"])}{claim_html}</div></div>
-  </details>
-</article>"""
+</details>"""
 
 
 def render_html(
@@ -746,8 +765,14 @@ def render_html(
         ),
     ]
     root_flow = render_flow(root_nodes)
+    active_items = [item for item in model["work_items"] if item["state"] != "frontier"]
+    focus = next(
+        (item for item in active_items if item.get("wip_claim")),
+        active_items[0] if active_items else None,
+    )
+    focus_id = focus["id"] if focus else None
     branches = "".join(
-        render_tree_branch(root, output, item) for item in model["work_items"]
+        render_tree_branch(root, output, item, focus_id) for item in model["work_items"]
     )
     if not branches:
         branches = """
@@ -763,6 +788,61 @@ def render_html(
     wip = model["wip"]
     current_stage = wip.get("Current Stage", "Not recorded")
     current_gate = wip.get("Current Gate", "Not recorded")
+    summary = model["summary"]
+    awaiting_count = summary["work_items"] - summary["expanded_items"]
+    parent_gate_text = (
+        "Parent gates approved"
+        if summary["approved_stages"] == 3
+        else f"{summary['approved_stages']} of 3 parent gates approved"
+    )
+    if focus:
+        focus_name = focus.get("name") or focus["id"]
+        focus_level = display_level(focus.get("child_level"))
+        focus_breadcrumb = (
+            f"Product/system &rarr; Breakdown plan &rarr; {esc(focus['id'])}"
+            f" &rarr; {esc(focus_level)} work"
+        )
+        focus_heading = f"{esc(focus_name)} is in progress"
+        focus_detail = (
+            f"{len(focus['prs'])} PR slice"
+            f"{'s' if len(focus['prs']) != 1 else ''} &middot; "
+            f"{focus['evidence_count']} mapped test entr"
+            f"{'ies' if focus['evidence_count'] != 1 else 'y'}"
+        )
+        missing_focus = [
+            label
+            for label, key in (("Spec", "child_spec"), ("Design / LLD", "child_design"))
+            if not focus.get(key)
+        ]
+        attention = (
+            f"Expected child {' and '.join(missing_focus)} not discovered."
+            if missing_focus
+            else "No artifact gaps discovered on the current branch."
+        )
+    else:
+        focus_name = "No active allocation"
+        focus_breadcrumb = "Product/system &rarr; Breakdown plan"
+        focus_heading = "Decomposition is ready to begin"
+        focus_detail = "No allocation has started"
+        attention = "Choose a WORK item and create its required child artifacts."
+    expansion_text = (
+        f"{summary['expanded_items']} of {summary['work_items']} allocations "
+        f"have child plans; {awaiting_count} await decomposition."
+    )
+    if focus:
+        overall_state, overall_label = "started", "In progress"
+    elif summary["work_items"]:
+        overall_state, overall_label = "missing", "Ready to decompose"
+    elif any(stage["state"] != "missing" for stage in stages.values()):
+        overall_state, overall_label = "started", "In progress"
+    else:
+        overall_state, overall_label = "missing", "Not started"
+    if summary["approved_stages"] == 3:
+        parent_state = "approved"
+    elif any(stage["state"] != "missing" for stage in stages.values()):
+        parent_state = "started"
+    else:
+        parent_state = "missing"
     approval_note = (
         f'<p class="warning">Approval ledger could not be parsed: {esc(model["approval_error"])}</p>'
         if model.get("approval_error")
@@ -827,20 +907,30 @@ code {{ font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; ove
 h1 {{ margin: 0.25rem 0 0; font-size: 2.25rem; line-height: 1.15; }}
 .snapshot {{ color: #d8e1e8; font-size: 0.82rem; text-align: right; }}
 main {{ max-width: 92rem; margin: 0 auto; padding: 1.25rem; }}
-.semantic-note {{ border-left: 4px solid var(--evidence); padding: 0.75rem 1rem; background: var(--surface); }}
-.semantic-note strong {{ display: block; margin-bottom: 0.2rem; }}
-.semantic-note p {{ margin: 0; color: var(--muted); }}
-.current-state {{ display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 0.75rem; font-size: 0.88rem; }}
-.current-state span {{ color: var(--muted); }}
-.current-state strong {{ color: var(--text); }}
 h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
-.badge {{ display: inline-flex; width: fit-content; align-items: center; min-height: 1.5rem; padding: 0.12rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 750; white-space: nowrap; }}
-.badge-approved {{ color: var(--approved); background: var(--approved-bg); }}
-.badge-stale, .badge-unapproved, .badge-expanded, .badge-started {{ color: var(--stale); background: var(--stale-bg); }}
-.badge-evidence {{ color: var(--evidence); background: var(--evidence-bg); }}
-.badge-planned {{ color: var(--stale); background: var(--stale-bg); }}
-.badge-missing, .badge-frontier {{ color: var(--missing); background: var(--missing-bg); }}
-.encoding {{ display: grid; gap: 0.45rem; margin: 1rem 0; color: var(--muted); font-size: 0.78rem; font-weight: 700; }}
+.executive {{ border: 1px solid var(--line); border-left: 5px solid var(--stale); background: var(--surface); }}
+.executive-head {{ display: flex; align-items: start; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem 0.85rem; }}
+.executive-kicker {{ color: var(--stale); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }}
+.executive h2 {{ margin: 0.2rem 0; font-size: 1.35rem; }}
+.focus-path {{ margin: 0; color: var(--muted); font-size: 0.82rem; font-weight: 650; }}
+.executive-summary {{ margin: 0; padding: 0 1.1rem 0.9rem; color: var(--muted); font-size: 0.9rem; }}
+.executive-summary strong {{ color: var(--text); }}
+.executive-facts {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }}
+.executive-fact {{ min-width: 0; padding: 0.75rem 1.1rem; border-right: 1px solid var(--line); }}
+.executive-fact:last-child {{ border-right: 0; }}
+.executive-fact span {{ display: block; color: var(--muted); font-size: 0.68rem; font-weight: 750; text-transform: uppercase; }}
+.executive-fact strong {{ display: block; margin-top: 0.2rem; font-size: 0.82rem; overflow-wrap: anywhere; }}
+.executive-fact-attention strong {{ color: #8a3b12; }}
+.read-note {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
+.read-note summary {{ cursor: pointer; font-weight: 700; }}
+.read-note p {{ margin: 0.5rem 0; }}
+.status {{ display: inline-flex; width: fit-content; align-items: center; gap: 0.3rem; min-height: 1.5rem; padding: 0.12rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 780; white-space: nowrap; }}
+.status-success {{ color: var(--approved); background: var(--approved-bg); }}
+.status-progress {{ color: var(--stale); background: var(--stale-bg); }}
+.status-pending {{ color: var(--missing); background: var(--missing-bg); }}
+.legend {{ margin: 0.65rem 0; color: var(--muted); font-size: 0.78rem; }}
+.legend > summary {{ cursor: pointer; font-weight: 750; }}
+.encoding {{ display: grid; gap: 0.45rem; margin: 0.65rem 0 0; color: var(--muted); font-size: 0.78rem; font-weight: 700; }}
 .encoding-row {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.9rem; }}
 .encoding-label {{ flex: 0 0 12rem; color: var(--text); }}
 .key {{ display: inline-flex; align-items: center; gap: 0.35rem; }}
@@ -850,8 +940,10 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .key-plan::before {{ border-left-color: var(--plan); background: var(--plan-bg); }}
 .key-code::before {{ border-left-color: var(--code); background: var(--code-bg); }}
 .tree-panel {{ padding: 1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }}
+.product-heading {{ display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.65rem; }}
+.product-heading strong {{ font-size: 0.9rem; }}
 .flow {{ display: flex; align-items: stretch; gap: 0.5rem; min-width: 0; }}
-.node {{ flex: 1 1 0; min-width: 0; min-height: 8.4rem; padding: 0.75rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 4px; overflow-wrap: anywhere; }}
+.node {{ flex: 1 1 0; min-width: 0; min-height: 7.2rem; padding: 0.75rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 4px; overflow-wrap: anywhere; }}
 .artifact-spec {{ border-left-color: var(--spec); background: var(--spec-bg); }}
 .artifact-design {{ border-left-color: var(--design); background: var(--design-bg); }}
 .artifact-plan {{ border-left-color: var(--plan); background: var(--plan-bg); }}
@@ -871,15 +963,17 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .node-detail small {{ display: block; margin-top: 0.25rem; }}
 .arrow {{ display: grid; flex: 0 0 1.65rem; place-items: center; color: #758391; font-family: Consolas, monospace; font-size: 1.1rem; font-weight: 800; }}
 .arrow::before {{ content: "\\2192"; }}
-.branches {{ display: grid; gap: 0.9rem; margin: 1rem 0 0 1.25rem; padding-left: 1.25rem; border-left: 2px solid #aab6c0; }}
-.tree-branch {{ position: relative; min-width: 0; }}
-.tree-branch::before {{ position: absolute; top: 1rem; left: -1.4rem; width: 1.25rem; border-top: 2px solid #aab6c0; content: ""; }}
+.branches {{ display: grid; gap: 0.45rem; margin: 1rem 0 0 1.25rem; padding-left: 1.25rem; border-left: 2px solid #aab6c0; }}
+.tree-branch {{ position: relative; min-width: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }}
+.tree-branch::before {{ position: absolute; top: 1.15rem; left: -1.4rem; width: 1.25rem; border-top: 2px solid #aab6c0; content: ""; }}
 .tree-branch[hidden] {{ display: none; }}
-.allocation-label {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; margin-bottom: 0.45rem; color: var(--muted); font-size: 0.76rem; font-weight: 700; }}
-.allocation-label code {{ padding: 0.1rem 0.35rem; border: 1px solid #aab6c0; border-radius: 3px; background: var(--surface-alt); color: #52616f; font-weight: 800; }}
-.allocation-label strong {{ color: var(--text); text-transform: uppercase; }}
-.allocation-label .badge {{ margin-left: auto; }}
-.allocation-arrow {{ color: #758391; font-family: Consolas, monospace; font-weight: 800; }}
+.branch-summary {{ display: flex; align-items: center; gap: 0.5rem 0.75rem; min-height: 2.5rem; padding: 0.45rem 0.65rem; cursor: pointer; list-style-position: outside; }}
+.branch-title {{ display: flex; flex: 1 1 22rem; min-width: 0; align-items: baseline; gap: 0.55rem; }}
+.branch-title code {{ color: #52616f; font-size: 0.72rem; font-weight: 800; }}
+.branch-title strong {{ overflow-wrap: anywhere; font-size: 0.82rem; }}
+.branch-path {{ color: var(--muted); font-size: 0.72rem; font-weight: 700; white-space: nowrap; }}
+.focus-label {{ color: var(--stale); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }}
+.branch-content {{ padding: 0.25rem 0.75rem 0.75rem; border-top: 1px solid var(--line); }}
 .branch-details {{ margin-top: 0.4rem; border-top: 1px dashed var(--line); padding-top: 0.35rem; }}
 .branch-details summary {{ cursor: pointer; color: var(--muted); font-size: 0.75rem; font-weight: 700; }}
 .detail-layout {{ display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(14rem, 0.8fr); gap: 1rem; padding: 0.75rem; background: var(--surface-alt); }}
@@ -888,16 +982,14 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .detail-layout dd {{ margin: 0; overflow-wrap: anywhere; }}
 .detail-layout h3 {{ margin: 0 0 0.5rem; font-size: 0.82rem; }}
 .wip-claim {{ margin: 0.5rem 0 0; color: var(--muted); font-size: 0.75rem; }}
-.metrics {{ display: grid; grid-template-columns: repeat(4, minmax(9rem, 1fr)); border: 1px solid var(--line); background: var(--surface); }}
-.metric {{ padding: 0.9rem 1rem; border-right: 1px solid var(--line); }}
-.metric:last-child {{ border-right: 0; }}
-.metric strong {{ display: block; font-size: 1.35rem; }}
-.metric span {{ color: var(--muted); font-size: 0.78rem; }}
-.toolbar {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; padding: 0.75rem; border: 1px solid var(--line); background: var(--surface); }}
+.tree-heading {{ display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-top: 1.4rem; }}
+.tree-heading h2 {{ margin: 0; }}
+.tree-heading p {{ margin: 0.15rem 0 0; color: var(--muted); font-size: 0.78rem; }}
+.toolbar {{ display: flex; flex: 0 1 42rem; align-items: center; justify-content: end; gap: 0.5rem; }}
 .search {{ flex: 1 1 18rem; min-width: 0; }}
-.search input {{ width: 100%; min-height: 2.4rem; border: 1px solid var(--line); background: var(--bg); color: var(--text); padding: 0.5rem 0.65rem; font: inherit; }}
-.filters {{ display: flex; flex-wrap: wrap; gap: 0.75rem; }}
-.filters label {{ display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; }}
+.search input {{ width: 100%; min-height: 2.3rem; border: 1px solid var(--line); background: var(--surface); color: var(--text); padding: 0.45rem 0.65rem; font: inherit; font-size: 0.82rem; }}
+.tree-action {{ min-height: 2.3rem; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); color: var(--text); padding: 0.4rem 0.65rem; font: inherit; font-size: 0.75rem; font-weight: 700; cursor: pointer; white-space: nowrap; }}
+.tree-action:hover {{ background: var(--surface-alt); }}
 .pr-list {{ display: grid; gap: 0.4rem; }}
 .pr {{ display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; border-bottom: 1px solid var(--surface-alt); padding-bottom: 0.3rem; }}
 .pr small {{ white-space: nowrap; }}
@@ -914,17 +1006,24 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   .topbar-inner {{ align-items: start; flex-direction: column; }}
   .topbar-meta {{ align-items: start; flex-direction: column-reverse; gap: 0.4rem; }}
   .snapshot {{ text-align: left; }}
-  .metrics {{ grid-template-columns: repeat(2, 1fr); }}
-  .metric:nth-child(2) {{ border-right: 0; }}
-  .metric:nth-child(-n+2) {{ border-bottom: 1px solid var(--line); }}
+  .executive-head {{ flex-direction: column; }}
+  .executive-facts {{ grid-template-columns: 1fr 1fr; }}
+  .executive-fact:nth-child(2) {{ border-right: 0; }}
+  .executive-fact:nth-child(-n+2) {{ border-bottom: 1px solid var(--line); }}
+  .tree-heading {{ align-items: stretch; flex-direction: column; }}
+  .toolbar {{ flex: 1 1 auto; flex-wrap: wrap; justify-content: start; }}
+  .search {{ flex-basis: 100%; }}
   .encoding-label {{ flex-basis: 100%; }}
   .tree-panel {{ padding: 0.75rem; }}
+  .product-heading {{ align-items: start; flex-direction: column; }}
   .flow {{ flex-direction: column; }}
   .node {{ min-height: 0; }}
   .arrow {{ min-height: 1rem; transform: rotate(90deg); }}
   .branches {{ margin-left: 0.35rem; padding-left: 0.85rem; }}
   .tree-branch::before {{ left: -1rem; width: 0.85rem; }}
-  .allocation-label .badge {{ margin-left: 0; }}
+  .branch-summary {{ align-items: start; flex-wrap: wrap; }}
+  .branch-title {{ flex-basis: 100%; }}
+  .branch-path {{ margin-right: auto; white-space: normal; }}
   .detail-layout, .detail-layout dl {{ grid-template-columns: 1fr; }}
   .detail-layout dd {{ margin-bottom: 0.35rem; }}
 }}
@@ -938,35 +1037,47 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   </div>
 </header>
 <main>
-  <section class="semantic-note" aria-label="Evidence semantics">
-    <strong>Visibility, not a completion estimate</strong>
-    <p>Presence, hash-current attestations, decomposition, and mapped executable-test evidence are shown separately. WIP status remains a project-authored claim.</p>
-    <div class="current-state"><span>Current stage <strong>{esc(current_stage)}</strong></span><span>Current gate <strong>{esc(current_gate)}</strong></span></div>
-    {approval_note}
-    {traceability_note}
+  <section class="executive" aria-labelledby="executive-title">
+    <div class="executive-head">
+      <div>
+        <div class="executive-kicker">Executive summary</div>
+        <h2 id="executive-title">{focus_heading}</h2>
+        <p class="focus-path">{focus_breadcrumb}</p>
+      </div>
+      {badge(overall_state, overall_label)}
+    </div>
+    <p class="executive-summary"><strong>{esc(parent_gate_text)}.</strong> {esc(expansion_text)}</p>
+    <div class="executive-facts">
+      <div class="executive-fact"><span>Current stage</span><strong>{esc(current_stage)}</strong></div>
+      <div class="executive-fact"><span>Next gate</span><strong>{esc(current_gate)}</strong></div>
+      <div class="executive-fact"><span>Implementation evidence</span><strong>{focus_detail}</strong></div>
+      <div class="executive-fact executive-fact-attention"><span>Needs attention</span><strong>{esc(attention)}</strong></div>
+    </div>
+    <details class="read-note">
+      <summary>How to read this status</summary>
+      <p>Green checks mean hash-current approval. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Mapped tests are implementation evidence, not a completion estimate; WIP status remains a project-authored claim.</p>
+      {approval_note}
+      {traceability_note}
+    </details>
   </section>
-  <h2>Expansion summary</h2>
-  <div class="metrics">
-    <div class="metric"><strong>{model["summary"]["approved_stages"]} / 3</strong><span>hash-current artifact attestations</span></div>
-    <div class="metric"><strong>{model["summary"]["work_items"]}</strong><span>parent-plan allocations</span></div>
-    <div class="metric"><strong>{model["summary"]["expanded_items"]}</strong><span>allocations with child plans</span></div>
-    <div class="metric"><strong>{model["summary"]["evidenced_prs"]} / {model["summary"]["pr_slices"]}</strong><span>PR slices with mapped tests</span></div>
-  </div>
-  <h2>Real workflow tree</h2>
-  <div class="encoding" aria-label="Tree encoding">
-    <div class="encoding-row"><span class="encoding-label">Background = artifact type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
-    <div class="encoding-row"><span class="encoding-label">Level tag = work scope</span><span class="level level-product">Product</span><span class="level level-feature">Feature</span><span class="level level-slice">Slice</span><span>Status badge = real state</span></div>
-  </div>
-  <div class="toolbar">
-    <label class="search"><input id="search" type="search" placeholder="Search allocations, dependencies, or PRs" aria-label="Search allocations"></label>
-    <div class="filters" aria-label="Status filters">
-      <label><input type="checkbox" data-filter="evidence" checked> Evidence mapped</label>
-      <label><input type="checkbox" data-filter="expanded" checked> Expanded</label>
-      <label><input type="checkbox" data-filter="started" checked> Artifacts started</label>
-      <label><input type="checkbox" data-filter="frontier" checked> Frontier</label>
+  <div class="tree-heading">
+    <div><h2>Workflow tree</h2><p>Open an allocation to inspect its artifact path.</p></div>
+    <div class="toolbar">
+      <label class="search"><input id="search" type="search" placeholder="Filter allocations" aria-label="Filter allocations"></label>
+      <button class="tree-action" id="expand-all" type="button">Expand all</button>
+      <button class="tree-action" id="collapse-all" type="button">Collapse all</button>
     </div>
   </div>
+  <details class="legend">
+    <summary>Legend</summary>
+    <div class="encoding" aria-label="Tree encoding">
+      <div class="encoding-row"><span class="encoding-label">Background = artifact type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
+      <div class="encoding-row"><span class="encoding-label">Level tag = work scope</span><span class="level level-product">Product</span><span class="level level-feature">Feature</span><span class="level level-slice">Slice</span></div>
+      <div class="encoding-row"><span class="encoding-label">Status = observed state</span>{badge("approved")}{badge("started", "In progress")}{badge("missing", "Not started")}</div>
+    </div>
+  </details>
   <section class="tree-panel" aria-label="Workflow expansion tree">
+    <div class="product-heading"><strong>Product workflow</strong>{badge(parent_state, parent_gate_text)}</div>
     {root_flow}
     <div id="work-items" class="branches">{branches}</div>
   </section>
@@ -979,17 +1090,18 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
 <script>
 (() => {{
   const query = document.querySelector('#search');
-  const filters = [...document.querySelectorAll('[data-filter]')];
   const rows = [...document.querySelectorAll('.tree-branch')];
   const apply = () => {{
     const wanted = query.value.trim().toLocaleLowerCase();
-    const enabled = new Set(filters.filter(item => item.checked).map(item => item.dataset.filter));
     rows.forEach(row => {{
-      row.hidden = !enabled.has(row.dataset.state) || !row.dataset.search.includes(wanted);
+      const matches = row.dataset.search.includes(wanted);
+      row.hidden = !matches;
+      if (wanted && matches) row.open = true;
     }});
   }};
   query.addEventListener('input', apply);
-  filters.forEach(item => item.addEventListener('change', apply));
+  document.querySelector('#expand-all').addEventListener('click', () => rows.forEach(row => {{ row.open = true; }}));
+  document.querySelector('#collapse-all').addEventListener('click', () => rows.forEach(row => {{ row.open = false; }}));
 }})();
 </script>
 </body>

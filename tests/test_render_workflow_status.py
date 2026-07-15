@@ -1,5 +1,6 @@
 import hashlib
 import importlib.util
+import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
@@ -318,10 +319,23 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert first.encode() == second.encode()
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
-    assert "Real workflow tree" in first
-    assert 'class="tree-branch"' in first
-    assert "Product plan allocation" in first
-    assert "Slice child" in first
+    assert "Executive summary" in first
+    assert "Alpha is in progress" in first
+    assert "Product/system &rarr; Breakdown plan &rarr; WORK-ALPHA" in first
+    assert "Workflow tree" in first
+    assert re.search(
+        r'<details class="tree-branch" data-state="evidence"[^>]* open>', first
+    )
+    assert re.search(r'<details class="tree-branch" data-state="frontier"[^>]*>', first)
+    assert not re.search(
+        r'<details class="tree-branch" data-state="frontier"[^>]* open>', first
+    )
+    assert "Current focus" in first
+    assert "Expand all" in first
+    assert "Collapse all" in first
+    assert 'class="status status-success"' in first
+    assert 'class="status status-progress"' in first
+    assert 'class="status status-pending"' in first
     assert "No child spec discovered" in first
     assert "Code + executable tests" in first
 

@@ -9,12 +9,13 @@ substitute for verification and review.
 
 - **Artifact tree trunk**: canonical product spec, design, and plan presence, readiness, and
   hash-current approval attestations.
-- **Expansion summary**: parent-plan `WORK-` allocations, allocations with child
-  implementation plans, discovered `PR-` slices, and PR slices with mapped executable-test
-  evidence.
-- **Real workflow tree**: one branch per parent-plan `WORK-` allocation, using the same
-  Spec/Design/Plan/Code backgrounds and Product/Feature/Slice level tags as the static
-  process guide. Every branch renders the complete expected child chain; undiscovered
+- **Executive summary**: the current allocation and product-to-child breadcrumb, current
+  stage, next gate, implementation evidence, and the most immediate artifact gap. This is
+  orientation, not a percentage-complete estimate.
+- **Progressively disclosed workflow tree**: the product Spec/Design/Plan trunk remains
+  visible, the current `WORK-` allocation opens by default, and other allocations stay
+  collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
+  backgrounds and Product/Feature/Slice level tags as the static process guide. Missing
   artifacts remain explicit `Not yet done` nodes.
 - **Provenance**: relative source paths and SHA-256 prefixes used for the snapshot.
 
@@ -36,6 +37,11 @@ the first heading; `.sdlc/approvals.yaml`; `.sdlc/wip.md`; and
 | PRs planned | A child plan declares PR slices without mapped executable-test entries. |
 | Evidence mapped | At least one child `PR-` has entries in test traceability. |
 | Not yet decomposed | A parent `WORK-` item has no discovered child implementation plan. |
+
+The visual status grammar is deliberately small: a green check means hash-current approval,
+an amber dot means work or evidence is present but not complete, and a gray circle means not
+started. A branch with mapped tests remains amber until a governing assessment establishes a
+stronger state.
 
 `WORK-*` is an allocation in the parent Breakdown plan, not an artifact type. Follow
 [work-decomposition.md](work-decomposition.md): the allocation names a child scope, and the

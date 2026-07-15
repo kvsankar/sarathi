@@ -25,6 +25,10 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Rework live workflow status around a compact executive summary and progressively
+  disclosed allocation tree: the active branch opens by default, inactive branches remain
+  collapsed, and green/amber/gray icon states distinguish approval, work in progress, and
+  work not started without implying percentage complete.
 - Clarify cross-scope test ownership: ancestor product/feature acceptance and integration
   obligations must be allocated to code-ready descendant leaves instead of disappearing
   during decomposition or becoming a final big-bang test phase.
