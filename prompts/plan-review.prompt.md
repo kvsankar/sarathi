@@ -1,5 +1,5 @@
 ---
-description: Qualitatively review a work plan using existing verification evidence where available.
+description: Qualitatively review a work plan's readiness, feedback loops, learning waves, slicing, and production-quality allocations using existing verification evidence.
 agent: agent
 ---
 
@@ -23,6 +23,12 @@ paths, hashes, IDs, approval records, and syntax where wrapping would reduce cor
 or readability.
 
 For Breakdown plans, load and apply `docs/work-decomposition.md`.
+
+## Feedback and learning
+
+Follow `docs/feedback-and-learning.md`. Judge whether the plan produces short feedback loops,
+keeps approved artifacts revisable, and limits parallel work by learning dependencies rather
+than agent availability.
 
 ## Simplify pass
 
@@ -130,8 +136,13 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   runbooks, and release notes are assigned where relevant.
 - Sequencing and dependencies: prerequisites are ordered, no forward dependency traps, and
   integration points are visible.
-- Parallelism/worktrees: independent tracks are identified safely, with merge risks called
-  out.
+- Feedback loop: each code-ready slice has a concrete learning target, appropriate feedback
+  target/method, invalidation question, and post-slice ancestor-impact checkpoint. The plan
+  does not invent stakeholder feedback or defer all integration/user learning to the end.
+- Parallelism/worktrees: intra-slice parallelism is preferred; independent-slice waves state
+  execution, learning, and integration dependencies, WIP limits, review/feedback capacity,
+  convergence ownership, and stop/replan triggers. Speculative downstream work is
+  reversible, timeboxed, and never represented as validated production progress.
 - Risk and rollback: high-risk changes have mitigation, validation, and rollback strategy.
 
 ## Output

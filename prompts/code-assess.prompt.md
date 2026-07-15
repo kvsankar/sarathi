@@ -1,5 +1,5 @@
 ---
-description: Assess implemented code/logging/error-handling/docs/build/deploy work against its plan with upstream checks, structural code gates, pre-commit/local quality gates, and a qualitative pass.
+description: Assess implemented code against its plan with upstream and quality gates, qualitative review, feedback status, and post-slice ancestor-impact decisions.
 agent: agent
 ---
 
@@ -36,6 +36,13 @@ justified by accepted scope, risk, constraints, or evidence. Preserve necessary 
 reviewability, traceability, and real boundaries. If simplification would change accepted
 behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
 artifact revision.
+
+## Feedback and learning
+
+Follow `docs/feedback-and-learning.md`. The assessment closes a learning step: report
+available stakeholder or observed-system feedback, scan affected ancestors and active
+siblings, and identify revisions before learning-dependent work continues. Never fabricate
+feedback or infer it from a green test suite.
 
 Assess the implementation against `plan.md`, `design.md`, and `spec.md`. The code was built
 TDD, one PR at a time. Produce the verification sequence below. Do not edit code unless
@@ -378,7 +385,10 @@ Otherwise:
 2. Pre-commit/local quality gate scorecard (configured command, tools, thresholds, pass/fail).
 3. Qualitative scorecard (1–5 + fixes).
 4. **Top fixes** ranked by impact.
-5. **Verdict**: Pass / Pass-with-fixes / Needs rework.
+5. **Feedback and learning**: learning target; feedback target/status/evidence; invalidation
+   result; ancestor-impact outcomes for spec, design, remaining plan, code/integration, and
+   process; active siblings to continue, stop, or replan.
+6. **Verdict**: Pass / Pass-with-fixes / Needs rework.
 
 For a `Pass` verdict with a known parent `WORK-*` item and child implementation plan,
 create or update `.sdlc/code-assessments.yaml`. Record a stable assessment ID, the exact
@@ -390,6 +400,8 @@ slice handoff.
 
 ## Human review gate (hard stop)
 
-After reporting the code assessment verdict, **stop**. Do not move to the next PR, release,
-deployment, or any downstream artifact in the same turn. The next step requires explicit
-user approval or an explicit unattended end-to-end instruction in the user's latest message.
+After reporting the code assessment verdict and inspect/adapt outcomes, **stop**. Do not move
+to the next PR, release, deployment, or any downstream artifact in the same turn. The next
+step requires explicit user approval or an explicit unattended end-to-end instruction in the
+user's latest message. Even in unattended mode, `revision-required` or `feedback-required`
+blocks affected learning-dependent work until the revision or feedback resolves it.

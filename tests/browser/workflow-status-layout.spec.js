@@ -107,7 +107,7 @@ Implementation Readiness: Code-ready
 async function layoutEvidence(page) {
   return page.evaluate(() => {
     const visible = (element) => element.checkVisibility();
-    const clippedNodes = [...document.querySelectorAll(".node")]
+    const clippedNodes = [...document.querySelectorAll(".node, .learning-step")]
       .filter(visible)
       .map((node) => ({
         text: node.textContent.trim().replace(/\s+/g, " ").slice(0, 80),

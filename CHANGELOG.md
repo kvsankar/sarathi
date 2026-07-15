@@ -10,6 +10,12 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Added
 
+- Add an iterative feedback-and-learning policy: code-ready slices declare learning and
+  feedback targets, code assessment records honest feedback status and ancestor impact, and
+  the static process guide shows the inspect/adapt loop.
+- Add bounded learning-wave guidance for agent parallelism, distinguishing preferred
+  intra-slice work, independent concurrent slices, and exceptional speculative downstream
+  work through execution, learning, and integration dependencies.
 - Add the top-level changelog and maintainer release/tagging process.
 - Add a deterministic workflow-status HTML renderer and `/workflow-status` command that
   visualize real artifact gates, known-unknown decomposition, PR slices, and mapped test
@@ -34,6 +40,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Define approval as permission for the next learning step rather than artifact freeze;
+  require post-slice revision decisions for affected specs, designs, plans, integration
+  work, and process tools before learning-dependent work continues.
 - Rework live workflow status around a compact executive summary and progressively
   disclosed allocation tree: the active branch opens by default, inactive branches remain
   collapsed, and green/amber/gray icon states distinguish approval, work in progress, and

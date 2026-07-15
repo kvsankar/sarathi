@@ -8,6 +8,7 @@ SKILL_DOCS = [
     "bootstrap-instructions.md",
     "cleanup-pass.md",
     "cross-cutting-concerns.md",
+    "feedback-and-learning.md",
     "process-maintenance.md",
     "progressive-disclosure.md",
     "project-entry.md",
@@ -71,3 +72,23 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     assert "artifact-work" not in guide
     assert "key-work" not in guide
     assert "Slice A spec + LLD" not in guide
+    assert "3. Inspect and adapt" in guide
+    assert "Learning-dependent slices:" in guide
+
+
+def test_feedback_and_learning_policy_is_wired_into_stage_prompts() -> None:
+    policy = (ROOT / "docs" / "feedback-and-learning.md").read_text(encoding="utf-8")
+    assert "Could feedback from this slice materially invalidate" in policy
+    assert "Intra-slice parallelism" in policy
+    assert "revision-required" in policy
+
+    for name in (
+        "plan-create.prompt.md",
+        "plan-review.prompt.md",
+        "plan-assess.prompt.md",
+        "code-create.prompt.md",
+        "code-review.prompt.md",
+        "code-assess.prompt.md",
+    ):
+        prompt = (ROOT / "prompts" / name).read_text(encoding="utf-8")
+        assert "docs/feedback-and-learning.md" in prompt

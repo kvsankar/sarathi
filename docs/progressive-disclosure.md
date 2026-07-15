@@ -33,6 +33,7 @@ Load references only when their trigger applies:
 | `docs/cross-cutting-concerns.md` | Creating, reviewing, or assessing an artifact whose domain, data, UI, integration, deployment, documentation, logging, error-handling, or operational risk needs the shared concern checklist. |
 | `docs/test-ownership.md` | Creating, reviewing, assessing, or implementing decomposable work whose product/feature acceptance intent or integration evidence must be allocated to code-ready descendants. |
 | `docs/work-decomposition.md` | Creating, reviewing, assessing, visualizing, or implementing a Breakdown plan whose parent `WORK-*` allocations must resolve to correctly leveled child artifact chains. |
+| `docs/feedback-and-learning.md` | Planning or completing code-ready slices; handling stakeholder feedback, ancestor revisions, parallel agents, learning dependencies, or bounded learning waves. |
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs mechanical verification with qualitative review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |
 | `docs/process-maintenance.md` | Modifying the SDLC process, prompts, skills, checker policy, or shared docs. |

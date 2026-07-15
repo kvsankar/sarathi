@@ -408,6 +408,49 @@
       font-size: 0.82rem;
     }
 
+    .learning-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .learning-step {
+      min-width: 0;
+      padding: 10px;
+      border: 1px dashed #8c9aa6;
+      border-radius: 4px;
+      background: #f8fafb;
+    }
+
+    .learning-step strong,
+    .learning-step small {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .learning-step strong {
+      font-size: 0.84rem;
+    }
+
+    .learning-step small {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .parallel-rule {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .parallel-rule strong {
+      color: var(--ink);
+    }
+
     code {
       padding: 1px 4px;
       border-radius: 3px;
@@ -478,6 +521,11 @@
         left: -16px;
         width: 14px;
       }
+
+      .learning-flow,
+      .parallel-rule {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -487,8 +535,8 @@
       <div class="header-row">
         <div>
           <h1>Sarathi process</h1>
-          <p class="lede">Two examples show how artifact status expands from intent into
-          code and executable evidence.</p>
+          <p class="lede">Two trees show how current accepted artifacts expand into code;
+          the learning loop shows how evidence changes what comes next.</p>
         </div>
         <a href="sdlc-status.html">Open live project status</a>
       </div>
@@ -513,8 +561,8 @@
             <span class="allocation-arrow">&rarr;</span> Child artifact chain</span>
         </div>
       </div>
-      <p class="rule">Only code-ready leaves invoke <code>/code-create</code>. Those leaves
-      may implement test obligations owned by any ancestor.</p>
+      <p class="rule">Only code-ready leaves invoke <code>/code-create</code>. Approval means
+      safe enough for the next learning step, not frozen or final.</p>
     </header>
 
     <section aria-labelledby="simple-tree">
@@ -897,6 +945,36 @@
       <p class="footnote">Integration is incremental: slices prove boundaries, features
       prove local composition, and explicit integration slices prove cross-feature
       behavior. Traceability maps ownership; execution results prove outcomes.</p>
+    </section>
+
+    <section aria-labelledby="learning-loop">
+      <div class="section-head">
+        <h2 id="learning-loop">3. Inspect and adapt</h2>
+        <p>Every assessed slice can change its ancestors and the next wave.</p>
+      </div>
+      <div class="learning-flow" aria-label="Post-slice feedback loop">
+        <div class="learning-step">
+          <strong>Assessed slice</strong>
+          <small>Working code, tests, and observed evidence</small>
+        </div>
+        <div class="learning-step">
+          <strong>Stakeholder or system feedback</strong>
+          <small>Received, requested, unavailable, or not applicable</small>
+        </div>
+        <div class="learning-step">
+          <strong>Ancestor impact</strong>
+          <small>Spec, design, plan, integration, and process</small>
+        </div>
+        <div class="learning-step">
+          <strong>Next learning wave</strong>
+          <small>Continue, revise, stop, cancel, split, or reorder</small>
+        </div>
+      </div>
+      <div class="parallel-rule" aria-label="Parallel learning rules">
+        <span><strong>Inside one slice:</strong> parallelism preferred</span>
+        <span><strong>Independent slices:</strong> bounded WIP wave</span>
+        <span><strong>Learning-dependent slices:</strong> wait for evidence</span>
+      </div>
     </section>
   </main>
 </body>
