@@ -39,8 +39,8 @@ shared source docs in this repository
 (`docs/project-entry.md`, `docs/progressive-disclosure.md`, `docs/work-in-progress.md`,
 `docs/bootstrap-instructions.md`, `docs/artifact-formatting.md`,
 `docs/cleanup-pass.md`, `docs/simplify-pass.md`, `docs/cross-cutting-concerns.md`,
-`docs/test-ownership.md`, and `docs/process-maintenance.md`) over copying long policy blocks
-into every stage prompt.
+`docs/test-ownership.md`, `docs/work-decomposition.md`, and
+`docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
 
 ## Instruction Loading
 
@@ -76,6 +76,8 @@ requires them.
   concern.
 - Load `docs/test-ownership.md` when decomposable work carries product/feature acceptance,
   journey, integration, or quality obligations into code-ready descendants.
+- Load `docs/work-decomposition.md` when a Breakdown plan creates, reviews, visualizes, or
+  implements parent `WORK-*` allocations and child artifact chains.
 - Load `docs/process-maintenance.md` when modifying the SDLC process itself.
 - Load `docs/workflow-status.md` and the static `docs/sarathi.html` process guide when
   rendering or explaining the read-only workflow expansion/status page.
@@ -249,6 +251,12 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   should declare Implementation Readiness as Exploratory, Decomposable, or Code-ready.
   Parent artifacts may pass as Decomposable; `/code-create` must only proceed from a
   code-ready implementation plan for a slice/change or sufficiently small feature/component.
+- Treat `WORK-*` as a parent Breakdown-plan allocation, never as an artifact type or code
+  level. Product plans normally allocate feature/component children; feature plans normally
+  allocate slice/change children. Cross-feature integration or acceptance work may allocate
+  directly to a slice/change child. Every allocation names parent scope, child scope,
+  inherited IDs/obligations, and required child Spec/Design/Plan artifacts. Child artifacts
+  may reference parent intent to stay concise but must exist before child implementation.
 - Use slug-only IDs. Specs and plans use `KIND-AREA-NAME`, for example
   `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, and `PR-AUTH-SIGNIN`.
   Design entities use `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Design test
@@ -275,16 +283,18 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
     ownership, quality tactics, mock UI artifact/approval when required, logging/telemetry
     strategy, error-handling strategy, build/package/release strategy, deployment/
     operations, documentation strategy, ADRs, risks, and decomposition candidates; plan is
-    normally a Breakdown plan with feature/component `WORK-` items, dependencies, child
-    artifact needs, mock approval, logging/error-handling tracks, build/deployment tracks,
-    documentation tracks, parallel tracks, and readiness targets.
+    normally a Breakdown plan with feature/component `WORK-` allocations, explicit child
+    scopes and child artifact chains, dependencies, mock approval, logging/error-handling
+    tracks, build/deployment tracks, documentation tracks, parallel tracks, and readiness
+    targets.
   - Feature/component spec carries parent references, local behavior, FR/NFR/AT/JT
     coverage, edge cases, UI mock preference, logging/telemetry and error-handling constraints,
     build/deployment constraints, documentation constraints, dependencies, and non-goals;
     design carries responsibilities, contracts, local state/data, runtime flows, core/shell
     split, dependencies, mock UI artifact/approval when required, logging/error-handling
     impacts, build/deployment impacts, documentation impacts, decisions, risks, and explicit
-    `TEST-` obligations; plan carries child slice/change work or PRs, integration order,
+    `TEST-` obligations; plan carries child slice/change work allocations or PRs and
+    integration order; child allocations name slice/change scope and required artifact chains;
     `AT-`/`JT-`/`TEST-` allocation, mock approval, logging/error-handling allocation,
     build/deployment allocation, documentation allocation, and touch-scope risks.
   - Slice/change spec carries the exact requirement delta, parent IDs refined/preserved,

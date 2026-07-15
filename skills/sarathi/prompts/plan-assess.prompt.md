@@ -22,6 +22,9 @@ characters where practical, while allowing longer lines for tables, URLs, code/l
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
+For Breakdown plans, load and apply `docs/work-decomposition.md` in both the mechanical
+evidence interpretation and qualitative review.
+
 ## Simplify pass
 
 Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
@@ -115,6 +118,9 @@ It exits `0` only if every structural gate passes (non-zero otherwise) and emits
 - **fr_coverage_pct / uc_coverage_pct / nfr_coverage_pct / at_coverage_pct / comp_coverage_pct** — must each be **100%**, meaning each required ID is referenced by child `WORK-` items in a Breakdown plan or `PR-` items in an Implementation plan.
 - **uncovered_frs / uncovered_ucs / uncovered_nfrs / uncovered_ats / uncovered_comps** — must be empty.
 - **work_items** — child work items for a Breakdown plan.
+- **incomplete_work_allocations / work_allocations_well_formed** — every `WORK-*`
+  allocation must record parent scope, child scope, scope, inherited parent obligations,
+  and required child artifacts.
 - **large_prs** — implementation PRs declaring more than the advisory LOC target. This is a
   declared plan estimate, not measured diff size. It requires qualitative review, not
   automatic failure.
@@ -147,6 +153,10 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   slice/change scope; declares Breakdown or Implementation plan type; and marks
   Implementation Readiness realistically. Breakdown plans may pass as Decomposable, but only
   Implementation plans with concrete `PR-` items may be Code-ready for `/code-create`.
+- **Decomposition semantics** — each `WORK-*` is a parent-plan allocation with explicit
+  parent scope, child scope, inherited obligations, and required child Spec/Design/Plan
+  chain. Product-to-feature and feature-to-slice mappings are explicit; justified direct
+  product-to-slice integration allocations and all resulting artifacts use the child level.
 - **Scope-specific content completeness** — product/system plans carry milestones, child
   feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research
   or decision needs, logging/error-handling tracks, build/release/deployment tracks,

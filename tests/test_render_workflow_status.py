@@ -100,9 +100,15 @@ Implementation Readiness: Decomposable
 
 - WORK-ALPHA
 
+  Parent scope: product/system.
+
+  Child scope: slice/change.
+
   Scope: establish the first runnable slice.
 
-  Required child artifact: slice/change implementation plan.
+  Parent IDs / inherited obligations: FR-ALPHA and TEST-ALPHA.
+
+  Required child artifacts: slice spec, LLD, and implementation plan.
 
   Dependencies: approved spec and design only.
 
@@ -114,9 +120,15 @@ Implementation Readiness: Decomposable
 
 - WORK-BETA
 
+  Parent scope: product/system.
+
+  Child scope: feature/component.
+
   Scope: add the second capability.
 
-  Required child artifact: feature/component plan.
+  Parent IDs / inherited obligations: FR-BETA and TEST-BETA.
+
+  Required child artifacts: feature spec, design, and plan.
 
   Dependencies: WORK-ALPHA.
 
@@ -239,6 +251,10 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
     }
     alpha, beta = model["work_items"]
     assert alpha["state"] == "evidence"
+    assert alpha["parent_scope"] == "product/system."
+    assert alpha["child_scope"] == "slice/change."
+    assert alpha["parent_obligations"] == "FR-ALPHA and TEST-ALPHA."
+    assert alpha["child_requirement"] == "slice spec, LLD, and implementation plan."
     assert alpha["child_plan"]["approval"]["state"] == "approved"
     assert alpha["evidence_count"] == 3
     assert alpha["wip_claim"]["status"] == "approved and implemented"
@@ -273,6 +289,9 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert first.encode() == second.encode()
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
+    assert "Parent allocation" in first
+    assert "Child implementation plan" in first
+    assert "product/system. &rarr; slice/change." in first
 
     monkeypatch.setattr(
         sys, "argv", [str(SCRIPT), str(project), "--output", str(output)]

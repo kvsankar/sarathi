@@ -9,10 +9,11 @@ substitute for verification and review.
 
 - **Artifact gates**: canonical spec, design, and plan presence, readiness, and hash-current
   approval attestations.
-- **Expansion summary**: planned `WORK-` streams, streams with child implementation plans,
-  discovered `PR-` slices, and PR slices with mapped executable-test evidence.
-- **Known-unknown expansion map**: one row per parent `WORK-` item, progressing through
-  child plan, PR slices, and implementation evidence. Missing downstream cells remain
+- **Expansion summary**: parent-plan `WORK-` allocations, allocations with child
+  implementation plans, discovered `PR-` slices, and PR slices with mapped executable-test
+  evidence.
+- **Known-unknown expansion map**: one row per parent-plan `WORK-` allocation, progressing
+  through its child scope and plan, PR slices, and implementation evidence. Missing cells remain
   explicitly `Not yet decomposed` or `Not yet known`.
 - **Provenance**: relative source paths and SHA-256 prefixes used for the snapshot.
 
@@ -31,6 +32,13 @@ that declare `Plan Type: Implementation`; `.sdlc/approvals.yaml`; `.sdlc/wip.md`
 | Plan expanded | A parent `WORK-` item has a child implementation plan. |
 | Evidence mapped | At least one child `PR-` has entries in test traceability. |
 | Not yet decomposed | A parent `WORK-` item has no discovered child implementation plan. |
+
+`WORK-*` is an allocation in the parent Breakdown plan, not an artifact type. Follow
+[work-decomposition.md](work-decomposition.md): the allocation names a child scope, and the
+child's Spec/Design/Plan/Code artifacts retain that child level even when they implement
+ancestor obligations. The status renderer currently links each allocation to its discovered
+child Implementation plan and PR evidence; the static process guide shows the complete
+artifact chain.
 
 `Evidence mapped` does not mean complete, correct, merged, deployed, or independently
 verified. WIP statuses are shown only as project-authored claims. The renderer never infers

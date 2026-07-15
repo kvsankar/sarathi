@@ -83,6 +83,13 @@ LEAD = re.compile(r"^[\s#>\-\*\+0-9.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 DEF_MARKER = re.compile(r"^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[\.)]\s+)")
 DEFAULT_LOC_TARGET = 500
+WORK_ALLOCATION_FIELDS = {
+    "Parent scope": "parent_scope",
+    "Child scope": "child_scope",
+    "Scope": "scope",
+    "Parent IDs / inherited obligations": "parent_obligations",
+    "Required child artifacts": "required_child_artifacts",
+}
 
 
 def _defline(line: str):
@@ -181,6 +188,18 @@ def loc_values(block: str) -> list[int]:
     return [int(left or right) for left, right in LOC.findall(block)]
 
 
+def missing_work_allocation_fields(block: str) -> list[str]:
+    missing = []
+    for label, key in WORK_ALLOCATION_FIELDS.items():
+        pattern = re.compile(
+            rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
+            rf"(?:\*\*)?\s*:\s*\S"
+        )
+        if not pattern.search(block):
+            missing.append(key)
+    return missing
+
+
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
@@ -258,6 +277,12 @@ def main() -> int:
             in_fence = not in_fence
     if cur:
         (pr_blocks if cur.startswith("PR-") else work_blocks)[cur] = "\n".join(buf)
+
+    incomplete_work_allocations = {
+        identifier: missing_work_allocation_fields(block)
+        for identifier, block in work_blocks.items()
+        if missing_work_allocation_fields(block)
+    }
 
     large_prs = [
         p for p, b in pr_blocks.items() if any(n > loc_target for n in loc_values(b))
@@ -361,6 +386,7 @@ def main() -> int:
         "comp_coverage_100": comp_c == design_comps,
         "test_obligation_coverage_100": test_c == design_tests,
         "external_double_mitigation_present": external_double_mitigation_present,
+        "work_allocations_well_formed": not incomplete_work_allocations,
         "pr_tdd_red_green": not no_tdd,
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -377,6 +403,7 @@ def main() -> int:
             "breakdown" if work_blocks and not pr_blocks else "implementation"
         ),
         "work_items": sorted(work_blocks),
+        "incomplete_work_allocations": incomplete_work_allocations,
         "fr_coverage_pct": pct(fr_c, spec_frs),
         "uc_coverage_pct": pct(uc_c, spec_ucs),
         "nfr_coverage_pct": pct(nfr_c, spec_nfrs),

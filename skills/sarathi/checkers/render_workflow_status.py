@@ -228,10 +228,16 @@ def work_items(plan_text: str) -> list[dict[str, Any]]:
             {
                 "id": identifier,
                 "name": identifier.removeprefix("WORK-").replace("-", " ").title(),
+                "parent_scope": paragraph_field(block, "Parent scope"),
+                "child_scope": paragraph_field(block, "Child scope"),
                 "scope": scope,
                 "dependencies": paragraph_field(block, "Dependencies"),
                 "readiness_target": paragraph_field(block, "Readiness target"),
-                "child_requirement": paragraph_field(block, "Required child artifact"),
+                "child_requirement": paragraph_field(block, "Required child artifacts")
+                or paragraph_field(block, "Required child artifact"),
+                "parent_obligations": paragraph_field(
+                    block, "Parent IDs / inherited obligations"
+                ),
                 "done_signal": paragraph_field(block, "Done signal"),
                 "risks": paragraph_field(block, "Risks"),
             }
@@ -517,7 +523,10 @@ def render_work_item(root: Path, output: Path, item: dict[str, Any]) -> str:
         for value in (
             item["id"],
             item["name"],
+            item.get("parent_scope"),
+            item.get("child_scope"),
             item.get("scope"),
+            item.get("parent_obligations"),
             item.get("dependencies"),
             child.get("path") if child else None,
             " ".join(pr["id"] for pr in item["prs"]),
@@ -526,6 +535,9 @@ def render_work_item(root: Path, output: Path, item: dict[str, Any]) -> str:
     details = "".join(
         f"<dt>{esc(label)}</dt><dd>{esc(item.get(key) or 'Not recorded')}</dd>"
         for label, key in (
+            ("Parent scope", "parent_scope"),
+            ("Child scope", "child_scope"),
+            ("Parent IDs / inherited obligations", "parent_obligations"),
             ("Dependencies", "dependencies"),
             ("Readiness target", "readiness_target"),
             ("Required child artifact", "child_requirement"),
@@ -536,14 +548,15 @@ def render_work_item(root: Path, output: Path, item: dict[str, Any]) -> str:
     return f"""
 <article class="work-row" data-state="{esc(item["state"])}" data-search="{esc(searchable)}">
   <div class="work-cell work-identity">
-    <div class="cell-label">Workstream</div>
+    <div class="cell-label">Parent allocation</div>
     <code>{esc(item["id"])}</code>
     <strong>{esc(item["name"])}</strong>
     {badge(item["state"])}
+    <p>{esc(item.get("parent_scope") or "Parent scope not recorded")} &rarr; {esc(item.get("child_scope") or "Child scope not recorded")}</p>
     <p>{esc(item.get("scope") or "Scope not recorded")}</p>
   </div>
   <div class="work-cell">
-    <div class="cell-label">Child plan</div>
+    <div class="cell-label">Child implementation plan</div>
     {child_html}
   </div>
   <div class="work-cell">
@@ -748,20 +761,20 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   <h2>Expansion summary</h2>
   <div class="metrics">
     <div class="metric"><strong>{model["summary"]["approved_stages"]} / 3</strong><span>hash-current artifact attestations</span></div>
-    <div class="metric"><strong>{model["summary"]["work_items"]}</strong><span>planned workstreams</span></div>
-    <div class="metric"><strong>{model["summary"]["expanded_items"]}</strong><span>workstreams with child plans</span></div>
+    <div class="metric"><strong>{model["summary"]["work_items"]}</strong><span>parent-plan allocations</span></div>
+    <div class="metric"><strong>{model["summary"]["expanded_items"]}</strong><span>allocations with child plans</span></div>
     <div class="metric"><strong>{model["summary"]["evidenced_prs"]} / {model["summary"]["pr_slices"]}</strong><span>PR slices with mapped tests</span></div>
   </div>
   <h2>Known-unknown expansion map</h2>
   <div class="toolbar">
-    <label class="search"><input id="search" type="search" placeholder="Search workstreams, dependencies, or PRs" aria-label="Search workstreams"></label>
+    <label class="search"><input id="search" type="search" placeholder="Search allocations, dependencies, or PRs" aria-label="Search allocations"></label>
     <div class="filters" aria-label="Status filters">
       <label><input type="checkbox" data-filter="evidence" checked> Evidence mapped</label>
       <label><input type="checkbox" data-filter="expanded" checked> Expanded</label>
       <label><input type="checkbox" data-filter="frontier" checked> Frontier</label>
     </div>
   </div>
-  <div class="work-header" aria-hidden="true"><div>Workstream</div><div>Child plan</div><div>PR slices</div><div>Implementation evidence</div></div>
+  <div class="work-header" aria-hidden="true"><div>Parent allocation</div><div>Child implementation plan</div><div>PR slices</div><div>Implementation evidence</div></div>
   <section id="work-items" aria-label="Workflow expansion">{rows}</section>
   <details class="provenance">
     <summary>Snapshot provenance</summary>

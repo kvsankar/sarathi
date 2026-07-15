@@ -315,6 +315,22 @@ next step is a breakdown plan, child spec, LLD, ADR/interface contract, or imple
 plan. `/code-create` must block unless it has a code-ready implementation plan for a
 slice/change or sufficiently small feature/component.
 
+### WORK allocation semantics
+
+A `WORK-*` item is an allocation record in a parent Breakdown plan, not a Spec, Design,
+Plan, Code artifact or implementation level. Product/system Breakdown plans normally
+allocate feature/component children; feature/component Breakdown plans normally allocate
+slice/change children. Cross-feature integration or acceptance work may allocate directly
+from a product plan to a slice/change child when that is the smallest coherent executable
+scope.
+
+Every `WORK-*` item names its parent scope, child scope, inherited IDs/test obligations,
+required child Spec/Design/Plan artifacts, dependencies, readiness target, risks, and done
+signal. Child artifacts may reference parent intent instead of copying it, but the child
+artifact chain must exist before implementation. `/code-create` runs only from the
+code-ready child Implementation plan, never from the Breakdown plan or `WORK-*` item. See
+[docs/work-decomposition.md](docs/work-decomposition.md).
+
 ## ID format
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
@@ -472,7 +488,7 @@ Default gate ownership:
 
 | Scope | Spec carries | Design carries | Plan carries |
 | --- | --- | --- | --- |
-| Product/system | Mission, stakeholders, boundary, product needs, non-goals, major capabilities, representative use cases, major NFRs, UI mock preference, logging/telemetry and error-handling expectations, build/release/deployment expectations, user/developer documentation expectations, broad acceptance intent, child-artifact needs. | HLD: context, major containers/services/modules, drivers, boundaries, data ownership, quality tactics, mock UI artifact/approval when required, logging/telemetry strategy, error-handling strategy, build/package/release strategy, deployment/operations strategy, documentation strategy, ADRs, risks, decomposition candidates. | Breakdown plan: milestones, feature/component `WORK-` items, dependencies, required child specs/designs/ADRs, research/decision needs, mock approval, logging/error-handling tracks, build/deployment tracks, documentation tracks, parallel tracks, readiness targets. |
+| Product/system | Mission, stakeholders, boundary, product needs, non-goals, major capabilities, representative use cases, major NFRs, UI mock preference, logging/telemetry and error-handling expectations, build/release/deployment expectations, user/developer documentation expectations, broad acceptance intent, child-artifact needs. | HLD: context, major containers/services/modules, drivers, boundaries, data ownership, quality tactics, mock UI artifact/approval when required, logging/telemetry strategy, error-handling strategy, build/package/release strategy, deployment/operations strategy, documentation strategy, ADRs, risks, decomposition candidates. | Breakdown plan: milestones and parent-owned `WORK-` allocations that name feature/component child scope and required child artifact chains; cross-feature integration may name a slice/change child; dependencies, research/decision needs, mock approval, logging/error-handling tracks, build/deployment tracks, documentation tracks, parallel tracks, readiness targets. |
 | Feature/component | Parent refs, local goal, actors, concrete behavior, FR/NFR/AT/JT coverage, edge cases, integration/business rules, UI mock preference, logging/telemetry and error-handling constraints, build/deployment constraints, documentation constraints, dependencies, non-goals. | Feature/component design: responsibilities, contracts, local state/data, runtime flows, core/shell split, dependencies, UX/API contracts, mock UI artifact/approval when required, logging/error-handling impacts, build/deployment impacts, documentation impacts, decisions, risks, explicit `TEST-` obligations. | Breakdown or implementation plan: child slice/change work or PRs, child artifact needs, integration order, `AT-`/`JT-`/`TEST-` allocation, mock approval, logging/error-handling allocation, build/deployment allocation, documentation allocation, touch-scope risks. |
 | Slice/change | Exact requirement delta, parent IDs refined/preserved, changed and unchanged behavior, edge cases, UI mock preference/delta, logging/error-handling delta, build/deployment delta, documentation delta, executable or justified non-code acceptance/journey criteria. | LLD: touched components/modules, API/schema/data deltas, failure paths, validation/policy logic, mock UI artifact/approval when required, logging/telemetry deltas, error mapping/recovery paths, build/deployment script or artifact changes, documentation changes, migration/rollback, side effects, `TEST-` obligations/doubles, likely touch candidates. | Implementation plan: `PR-` items, Planned Touch Sets, Red/Green steps, `AT-`/`JT-`/`TEST-` allocation, LOC estimates, quality gates, mock approval, logging/error-handling verification, build/deployment verification, documentation checks, rollback, dependencies, worktree guidance. |
 

@@ -778,6 +778,69 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["test_obligation_coverage_pct"] == 100.0
 
 
+def test_check_plan_requires_complete_work_allocation_fields(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    plan_path.write_text(
+        """# Overview
+Work Scope: Product/system
+Plan Type: Breakdown
+Implementation Readiness: Decomposable
+
+# Strategy
+Allocate one feature child.
+
+# Milestones
+- MILE-AUTH-DELIVERY
+
+# Pull Requests / Child Work Items
+- WORK-AUTH-FEATURE
+
+  Parent scope: Product/system
+  Scope: Deliver authentication.
+  Parent IDs / inherited obligations: FR-AUTH-SIGNIN.
+  Required child artifacts: Feature spec, design, and plan.
+  Dependencies: Approved parent artifacts.
+  Readiness target: Code-ready child plan.
+  Risks: Boundary details require refinement.
+  Done signal: Child artifacts pass their gates.
+
+# Coverage Map
+Authentication maps to WORK-AUTH-FEATURE.
+
+# Sequencing & Risks
+The child starts after parent approval.
+""",
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["work_allocations_well_formed"] is False
+    assert report["incomplete_work_allocations"] == {
+        "WORK-AUTH-FEATURE": ["child_scope"]
+    }
+
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "  Scope: Deliver authentication.",
+        "  Child scope: Feature/component.\n  Scope: Deliver authentication.",
+    )
+    plan_path.write_text(text, encoding="utf-8")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert report["gates"]["work_allocations_well_formed"] is True
+    assert report["incomplete_work_allocations"] == {}
+
+
 def test_check_plan_accepts_test_traceability_filename(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     design_path = tmp_path / "design.md"

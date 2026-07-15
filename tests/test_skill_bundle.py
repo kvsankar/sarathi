@@ -16,6 +16,7 @@ SKILL_DOCS = [
     "simplify-pass.md",
     "srs-authoring.md",
     "test-ownership.md",
+    "work-decomposition.md",
     "work-in-progress.md",
     "workflow-status.md",
 ]
@@ -58,11 +59,15 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     guide = source.read_text(encoding="utf-8")
     assert "1. PR-sized leaf" in guide
     assert "2. Decomposable product" in guide
-    assert "Feature 1: sufficiently small leaf" in guide
-    assert "Product integration and acceptance leaf" in guide
+    assert "WORK-FEATURE-ONE" in guide
+    assert "WORK-SLICE-A" in guide
     assert "WORK-SYSTEM-INTEGRATION" in guide
+    assert "Product plan allocation" in guide
+    assert "Integration slice child" in guide
     assert "Background = artifact type" in guide
     assert "Level tag = work scope" in guide
     assert "artifact-spec" in guide
     assert "level-product" in guide
+    assert "artifact-work" not in guide
+    assert "key-work" not in guide
     assert "Slice A spec + LLD" not in guide

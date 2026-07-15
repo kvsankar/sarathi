@@ -28,6 +28,10 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Clarify cross-scope test ownership: ancestor product/feature acceptance and integration
   obligations must be allocated to code-ready descendant leaves instead of disappearing
   during decomposition or becoming a final big-bang test phase.
+- Define `WORK-*` as a parent Breakdown-plan allocation to an explicit child scope and
+  artifact chain; distinguish product-to-feature, feature-to-slice, and justified
+  product-to-integration-slice decomposition in prompts, docs, status views, and mechanical
+  plan checks.
 - Replace the verbose static process guide with concise PR-sized and decomposable-product
   trees that show feature, slice, and product-integration test leaves and their statuses;
   encode artifact type by node background and work scope by explicit level tags, with

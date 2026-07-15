@@ -184,6 +184,13 @@ Artifacts declare one readiness value:
 
 `/code-create` should only run from a code-ready implementation plan.
 
+Breakdown plans use `WORK-*` IDs as parent-to-child allocations, not as another artifact
+type. A product plan normally maps each `WORK-*` allocation to a feature spec, design, and
+plan. A feature Breakdown plan normally maps each allocation to a slice spec, LLD, and
+Implementation plan. Product integration work may map directly to a slice child, but its
+test code remains slice-level code carrying product-owned test intent. See
+[docs/work-decomposition.md](docs/work-decomposition.md).
+
 ## ID Format
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example

@@ -22,8 +22,8 @@
       --plan-bg: #eaf7f1;
       --code: #6247a8;
       --code-bg: #f2effc;
-      --work: #52616f;
-      --work-bg: #f0f3f5;
+      --allocation: #52616f;
+      --allocation-bg: #f0f3f5;
       --ready: #18794e;
       --ready-bg: #dff3e8;
       --waiting: #7a5d00;
@@ -151,11 +151,6 @@
       background: var(--code-bg);
     }
 
-    .key-work::before {
-      border-left-color: var(--work);
-      background: var(--work-bg);
-    }
-
     .rule {
       margin-top: 16px;
       padding: 12px 14px;
@@ -238,11 +233,6 @@
     .artifact-code {
       border-left-color: var(--code);
       background: var(--code-bg);
-    }
-
-    .artifact-work {
-      border-left-color: var(--work);
-      background: var(--work-bg);
     }
 
     .node-meta,
@@ -349,11 +339,41 @@
     }
 
     .branch-label {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px 8px;
       margin-bottom: 6px;
       color: var(--muted);
       font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .branch-label code,
+    .allocation-key code {
+      border: 1px solid #aab6c0;
+      background: var(--allocation-bg);
+      color: var(--allocation);
       font-weight: 800;
+    }
+
+    .branch-label strong {
+      color: var(--ink);
+      font-size: 0.76rem;
       text-transform: uppercase;
+    }
+
+    .allocation-key {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .allocation-arrow {
+      color: #758391;
+      font-family: Consolas, monospace;
+      font-weight: 800;
     }
 
     .nested {
@@ -474,7 +494,6 @@
           <span class="key key-design">Design</span>
           <span class="key key-plan">Plan</span>
           <span class="key key-code">Code + tests</span>
-          <span class="key key-work">Work item</span>
         </div>
         <div class="legend-row">
           <span class="legend-label">Level tag = work scope</span>
@@ -482,6 +501,11 @@
           <span class="level level-feature">Feature</span>
           <span class="level level-slice">Slice</span>
           <span>Status badge = workflow state</span>
+        </div>
+        <div class="legend-row">
+          <span class="legend-label"><code>WORK-*</code> = parent allocation</span>
+          <span class="allocation-key"><code>WORK-EXAMPLE</code> Parent plan
+            <span class="allocation-arrow">&rarr;</span> Child artifact chain</span>
         </div>
       </div>
       <p class="rule">Only code-ready leaves invoke <code>/code-create</code>. Those leaves
@@ -590,7 +614,12 @@
 
       <div class="branches">
         <div class="branch">
-          <div class="branch-label">Feature 1: sufficiently small leaf</div>
+          <div class="branch-label">
+            <code>WORK-FEATURE-ONE</code>
+            <span>Product plan allocation</span>
+            <span class="allocation-arrow">&rarr;</span>
+            <strong>Feature child: sufficiently small leaf</strong>
+          </div>
           <div class="flow">
             <div class="node artifact-spec">
               <div class="node-meta">
@@ -643,7 +672,12 @@
         </div>
 
         <div class="branch">
-          <div class="branch-label">Feature 2: decomposes again</div>
+          <div class="branch-label">
+            <code>WORK-FEATURE-TWO</code>
+            <span>Product plan allocation</span>
+            <span class="allocation-arrow">&rarr;</span>
+            <strong>Feature child: decomposes again</strong>
+          </div>
           <div class="flow">
             <div class="node artifact-spec">
               <div class="node-meta">
@@ -683,6 +717,12 @@
           </div>
 
           <div class="nested" aria-label="Feature 2 slice leaves">
+            <div class="branch-label">
+              <code>WORK-SLICE-A</code>
+              <span>Feature plan allocation</span>
+              <span class="allocation-arrow">&rarr;</span>
+              <strong>Slice child A</strong>
+            </div>
             <div class="flow">
               <div class="node artifact-spec">
                 <div class="node-meta">
@@ -731,6 +771,12 @@
                 <strong>Slice A code + tests</strong>
                 <small>Unit, contract, and focused integration</small>
               </div>
+            </div>
+            <div class="branch-label">
+              <code>WORK-SLICE-B</code>
+              <span>Feature plan allocation</span>
+              <span class="allocation-arrow">&rarr;</span>
+              <strong>Slice child B</strong>
             </div>
             <div class="flow">
               <div class="node artifact-spec">
@@ -785,49 +831,66 @@
         </div>
 
         <div class="branch integration-branch">
-          <div class="branch-label">Product integration and acceptance leaf</div>
+          <div class="branch-label">
+            <code>WORK-SYSTEM-INTEGRATION</code>
+            <span>Product plan allocation</span>
+            <span class="allocation-arrow">&rarr;</span>
+            <strong>Integration slice child</strong>
+          </div>
           <div class="flow">
-            <div class="node artifact-work">
+            <div class="node artifact-spec">
               <div class="node-meta">
                 <div class="identity-tags">
-                  <span class="level level-product">Product</span>
-                  <span class="kind">Work item</span>
+                  <span class="level level-slice">Slice</span>
+                  <span class="kind">Spec</span>
                 </div>
-                <span class="status allocated">Allocated</span>
+                <span class="status approved">Approved</span>
               </div>
-              <strong><code>WORK-SYSTEM-INTEGRATION</code></strong>
-              <small>Product AT/JT and cross-feature TEST obligations</small>
+              <strong>Integration slice spec</strong>
+              <small>References product AT/JT and cross-feature obligations</small>
+            </div>
+            <span class="arrow" aria-hidden="true"></span>
+            <div class="node artifact-design">
+              <div class="node-meta">
+                <div class="identity-tags">
+                  <span class="level level-slice">Slice</span>
+                  <span class="kind">Design</span>
+                </div>
+                <span class="status approved">Approved</span>
+              </div>
+              <strong>Integration slice LLD</strong>
+              <small>Environment, boundaries, fixtures, and test obligations</small>
             </div>
             <span class="arrow" aria-hidden="true"></span>
             <div class="node artifact-plan">
               <div class="node-meta">
                 <div class="identity-tags">
-                  <span class="level level-product">Product</span>
+                  <span class="level level-slice">Slice</span>
                   <span class="kind">Plan</span>
                 </div>
                 <span class="status code-ready">Code-ready</span>
               </div>
-              <strong>Integration test plan</strong>
-              <small>Environment, fixtures, oracles, and PR ownership</small>
+              <strong>Integration implementation plan</strong>
+              <small>PR ownership, environments, oracles, and traceability</small>
             </div>
             <span class="arrow" aria-hidden="true"></span>
             <div class="node artifact-code">
               <div class="node-meta">
                 <div class="identity-tags">
-                  <span class="level level-product">Product</span>
+                  <span class="level level-slice">Slice</span>
                   <span class="kind">Test code</span>
                 </div>
                 <span class="status not-started">Not started</span>
               </div>
-              <strong>System test code</strong>
-              <small>Cross-feature journeys, E2E, smoke, and system NFRs</small>
+              <strong>System integration tests</strong>
+              <small>Executes product journeys, E2E, smoke, and system NFRs</small>
             </div>
           </div>
         </div>
       </div>
 
       <p class="footnote">Integration is incremental: slices prove boundaries, features
-      prove local composition, and explicit product integration leaves prove cross-feature
+      prove local composition, and explicit integration slices prove cross-feature
       behavior. Traceability maps ownership; execution results prove outcomes.</p>
     </section>
   </main>

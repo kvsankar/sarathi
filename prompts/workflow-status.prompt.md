@@ -6,9 +6,10 @@ agent: agent
 # Workflow Status
 
 Render a read-only Sarathi workflow-status page for the target project. Load
-`docs/workflow-status.md`, read `.sdlc/wip.md` when present, and verify important WIP claims
-against governing artifacts. This command does not create or revise a spec, design, plan,
-approval, implementation, or review report, so it does not advance a human gate.
+`docs/workflow-status.md` and `docs/work-decomposition.md`, read `.sdlc/wip.md` when present,
+and verify important WIP claims against governing artifacts. This command does not create or
+revise a spec, design, plan, approval, implementation, or review report, so it does not
+advance a human gate.
 
 Locate `render_workflow_status.py` in the target project's `checkers/` directory, this
 skill bundle's `checkers/` directory, or the source repository's `checkers/` directory. Run:
@@ -29,6 +30,7 @@ Report:
 
 - generated status and process-guide paths, plus the snapshot fingerprint;
 - spec/design/plan presence and hash-current attestation states;
-- parent `WORK-` count, expanded child-plan count, PR-slice count, and PRs with mapped tests;
+- parent-plan `WORK-` allocation count, expanded child-plan count, PR-slice count, and PRs
+  with mapped tests;
 - approval parse errors, stale attestations, missing expected files, or discovery limitations;
 - the evidence limit that mapped tests and WIP claims do not prove completion or quality.

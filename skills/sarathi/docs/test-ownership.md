@@ -42,8 +42,10 @@ narrowest level that can prove the behavior:
 
 A Breakdown plan must create an explicit integration/acceptance `WORK-` item when an
 obligation spans multiple children and cannot be honestly owned by one existing child. That
-work item must reach a code-ready implementation plan before `/code-create`; it may inherit
-clear parent requirements and design instead of manufacturing duplicate child artifacts.
+work item must follow [work-decomposition.md](work-decomposition.md): name its child scope
+and required child artifacts, then reach a code-ready child Implementation plan before
+`/code-create`. Child artifacts should reference clear parent requirements and design rather
+than duplicate them, but they must still exist at the scope that authorizes implementation.
 
 ## Planning And Evidence
 
