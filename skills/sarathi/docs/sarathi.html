@@ -123,17 +123,38 @@
     }
 
     .key::before {
-      width: 10px;
-      height: 10px;
+      width: 18px;
+      height: 13px;
+      border: 1px solid var(--line);
+      border-left-width: 4px;
       border-radius: 2px;
       content: "";
     }
 
-    .key-spec::before { background: var(--spec); }
-    .key-design::before { background: var(--design); }
-    .key-plan::before { background: var(--plan); }
-    .key-code::before { background: var(--code); }
-    .key-work::before { background: var(--work); }
+    .key-spec::before {
+      border-left-color: var(--spec);
+      background: var(--spec-bg);
+    }
+
+    .key-design::before {
+      border-left-color: var(--design);
+      background: var(--design-bg);
+    }
+
+    .key-plan::before {
+      border-left-color: var(--plan);
+      background: var(--plan-bg);
+    }
+
+    .key-code::before {
+      border-left-color: var(--code);
+      background: var(--code-bg);
+    }
+
+    .key-work::before {
+      border-left-color: var(--work);
+      background: var(--work-bg);
+    }
 
     .rule {
       margin-top: 16px;

@@ -30,7 +30,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   during decomposition or becoming a final big-bang test phase.
 - Replace the verbose static process guide with concise PR-sized and decomposable-product
   trees that show feature, slice, and product-integration test leaves and their statuses;
-  encode artifact type by node background and work scope by explicit level tags.
+  encode artifact type by node background and work scope by explicit level tags, with
+  legend swatches that display the full node fill and accent edge.
 
 ## Pre-Changelog History
 
