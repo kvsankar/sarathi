@@ -287,6 +287,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   operations as applicable. Review the test code itself: assertions, fixtures, helpers,
   mocks, generated data, setup/teardown, selectors, determinism, speed, isolation,
   readability, maintainability, and false-positive/false-negative risk.
+- **Ancestor test intent** — product- or feature-owned `AT-`/`JT-`/`TEST-` obligations
+  assigned to this leaf are implemented and traceable; mapped/implemented claims remain
+  distinct from observed execution and passing results.
 - **Supplemental inner test quality** — code-discovered helper, pure-core, parser, mapper,
   regression, characterization, property/table, adapter, or edge-case tests supplement the
   planned coverage, are mapped in `.sdlc/test-traceability.yaml` to the nearest `PR-` and

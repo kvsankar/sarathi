@@ -319,10 +319,28 @@ copy_checkers() {
   echo "Installed checkers -> $dest"
 }
 
+atomic_copy_file() {
+  local source="$1"
+  local dest="$2"
+  local temp
+  temp="$(mktemp "$(dirname "$dest")/.$(basename "$dest").XXXXXX")"
+  if ! cp "$source" "$temp"; then
+    rm -f "$temp"
+    return 1
+  fi
+  mv -f "$temp" "$dest"
+}
+
 copy_skill_folder() {
   local dest="$1"
+  local source_item
   mkdir -p "$dest"
-  cp -R "$SKILL_SOURCE"/. "$dest"/
+  while IFS= read -r -d '' source_item; do
+    if [[ "$(basename "$source_item")" != "SKILL.md" ]]; then
+      cp -R "$source_item" "$dest"/
+    fi
+  done < <(find "$SKILL_SOURCE" -mindepth 1 -maxdepth 1 -print0)
+  atomic_copy_file "$SKILL_SOURCE/SKILL.md" "$dest/SKILL.md"
 
   rm -rf "$dest/prompts"
   mkdir -p "$dest/prompts"
@@ -341,14 +359,15 @@ copy_copilot_stage_skills() {
   skill_root="$(dirname "$main_skill_dest")"
 
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
-    local stage_name stage_dest prompt_file_name description
+    local stage_name stage_dest prompt_file_name description stage_skill_temp
     stage_name="$(command_name "$file")"
     stage_dest="$skill_root/$stage_name"
     prompt_file_name="$(basename "$file")"
     description="$(printf 'Sarathi stage skill for %s. %s' "$stage_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
 
     mkdir -p "$stage_dest"
-    cat > "$stage_dest/SKILL.md" <<EOF
+    stage_skill_temp="$(mktemp "$stage_dest/.SKILL.md.XXXXXX")"
+    cat > "$stage_skill_temp" <<EOF
 ---
 name: $stage_name
 description: "$description"
@@ -365,6 +384,7 @@ This stage is part of the broader Sarathi workflow. Preserve input gates, human
 review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
 limits.
 EOF
+    mv -f "$stage_skill_temp" "$stage_dest/SKILL.md"
 
     rm -rf "$stage_dest/prompts"
     mkdir -p "$stage_dest/prompts"

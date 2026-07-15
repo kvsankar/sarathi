@@ -176,6 +176,13 @@ Use the same section order for every plan, but tune the content to the declared 
 `TEST-` obligations into a PR-by-PR executable test plan. It decides **when** each test is
 written, **which level** it belongs to, and **which PR** owns it.
 
+For decomposable work, follow `docs/test-ownership.md`. Map every ancestor `AT-`, `JT-`, and
+design `TEST-` obligation to child work, implementation PRs, or justified non-code
+verification. When evidence spans multiple children, create an explicit feature/product
+integration or acceptance `WORK-` item and drive it to a code-ready implementation plan.
+Plan focused integration as boundaries appear as well as composition-level evidence; do not
+create a final big-bang integration phase.
+
 For each PR, list the test levels it will add or update:
 
 - **Acceptance/e2e tests** that execute one or more `AT-` scenarios and cite the relevant
@@ -326,7 +333,9 @@ work.
    coherent delivery slice.
 4. **Pull Requests / Child Work Items** — for a Breakdown plan, list
    `WORK-<AREA>-<NAME>` items with scope, parent IDs, required child spec/design/LLD/plan,
-   dependencies, readiness target, risks, and done signal. For an Implementation plan, list
+   dependencies, readiness target, risks, and done signal. Include explicit integration/
+   acceptance child work when an ancestor obligation spans multiple children. For an
+   Implementation plan, list
    `PR-<AREA>-<NAME>` items; for each: scope; **Planned Touch Set**
    (files/directories/modules/config/docs/generated artifacts plus any spec/design/plan
    sections allowed to change, including build/deployment/CI/IaC files when relevant);

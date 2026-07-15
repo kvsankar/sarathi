@@ -251,6 +251,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   applicable; critical `JT-` stories are mapped to executable obligations with ordered
   steps, state handoff, environment, and oracle details; observability, failure handling,
   rollout/rollback, and operational checks exist.
+- **Cross-scope integration ownership** — incremental boundary, feature-composition, and
+  product-composition obligations are separated where needed, retain ancestor `AT-`/`JT-`
+  links, and are shaped so code-ready descendants can implement them.
 - **Test environment strategy** — the design covers a developer test environment and
   recommends or explicitly defers shared integration/test, staging/pre-production,
   production canary/smoke, and synthetic-monitor environments based on risk. Each planned

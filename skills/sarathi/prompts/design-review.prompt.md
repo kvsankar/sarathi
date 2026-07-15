@@ -117,6 +117,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   quality-attribute tests. Critical `JT-` stories from the spec are mapped to executable
   journey/e2e/workflow obligations with ordered steps, state handoff, environment, and
   oracle details.
+- Cross-scope integration ownership: the design separates incremental boundary evidence,
+  feature composition, and product composition where needed, and links ancestor `AT-`/`JT-`
+  intent to executable obligations suitable for code-ready descendants.
 - Test environment strategy: developer test environment is defined; shared integration/test,
   staging/pre-production, production canary/smoke, or synthetic-monitor environments are
   recommended or deferred with rationale based on risk, data, integrations, and deployment

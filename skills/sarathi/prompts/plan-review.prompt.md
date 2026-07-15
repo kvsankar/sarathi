@@ -74,6 +74,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   `TEST-` obligations for lower-level unit/component/contract/integration/UI/quality/
   operational tests are assigned to appropriate PRs. `JT-` PRs preserve ordered steps,
   state handoff, data/setup/cleanup, and final/intermediate oracles.
+- Cross-scope integration allocation: ancestor `AT-`/`JT-`/`TEST-` obligations survive
+  decomposition; obligations spanning children have explicit feature/product integration
+  or acceptance work that reaches a code-ready leaf, without a final big-bang test phase.
 - Test environment allocation: developer-local verification is planned, and shared
   integration/test, staging/pre-production, production canary/smoke, or synthetic-monitor
   environments are assigned or explicitly deferred with rationale when context warrants.

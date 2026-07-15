@@ -15,7 +15,9 @@ SKILL_DOCS = [
     "review-verification-checklist.md",
     "simplify-pass.md",
     "srs-authoring.md",
+    "test-ownership.md",
     "work-in-progress.md",
+    "workflow-status.md",
 ]
 
 
@@ -47,3 +49,20 @@ def test_sarathi_skill_bundles_shared_docs() -> None:
         assert (SKILL / "docs" / name).read_bytes() == (
             ROOT / "docs" / name
         ).read_bytes()
+
+
+def test_sarathi_skill_bundles_static_process_guide() -> None:
+    source = ROOT / "docs" / "sarathi.html"
+    bundled = SKILL / "docs" / "sarathi.html"
+    assert bundled.read_bytes() == source.read_bytes()
+    guide = source.read_text(encoding="utf-8")
+    assert "1. PR-sized leaf" in guide
+    assert "2. Decomposable product" in guide
+    assert "Feature 1: sufficiently small leaf" in guide
+    assert "Product integration and acceptance leaf" in guide
+    assert "WORK-SYSTEM-INTEGRATION" in guide
+    assert "Background = artifact type" in guide
+    assert "Level tag = work scope" in guide
+    assert "artifact-spec" in guide
+    assert "level-product" in guide
+    assert "Slice A spec + LLD" not in guide

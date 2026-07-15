@@ -203,6 +203,12 @@ design's ability to satisfy requirements and quality attributes:
 which kinds of tests are needed, where they sit in the system, what each level proves, and
 which components, interfaces, flows, risks, and NFRs they cover.
 
+For decomposable work, follow `docs/test-ownership.md`. Define separate obligations for
+incremental boundary integration, feature composition, and product/system composition when
+the context requires them. Product- and feature-owned `AT-`/`JT-` intent may become
+executable in descendant integration leaves; preserve the ancestor IDs, environment, and
+oracle instead of treating those tests as unowned end-stage work.
+
 Use the spec's `AT-` items as acceptance intent and its `JT-` items as long-form journey
 intent. Decide how those criteria will be verified later, such as API acceptance tests,
 browser/device end-to-end tests, workflow-level integration tests, journey tests that carry

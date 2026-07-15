@@ -38,8 +38,9 @@ artifact formatting, cleanup and simplify passes, cross-cutting concerns, and pr
 shared source docs in this repository
 (`docs/project-entry.md`, `docs/progressive-disclosure.md`, `docs/work-in-progress.md`,
 `docs/bootstrap-instructions.md`, `docs/artifact-formatting.md`,
-`docs/cleanup-pass.md`, `docs/simplify-pass.md`, `docs/cross-cutting-concerns.md`, and
-`docs/process-maintenance.md`) over copying long policy blocks into every stage prompt.
+`docs/cleanup-pass.md`, `docs/simplify-pass.md`, `docs/cross-cutting-concerns.md`,
+`docs/test-ownership.md`, and `docs/process-maintenance.md`) over copying long policy blocks
+into every stage prompt.
 
 ## Instruction Loading
 
@@ -73,7 +74,11 @@ requires them.
 - Load `docs/cross-cutting-concerns.md`, `docs/review-verification-checklist.md`,
   `docs/approval-gates.md`, or checker source/help only when the current stage reaches that
   concern.
+- Load `docs/test-ownership.md` when decomposable work carries product/feature acceptance,
+  journey, integration, or quality obligations into code-ready descendants.
 - Load `docs/process-maintenance.md` when modifying the SDLC process itself.
+- Load `docs/workflow-status.md` and the static `docs/sarathi.html` process guide when
+  rendering or explaining the read-only workflow expansion/status page.
 - Load `docs/release-process.md` when preparing a Sarathi changelog entry, version bump, or
   release tag.
 
@@ -142,6 +147,13 @@ Select the narrowest command that matches the user's current artifact:
 - `/code-review`: qualitatively review implementation, tests, traceability, quality gates,
   logging/error-handling fitness, and upstream consistency.
 - `/code-assess`: run `/code-verify` plus `/code-review` as the full code gate.
+- `/workflow-status`: generate a deterministic HTML snapshot of artifact gates,
+  decomposition, PR slices, and mapped implementation evidence, plus a linked static
+  process guide, without advancing a gate.
+
+`/workflow-status` is a read-only projection command, not an SDLC creation or assessment
+stage. It may run at any point, including when only a spec exists. It does not require or
+create an approval and does not trigger the post-artifact human gate by itself.
 
 When the user invokes this skill generally instead of naming a specific stage,
 operate in human-gated mode by default. Choose and run only the next appropriate SDLC stage.

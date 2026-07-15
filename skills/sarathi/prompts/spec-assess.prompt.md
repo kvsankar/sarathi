@@ -188,6 +188,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   acceptance intent, feature/component `AT-` items refine bounded behavior, and
   slice/change `AT-` items are precise enough to map to executable acceptance/e2e/API tests
   or justified non-code verification.
+- **Cross-scope test ownership** — product and feature acceptance/journey intent is precise
+  enough to survive decomposition and remains available for allocation to executable
+  descendant evidence rather than disappearing at the parent boundary.
 - **Journey coverage** — critical multi-step stories have `JT-` items that compose multiple
   `AT-` scenarios in order, carry realistic state across steps, and name observable final
   or intermediate oracles. Missing `JT-` coverage for a long workflow is a spec gap unless

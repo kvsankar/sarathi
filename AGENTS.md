@@ -79,8 +79,22 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   quality-gate fitness.
 - **`/code-assess`** — [prompts/code-assess.prompt.md](prompts/code-assess.prompt.md)
   Runs `/code-verify` plus `/code-review` as the full code gate.
+- **`/workflow-status`** —
+  [prompts/workflow-status.prompt.md](prompts/workflow-status.prompt.md)
+  Generates a deterministic, read-only HTML snapshot of artifact gates, decomposition,
+  PR slices, and mapped implementation evidence, plus a linked static process guide. It
+  does not advance an SDLC gate.
 
 ## Test responsibility by command
+
+Test intent can originate at product/system, feature/component, or slice/change scope, but
+only a code-ready Implementation plan invokes `/code-create`. A descendant leaf PR may and
+often must implement executable tests governed by ancestor `AT-`, `JT-`, and design `TEST-`
+obligations. Breakdown plans must preserve that ancestry, allocate every obligation to child
+work or justified non-code verification, and create explicit feature/product integration or
+acceptance work when evidence spans multiple children. Follow
+[docs/test-ownership.md](docs/test-ownership.md); do not defer integration into one final
+big-bang test phase.
 
 - `/spec-create` writes `AT-` acceptance tests as requirements-level, black-box acceptance
   criteria in the spec. Specs write `AT-` items at product/system, feature/component, and
@@ -108,6 +122,9 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   obligations. This is where unit, component, contract, integration,
   UI/accessibility/visual, quality/NFR, migration, build/deploy, docs, and operational test
   implementations are written when planned.
+- `/code-create` may implement product- or feature-owned acceptance, journey, integration,
+  and quality tests when a code-ready descendant plan assigns them. Test code is code; the
+  implementation leaf owns the executable file while the ancestor artifact owns the intent.
 - Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
   when planned or explicitly accepted: generated code only, docs-only, formatting-only,
   build/deploy config validation, and characterization before legacy refactor. Each

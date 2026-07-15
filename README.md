@@ -23,6 +23,8 @@ generating an artifact.
   assessment.
 - A native `sarathi` skill for agents that support skills.
 - Structural checkers for specs, designs, plans, and code/test traceability.
+- A deterministic workflow-status HTML view for artifact gates, decomposition, PR slices,
+  and mapped implementation evidence.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
 - Change history in [CHANGELOG.md](CHANGELOG.md) and release/tagging guidance in
@@ -142,6 +144,16 @@ The core stage names are:
 | `/code-verify` | Run tests, coverage, quality gates, logging/error-handling/build/docs/deployment checks, and structural code evidence. |
 | `/code-review` | Qualitatively review code, tests, logging/error-handling, docs, build/deploy work, quality gates, and upstream consistency. |
 | `/code-assess` | Run `/code-verify` plus `/code-review`. |
+| `/workflow-status` | Render a read-only HTML snapshot of workflow expansion and evidence. |
+
+Generate the live status page and its linked static process guide directly with:
+
+```pwsh
+python checkers/render_workflow_status.py . --output docs/sdlc-status.html
+```
+
+See [docs/workflow-status.md](docs/workflow-status.md) for discovery rules, evidence
+semantics, deterministic output, guide publication, and CI freshness checks.
 
 Exact invocation syntax depends on the host tool:
 
@@ -465,7 +477,8 @@ for GitHub Copilot project-scoped prompts.
 
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
 - Release process: [docs/release-process.md](docs/release-process.md)
-- Overview page: [docs/sarathi.html](docs/sarathi.html)
+- Static process guide and example tree: [docs/sarathi.html](docs/sarathi.html)
+- Cross-scope test and integration ownership: [docs/test-ownership.md](docs/test-ownership.md)
 - Review checklist: [docs/review-verification-checklist.md](docs/review-verification-checklist.md)
 - Slug ID migration: [docs/slug-id-migration.md](docs/slug-id-migration.md)
 - Approval gates: [docs/approval-gates.md](docs/approval-gates.md)

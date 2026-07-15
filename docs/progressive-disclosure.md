@@ -31,6 +31,7 @@ Load references only when their trigger applies:
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `/spec-create` or `/code-review`. |
 | `docs/cross-cutting-concerns.md` | Creating, reviewing, or assessing an artifact whose domain, data, UI, integration, deployment, documentation, logging, error-handling, or operational risk needs the shared concern checklist. |
+| `docs/test-ownership.md` | Creating, reviewing, assessing, or implementing decomposable work whose product/feature acceptance intent or integration evidence must be allocated to code-ready descendants. |
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs mechanical verification with qualitative review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |
 | `docs/process-maintenance.md` | Modifying the SDLC process, prompts, skills, checker policy, or shared docs. |

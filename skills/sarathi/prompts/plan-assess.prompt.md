@@ -180,6 +180,10 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   state handoff, while each design `TEST-` obligation for unit/pure-core, component,
   contract, integration, UI/accessibility/visual, quality-attribute, migration, and
   operational checks is scheduled near the code it protects.
+- **Cross-scope integration allocation** — ancestor `AT-`/`JT-`/`TEST-` obligations survive
+  decomposition; obligations spanning children have explicit feature/product integration
+  or acceptance work that reaches a code-ready leaf, while focused integration is also
+  scheduled as boundaries appear instead of deferred to one final phase.
 - **Test-environment allocation** — developer-local verification is planned. Shared
   integration/test, staging/pre-production, production canary/smoke, and synthetic-monitor
   environments recommended by the design or implied by risk are assigned to PRs/work items,

@@ -23,6 +23,40 @@ function Test-SamePath {
     return [string]::Equals($leftResolved, $rightResolved, [System.StringComparison]::OrdinalIgnoreCase)
 }
 
+function Move-AtomicFile {
+    param([string]$TemporaryPath, [string]$Destination)
+    Move-Item -LiteralPath $TemporaryPath -Destination $Destination -Force
+}
+
+function Copy-AtomicFile {
+    param([string]$Source, [string]$Destination)
+    $parent = Split-Path -Parent $Destination
+    $temporaryPath = Join-Path $parent ".$([System.IO.Path]::GetFileName($Destination)).$([guid]::NewGuid().ToString('N')).tmp"
+    try {
+        [System.IO.File]::WriteAllBytes($temporaryPath, [System.IO.File]::ReadAllBytes($Source))
+        Move-AtomicFile $temporaryPath $Destination
+    } finally {
+        if (Test-Path -LiteralPath $temporaryPath) {
+            Remove-Item -LiteralPath $temporaryPath -Force
+        }
+    }
+}
+
+function Set-AtomicUtf8File {
+    param([string]$Destination, [string]$Content)
+    $parent = Split-Path -Parent $Destination
+    $temporaryPath = Join-Path $parent ".$([System.IO.Path]::GetFileName($Destination)).$([guid]::NewGuid().ToString('N')).tmp"
+    try {
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText($temporaryPath, $Content, $utf8NoBom)
+        Move-AtomicFile $temporaryPath $Destination
+    } finally {
+        if (Test-Path -LiteralPath $temporaryPath) {
+            Remove-Item -LiteralPath $temporaryPath -Force
+        }
+    }
+}
+
 if (-not (Test-Path -LiteralPath $PromptSource)) {
     throw "Prompt source folder not found: $PromptSource"
 }
@@ -232,7 +266,10 @@ function Copy-Checkers {
 function Copy-SkillFolder {
     param([string]$Destination)
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
-    Get-ChildItem -Force -LiteralPath $SkillSource | Copy-Item -Destination $Destination -Recurse -Force
+    Get-ChildItem -Force -LiteralPath $SkillSource |
+        Where-Object { $_.Name -ne "SKILL.md" } |
+        Copy-Item -Destination $Destination -Recurse -Force
+    Copy-AtomicFile (Join-Path $SkillSource "SKILL.md") (Join-Path $Destination "SKILL.md")
 
     $promptDest = Join-Path $Destination "prompts"
     if (Test-Path -LiteralPath $promptDest) {
@@ -285,7 +322,7 @@ This stage is part of the broader Sarathi workflow. Preserve input gates, human
 review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
 limits.
 "@
-        Set-Content -LiteralPath (Join-Path $stageDest "SKILL.md") -Value $stageSkill -NoNewline
+        Set-AtomicUtf8File (Join-Path $stageDest "SKILL.md") $stageSkill
 
         $promptDest = Join-Path $stageDest "prompts"
         if (Test-Path -LiteralPath $promptDest) {

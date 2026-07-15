@@ -83,6 +83,10 @@ satisfied. `JT-` items are long-form, ordered stories that compose multiple `AT-
 across a realistic user, operator, API, or business workflow. They are written in the spec,
 not as executable test code.
 
+For decomposable work, follow `docs/test-ownership.md`. Product and feature `AT-`/`JT-`
+intent remains normative after decomposition and must be refined or allocated downstream;
+do not imply that only slice-owned acceptance criteria can become executable evidence.
+
 Write `AT-` items at every spec scope, but match their granularity to that scope:
 
 - **Product/system specs** carry broad, representative `AT-` intent for major capabilities,
