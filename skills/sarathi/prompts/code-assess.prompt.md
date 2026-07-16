@@ -393,10 +393,15 @@ Otherwise:
 For a `Pass` verdict with a known parent `WORK-*` item and child implementation plan,
 create or update `.sdlc/code-assessments.yaml`. Record a stable assessment ID, the exact
 `work_item`, the child plan `path` and current `sha256`, `verdict: Pass`, and a UTC
-`assessed_at` value. Do not record `Pass-with-fixes`, `Needs rework`, or blocked results as
-passing assessments. This ledger is a project-authored assessment claim, not human approval;
-use a separate hash-current `code_slice.approved` record when the user approves the completed
-slice handoff.
+`assessed_at` value. Also record a `learning` mapping with `target`, `feedback_target`,
+`feedback_status`, `feedback_evidence`, `invalidation_result`, `ancestor_impact`, and
+`stop_or_replan`. `ancestor_impact` may be a mapping keyed by `spec`, `design`, `plan`,
+`code_integration`, and `process`; each value begins with `no-change`, `revision-proposed`,
+`revision-required`, or `feedback-required` and cites concise evidence. Never manufacture a
+missing value merely to complete the record. Do not record `Pass-with-fixes`, `Needs rework`,
+or blocked results as passing assessments. This ledger is a project-authored assessment
+claim, not human approval; use a separate hash-current `code_slice.approved` record when the
+user approves the completed slice handoff.
 
 ## Human review gate (hard stop)
 

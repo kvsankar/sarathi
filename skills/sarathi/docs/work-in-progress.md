@@ -77,7 +77,10 @@ Learning Target: assumption, behavior, boundary, or risk tested by the current s
 Feedback Target: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise residual-risk note
-Active Learning Wave: wave name or none; WIP limit and active slices
+Active Learning Wave: wave name or none
+WIP Limit: positive integer or not-recorded
+Active Slices: comma-separated WORK-* or PR-* IDs, or none
+Invalidation Result: concise evidence-backed result
 Ancestor Impact: spec/design/plan/code/process outcome and affected paths
 Stop Or Replan Triggers: conditions that pause or cancel active sibling work
 

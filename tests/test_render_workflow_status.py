@@ -66,6 +66,8 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
     }
     assert "Not yet done" in rendered
     assert "No valid decomposition discovered" in rendered
+    assert "Feedback not recorded" in rendered
+    assert "Not recorded" in rendered
     assert 'href="sarathi-process.html">Process guide</a>' in rendered
     parser = HTMLParser()
     parser.feed(rendered)
@@ -121,6 +123,20 @@ Implementation Readiness: Decomposable
   Risks: boundary behavior may still be unknown.
 
   Done signal: the public behavior has executable evidence.
+
+  Learning target: prove the first runnable slice at the real boundary.
+
+  Feedback target: API consumer and sandbox response evidence.
+
+  Feedback method: review the generated contract examples and sandbox trace.
+
+  Invalidation question: does the boundary reject the planned request shape?
+
+  Dependency types: execution: none; learning: none; integration: shared API contract.
+
+  Learning wave: WAVE-DEMO-FIRST.
+
+  Stop/replan trigger: stop sibling work if the public request shape changes.
 
 - WORK-DEMO-BETA
 
@@ -238,6 +254,16 @@ approvals:
 
 Current Stage: code-create
 Current Gate: human-review
+Learning Target: validate the public API boundary before expanding the next capability
+Feedback Target: API consumer and sandbox response evidence
+Feedback Status: requested
+Feedback Evidence: docs/reviews/api-boundary.md
+Active Learning Wave: WAVE-DEMO-FIRST
+WIP Limit: 2
+Active Slices: PR-ALPHA-TWO
+Invalidation Result: pending feedback
+Ancestor Impact: feedback-required: wait before expanding WORK-DEMO-BETA
+Stop Or Replan Triggers: stop sibling work if the public request shape changes
 
 ## Current Artifacts
 
@@ -293,6 +319,30 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
     assert alpha["child_plan"]["approval"]["state"] == "approved"
     assert alpha["evidence_count"] == 3
     assert alpha["wip_claim"]["status"] == "approved and implemented"
+    assert alpha["learning_target"] == (
+        "prove the first runnable slice at the real boundary."
+    )
+    assert alpha["learning_wave"] == "WAVE-DEMO-FIRST."
+    assert alpha["stop_or_replan"] == (
+        "stop sibling work if the public request shape changes."
+    )
+    assert model["wip"]["learning"] == {
+        "target": (
+            "validate the public API boundary before expanding the next capability"
+        ),
+        "feedback_target": "API consumer and sandbox response evidence",
+        "feedback_status": "requested",
+        "feedback_evidence": "docs/reviews/api-boundary.md",
+        "active_wave": "WAVE-DEMO-FIRST",
+        "wip_limit": "2",
+        "active_slices": "PR-ALPHA-TWO",
+        "invalidation_result": "pending feedback",
+        "ancestor_impact": ("feedback-required: wait before expanding WORK-DEMO-BETA"),
+        "stop_or_replan": ("stop sibling work if the public request shape changes"),
+    }
+    assert module.explicit_focus_item(model["work_items"], model["wip"])["id"] == (
+        "WORK-DEMO-ALPHA"
+    )
     assert beta["state"] == "frontier"
     assert beta["child_level"] == "feature"
     assert beta["child_plan"] is None
@@ -361,6 +411,17 @@ assessments:
       sha256: "{digest(child)}"
     verdict: Pass
     assessed_at: "2026-07-15T00:00:04Z"
+    learning:
+      target: Prove the API boundary with a consumer-visible example.
+      feedback_target: API consumer review.
+      feedback_status: received
+      feedback_evidence: docs/reviews/api-boundary.md
+      invalidation_result: The request-shape assumption held.
+      ancestor_impact:
+        spec: "no-change: accepted behavior remains correct"
+        design: "revision-proposed: record observed retry timing"
+        plan: "no-change: remaining work is unaffected"
+      stop_or_replan: Stop if the provider contract changes.
 """,
     )
 
@@ -374,9 +435,55 @@ assessments:
 
     assert model["work_items"][0]["state"] == "assessed"
     assert model["work_items"][0]["code_assessment"]["verdict"] == "Pass"
+    assert model["work_items"][0]["code_assessment"]["learning"] == {
+        "target": "Prove the API boundary with a consumer-visible example.",
+        "feedback_target": "API consumer review.",
+        "feedback_status": "received",
+        "feedback_evidence": "docs/reviews/api-boundary.md",
+        "invalidation_result": "The request-shape assumption held.",
+        "ancestor_impact": (
+            "design: revision-proposed: record observed retry timing; "
+            "plan: no-change: remaining work is unaffected; "
+            "spec: no-change: accepted behavior remains correct"
+        ),
+        "stop_or_replan": "Stop if the provider contract changes.",
+    }
     assert model["summary"]["assessed_items"] == 1
     assert "Demo Alpha is assessed" in rendered
     assert "Assessed" in rendered
+    assert "Assessed learning" in rendered
+    assert "Feedback received" in rendered
+    assert "revision-proposed: record observed retry timing" in rendered
+
+
+def test_legacy_passing_assessment_without_learning_remains_valid(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    write(
+        project / ".sdlc" / "code-assessments.yaml",
+        f"""version: 1
+assessments:
+  - id: ASSESS-CODE-DEMO-LEGACY
+    work_item: WORK-DEMO-ALPHA
+    plan:
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{digest(child)}"
+    verdict: Pass
+""",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["work_items"][0]["state"] == "assessed"
+    assert model["work_items"][0]["code_assessment"]["learning"] == {}
+    assert "Not recorded in assessment" in rendered
 
 
 def test_stale_code_assessment_remains_evidence(tmp_path):
@@ -449,6 +556,13 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert "Executive summary" in first
     assert "Demo Alpha is in progress" in first
     assert "Product/system &rarr; Breakdown plan &rarr; WORK-DEMO-ALPHA" in first
+    assert 'aria-label="Current learning loop"' in first
+    assert "validate the public API boundary" in first
+    assert "Feedback requested" in first
+    assert "WAVE-DEMO-FIRST" in first
+    assert "PR-ALPHA-TWO" in first
+    assert '<details class="learning-details" open>' in first
+    assert "Explicit feedback is required before affected work continues." in first
     assert "Workflow tree" in first
     assert re.search(
         r'<details class="tree-branch" data-state="evidence"[^>]* open>', first

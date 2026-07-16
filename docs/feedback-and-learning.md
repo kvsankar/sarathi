@@ -61,6 +61,11 @@ Record one outcome per affected area:
   continues.
 - `feedback-required`: the next decision depends on feedback that has not arrived.
 
+Record the current loop in `.sdlc/wip.md` using the exact fields from
+[work-in-progress.md](work-in-progress.md). When a slice receives a passing code assessment,
+preserve its completed learning evidence in that hash-current assessment record so workflow
+status can show branch history without treating WIP or Git activity as proof.
+
 The agent performs this scan and may draft evidence-backed revisions. It must not silently
 redefine accepted product behavior, contracts, safety posture, or scope. Material revisions
 go through the matching create/assess command and human review gate. Small factual updates
