@@ -18,8 +18,13 @@ must improve judgment without turning every prompt into a checklist wall.
   every create, verify, review, and assess prompt.
 - Keep `SKILL.md` as the always-loaded routing kernel. It should select the project entry
   mode and stage, then load the selected stage prompt and triggered shared docs on demand.
-- Treat create prompts over roughly 250 lines and assess prompts over roughly 200 lines as
-  candidates for consolidation unless the extra length is demonstrably stage-specific.
+- Enforce repository prompt budgets in tests. A budget increase requires an explicit
+  rationale and removal or consolidation elsewhere; do not make the threshold advisory.
+- Keep the routing skill and repository agent instructions below their tested budgets.
+- Prefer a lean core plus triggered modules from
+  [assurance-profiles.md](assurance-profiles.md) over universal concern lists.
+- Apply [simplicity-first.md](simplicity-first.md): process requirements stay outside
+  product architecture, and new generic machinery requires concrete evidence.
 
 ## Adding A Cross-Cutting Concern
 

@@ -53,6 +53,14 @@ ID_CANDIDATE = re.compile(
     re.I,
 )
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)
+COMPLEXITY_BUDGET = re.compile(
+    r"(?mi)^\s*(?:[-*+]\s+)?(?:\*\*)?Complexity Budget(?:\*\*)?\s*:\s*\S"
+)
+GENERIC_MACHINERY = re.compile(
+    r"\b(?:framework|generator|registry|manifest|schema system|extension point|"
+    r"generic harness|evidence platform|resource[- ]lease)\b",
+    re.I,
+)
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
 UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
 EXTERNAL_DOUBLE = re.compile(
@@ -325,6 +333,15 @@ def main() -> int:
     known = all_ids | req_ids
     orphans = sorted(r for r in refs if r not in known)
     vague = len(VAGUE.findall(text))
+    complexity_budget_present = COMPLEXITY_BUDGET.search(text) is not None
+    complexity_signals = sorted(
+        {
+            re.sub(r"\s+", " ", line).strip()
+            for line in text.splitlines()
+            if GENERIC_MACHINERY.search(line)
+            and not line.casefold().lstrip(" -*+").startswith("complexity budget:")
+        }
+    )
     ext_double_mentions = external_double_mentions(text)
     risk_text = section_text(text, "Risks & Trade-offs")
     drift_risks = [
@@ -429,6 +446,7 @@ def main() -> int:
         ),
         "iface_single_owner": not iface_dupes and not iface_owner_issues,
         "no_dependency_cycles": not cycles,
+        "complexity_budget_present": complexity_budget_present,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
     }
@@ -451,6 +469,15 @@ def main() -> int:
         "external_double_mitigation_tests": sorted(drift_tests),
         "iface_owner_count": len(iface_owners),
         "dependency_cycles": cycles,
+        "complexity_budget": {
+            "present": complexity_budget_present,
+            "generic_machinery_signals": complexity_signals,
+            "evidence_limit": (
+                "Signals require qualitative simplicity review; presence does not "
+                "prove "
+                "that machinery is justified or overbuilt."
+            ),
+        },
         "approval_requirements": approval_requirements,
         "approval_ledger": {
             "path": approvals_path,

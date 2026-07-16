@@ -61,6 +61,8 @@ EXCLUDED_DIRS = {
 METADATA_FIELDS = (
     "Work Scope",
     "Implementation Readiness",
+    "Delivery Profile",
+    "Assurance Modules",
     "Plan Type",
     "Design Depth",
 )
@@ -431,6 +433,8 @@ def parse_wip(root: Path) -> dict[str, Any]:
         "Project Entry Mode",
         "Work Scope",
         "Implementation Readiness",
+        "Delivery Profile",
+        "Assurance Modules",
     ):
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match:
@@ -840,6 +844,16 @@ def build_model(root: Path) -> dict[str, Any]:
         for kind in ("spec", "design", "plan")
     }
     wip = parse_wip(root)
+    delivery_profile = str(wip.get("Delivery Profile") or "").strip()
+    assurance_modules = str(wip.get("Assurance Modules") or "").strip()
+    for kind in ("plan", "design", "spec"):
+        stage_metadata = stages[kind].get("metadata", {})
+        if not delivery_profile:
+            delivery_profile = str(stage_metadata.get("Delivery Profile") or "").strip()
+        if not assurance_modules:
+            assurance_modules = str(
+                stage_metadata.get("Assurance Modules") or ""
+            ).strip()
     linked_artifacts = child_artifacts(root, paths)
     traces, traceability_error = traceability_counts(root)
     parent_text = read_text(paths["plan"]) if paths["plan"] else ""
@@ -940,6 +954,10 @@ def build_model(root: Path) -> dict[str, Any]:
         "project": project_title(root, stages["spec"]),
         "stages": stages,
         "wip": wip,
+        "delivery": {
+            "profile": delivery_profile or "Not recorded",
+            "modules": assurance_modules or "Not recorded",
+        },
         "work_items": items,
         "root_prs": root_prs,
         "learning_waves": learning_waves,
@@ -1662,14 +1680,22 @@ def render_html(
         else ""
     )
     learning_detail_rows = "".join(
-        f"<dt>{esc(label)}</dt><dd>{esc(learning.get(key) or 'Not recorded')}</dd>"
-        for label, key in (
-            ("Feedback target", "feedback_target"),
-            ("Feedback evidence", "feedback_evidence"),
-            ("WIP limit", "wip_limit"),
-            ("Invalidation result", "invalidation_result"),
-            ("Ancestor impact", "ancestor_impact"),
-            ("Stop or replan triggers", "stop_or_replan"),
+        f"<dt>{esc(label)}</dt><dd>{esc(value)}</dd>"
+        for label, value in (
+            ("Delivery profile", model["delivery"]["profile"]),
+            ("Assurance modules", model["delivery"]["modules"]),
+            ("Feedback target", learning.get("feedback_target") or "Not recorded"),
+            ("Feedback evidence", learning.get("feedback_evidence") or "Not recorded"),
+            ("WIP limit", learning.get("wip_limit") or "Not recorded"),
+            (
+                "Invalidation result",
+                learning.get("invalidation_result") or "Not recorded",
+            ),
+            ("Ancestor impact", learning.get("ancestor_impact") or "Not recorded"),
+            (
+                "Stop or replan triggers",
+                learning.get("stop_or_replan") or "Not recorded",
+            ),
         )
     )
     learning_open = (

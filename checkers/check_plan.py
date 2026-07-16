@@ -5,19 +5,17 @@ Parses a plan markdown file, validates IDs/structure, and computes structural
 metrics: every spec FR/AT/JT, design COMP, and design TEST obligation is referenced
 by child WORK items or PRs; implementation PRs include Red+Green step text, do not
 depend on a later PR, ordered learning waves cover every delivery item exactly once,
-and LOC sizing remains advisory reviewability evidence.
+and bounded slices remain structurally traceable.
 Exits 0 only when every structural gate passes. No semantic judgment, reproducible.
 
 Usage:
     python check_plan.py [plan.md] [--json] [--feature] [--parent product.md]
                          [--spec spec.md] [--design design.md]
-                         [--loc-target 500]
 
 --feature  Treat as a feature-level plan (subset of a product).
 --parent   A product plan whose IDs may be referenced.
 --spec     Spec file: every FR-/AT-/JT- must be covered by a WORK item or PR.
 --design   Design file: every COMP-/TEST- must be covered by a WORK item or PR.
---loc-target  Advisory changed-LOC target for reviewable PR sizing. Default: 500.
 """
 
 from __future__ import annotations
@@ -66,10 +64,21 @@ NON_PLAN_ID_CANDIDATE = re.compile(
     r"(?![A-Za-z0-9-])",
     re.I,
 )
-LOC = re.compile(r"(?:\b(\d+)\s*loc\b|\bloc\s*[:=]?\s*(\d+)\b)", re.I)
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.", re.I)
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
 UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
+SLICE_SCOPE = re.compile(r"^\s*Work Scope\s*:\s*Slice/change\s*$", re.I | re.M)
+COMPLEXITY_EXCEPTION = re.compile(
+    r"^\s*Complexity Budget Exception\s*:\s*(\S.*)$", re.I | re.M
+)
+COMPLEXITY_BUDGET = re.compile(
+    r"(?mi)^\s*(?:[-*+]\s+)?(?:\*\*)?Complexity Budget(?:\*\*)?\s*:\s*\S"
+)
+GENERIC_MACHINERY = re.compile(
+    r"\b(?:framework|generator|registry|manifest|schema system|extension point|"
+    r"generic harness|evidence platform|resource[- ]lease)\b",
+    re.I,
+)
 EXTERNAL_DOUBLE = re.compile(
     r"\b(?:external|vendor|sdk|api|cli|host|service|broker|driver|"
     r"database|file format)"
@@ -90,7 +99,6 @@ REAL_BOUNDARY = re.compile(
 LEAD = re.compile(r"^[\s#>\-\*\+0-9.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 DEF_MARKER = re.compile(r"^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[\.)]\s+)")
-DEFAULT_LOC_TARGET = 500
 WORK_ALLOCATION_FIELDS = {
     "Parent scope": "parent_scope",
     "Child scope": "child_scope",
@@ -192,10 +200,6 @@ def external_double_mentions(text: str) -> list[str]:
     ]
 
 
-def loc_values(block: str) -> list[int]:
-    return [int(left or right) for left, right in LOC.findall(block)]
-
-
 def missing_work_allocation_fields(block: str) -> list[str]:
     missing = []
     for label, key in WORK_ALLOCATION_FIELDS.items():
@@ -213,11 +217,6 @@ def main() -> int:
     as_json = "--json" in sys.argv
     feature = "--feature" in sys.argv
     require_approvals = "--require-approvals" in sys.argv
-    loc_target = (
-        int(sys.argv[sys.argv.index("--loc-target") + 1])
-        if "--loc-target" in sys.argv
-        else DEFAULT_LOC_TARGET
-    )
     approvals_path = (
         sys.argv[sys.argv.index("--approvals") + 1]
         if "--approvals" in sys.argv
@@ -306,10 +305,6 @@ def main() -> int:
         member for member, count in wave_member_counts.items() if count > 1
     )
 
-    large_prs = [
-        p for p, b in pr_blocks.items() if any(n > loc_target for n in loc_values(b))
-    ]
-    missing_loc = [p for p, b in pr_blocks.items() if not loc_values(b)]
     no_tdd = [
         p
         for p, b in pr_blocks.items()
@@ -351,7 +346,21 @@ def main() -> int:
     external_double_mitigation_present = (
         not ext_double_mentions or REAL_BOUNDARY.search(delivery_text) is not None
     )
+    bounded_slice = bool(SLICE_SCOPE.search(text) and pr_blocks and not work_blocks)
+    pr_budget_exceeded = bounded_slice and len(pr_blocks) > 3
+    exception_match = COMPLEXITY_EXCEPTION.search(text)
+    complexity_exception = exception_match.group(1).strip() if exception_match else None
+    complexity_budget_present = COMPLEXITY_BUDGET.search(text) is not None
+    complexity_signals = sorted(
+        {
+            re.sub(r"\s+", " ", line).strip()
+            for line in text.splitlines()
+            if GENERIC_MACHINERY.search(line)
+            and not line.casefold().lstrip(" -*+").startswith("complexity budget:")
+        }
+    )
     approval_requirements = []
+    complexity_approval = None
     approval_context = {}
     if require_approvals:
         approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
@@ -391,6 +400,11 @@ def main() -> int:
                     approval_context, Path.cwd(), "design.approved", design_path
                 )
             )
+        if pr_budget_exceeded:
+            complexity_approval = approval_requirement(
+                approval_context, Path.cwd(), "plan.approved", str(path)
+            )
+            approval_requirements.append(complexity_approval)
 
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
@@ -424,6 +438,13 @@ def main() -> int:
         "learning_wave_members_complete": not (
             unknown_wave_members or unassigned_wave_members or duplicate_wave_members
         ),
+        "bounded_slice_pr_budget": not pr_budget_exceeded
+        or bool(
+            complexity_exception
+            and complexity_approval
+            and complexity_approval["approved"]
+        ),
+        "complexity_budget_present": complexity_budget_present,
         "pr_tdd_red_green": not no_tdd,
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -460,6 +481,21 @@ def main() -> int:
         "unknown_wave_members": unknown_wave_members,
         "unassigned_wave_members": unassigned_wave_members,
         "duplicate_wave_members": duplicate_wave_members,
+        "complexity_budget": {
+            "present": complexity_budget_present,
+            "applies": bounded_slice,
+            "implementation_prs": len(pr_blocks),
+            "default_max_prs": 3,
+            "exceeded": pr_budget_exceeded,
+            "exception": complexity_exception,
+            "approval": complexity_approval,
+            "generic_machinery_signals": complexity_signals,
+            "evidence_limit": (
+                "Signals require qualitative simplicity review; presence does not "
+                "prove "
+                "that machinery is justified or overbuilt."
+            ),
+        },
         "fr_coverage_pct": pct(fr_c, spec_frs),
         "uc_coverage_pct": pct(uc_c, spec_ucs),
         "nfr_coverage_pct": pct(nfr_c, spec_nfrs),
@@ -476,17 +512,6 @@ def main() -> int:
         "uncovered_test_obligations": sorted(design_tests - test_c),
         "external_double_mentions": ext_double_mentions,
         "external_double_mitigation_present": external_double_mitigation_present,
-        "loc_target": loc_target,
-        "large_prs": sorted(large_prs),
-        "prs_missing_loc": sorted(missing_loc),
-        "loc_advisory": {
-            "status": "ok" if not large_prs and not missing_loc else "review",
-            "message": (
-                "LOC estimates are advisory reviewability signals. Exceeding the "
-                "target is allowed with rationale; do not remove useful comments, "
-                "tests, docs, or readable structure merely to fit the target."
-            ),
-        },
         "prs_missing_tdd": sorted(no_tdd),
         "forward_deps": sorted(fwd),
         "approval_requirements": approval_requirements,

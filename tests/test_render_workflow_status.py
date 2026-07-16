@@ -275,6 +275,8 @@ approvals:
 
 Current Stage: code-create
 Current Gate: human-review
+Delivery Profile: Standard
+Assurance Modules: external integration, documentation
 Learning Target: validate the public API boundary before expanding the next capability
 Feedback Target: API consumer and sandbox response evidence
 Feedback Status: requested
@@ -408,6 +410,10 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
 
     model = module.build_model(project)
 
+    assert model["delivery"] == {
+        "profile": "Standard",
+        "modules": "external integration, documentation",
+    }
     assert model["summary"] == {
         "approved_stages": 3,
         "work_items": 2,

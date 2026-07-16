@@ -133,6 +133,7 @@ Implementation Readiness: Code-ready
 Python.
 
 # Drivers & Constraints
+Complexity Budget: one auth component; no generic machinery; existing tests reused.
 FR-AUTH-SIGNIN and UC-AUTH-SIGNIN drive the design.
 
 # Layers
@@ -219,13 +220,14 @@ Plan Type: Implementation
 Implementation Readiness: Code-ready
 
 # Strategy
+Complexity Budget: one cohesive PR; existing acceptance tests reused; no new machinery.
 Use Red/Green TDD and one small PR.
 
 # Milestones
 - MILE-AUTH-LOGIN Deliver login.
 
 # Pull Requests / Child Work Items
-- PR-AUTH-SIGNIN Scope: implement login. LOC 120. Red: failing AT-AUTH-SIGNIN test.
+- PR-AUTH-SIGNIN Scope: implement login. Red: failing AT-AUTH-SIGNIN test.
   Green: implement COMP-AUTH. Delivers FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN,
   AT-AUTH-SIGNIN, COMP-AUTH, TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT.
 
@@ -559,6 +561,39 @@ def test_check_design_accepts_complete_structural_design(tmp_path, monkeypatch, 
     assert rc == 0
     assert report["comp_req_coverage_pct"] == 100.0
     assert report["comp_test_coverage_pct"] == 100.0
+    assert report["gates"]["complexity_budget_present"] is True
+
+
+def test_check_design_requires_budget_and_reports_generic_machinery_signals(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    design_path.write_text(
+        design_path.read_text(encoding="utf-8").replace(
+            "Complexity Budget: one auth component; no generic machinery; "
+            "existing tests reused.",
+            "Introduce a generic evidence platform and registry for future consumers.",
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_design")
+
+    rc, report = run_main(
+        module,
+        [str(design_path), "--spec", str(spec_path), "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["complexity_budget_present"] is False
+    assert report["complexity_budget"]["generic_machinery_signals"] == [
+        "Introduce a generic evidence platform and registry for future consumers."
+    ]
 
 
 def test_check_design_flags_external_double_without_drift_control(
@@ -776,6 +811,69 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["plan_kind"] == "implementation"
     assert report["at_coverage_pct"] == 100.0
     assert report["test_obligation_coverage_pct"] == 100.0
+    assert report["gates"]["complexity_budget_present"] is True
+
+
+def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    extra_prs = """
+- PR-AUTH-SETUP Scope: prepare the current boundary. Red: failing boundary test.
+  Green: prepare the current boundary.
+- PR-AUTH-WIRING Scope: wire the current consumer. Red: failing integration test.
+  Green: wire the current consumer.
+- PR-AUTH-PROOF Scope: prove current compatibility. Red: failing compatibility test.
+  Green: prove current compatibility.
+
+"""
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "# Coverage Map", extra_prs + "# Coverage Map"
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(module, ["plan.md", "--json"], monkeypatch, capsys, tmp_path)
+
+    assert rc == 1
+    assert report["gates"]["bounded_slice_pr_budget"] is False
+    assert report["complexity_budget"]["implementation_prs"] == 4
+    assert report["complexity_budget"]["exception"] is None
+
+    plan_path.write_text(
+        text.replace(
+            "# Strategy",
+            "# Strategy\nComplexity Budget Exception: Four cohesive boundaries "
+            "are required.",
+        ),
+        encoding="utf-8",
+    )
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APPROVAL-PLAN-COMPLEXITY",
+                "gate": "plan.approved",
+                "scope": "slice/change",
+                "kind": "plan",
+                "path": "plan.md",
+                "sha256": file_hash(plan_path),
+            }
+        ],
+    )
+
+    rc, report = run_main(
+        module,
+        ["plan.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["gates"]["bounded_slice_pr_budget"] is True
+    assert report["complexity_budget"]["approval"]["approved"] is True
 
 
 def test_check_plan_accepts_ordered_learning_waves(tmp_path, monkeypatch, capsys):
@@ -890,6 +988,7 @@ Plan Type: Breakdown
 Implementation Readiness: Decomposable
 
 # Strategy
+Complexity Budget: one child allocation; no new generic machinery.
 Allocate one feature child.
 
 # Milestones
@@ -1317,40 +1416,6 @@ def test_check_plan_requires_journey_test_coverage(tmp_path, monkeypatch, capsys
     assert rc == 1
     assert report["gates"]["jt_coverage_100"] is False
     assert report["uncovered_jts"] == ["JT-AUTH-LOGIN"]
-
-
-def test_check_plan_reports_declared_pr_over_loc_target_as_advisory(
-    tmp_path, monkeypatch, capsys
-):
-    spec_path = tmp_path / "spec.md"
-    design_path = tmp_path / "design.md"
-    plan_path = tmp_path / "plan.md"
-    write_valid_spec(spec_path)
-    write_valid_design(design_path)
-    write_valid_plan(plan_path)
-    text = plan_path.read_text(encoding="utf-8").replace("LOC 120", "LOC 501")
-    plan_path.write_text(text, encoding="utf-8")
-    module = load_checker("check_plan")
-
-    rc, report = run_main(
-        module,
-        [
-            str(plan_path),
-            "--spec",
-            str(spec_path),
-            "--design",
-            str(design_path),
-            "--json",
-        ],
-        monkeypatch,
-        capsys,
-        tmp_path,
-    )
-
-    assert rc == 0
-    assert "pr_size_le_300" not in report["gates"]
-    assert report["large_prs"] == ["PR-AUTH-SIGNIN"]
-    assert report["loc_advisory"]["status"] == "review"
 
 
 def test_check_plan_rejects_numbered_pr_ids(tmp_path, monkeypatch, capsys):

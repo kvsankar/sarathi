@@ -6,7 +6,7 @@ agent: agent
 # Workflow Status
 
 Render a read-only Sarathi workflow-status page for the target project. Load
-`docs/workflow-status.md`, `docs/work-decomposition.md`, and
+`docs/workflow-status.md`, `docs/work-decomposition.md`, `docs/assurance-profiles.md`, and
 `docs/feedback-and-learning.md`; read `.sdlc/wip.md`, hash-current code-assessment records,
 and hash-current wave checkpoints when present, and verify important claims against
 governing artifacts. This command does not create or revise a spec, design, plan, approval,
@@ -34,6 +34,7 @@ Report:
   gaps;
 - the explicit current learning target, feedback status/evidence, active learning wave, WIP
   limit, active slice IDs, invalidation result, ancestor impact, and stop/replan triggers;
+- the selected delivery profile and activated assurance modules, or `Not recorded`;
 - the product trunk and progressively disclosed parent-allocation branches, including
   explicit missing Spec/Design/Plan/Code nodes;
 - each plan's ordered `WAVE-*` sequence, member states, active wave, WIP limit, planned

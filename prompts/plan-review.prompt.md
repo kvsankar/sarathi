@@ -1,160 +1,40 @@
 ---
-description: Qualitatively review a work plan's readiness, feedback loops, learning waves, slicing, and production-quality allocations using existing verification evidence.
+description: Qualitatively review a work plan's simplicity, readiness, evidence reuse, learning waves, slicing, and risk.
 agent: agent
 ---
 
 # Plan Review
 
-## Workflow state
+Review the target plan without editing it unless asked. Read upstream artifacts,
+`.sdlc/wip.md`, available verification evidence, `docs/artifact-contracts.md`,
+`docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
+`docs/feedback-and-learning.md`. Load `docs/work-decomposition.md` and
+`docs/test-ownership.md` when applicable. Stop as `Blocked-upstream` when spec/design is
+unfit.
 
-At the start of this stage, follow `docs/work-in-progress.md`: read `.sdlc/wip.md` if it
-exists, verify important claims against the named artifacts, and use it only as a resume
-note. Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
-with the current stage, artifact paths, decisions/assumptions, verification evidence,
-blockers/open questions, bootstrap status, and next recommended action. Do not store
-secrets or long command logs.
+Use a fresh Qualitative Reviewer sub-agent when available. Otherwise disclose degraded
+non-independent review and seek counterexamples.
 
-## Artifact formatting
+## Judge
 
-For Markdown artifacts and reports produced or revised in this stage, follow
-`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
-characters where practical, while allowing longer lines for tables, URLs, code/logs,
-paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
-or readability.
+Score 1–5 and give a concrete fix below 5:
 
-For Breakdown plans, load and apply `docs/work-decomposition.md`.
+- plan type/readiness, complete intent/test allocation, touch sets, oracles, and TDD;
+- cohesive independently testable/rollback-capable delivery items;
+- ordered learning waves, feedback, dependency types, WIP, convergence, and stop/replan;
+- selected profile and activated module work proportional to actual risk;
+- complexity budget versus the user's mental model and current consumers;
+- brownfield reuse of existing compatibility suites and focused changed-boundary tests;
+- at most three implementation PRs for a bounded slice, unless a concise exception has
+  explicit plan approval;
+- absence of artificial setup, scaffold, routing, generated-output, parity, or cleanup PRs;
+- no process-shaped product architecture or speculative generalization.
 
-## Feedback and learning
+Start deletion-first. Identify PRs/work items, new machinery, tests, generated artifacts,
+or handoffs that can be deleted, deferred, collapsed, or proven by existing evidence.
+`Needs rework` must not default to more PRs or machinery. A structurally complete but
+overbuilt plan fails.
 
-Follow `docs/feedback-and-learning.md`. Judge whether the plan produces short feedback loops,
-keeps approved artifacts revisable, and limits parallel work by learning dependencies rather
-than agent availability.
-
-## Simplify pass
-
-Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
-layers, abstractions, extension points, fixtures, checks, or code paths that are not
-justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
-reviewability, traceability, and real boundaries. If simplification would change accepted
-behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
-artifact revision.
-
-Perform the qualitative review of a work plan. This command judges planning substance; it
-does not replace `/plan-verify`. If verification evidence is absent, state that gap and
-either use the latest supplied evidence or recommend `/plan-verify`. Use `/plan-assess`
-when the user wants verification and review together.
-
-Target the plan file the user provides, defaulting to `plan.md`. Do not edit it unless
-explicitly asked.
-
-Before judging the plan itself, check whether the upstream spec and design are fit to plan
-from. If requirements, acceptance criteria, component boundaries, interfaces, dependencies,
-logging/error-handling strategy, build/deployment strategy, documentation strategy, or
-slicing constraints are defective, stop with an upstream blocker.
-
-Use an adversarial posture: try to refute the slicing, find missing upstream changes, large
-or incoherent PRs, fake TDD steps, unsafe parallelism, touch-set drift, dependency traps,
-missing test-environment allocation, context-driven concerns the work likely needs, and
-traceability theater. If the host exposes sub-agent capability, run this review in a
-fresh-context Qualitative Reviewer sub-agent. This is mandatory for review stages. If
-sub-agents are unavailable, state that the host lacks sub-agent capability, mark the review
-as degraded and non-independent when the same agent created the plan, and actively look for
-counterexamples.
-
-## Qualitative Review
-
-Score each item 1-5 and give one concrete fix for any score below 5:
-
-- Upstream fitness: spec and design are ready enough for this plan.
-- Plan type/readiness: breakdown, implementation, or lightweight plan matches the declared
-  scope and readiness.
-- Decomposition semantics: each `WORK-*` is visibly a parent-plan allocation, names a valid
-  child scope and required child Spec/Design/Plan chain, and never presents parent-level
-  code. Product-to-feature and feature-to-slice mappings are explicit; any direct
-  product-to-slice integration allocation is justified and correctly labeled.
-- PR slicing: PRs are coherent, reviewable, one focused concern, and normally around the
-  advisory 500 changed-LOC target. Larger PRs may pass with a clear rationale; cutting
-  useful comments, tests, docs, JSDoc/docstrings, or readable structure to satisfy the
-  target is a review finding.
-- Planned Touch Sets: files/sections are explicit enough to bound implementation and catch
-  scope drift.
-- TDD discipline: Red and Green steps would produce meaningful failing tests before code,
-  not merely template words. Missing Red/Green is acceptable only for a narrow declared
-  exception with replacement verification: generated code only, docs-only, formatting-only,
-  build/deploy config validation, or characterization before legacy refactor.
-- Test allocation: `AT-` acceptance coverage, `JT-` journey coverage, and explicit design
-  `TEST-` obligations for lower-level unit/component/contract/integration/UI/quality/
-  operational tests are assigned to appropriate PRs. `JT-` PRs preserve ordered steps,
-  state handoff, data/setup/cleanup, and final/intermediate oracles.
-- Cross-scope integration allocation: ancestor `AT-`/`JT-`/`TEST-` obligations survive
-  decomposition; obligations spanning children have explicit feature/product integration
-  or acceptance work that reaches a code-ready leaf, without a final big-bang test phase.
-- Test environment allocation: developer-local verification is planned, and shared
-  integration/test, staging/pre-production, production canary/smoke, or synthetic-monitor
-  environments are assigned or explicitly deferred with rationale when context warrants.
-- Context-driven review/test allocation: performance/load, security/threat-model,
-  privacy/compliance, accessibility, resilience/DR, migration, localization, abuse/fraud/
-  safety, cost, compatibility, and operational checks are assigned when risk requires them
-  or explicitly deferred as user-visible risk.
-- Inner-test discovery: the plan leaves room for code-discovered supplemental inner tests
-  inside each PR without relying on them to cover missing `AT-`/`JT-`/`TEST-` obligations or
-  permitting product-scope creep.
-- Verification-oracle allocation: each planned executable test names the observable evidence
-  that proves pass/fail, such as return value, state, event, API response, DOM/accessibility
-  output, screenshot, artifact, log, metric, trace, deployment signal, or external call.
-- Contract-fixture allocation: boundary-facing PRs use shared fixtures, schemas, generated
-  clients, captured representative examples, or contract tests instead of ad-hoc mock
-  payloads.
-- External double verification allocation: PRs that use mocks/fakes/stubs/test doubles for
-  external systems flag verification risk and allocate real-boundary, official-conformance,
-  type-conformance, generated-schema/client, sandbox/emulator, captured-real-fixture, or
-  user-approved mitigation. A primary integration seam covered only by a double is a
-  blocking plan defect.
-- UX/presentation allocation: UI-facing PRs assign baseline styling/layout,
-  responsive/accessibility checks, and readable loading/empty/error/validation states, or
-  explicitly scope them out.
-- Coverage threshold allocation: the plan's done definition must not lower the Sarathi floor
-  and must raise coverage thresholds when deterministic, algorithmic, financial,
-  safety-critical, security-policy, parser/serializer, migration, or pure mathematical/library
-  code needs stronger evidence.
-- Cleanup-pass allocation: the done definition requires a bounded general cleanup pass before
-  code-slice handoff, including removal of in-scope odd issues and test/security/
-  observability/traceability theater without unrelated churn.
-- Simplify-pass allocation: the done definition requires a simplify pass after cleanup when
-  both apply, and PR slices avoid ceremony, speculative infrastructure, duplicated checks, or
-  coordination cost that does not reduce review risk.
-- Mock UI approval: if the spec/design requires a mock UI, UI-facing PRs reference the
-  approved mock artifact and block until approval is explicit.
-- Logging/error-handling allocation: PRs assign structured logs, telemetry, correlation/
-  support IDs, redaction, alert hooks, APM instrumentation, dashboards, SLO/SLI signals,
-  representative failure-path tests, error mapping, retry/fallback/degraded behavior, and
-  safe UI/API messages where required. Production-facing work has latency/throughput/error/
-  saturation metrics and trace propagation allocated or explicitly deferred.
-- Build/deployment allocation: package, artifact, release, migration, deployment dry-run,
-  smoke, and rollback work is assigned where relevant.
-- Documentation allocation: user/developer docs, generated/reference docs, examples,
-  runbooks, and release notes are assigned where relevant.
-- Sequencing and dependencies: prerequisites are ordered, no forward dependency traps, and
-  integration points are visible.
-- Feedback loop: each code-ready slice has a concrete learning target, appropriate feedback
-  target/method, invalidation question, and post-slice ancestor-impact checkpoint. The plan
-  does not invent stakeholder feedback or defer all integration/user learning to the end.
-- Parallelism/worktrees: intra-slice parallelism is preferred; independent-slice waves state
-  execution, learning, and integration dependencies, WIP limits, review/feedback capacity,
-  convergence ownership, and stop/replan triggers. Speculative downstream work is
-  reversible, timeboxed, and never represented as validated production progress.
-- Ordered wave model: the exact `Learning Waves` section assigns every delivery item once,
-  uses local deterministic order, keeps later waves provisional, and places mutually
-  invalidating work in separate waves.
-- Risk and rollback: high-risk changes have mitigation, validation, and rollback strategy.
-
-## Output
-
-1. Upstream blockers, if any.
-2. Verification evidence considered, or a clear note that none was available.
-3. Qualitative scorecard.
-4. Top fixes ranked by impact.
-5. **Review verdict**: Pass / Pass-with-fixes / Needs rework / Blocked-upstream.
-
-After reporting the verdict, stop. Do not start `/code-create` or any downstream command
-without explicit user approval.
+Report blockers, evidence considered, scorecard, deletion/defer/reuse findings, top fixes,
+and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
+stop; do not implement without explicit approval.

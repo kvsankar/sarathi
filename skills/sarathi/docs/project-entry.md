@@ -119,11 +119,22 @@ project_entry:
   risks:
     - "Legacy requirements may remain incomplete until touched by a future delta."
   next_recommended_stage: "/spec-create"
+delivery:
+  profile: "lean | standard | high-assurance"
+  assurance_modules:
+    - "external-integration"
+  rationale: "Ordinary production change with a vendor boundary."
+  escalation_triggers:
+    - "The change touches authentication or irreversible data migration."
 ```
 
 If the agent infers a low-risk mode in YOLO mode, record `decided_by: "agent-inferred"` and
 list the assumption and risk. If the user later corrects the mode, update the record rather
 than silently relying on the stale decision.
+
+Select the delivery profile separately from adoption mode using
+[assurance-profiles.md](assurance-profiles.md). Adoption says how Sarathi enters the repo;
+the profile says how much evidence the current production work needs.
 
 ## Stage Rules
 

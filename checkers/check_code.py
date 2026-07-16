@@ -12,8 +12,6 @@ Usage:
     python check_code.py --plan plan.md [--tests-argv '["pytest","-q"]']
                          [--tests "pytest -q"] [--tests-shell]
                          [--cov-min 80] [--tests-dir tests] [--src .]
-                         [--max-loc 600] [--enforce-max-loc]
-                         [--max-diff-loc 500]
                          [--diff-base <ref>] [--allow-missing-git-evidence]
                          [--allow-missing-tdd-evidence]
                          [--allow-inline-test-traceability]
@@ -444,23 +442,6 @@ def auto_diff_base(root: Path, explicit_base: str | None) -> tuple[str | None, s
     return None, "no_merge_base"
 
 
-def git_diff_loc(root: Path, base: str | None) -> tuple[int | None, str]:
-    resolved_base, evidence = auto_diff_base(root, base)
-    if resolved_base is None:
-        return None, evidence
-    diff_args = ["git", "diff", "--numstat", resolved_base, "HEAD", "--"]
-    rc, out = git_output(diff_args, root)
-    if rc != 0:
-        return None, "diff_failed"
-    total = 0
-    for line in out.splitlines():
-        added, deleted, *_ = line.split("\t")
-        if added == "-" or deleted == "-":
-            continue
-        total += int(added) + int(deleted)
-    return total, evidence
-
-
 def git_tdd_evidence(root: Path, base: str | None) -> dict[str, object]:
     resolved_base, base_evidence = auto_diff_base(root, base)
     if resolved_base is None:
@@ -483,9 +464,6 @@ def main() -> int:
     tests_dir = Path(arg("--tests-dir", "tests"))
     src = Path(arg("--src", "."))
     cov_min = float(arg("--cov-min", str(int(MIN_COV_MIN))))
-    max_loc = int(arg("--max-loc", "600"))
-    enforce_max_loc = "--enforce-max-loc" in sys.argv
-    max_diff_loc = int(arg("--max-diff-loc", "500"))
     diff_base = arg("--diff-base")
     require_git = "--allow-missing-git-evidence" not in sys.argv
     require_tdd = "--allow-missing-tdd-evidence" not in sys.argv
@@ -537,12 +515,6 @@ def main() -> int:
     )
 
     source_file_list = list(source_files(src, src_ext))
-    oversized = sorted(
-        str(f)
-        for f in source_file_list
-        if f.is_file()
-        and len(f.read_text(encoding="utf-8", errors="ignore").splitlines()) > max_loc
-    )
     code_markers = marker_hits(sorted({*test_files, *source_file_list}), Path.cwd())
 
     tests_pass, cov = None, None
@@ -552,9 +524,7 @@ def main() -> int:
         cov = extract_coverage(r.stdout + r.stderr)
 
     cwd = Path.cwd()
-    diff_loc, diff_evidence = git_diff_loc(cwd, diff_base)
     tdd_evidence = git_tdd_evidence(cwd, diff_base)
-    oversized_diff = diff_loc is not None and diff_loc > max_diff_loc
     tdd_ok = bool(tdd_evidence.get("red_marker")) and bool(
         tdd_evidence.get("green_marker")
     )
@@ -636,7 +606,6 @@ def main() -> int:
         "external_doubles_tied_to_reality": (
             not external_boundary_verification["double_only_boundaries"]
         ),
-        "module_size_ok": not oversized if enforce_max_loc else True,
         "tdd_evidence_ok": tdd_ok if require_tdd else True,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "markers_approved": approval_gate_passed(marker_approval_requirements),
@@ -666,32 +635,7 @@ def main() -> int:
         },
         "external_boundary_verification": external_boundary_verification,
         "bad_id_format": sorted(bad_ids),
-        "max_loc": max_loc,
-        "module_size_enforced": enforce_max_loc,
-        "oversized_modules": oversized,
-        "module_size_advisory": {
-            "status": "review" if oversized else "ok",
-            "message": (
-                "Module size is an advisory maintainability signal by default. "
-                "Exceeding the target is allowed with rationale; do not split "
-                "cohesive modules mechanically merely to fit the target. Pass "
-                "--enforce-max-loc only when the project has opted into a hard "
-                "module-size gate."
-            ),
-        },
-        "diff_loc": diff_loc,
-        "max_diff_loc": max_diff_loc,
-        "diff_evidence": diff_evidence,
         "git_evidence_required": require_git,
-        "oversized_diff": oversized_diff,
-        "diff_size_advisory": {
-            "status": "review" if oversized_diff else "ok",
-            "message": (
-                "Diff size is an advisory reviewability signal. Exceeding the "
-                "target is allowed with rationale; do not remove useful comments, "
-                "tests, docs, or readable structure merely to fit the target."
-            ),
-        },
         "tdd_evidence": tdd_evidence,
         "tdd_evidence_required": require_tdd,
         "approval_requirements": approval_requirements,
