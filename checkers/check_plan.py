@@ -11,11 +11,15 @@ Exits 0 only when every structural gate passes. No semantic judgment, reproducib
 Usage:
     python check_plan.py [plan.md] [--json] [--feature] [--parent product.md]
                          [--spec spec.md] [--design design.md]
+                         [--require-complexity-approval]
 
 --feature  Treat as a feature-level plan (subset of a product).
 --parent   A product plan whose IDs may be referenced.
 --spec     Spec file: every FR-/AT-/JT- must be covered by a WORK item or PR.
 --design   Design file: every COMP-/TEST- must be covered by a WORK item or PR.
+--require-complexity-approval
+           Require a hash-current plan.complexity-approved attestation when a bounded
+           Slice/change plan contains more than three implementation PRs.
 """
 
 from __future__ import annotations
@@ -35,6 +39,8 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
+from complexity import parse_complexity_budget  # noqa: E402
+from markdown_structure import strip_fenced_code  # noqa: E402
 from schemas import (  # noqa: E402
     PLAN_ID,
     PLAN_ID_BY_KIND,
@@ -71,9 +77,24 @@ SLICE_SCOPE = re.compile(r"^\s*Work Scope\s*:\s*Slice/change\s*$", re.I | re.M)
 COMPLEXITY_EXCEPTION = re.compile(
     r"^\s*Complexity Budget Exception\s*:\s*(\S.*)$", re.I | re.M
 )
-COMPLEXITY_BUDGET = re.compile(
-    r"(?mi)^\s*(?:[-*+]\s+)?(?:\*\*)?Complexity Budget(?:\*\*)?\s*:\s*\S"
+TDD_EXCEPTION_CANDIDATE = re.compile(
+    r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?TDD Exception(?:\*\*)?\s*:\s*(\S.*?)\s*$"
 )
+TDD_RED = re.compile(r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Red(?:\*\*)?\s*:\s*\S")
+TDD_GREEN = re.compile(r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Green(?:\*\*)?\s*:\s*\S")
+TDD_EXCEPTION_SCOPE = re.compile(
+    r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Exception Scope(?:\*\*)?\s*:\s*\S"
+)
+TDD_REPLACEMENT_EVIDENCE = re.compile(
+    r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Replacement Evidence(?:\*\*)?\s*:\s*\S"
+)
+TDD_EXCEPTION_CATEGORIES = {
+    "generated-only",
+    "docs-only",
+    "formatting-only",
+    "build/deploy-config",
+    "legacy-characterization",
+}
 GENERIC_MACHINERY = re.compile(
     r"\b(?:framework|generator|registry|manifest|schema system|extension point|"
     r"generic harness|evidence platform|resource[- ]lease)\b",
@@ -212,11 +233,49 @@ def missing_work_allocation_fields(block: str) -> list[str]:
     return missing
 
 
+def tdd_contract(block: str) -> dict[str, object]:
+    block = strip_fenced_code(block)
+    red = TDD_RED.search(block) is not None
+    green = TDD_GREEN.search(block) is not None
+    candidate = TDD_EXCEPTION_CANDIDATE.search(block)
+    candidate_value = (
+        candidate.group(1).strip().removesuffix(".").casefold() if candidate else None
+    )
+    exception_category = (
+        candidate_value if candidate_value in TDD_EXCEPTION_CATEGORIES else None
+    )
+    issues = []
+    if candidate and not exception_category:
+        issues.append("invalid_exception_category")
+    if candidate and (red or green):
+        issues.append("mixed_tdd_and_exception")
+    if exception_category:
+        if TDD_EXCEPTION_SCOPE.search(block) is None:
+            issues.append("missing_exception_scope")
+        if TDD_REPLACEMENT_EVIDENCE.search(block) is None:
+            issues.append("missing_replacement_evidence")
+        mode = "exception"
+    elif red and green:
+        mode = "red-green"
+    else:
+        mode = "missing"
+        if not red:
+            issues.append("missing_red")
+        if not green:
+            issues.append("missing_green")
+    return {
+        "mode": mode,
+        "exception_category": exception_category,
+        "issues": issues,
+    }
+
+
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
     feature = "--feature" in sys.argv
     require_approvals = "--require-approvals" in sys.argv
+    require_complexity_approval = "--require-complexity-approval" in sys.argv
     approvals_path = (
         sys.argv[sys.argv.index("--approvals") + 1]
         if "--approvals" in sys.argv
@@ -296,20 +355,19 @@ def main() -> int:
         member for wave in wave_result["waves"] for member in wave["members"]
     )
     unknown_wave_members = sorted(set(wave_member_counts) - delivery_ids)
-    unassigned_wave_members = (
-        sorted(delivery_ids - set(wave_member_counts))
-        if wave_result["declared"]
-        else []
-    )
+    unassigned_wave_members = sorted(delivery_ids - set(wave_member_counts))
     duplicate_wave_members = sorted(
         member for member, count in wave_member_counts.items() if count > 1
     )
 
-    no_tdd = [
-        p
-        for p, b in pr_blocks.items()
-        if not (re.search(r"\bred\b", b, re.I) and re.search(r"\bgreen\b", b, re.I))
-    ]
+    tdd_contracts = {
+        identifier: tdd_contract(block) for identifier, block in pr_blocks.items()
+    }
+    invalid_tdd = {
+        identifier: contract["issues"]
+        for identifier, contract in tdd_contracts.items()
+        if contract["issues"]
+    }
     pr_order = {p: i for i, p in enumerate(pr_blocks)}
     fwd = []
     for p, b in pr_blocks.items():
@@ -350,7 +408,10 @@ def main() -> int:
     pr_budget_exceeded = bounded_slice and len(pr_blocks) > 3
     exception_match = COMPLEXITY_EXCEPTION.search(text)
     complexity_exception = exception_match.group(1).strip() if exception_match else None
-    complexity_budget_present = COMPLEXITY_BUDGET.search(text) is not None
+    complexity_budget = parse_complexity_budget(text, plan=True)
+    complexity_pr_count_matches = complexity_budget["implementation_pr_count"] == len(
+        pr_blocks
+    )
     complexity_signals = sorted(
         {
             re.sub(r"\s+", " ", line).strip()
@@ -362,8 +423,9 @@ def main() -> int:
     approval_requirements = []
     complexity_approval = None
     approval_context = {}
-    if require_approvals:
+    if require_approvals or require_complexity_approval:
         approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
+    if require_approvals:
         if "--spec" in sys.argv:
             spec_path = sys.argv[sys.argv.index("--spec") + 1]
             approval_requirements.append(
@@ -400,11 +462,16 @@ def main() -> int:
                     approval_context, Path.cwd(), "design.approved", design_path
                 )
             )
-        if pr_budget_exceeded:
-            complexity_approval = approval_requirement(
-                approval_context, Path.cwd(), "plan.approved", str(path)
-            )
-            approval_requirements.append(complexity_approval)
+    if require_complexity_approval and pr_budget_exceeded:
+        complexity_approval = approval_requirement(
+            approval_context,
+            Path.cwd(),
+            "plan.complexity-approved",
+            str(path),
+            scope="slice/change",
+            artifact_kind="plan",
+            allowed_statuses={"approved"},
+        )
 
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
@@ -423,7 +490,10 @@ def main() -> int:
         "test_obligation_coverage_100": test_c == design_tests,
         "external_double_mitigation_present": external_double_mitigation_present,
         "work_allocations_well_formed": not incomplete_work_allocations,
-        "learning_waves_well_formed": not (
+        "learning_waves_well_formed": bool(
+            wave_result["declared"] and wave_result["waves"]
+        )
+        and not (
             wave_result["malformed_ids"]
             or wave_result["duplicates"]
             or wave_result["missing_fields"]
@@ -438,20 +508,24 @@ def main() -> int:
         "learning_wave_members_complete": not (
             unknown_wave_members or unassigned_wave_members or duplicate_wave_members
         ),
-        "bounded_slice_pr_budget": not pr_budget_exceeded
-        or bool(
-            complexity_exception
-            and complexity_approval
-            and complexity_approval["approved"]
+        "bounded_slice_pr_budget": not pr_budget_exceeded or bool(complexity_exception),
+        "complexity_budget_complete": bool(
+            complexity_budget["declared"]
+            and not complexity_budget["missing_fields"]
+            and not complexity_budget["invalid_implementation_pr_count"]
+            and complexity_pr_count_matches
         ),
-        "complexity_budget_present": complexity_budget_present,
-        "pr_tdd_red_green": not no_tdd,
+        "pr_tdd_contract": not invalid_tdd,
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
     }
     if not require_approvals:
         gates.pop("required_approvals_present")
+    if require_complexity_approval:
+        gates["complexity_exception_approved"] = not pr_budget_exceeded or bool(
+            complexity_approval and complexity_approval["approved"]
+        )
     if not feature:
         gates["sections_present"] = sections_present_in_order(text, PLAN_SECTIONS)
     report = {
@@ -482,7 +556,8 @@ def main() -> int:
         "unassigned_wave_members": unassigned_wave_members,
         "duplicate_wave_members": duplicate_wave_members,
         "complexity_budget": {
-            "present": complexity_budget_present,
+            **complexity_budget,
+            "implementation_pr_count_matches": complexity_pr_count_matches,
             "applies": bounded_slice,
             "implementation_prs": len(pr_blocks),
             "default_max_prs": 3,
@@ -512,7 +587,8 @@ def main() -> int:
         "uncovered_test_obligations": sorted(design_tests - test_c),
         "external_double_mentions": ext_double_mentions,
         "external_double_mitigation_present": external_double_mitigation_present,
-        "prs_missing_tdd": sorted(no_tdd),
+        "pr_tdd_contracts": tdd_contracts,
+        "prs_invalid_tdd_contract": invalid_tdd,
         "forward_deps": sorted(fwd),
         "approval_requirements": approval_requirements,
         "approval_ledger": {

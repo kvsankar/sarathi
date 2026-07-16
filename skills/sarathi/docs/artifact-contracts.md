@@ -72,9 +72,9 @@ Product/system designs use this checker-visible order:
 12. **Risks & Trade-offs**: `RISK-*`, mitigations, residual risk, escalation.
 13. **Traceability Matrix**: requirements to components/interfaces/tests/decisions.
 
-Include a compact complexity budget in Overview or Drivers & Constraints: the user's mental
-model, current consumers, proposed components/machinery/artifacts/commands, evidence reused,
-and what is deleted or deferred.
+Include the exact `## Complexity Budget` section from `docs/simplicity-first.md`, using its
+five design fields. A prose mention, differently named section, or fenced example is not
+the contract.
 
 Feature designs and slice LLDs may reference parent architecture and include only changed
 boundaries. Human-facing headings remain readable; machine IDs live in annotations,
@@ -103,9 +103,10 @@ Plans declare `Plan Type: Breakdown | Implementation` and use this checker-visib
 7. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
    convergence ownership, and stop/replan conditions.
 
-Include the compact complexity budget from `docs/simplicity-first.md`. Slice/change
-Implementation plans default to at most three PRs; an exception requires concise rationale
-and explicit plan approval.
+Include the exact `## Complexity Budget` section from `docs/simplicity-first.md`, including
+`Implementation PR Count`. Slice/change Implementation plans default to at most three PRs.
+An exception requires concise rationale plus hash-current `plan.complexity-approved`
+attestation before assessment; this is distinct from final `plan.approved`.
 
 A Breakdown plan defines `WORK-AREA-NAME` allocations. Each names parent/child scope,
 inherited IDs and test obligations, required child Spec/Design/Plan artifacts, dependencies,
@@ -124,6 +125,24 @@ An Implementation plan defines `PR-AREA-NAME` items. Each PR states:
 - learning wave, checkpoint, and stop/replan trigger;
 - a concise reason the PR is cohesive and independently reviewable.
 
+Every implementation PR uses labeled `Red:` and `Green:` steps. A PR that truly cannot use
+Red/Green instead declares all three fields:
+
+```markdown
+TDD Exception: docs-only
+Exception Scope: exact files/behavior and why Red/Green cannot apply
+Replacement Evidence: exact deterministic command or observed oracle
+```
+
+Allowed categories are `generated-only`, `docs-only`, `formatting-only`,
+`build/deploy-config`, and `legacy-characterization`. Exceptions never authorize new or
+changed product behavior, bug fixes, contracts, validation, security/privacy behavior,
+error handling, logging/telemetry, or UI behavior. Generated output needs downstream
+validation; docs/formatting must not change executable behavior; build/deploy configuration
+needs validator/dry-run/build/smoke evidence; characterization captures existing behavior
+only and cannot cover the subsequent intentional change. Mechanical verification checks
+the fields/category; qualitative review judges eligibility and evidence fitness.
+
 Every delivery item appears exactly once in:
 
 ```markdown
@@ -137,6 +156,8 @@ WIP Limit: 1
 Feedback/Integration Checkpoint: ...
 Stop/Replan Triggers: ...
 ```
+
+The declaration must be real Markdown structure; a fenced example does not satisfy it.
 
 Breakdown waves contain `WORK-*`; Implementation waves contain `PR-*`. Later waves stay at
 the least detail justified by current evidence. Prefer one-item waves when learning from one

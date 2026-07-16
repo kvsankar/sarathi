@@ -22,6 +22,10 @@ Assess the target plan using two separate passes. Load `prompts/plan-verify.prom
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
 passes separate. Failed/unfit upstream artifacts block the plan verdict.
 
+For a bounded Slice/change plan with more than three implementation PRs, block assessment
+until the concise exception has a hash-current `plan.complexity-approved` attestation. This
+targeted approval is not final `plan.approved` and does not authorize implementation.
+
 Report:
 
 1. Upstream blocker and required revision, or mechanical scorecard.

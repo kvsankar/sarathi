@@ -33,6 +33,7 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
+from complexity import parse_complexity_budget  # noqa: E402
 from schemas import DESIGN_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
@@ -53,9 +54,6 @@ ID_CANDIDATE = re.compile(
     re.I,
 )
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)
-COMPLEXITY_BUDGET = re.compile(
-    r"(?mi)^\s*(?:[-*+]\s+)?(?:\*\*)?Complexity Budget(?:\*\*)?\s*:\s*\S"
-)
 GENERIC_MACHINERY = re.compile(
     r"\b(?:framework|generator|registry|manifest|schema system|extension point|"
     r"generic harness|evidence platform|resource[- ]lease)\b",
@@ -333,7 +331,7 @@ def main() -> int:
     known = all_ids | req_ids
     orphans = sorted(r for r in refs if r not in known)
     vague = len(VAGUE.findall(text))
-    complexity_budget_present = COMPLEXITY_BUDGET.search(text) is not None
+    complexity_budget = parse_complexity_budget(text)
     complexity_signals = sorted(
         {
             re.sub(r"\s+", " ", line).strip()
@@ -446,7 +444,9 @@ def main() -> int:
         ),
         "iface_single_owner": not iface_dupes and not iface_owner_issues,
         "no_dependency_cycles": not cycles,
-        "complexity_budget_present": complexity_budget_present,
+        "complexity_budget_complete": bool(
+            complexity_budget["declared"] and not complexity_budget["missing_fields"]
+        ),
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
     }
@@ -470,7 +470,7 @@ def main() -> int:
         "iface_owner_count": len(iface_owners),
         "dependency_cycles": cycles,
         "complexity_budget": {
-            "present": complexity_budget_present,
+            **complexity_budget,
             "generic_machinery_signals": complexity_signals,
             "evidence_limit": (
                 "Signals require qualitative simplicity review; presence does not "

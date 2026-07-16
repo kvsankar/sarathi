@@ -47,6 +47,9 @@ approvals:
 - `spec.approved`: required before downstream design gate checks.
 - `design.approved`: required before downstream plan gate checks.
 - `plan.approved`: required before downstream code gate checks.
+- `plan.complexity-approved`: dedicated approval for a bounded Slice/change plan whose
+  concise `Complexity Budget Exception:` justifies more than three implementation PRs.
+  Record it before plan assessment; it does not approve the whole plan or authorize code.
 - `ux.mock.approved`: required before planning or production UI work when the spec says
   `UI Mock Preference: Required`.
 - `code.markers.approved`: required before downstream progress when code/tests contain
@@ -106,6 +109,7 @@ auto_approval:
     - design.approved
     - plan.approved
   forbidden_gates:
+    - plan.complexity-approved
     - release.approved
     - production-deployment.approved
     - security-risk.accepted
@@ -115,6 +119,8 @@ auto_approval:
 An auto-approved record uses `status: auto-approved`, `approved_by: AUTO`, a UTC
 `approved_at`, and a reason. Auto approval is a local policy shortcut, not human approval;
 reports must say when a gate passed through auto approval.
+`plan.complexity-approved` must use explicit `status: approved`; `auto-approved` cannot
+satisfy that targeted exception gate.
 
 ## Checker Use
 
@@ -123,6 +129,7 @@ Draft checks do not require approvals. Gate checks do:
 ```pwsh
 python checkers/check_design.py design.md --spec spec.md --require-approvals --json
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --require-approvals --json
+python checkers/check_plan.py plan.md --require-complexity-approval --json
 python checkers/check_code.py --plan plan.md --require-approvals --tests-argv '["pytest","-q"]' --json
 ```
 

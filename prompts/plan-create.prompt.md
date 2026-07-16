@@ -59,7 +59,9 @@ stop/replan triggers. Later waves stay provisional and less detailed.
 
 For a bounded slice, default to at most three implementation PRs. Prefer one cohesive PR to
 setup/scaffold/routing/generated-output/parity splits. More than three requires a
-`Complexity Budget Exception:` and explicit plan approval.
+`Complexity Budget Exception:`. After draft verification, stop for explicit user approval
+and record a hash-current `plan.complexity-approved` attestation. Do not run `/plan-assess`
+until that targeted approval exists. Final `plan.approved` remains separate.
 
 Write `plan.md` and deterministic `plan.html` unless other paths are named. Child plans
 include `Parent Work Item: WORK-AREA-NAME`.
@@ -72,7 +74,8 @@ Run upstream checkers, then:
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
 ```
 
-Use feature/parent options for child plans and retry available Python launchers. Run
+Use feature/parent options for child plans and retry available Python launchers. If the
+bounded-slice PR exception applies, perform the targeted approval stop above. Then run
 `/plan-assess` with fresh Mechanical Verifier and Qualitative Reviewer sub-agents when
 available. Revise plan or upstream artifacts until Pass or explicitly accepted
 Pass-with-fixes.

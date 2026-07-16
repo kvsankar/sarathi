@@ -26,7 +26,9 @@ Score 1–5 and give a concrete fix below 5:
 - complexity budget versus the user's mental model and current consumers;
 - brownfield reuse of existing compatibility suites and focused changed-boundary tests;
 - at most three implementation PRs for a bounded slice, unless a concise exception has
-  explicit plan approval;
+  hash-current `plan.complexity-approved` attestation;
+- valid Red/Green plans or a genuinely eligible TDD exception with exact scope and useful
+  replacement evidence under `docs/artifact-contracts.md`;
 - absence of artificial setup, scaffold, routing, generated-output, parity, or cleanup PRs;
 - no process-shaped product architecture or speculative generalization.
 

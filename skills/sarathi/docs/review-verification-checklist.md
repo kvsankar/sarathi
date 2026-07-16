@@ -21,7 +21,7 @@ passes separate. A failed/unfit upstream artifact blocks the downstream verdict.
 | --- | --- |
 | `/spec-assess` | `check_spec.py`, ID/section/coverage structure, approval evidence when required. |
 | `/design-assess` | Upstream spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
-| `/plan-assess` | Upstream checks, `check_plan.py`, allocation/coverage/TDD/dependency/wave structure, bounded-slice PR budget and approval evidence. |
+| `/plan-assess` | Upstream checks, `check_plan.py`, allocation/coverage, labeled Red/Green or TDD-exception contracts, exact wave membership, structured complexity budget/count, and targeted exception approval. |
 | `/code-assess` | Upstream checks, `check_code.py`, tests, coverage, traceability, TDD evidence, repository quality gate, planned module commands. |
 
 Mechanical evidence proves only what the command observes. It does not prove semantic
@@ -37,6 +37,7 @@ Every reviewer judges:
 - concrete oracles, real-boundary confidence, risks, and residual uncertainty;
 - feedback/learning dependencies and ancestor impact where applicable;
 - simplicity using `docs/simplicity-first.md`.
+- TDD-exception eligibility and replacement evidence when a plan does not use Red/Green.
 
 Start deletion-first: what can be deleted, deferred, collapsed, implemented directly, or
 proven by existing evidence? A structurally complete artifact fails when it is overbuilt,
