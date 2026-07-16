@@ -50,6 +50,8 @@ Current Gate: none | human-review | blocked | approved-for-next-stage
 Project Entry Mode: greenfield | brownfield_baseline | brownfield_delta_only | unknown
 Work Scope: product/system | feature/component | slice/change | unknown
 Implementation Readiness: Exploratory | Decomposable | Code-ready | unknown
+Delivery Profile: Lean | Standard | High-assurance | Exploratory | unknown
+Assurance Modules: comma-separated module names or none
 
 ## Resume Summary
 

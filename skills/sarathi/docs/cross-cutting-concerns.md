@@ -1,7 +1,9 @@
 # Cross-Cutting Concerns
 
-Use this as the shared map for concerns that span multiple SDLC stages. Stage prompts should
-reference the relevant row instead of repeating all details.
+Use this as the ownership map for assurance modules that span multiple SDLC stages. First
+select a delivery profile and triggered modules using
+[assurance-profiles.md](assurance-profiles.md). Stage prompts reference the relevant rows
+instead of repeating this table or activating every concern by default.
 
 | Concern | Spec owns | Design/ADR owns | Plan owns | Code/verify/assess owns |
 | --- | --- | --- | --- | --- |

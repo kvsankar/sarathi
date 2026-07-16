@@ -10,6 +10,14 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Added
 
+- Add Lean, Standard, and High-assurance delivery profiles with context-triggered assurance
+  modules while preserving one feedback-driven lifecycle.
+- Add a hard simplicity policy: process/product architecture separation, brownfield oracle
+  reuse, evidence-before-generalization, deletion-first review, conceptual complexity
+  budgets, and a three-PR default for bounded implementation slices.
+- Add deterministic instruction budgets and a package-extraction regression example that
+  collapses speculative machinery into current contracts, consumer integration, and real
+  compatibility evidence.
 - Add ordered learning-wave declarations and a second workflow-status projection: plans
   assign `WORK-*` or `PR-*` members to `WAVE-*` sequences, while hash-current wave
   checkpoints preserve completed feedback and ancestor-impact evidence.
@@ -36,6 +44,13 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Prevent status and process-guide nodes from collapsing below their content height in
   mobile column layouts; add Chromium assertions for clipping, overlap, and horizontal
   overflow at mobile and desktop viewports.
+
+### Changed
+
+- Consolidate shared policy into triggered references and reduce the canonical stage prompt
+  surface from roughly 5,000 lines to about 1,000 lines.
+- Make simplify passes capable of requiring upstream spec/design/plan revision when an
+  accepted artifact is itself overbuilt.
 - Distinguish mapped test evidence from assessed or completed code: hash-current passing
   code-assessment entries display `Assessed`, while hash-current `code_slice.approved`
   records display `Completed`.
@@ -43,9 +58,6 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   truncated YAML frontmatter block while an installation is running.
 - Avoid treating `.sdlc/test-traceability.yaml` path references as malformed
   `TEST-*` IDs during plan/code structural checks.
-
-### Changed
-
 - Define approval as permission for the next learning step rather than artifact freeze;
   require post-slice revision decisions for affected specs, designs, plans, integration
   work, and process tools before learning-dependent work continues.
@@ -64,6 +76,13 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   trees that show feature, slice, and product-integration test leaves and their statuses;
   encode artifact type by node background and work scope by explicit level tags, with
   legend swatches that display the full node fill and accent edge.
+
+### Removed
+
+- Remove all PR, diff, module, and source-file line-count options, metrics, warnings,
+  reports, tests, and planning guidance. Reviewability now uses cohesion, conceptual
+  complexity, touch scope, evidence, rollback, and learning boundaries.
+- Remove superseded private critical-review snapshots from active documentation.
 
 ## Pre-Changelog History
 

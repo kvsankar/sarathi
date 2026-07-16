@@ -15,6 +15,8 @@ substitute for verification and review.
 - **Current learning loop**: the explicit learning target, feedback state, active wave,
   WIP limit, active slices, invalidation result, ancestor impact, and stop/replan triggers
   recorded in `.sdlc/wip.md`. Missing fields display as `Not recorded`.
+- **Delivery calibration**: the selected delivery profile and activated assurance modules
+  from `.sdlc/wip.md`, falling back to the governing Plan, Design, then Spec metadata.
 - **Progressively disclosed workflow tree**: the product Spec/Design/Plan trunk remains
   visible, the current `WORK-` allocation opens by default, and other allocations stay
   collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
@@ -76,6 +78,8 @@ Learning state follows the same evidence rule. The current loop comes only from 
 
 ```text
 Learning Target: assumption, behavior, boundary, or risk under test
+Delivery Profile: Lean | Standard | High-assurance | Exploratory | unknown
+Assurance Modules: comma-separated module names or none
 Feedback Target: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise residual-risk note

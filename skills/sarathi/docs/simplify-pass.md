@@ -1,8 +1,9 @@
 # Simplify Pass
 
 A simplify pass is a deliberate pass to remove over-engineered pieces after the work is
-otherwise coherent. It normally runs after the cleanup pass when both apply, and before a
-human handoff for specs, designs, plans, and code slices.
+otherwise coherent. It normally runs after cleanup when both apply and before a human
+handoff for specs, designs, plans, and code slices. Apply `docs/simplicity-first.md`;
+simplification can require upstream artifact revision, not only local implementation edits.
 
 The goal is not to make artifacts brief or code clever. The goal is to keep the solution
 only as structured as the problem, risk, and evidence require. Preserve necessary detail,
@@ -49,9 +50,11 @@ During the simplify pass, ask:
 5. Does this make the next maintainer's job easier, or only make the artifact look more
    sophisticated?
 
-If the answer is weak, simplify in scope. If simplifying would change accepted behavior,
-contracts, quality attributes, UX, deployment posture, or public documentation, stop and
-revise the governing artifact instead of hiding the change.
+If the answer is weak, simplify in scope. If the governing artifact itself created the
+unjustified complexity, classify ancestor impact as `revision-required`, revise that
+artifact, and then continue. Do not preserve an overbuilt spec/design/plan merely because
+implementation began. If simplification changes accepted behavior, contracts, quality
+attributes, UX, deployment posture, or public documentation, make that revision explicit.
 
 ## Handoff Expectation
 

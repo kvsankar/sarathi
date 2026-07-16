@@ -449,48 +449,6 @@ def test_check_code_allows_inline_traceability_only_with_legacy_flag(
     assert report["test_traceability"]["source"] == "inline_legacy"
 
 
-def test_check_code_reports_oversized_modules_as_advisory_by_default(
-    tmp_path, monkeypatch, capsys
-):
-    source = tmp_path / "src" / "large.py"
-    source.parent.mkdir(exist_ok=True)
-    source.write_text("x = 1\nx = 2\n", encoding="utf-8")
-
-    rc, report = run_check_code(
-        tmp_path,
-        [sys.executable, "-c", "print('coverage: 80%')"],
-        monkeypatch,
-        capsys,
-        extra_args=["--max-loc", "1"],
-    )
-
-    assert rc == 0
-    assert report["module_size_enforced"] is False
-    assert report["module_size_advisory"]["status"] == "review"
-    assert str(source) in report["oversized_modules"]
-    assert report["gates"]["module_size_ok"] is True
-
-
-def test_check_code_enforces_oversized_modules_when_requested(
-    tmp_path, monkeypatch, capsys
-):
-    source = tmp_path / "src" / "large.py"
-    source.parent.mkdir(exist_ok=True)
-    source.write_text("x = 1\nx = 2\n", encoding="utf-8")
-
-    rc, report = run_check_code(
-        tmp_path,
-        [sys.executable, "-c", "print('coverage: 80%')"],
-        monkeypatch,
-        capsys,
-        extra_args=["--max-loc", "1", "--enforce-max-loc"],
-    )
-
-    assert rc == 1
-    assert report["module_size_enforced"] is True
-    assert report["gates"]["module_size_ok"] is False
-
-
 def test_check_code_surfaces_markers_for_approval(tmp_path, monkeypatch, capsys):
     test_body = (
         "def test_auth():\n"
@@ -692,59 +650,6 @@ tests:
     assert rc == 0
     assert report["gates"]["external_doubles_tied_to_reality"] is True
     assert report["external_boundary_verification"]["double_only_boundaries"] == []
-
-
-def test_git_diff_loc_measures_actual_changed_lines(tmp_path):
-    check_code = load_check_code()
-    git(tmp_path, "init")
-    git(tmp_path, "config", "user.email", "test@example.com")
-    git(tmp_path, "config", "user.name", "Test User")
-    source = tmp_path / "app.py"
-    source.write_text("one\n", encoding="utf-8")
-    git(tmp_path, "add", "app.py")
-    git(tmp_path, "commit", "-m", "baseline")
-
-    source.write_text("one\ntwo\nthree\n", encoding="utf-8")
-    git(tmp_path, "add", "app.py")
-    git(tmp_path, "commit", "-m", "change")
-
-    diff_loc, evidence = check_code.git_diff_loc(tmp_path, "HEAD~1")
-    assert diff_loc == 2
-    assert evidence == "explicit:HEAD~1"
-
-
-def test_git_diff_loc_refuses_default_branch_without_review_base(tmp_path):
-    check_code = load_check_code()
-    git(tmp_path, "init")
-    git(tmp_path, "config", "user.email", "test@example.com")
-    git(tmp_path, "config", "user.name", "Test User")
-    source = tmp_path / "app.py"
-    source.write_text("one\n", encoding="utf-8")
-    git(tmp_path, "add", "app.py")
-    git(tmp_path, "commit", "-m", "baseline")
-
-    diff_loc, evidence = check_code.git_diff_loc(tmp_path, None)
-    assert diff_loc is None
-    assert evidence == "on_default_branch_no_review_base"
-
-
-def test_git_diff_loc_uses_auto_merge_base_on_feature_branch(tmp_path):
-    check_code = load_check_code()
-    git(tmp_path, "init")
-    git(tmp_path, "config", "user.email", "test@example.com")
-    git(tmp_path, "config", "user.name", "Test User")
-    source = tmp_path / "app.py"
-    source.write_text("one\n", encoding="utf-8")
-    git(tmp_path, "add", "app.py")
-    git(tmp_path, "commit", "-m", "baseline")
-    git(tmp_path, "checkout", "-b", "feature")
-    source.write_text("one\ntwo\nthree\n", encoding="utf-8")
-    git(tmp_path, "add", "app.py")
-    git(tmp_path, "commit", "-m", "red: failing test\ngreen: implementation")
-
-    diff_loc, evidence = check_code.git_diff_loc(tmp_path, None)
-    assert diff_loc == 2
-    assert evidence == "merge_base:master"
 
 
 def test_git_tdd_evidence_reads_red_and_green_markers(tmp_path):

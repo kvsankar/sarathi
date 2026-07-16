@@ -379,6 +379,8 @@ This is a direct GitHub Copilot CLI skill alias for the Sarathi $stage_name stag
 
 Follow the bundled prompt file prompts/$prompt_file_name exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
+Resolve referenced shared docs from ../sarathi/docs/. Load only the docs triggered by the
+stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
 This stage is part of the broader Sarathi workflow. Preserve input gates, human
 review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode

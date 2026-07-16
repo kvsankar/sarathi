@@ -296,6 +296,15 @@ Diagnostics and failure behavior are covered across the lifecycle:
 Reviews stop with an upstream blocker when logging, telemetry, or error-handling intent is
 missing from the artifact that should own it.
 
+## Delivery Profiles
+
+Production work uses one feedback loop with risk-calibrated depth: Lean for small,
+reversible changes; Standard as the ordinary default; and High-assurance for material
+security, privacy, safety, regulatory, financial, availability, migration, or irreversible
+data risk. Exploratory remains a separate non-production track. Profiles activate only
+context-triggered assurance modules; they do not bypass readiness, tests, feedback, or
+human gates. See [docs/assurance-profiles.md](docs/assurance-profiles.md).
+
 ## General Cleanup
 
 Agents run a bounded cleanup pass at suitable handoff points, and always before ending a code
@@ -312,6 +321,12 @@ abstractions, extension points, fixtures, checks, or code paths that are not jus
 accepted scope, risk, constraints, or evidence. Necessary detail, reviewability,
 traceability, and real boundaries stay intact; larger simplifications become governing
 artifact revisions.
+
+Simplicity is a hard assessment constraint. Process traceability/evidence must not become
+product architecture; brownfield work reuses existing compatibility suites by default;
+generalization normally waits for a second concrete consumer; and bounded slices default
+to at most three implementation PRs. Reviewers begin with deletion, deferral, collapse, and
+existing-evidence reuse. See [docs/simplicity-first.md](docs/simplicity-first.md).
 
 ## Feedback And Learning
 
@@ -478,9 +493,8 @@ and `type_conformance`. If tests for a boundary use a double, at least one test 
 same boundary must be marked as a real-boundary or type-conformance check. Those fields are
 declarations, not proof; `/code-review` and `/code-assess` must identify the concrete
 command/test evidence behind them.
-Module size is advisory by default. Use `--enforce-max-loc` only when a project explicitly
-opts into a hard module-size gate; otherwise review oversized modules as maintainability
-signals and avoid mechanical file splitting.
+Reviewability is judged by cohesive purpose, conceptual complexity, touch scope, evidence,
+and rollback. Sarathi does not impose source-file, module, diff, or PR line-count targets.
 TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not
 add SDLC-specific annotations to app code. If markers remain, downstream progress requires
 explicit approval attestation through `code.markers.approved`, keyed to the marker inventory

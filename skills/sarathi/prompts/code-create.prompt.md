@@ -1,601 +1,87 @@
 ---
-description: Implement a work plan in bounded learning waves with Red/Green/Refactor TDD, then report feedback and ancestor impact while keeping each step shippable and traceable.
+description: Implement a code-ready plan in bounded learning waves using Red/Green/Refactor, traceable evidence, feedback, and ancestor adaptation.
 agent: agent
 ---
 
 # Code Create
 
-## Workflow state
-
-At the start of this stage, follow `docs/work-in-progress.md`: read `.sdlc/wip.md` if it
-exists, verify important claims against the named artifacts, and use it only as a resume
-note. Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
-with the current stage, artifact paths, decisions/assumptions, verification evidence,
-blockers/open questions, bootstrap status, and next recommended action. Do not store
-secrets or long command logs.
-
-## Artifact formatting
-
-For Markdown artifacts and reports produced or revised in this stage, follow
-`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
-characters where practical, while allowing longer lines for tables, URLs, code/logs,
-paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
-or readability.
-
-## Cleanup pass
-
-Before ending any code slice, follow `docs/cleanup-pass.md`: run a bounded cleanup pass over
-touched code, tests, docs, config, and traceability. Fix in-scope odd issues and
-test/security/observability/traceability theater, avoid unrelated churn outside the Planned
-Touch Set, and rerun affected checks after cleanup changes.
-
-## Simplify pass
-
-After cleanup, follow `docs/simplify-pass.md`: remove over-engineered abstractions,
-options, fixtures, checks, or code paths that are not justified by accepted scope, risk,
-constraints, or evidence. Preserve necessary detail, reviewability, traceability, and real
-boundaries, and rerun affected checks after simplification changes.
-
-## Feedback and learning
-
-Follow `docs/feedback-and-learning.md`. Treat this slice as a learning step, preserve the
-plan's learning target and feedback method, and run the ancestor-impact scan before starting
-learning-dependent work. Never invent stakeholder feedback.
-
-Your job is to turn `plan.md` (grounded in `spec.md` and `design.md`) into working,
-tested, documented, production code. Build **one PR at a time**, in plan order, using TDD
-for behavior changes. Aim to pass `/code-assess` honestly: do not tailor code,
-traceability maps, approval records, boundary declarations, or git history to checker
-blind spots. The assessment is supposed to find risks that structural gates cannot.
-
-## Core principles (the code is judged against these)
-
-1. **TDD by default** — for behavior-changing code: write a failing test (**Red**), minimal
-   code to pass (**Green**), then **Refactor** with tests green. Do not write
-   behavior-changing production code without a red test.
-2. **One governed learning wave at a time** — implement the lowest unbuilt PR whose
-   execution and learning dependencies are met. Prefer parallel sub-agent work inside the
-   slice. Run independent slices concurrently only when the approved plan places them in the
-   same bounded wave with clear touch ownership and convergence. Target about 500 changed
-   LOC per PR for reviewability, but treat that as a guideline.
-3. **Always green** — the full suite passes before a PR is done; never leave red on trunk.
-4. **Traceable without clutter** — keep tests clean and behavior-focused. Record which
-   `PR-`/`FR-`/`AT-`/`JT-`/`COMP-`/`TEST-` each test covers in
-   `.sdlc/test-traceability.yaml`; do not put traceability IDs in test names, docstrings,
-   or comments. Treat this file as a structured traceability claim, not independent proof;
-   the tests themselves must still contain meaningful oracles.
-5. **Production quality** — error handling, input validation, useful structured logging/
-   telemetry where planned, reproducible build artifacts, deployable configuration/scripts
-   when planned, accurate user/developer documentation when planned, no dead code, lint clean.
-6. **Planned scope only** — edit only the files, directories, modules, config, docs,
-   generated artifacts, and spec/design/plan sections listed in the PR's Planned Touch Set.
-
-## Code-ready scope gate
-
-`/code-create` only implements **code-ready slice/change work** or a small
-feature/component that already has a code-ready implementation plan. Do not code directly
-from a product/system spec, HLD, feature/component design, or Breakdown plan marked
-Exploratory or Decomposable.
-
-Before writing tests or code, confirm all of the following:
-
-- `spec.md` or the focused spec declares `Implementation Readiness: Code-ready`, or the
-  relevant parent spec delegates the current slice/change to a code-ready child spec.
-- `design.md` or the focused LLD declares `Implementation Readiness: Code-ready`, or the
-  design explicitly says no additional LLD is needed for this slice/change.
-- `plan.md` declares `Plan Type: Implementation` and `Implementation Readiness: Code-ready`.
-- The plan contains concrete `PR-` items, Planned Touch Sets, Test Levels, Red steps,
-  Green steps, dependencies, quality gates, logging/error-handling work or an explicit
-  rationale that no logging/error-handling change is required, build/deployment work or an
-  explicit rationale that no build/deployment change is required, plus documentation work or
-  an explicit rationale that no documentation change is required, test-environment work or
-  an explicit rationale that only developer-local verification is needed, and any
-  context-driven review/test work or an explicit rationale that it is out of scope.
-
-If any item is missing, **stop** and tell the user which artifact is not code-ready and what
-is needed next: breakdown plan, child spec, HLD, LLD, ADR, interface contract, test
-strategy, or implementation plan. This is a normal workflow outcome, not a coding failure.
-
-## Clarification and YOLO mode
-
-Default behavior is input-gated: pause and ask one focused question at a time when missing
-information would materially change implementation behavior, test intent, logging/telemetry
-signals, error-handling behavior, quality gates, build artifact shape, deployment scripts/
-manifests, data migration, rollout/rollback, documentation content, security/privacy
-posture, or planned touch scope. Do not silently invent behavior outside the spec/design/plan.
-
-The user may opt into **YOLO mode** with phrases such as "yolo", "use your judgment", "make
-reasonable assumptions", or "proceed without questions". In YOLO mode, make the narrowest
-reasonable local implementation decisions yourself, continue without blocking on normal
-clarification questions, and record assumptions in the code comments, tests, plan notes, or
-final implementation report as appropriate. YOLO mode does not bypass the Code-ready scope
-gate, Planned Touch Sets, upstream-blocker stops, TDD discipline, quality gates, safety
-constraints, or a required spec/design/plan update.
-
-## Narrow TDD Exceptions
-
-Red/Green remains mandatory for behavior changes. Only these planned and documented
-exceptions are allowed:
-
-- **Generated code only** — no Red test is required for generated output when the source
-  schema/template/spec is reviewed, the generator command is recorded, generated files are
-  not hand-edited, and downstream contract/build/tests validate the result.
-- **Docs-only changes** — no Red test is required when no executable behavior changes and
-  planned doc build/link/example checks run where applicable.
-- **Formatting-only changes** — no Red test is required when produced by the project
-  formatter and no semantic edits are mixed in.
-- **Build/deploy config validation changes** — no Red test is required when the change is
-  limited to scripts/manifests/CI/IaC/package configuration and is verified by planned
-  dry-run, lint, validate, plan, synth, smoke, or equivalent checks.
-- **Characterization before legacy refactor** — passing characterization tests may be
-  written first to pin existing legacy behavior before a refactor. After behavior is pinned,
-  refactor with the characterization suite green. Any intentional behavior change after that
-  returns to normal Red/Green.
-
-Every exception must be present in the plan or explicitly accepted by the user, recorded in
-the implementation report, mapped in `.sdlc/test-traceability.yaml` when tests are involved,
-and backed by concrete verification evidence. Do not use an exception for new behavior,
-bug fixes, API/schema contract changes, validation logic, security/privacy behavior, error
-handling, logging semantics, or UI behavior.
-
-## Test responsibility in this command
-
-`/code-create` is where tests become executable code. For each PR, implement the planned
-test levels before or alongside the production code using Red/Green/Refactor unless a narrow
-TDD exception above applies:
-
-Follow `docs/test-ownership.md` and `docs/work-decomposition.md`. The current code-ready PR
-may implement tests whose
-governing `AT-`, `JT-`, or `TEST-` belongs to an ancestor product or feature artifact when
-the plan explicitly assigned that obligation. Preserve those ancestor IDs in traceability.
-Do not invoke `/code-create` from the ancestor Breakdown plan itself: the descendant leaf
-owns the executable test code, while the ancestor owns its intent and `WORK-*` allocation.
-Confirm that the current Spec/Design/Implementation-plan artifacts use the child scope named
-by that allocation.
-
-- Write executable **acceptance/e2e/API workflow tests** for the `AT-` items assigned to the
-  PR. These should verify externally visible behavior or measurable NFR outcomes from the
-  user's perspective or a public API boundary, and cite the relevant `TEST-` obligation when
-  the design/plan named one.
-- Write executable **journey/workflow tests** for the `JT-` items assigned to the PR. These
-  should chain the referenced `AT-` scenarios in the planned order, preserve realistic state
-  between steps, use the planned UI/API/service harness, clean up or isolate test data, and
-  assert the final and important intermediate oracles.
-- Write **unit/pure-core tests** for deterministic logic, validation, calculations, state
-  transitions, reducers, mappers, policies, and edge cases.
-- Write **component/module tests** for components behind stable local boundaries.
-- Write **contract tests** for APIs, events, schemas, DTOs, protocols, compatibility, and
-  error behavior. Use the design/plan's shared fixtures, schemas, generated clients,
-  captured representative examples, or contract-test harness; do not invent mock payload
-  shapes for convenience.
-- Write **integration tests** for persistence, messaging, external-service adapters,
-  framework wiring, migrations, transactions, auth, caching, retries, and configuration.
-- Write **UI/accessibility/visual tests** for routes, screens, widgets/components, keyboard
-  and focus behavior, semantics, contrast, responsive behavior, and visual regressions when
-  planned. Prefer role, label, text, and semantic selectors; avoid coupling behavior tests
-  to CSS class names unless the style contract itself is under test.
-- Write **quality-attribute checks** for performance, reliability, security, privacy,
-  resilience, observability, logging/telemetry, error handling, offline/sync,
-  rollout/rollback, and operational behavior when planned.
-- Write or run **environment-specific checks** when planned: developer-local test commands,
-  shared integration/test checks, staging/pre-production validation, production canary/smoke
-  checks, and synthetic-monitor checks. Do not run live production checks unless explicitly
-  requested and approved.
-- Write or run **build/deployment checks** when planned: reproducible package/image/static
-  bundle/mobile build output, generated artifact validation, migration validation,
-  deployment dry-run/plan/lint, manifest/IaC validation, smoke checks, and rollback checks.
-- Write or run **documentation checks** when planned: user/developer docs, README/API docs,
-  generated reference docs, examples, tutorials, diagrams, runbooks, troubleshooting,
-  release/migration notes, doc build, link checks, accessibility/readability, and freshness
-  or version checks.
-
-Maintain `.sdlc/test-traceability.yaml` as the source of truth for executable test
-traceability. Add or update an entry for every test file/function/case introduced or
-materially changed by the PR. The map should identify the test location and the covered
-`PR-`, `FR-`, `AT-`, `JT-`, `COMP-`, and `TEST-` IDs as applicable. Keep artifact IDs out of
-test names, docstrings, and comments unless the production language or framework already
-requires metadata annotations and the team has explicitly chosen that convention. The map is
-a local project claim used by checkers and reviewers; it must be accurate, but it does not by
-itself prove that a test exercises the claimed behavior.
-
-Follow the plan's test mix. Treat each assigned `TEST-` as an executable obligation, not a
-suggestion. If the planned tests are insufficient to prove the linked
-`FR-`/`AT-`/`JT-`/`TEST-`/`COMP-`/`NFR-`, stop and request a plan/design/spec update rather
-than silently changing the test strategy.
-
-Also add **implementation-local supplemental inner tests** when Red/Green/Refactor exposes
-useful behavior that was too small or code-shaped to name in the design/plan. Examples
-include helper or pure-core edge cases, table/property cases, parser/mapper/reducer cases,
-regression tests for a discovered bug, characterization tests around legacy boundaries, local
-adapter/error-normalization tests, and boundary fixture variations. These tests supplement,
-never replace, planned `AT-`/`JT-`/`TEST-` coverage. They must stay within the current `PR-`
-and Planned Touch Set, map them to the nearest `PR-` plus relevant `FR-`/`AT-`/`JT-`/
-`TEST-`/`COMP-` in `.sdlc/test-traceability.yaml` when applicable, and state a concrete
-oracle. If a supplemental test implies new externally visible behavior, a changed API/event/
-schema/error contract, a UX/NFR expectation, or broader scope, stop and request the
-appropriate spec/design/plan update before coding it.
-
-Treat test implementation as production-quality code. Keep assertions meaningful and
-behavior-focused; make fixtures realistic and maintainable; keep helpers readable; avoid
-over-mocking, sleeps, hidden network/time dependencies, order dependence, brittle selectors,
-and tautological assertions. Prefer the narrowest test level that proves the behavior, then
-add broader acceptance/e2e coverage only where planned.
-
-Implement the planned verification oracle for every test. Each executable test must assert
-at least one concrete observable that proves pass/fail: return value, state transition,
-persisted record, emitted event, API response, DOM/role/text output, accessibility tree,
-screenshot or visual baseline, generated file/artifact, structured log entry, metric, trace,
-deployment status, or captured external call. Use logs, screenshots, and metrics deliberately
-when they are the behavior under test or the strongest practical signal; otherwise prefer
-direct state/output assertions. Do not accept a test whose only oracle is "no exception" or
-"the mock was called" unless that is the specified externally meaningful behavior.
-
-For boundary-facing tests, compare mocks/fixtures against the real producer/consumer
-contract before writing the Red test. If the plan does not name a fixture/schema/generated
-client/contract-test source and the boundary shape matters, stop for a plan/design update.
-Prefer tests against the real external system or official conformance surface. When a PR
-adds or edits a mock, fake, stub, test double, local mirror, or locally re-declared interface
-for an external system, the same PR must add or update drift control unless the plan already
-assigned it to an adjacent PR: real-boundary smoke/integration test, official conformance
-harness, type-conformance check, generated schema/client check, vendor sandbox/emulator,
-captured real fixture, or explicit user-approved limitation. A test double must never be the
-only verification of an external contract.
-For UI-facing work, keep presentation changes decoupled from behavior tests; add visual,
-accessibility, responsive, or role/text-based assertions only where planned.
-
-If implementation reveals a material context-driven concern that the artifacts did not
-plan, stop before broadening scope. Examples include a newly discovered need for load tests,
-security review/threat modeling, privacy/compliance review, accessibility audit,
-resilience/DR check, migration rehearsal, production canary, synthetic monitor, or extra
-test environment. Tell the user which upstream artifact should be updated and why.
-
-## Quality gates and pre-commit
-
-Before implementing the first PR, inspect the repository language/tooling and existing CI.
-Use existing project commands when they are present. If pre-commit or equivalent local
-quality gates are missing, configure them as part of the first implementation PR so every
-later PR uses the same checks.
-
-Prefer a `.pre-commit-config.yaml` when the repo can support it. If the ecosystem already
-uses an equivalent hook runner, such as Husky/lint-staged for JS/TS, Lefthook, Overcommit,
-cargo hooks, Gradle tasks, or committed CI-only scripts, either integrate with that
-convention or document why `.pre-commit-config.yaml` is not the right fit. The local gate
-must be runnable by one command and should be mirrored in CI where possible.
-
-Select tools by ecosystem, using the repo's established stack where available:
-
-- **Python**: `ruff format`, `ruff check`, `ty`, `pyright` or `mypy`, `pytest`, `coverage`,
-  `bandit`, `pip-audit`, `radon` or `xenon`, `interrogate` for doc coverage when useful.
-- **JavaScript/TypeScript**: `prettier`, `eslint`, `tsc --noEmit`, `stylelint`, `vitest` or
-  `jest` coverage, `playwright`, `npm audit`/`pnpm audit`, `knip`, `madge`, ESLint complexity rules.
-- **Go**: `gofmt`, `go vet`, `staticcheck`, `golangci-lint`, `govulncheck`, `go test -cover`.
-- **Rust**: `cargo fmt`, `cargo clippy -D warnings`, `cargo test`, `cargo llvm-cov` or
-  `tarpaulin`, `cargo audit`.
-- **Java/Kotlin**: Checkstyle, Spotless, PMD, SpotBugs, Error Prone, `detekt`, `ktlint`,
-  Gradle/Maven test tasks, JaCoCo coverage.
-- **.NET/C#**: `dotnet format`, Roslyn analyzers, StyleCop analyzers, `dotnet test`,
-  Coverlet coverage.
-- **Ruby**: `rubocop`, `brakeman`, `bundler-audit`, `rspec`/`minitest`, SimpleCov.
-- **PHP**: PHP-CS-Fixer or PHPCS, PHPStan or Psalm, PHPUnit coverage, Infection where useful.
-- **Swift/iOS**: SwiftFormat, SwiftLint, `xcodebuild test`, Xcode coverage.
-- **Dart/Flutter**: `dart format`, `dart analyze`, `flutter test --coverage`.
-- **Shell/SQL/IaC/config/docs**: `shellcheck`, `shfmt`, `sqlfluff`, `hadolint`, `yamllint`,
-  `actionlint`, `markdownlint`, `prettier`, `tflint`, `terraform fmt/validate`, `checkov`.
-- **Cross-language complexity/duplication/security**: `lizard`, Sonar-compatible reports,
-  CodeQL where configured, dependency audit tools, secret scanning such as `gitleaks`.
-- **Build/deployment validation**: repo-native build commands, Docker/BuildKit image builds
-  or `docker compose config`, Kubernetes `kubectl --dry-run=server/client` or `kubeconform`,
-  Helm lint/template, Terraform/OpenTofu plan/validate, Bicep/ARM validation, CloudFormation
-  validate, serverless/SAM/CDK synth, package publish dry runs, mobile archive/export
-  validation, and environment smoke-test commands where available.
-
-Set explicit thresholds in the plan, pre-commit config, tool config, or test command. Agents
-must choose higher coverage thresholds when the domain warrants it, but must never lower the
-Sarathi floor. If the repo lacks stricter thresholds, use these defaults:
-
-- Formatter, linter, type checker, dependency audit, and secret scan: zero errors.
-- Unit/integration tests: pass with no skips or xfails unless each is explicitly justified,
-  surfaced to the user, and approved before proceeding.
-- Coverage: use the plan's `--cov-min` only when it is at or above the Sarathi floor. If
-  absent, require at least 80% line coverage overall, 70% branch coverage where available,
-  and 90% line coverage for pure functional core modules. Raise the bar for deterministic,
-  algorithmic, safety-critical, financial, parsing/serialization, security-policy, migration,
-  or pure mathematical/library code; for example, a purely mathematical astronomy library
-  should normally set a near-exhaustive threshold such as 99.5%+ line coverage plus strong
-  branch/property/oracle checks.
-- Complexity: cyclomatic complexity ≤10 per function/method and cognitive complexity ≤15
-  where the tool supports it; document any exception with a reason and test coverage.
-- Module size: treat the checker's `--max-loc` as an advisory maintainability signal unless
-  the project explicitly opts into `--enforce-max-loc` or a stricter repo standard. Do not
-  mechanically split cohesive modules merely to satisfy the target.
-- Security/dependency scans: no critical/high findings; medium findings need documented
-  acceptance, mitigation, or follow-up.
-- Build/deployment: planned build command succeeds, expected artifact path/name/version is
-  produced or validated, deployment manifests/scripts pass lint/dry-run/plan checks, and
-  no real production deployment is performed unless explicitly requested by the user.
-- Documentation: planned doc build/generation/link/readability/accessibility checks pass;
-  examples or snippets are runnable where practical; public API/reference docs match the
-  implemented contract; no user/developer-facing behavior change ships undocumented unless
-  the plan explicitly says docs are out of scope.
-
-## Step 1 — Confirm context
-
-Read `plan.md`, `design.md`, `spec.md`. Apply the Code-ready scope gate above. Then identify
-the exact active `WAVE-*` from the plan's ordered `Learning Waves` section and the next
-eligible unbuilt member in that wave; do not select a later-wave PR merely because an agent
-is available. State the PR, its Red tests, Green scope, Planned Touch Set, the
-COMP/FR/AT/JT/TEST it covers, the planned test levels, the
-verification oracle for each planned test, any likely supplemental inner-test discovery
-areas, and the quality-gate command(s) that must pass at the PR boundary. Also state any
-mock UI dependency and approval status for UI-facing work. If the spec/design/plan requires
-a mock UI and approval is missing, **stop before editing production UI code** and ask for
-human mock approval.
-State the slice learning target, feedback target/method, invalidation question, active
-learning wave and WIP limit, dependency types, convergence owner, and stop/replan triggers.
-Update `.sdlc/wip.md` with that exact wave and its currently active declared members; never
-exceed the wave WIP limit.
-If feedback from an unfinished slice could materially invalidate this PR and the plan does
-not contain that risk, stop for plan revision instead of starting speculative production
-work.
-Also state any
-planned logging/telemetry work: structured fields, events, metrics, traces, correlation/
-support IDs, redaction, alert hooks, APM instrumentation, dashboards, SLO/SLI signals,
-exporter/provider config, or `None` with the plan's rationale. State planned
-error-handling work: UI/API/domain/integration/infrastructure mapping, retry/fallback/
-degraded behavior, safe messages, or `None` with the plan's rationale. Also state any
-planned build/deployment work: build command, expected artifact, deployment validation
-command, smoke check, rollback check, or `None` with the plan's rationale. Also state
-planned documentation work: user docs, developer docs, API/reference docs, examples,
-runbooks, release/migration notes, doc validation command, or `None` with the plan's rationale.
-
-Before editing, compare every intended file/section change against the PR's Planned Touch
-Set. If the plan does not include a Planned Touch Set, or if the implementation requires
-touching files/sections outside it, **stop before making the out-of-scope edit**. Tell the
-user exactly what extra files/sections are needed, why the current plan is insufficient, and
-whether the fix should be a plan revision, design revision, spec revision, or separate PR.
-Do not expand scope silently.
-
-If quality gates are not configured yet, make configuring/updating pre-commit hooks part of
-the first relevant PR. Add only checks that can run reliably for the repo's stack; keep slow
-or environment-heavy checks in CI if pre-commit would make local commits impractical, but
-document the split.
-
-If quality-gate configuration is not in the Planned Touch Set, stop and ask for a plan update
-unless the current PR explicitly exists to configure quality gates.
-
-If build/deployment files, generated artifacts, scripts, pipeline config, IaC, manifests,
-or release documentation are required but absent from the Planned Touch Set, stop and ask
-for a plan/design update before editing them.
-
-If logging/telemetry/APM config, logging adapters, event/metric/trace schemas, APM agent or
-OpenTelemetry exporter setup, service/resource attributes, alert hooks, dashboards,
-correlation propagation, redaction logic, or error-handling modules are required but absent
-from the Planned Touch Set, stop and ask for a plan/design/spec update before editing them.
-
-If user/developer docs, README/API docs, examples, generated reference docs, runbooks,
-troubleshooting, migration notes, or release notes are required but absent from the Planned
-Touch Set, stop and ask for a plan/design/spec update before editing them.
-
-## Step 2 — Red
-
-Write the failing tests first. Run them; show they fail for the right reason. Test names
-must be plain, readable behaviour (e.g. `test_win_detected_on_full_row`). Do not put covered
-artifact IDs in the function name, docstring, or comments. Add the coverage mapping in
-`.sdlc/test-traceability.yaml` instead.
-For supplemental inner tests without a direct `AT-`/`TEST-`, map the owning `PR-` and
-nearest `COMP-`/`FR-` in `.sdlc/test-traceability.yaml` and state why the test is
-supplemental.
-Include a concise `Verifies:` note when it improves readability, naming the oracle being
-asserted, such as returned value, persisted row, emitted event, DOM text, screenshot
-baseline, structured log, metric, artifact, deployment dry-run result, or external call.
-
-When a PR includes multiple test levels, write the smallest useful Red test first for the
-logic or contract being introduced, then add the planned acceptance/e2e/API workflow or
-journey test for the assigned `AT-`/`JT-`. Keep slow acceptance/e2e coverage focused; do not duplicate every
-unit edge case at the top level.
-
-When testing boundary errors, include representative multi-field or multi-cause payloads
-where the contract allows them, and assert the user/API-facing normalized result rather than
-raw object stringification or framework internals.
-
-When testing logging or telemetry, assert the stable structured signal: event name, level,
-correlation/support ID, metric name/value/tags, trace span attributes, audit field, redaction
-behavior, APM service/resource attributes, span name/status/duration bucket, histogram/
-counter values, dashboard/alert rule shape, or absence of sensitive data. Do not assert
-volatile timestamps, stack traces, or formatting details unless the format is the contract.
-
-## Step 3 — Green
-
-Write the minimum code to pass. Run the suite; show all green. No extra scope.
-
-When the PR owns build/deployment work, implement only the planned build scripts,
-package/config changes, deployment manifests, migration scripts, smoke checks, or rollback
-hooks needed for the PR. Do not perform a live deployment unless the plan and the user
-explicitly call for it; prefer dry-run, validate, synth, plan, lint, or local/staging smoke
-commands.
-
-When the PR owns documentation work, update only the planned user/developer docs, examples,
-generated reference docs, runbooks, troubleshooting, release/migration notes, or help text.
-Keep docs aligned with actual behavior and contracts; do not document unimplemented future
-behavior as if it exists.
-
-When the PR owns logging/telemetry or error-handling work, implement only the planned
-structured signals, APM instrumentation, service/resource attributes, correlation/support
-IDs, redaction, alert hooks, dashboards, SLO/SLI signals, exporter/provider config, error
-mapping, retry/fallback/degraded behavior, and safe UI/API messages. Do not log secrets,
-raw tokens, PII beyond the approved contract, stack traces to user-visible surfaces, raw
-framework objects, or unstable internals meant only for local debugging.
-
-## Step 4 — Refactor
-
-Improve names/structure with tests staying green. Run formatters, linters, type checks,
-complexity checks, security/dependency scans, coverage, and the suite again through the
-configured local quality gate where possible. Re-run planned build/package and
-deployment-validation commands after refactoring when touched files can affect them. Re-run
-planned documentation build/generation/link/readability checks when touched files can affect
-them. Re-run planned logging/telemetry/error-handling tests when touched files can affect
-diagnostic signal shape, APM metrics/spans/exporters, redaction, error mapping, retries,
-fallback, or user/API messages.
-
-## Step 5 — Verify the PR
-
-First run `python checkers/check_code.py --plan plan.md --tests-argv '<json-array>' --cov-min <n> --json`.
-If `python` is unavailable or fails because the launcher is missing, retry the same command
-with `python3`; if that is unavailable, retry with `uv run python`.
-Use `--tests-argv` (for example `["pytest","-q","--cov=src"]`) for safe command execution.
-Use `--tests "<cmd>"` only for simple commands that split cleanly; use `--tests-shell` only
-when the project genuinely requires shell syntax such as pipes or compound commands, and
-document the trust boundary. Use the coverage threshold from `plan.md`/the done-definition,
-but refuse any threshold below the Sarathi floor and raise it when the implementation domain
-justifies stronger evidence.
-The checker reads `.sdlc/test-traceability.yaml` by default; pass `--traceability <path>`
-only when the project uses a different map location. Do not use
-`--allow-inline-test-traceability` for new work.
-Omit `--diff-base` when the checker can resolve a merge-base against the default branch;
-provide `--diff-base <base>` when the review target is known and automatic resolution is not
-right. Git diff-size and TDD evidence are required by default. Use
-`--allow-missing-git-evidence` or `--allow-missing-tdd-evidence` only when the repository
-cannot provide that evidence, and report the limitation explicitly. Fix until gates pass or
-report which evidence is unavailable.
-
-Then run the configured pre-commit/local quality gate, normally:
-
-```pwsh
-uv run python -m pre_commit run --all-files
-```
-
-If the project uses an equivalent command, run that command instead and name it in the
-handoff. Fix formatter, lint, type, complexity, dependency/security, coverage, and test
-failures until the local gate passes. Do not bypass hooks to finish a PR.
-
-Then run the planned build/package command and verify the expected deployable artifact is
-created or validated. If the PR touches deployment scripts, CI/CD, manifests, IaC,
-migrations, environment config, or release docs, run the planned validation/dry-run/plan,
-smoke, and rollback checks. Record any check that cannot run locally and why.
-
-Then run the planned documentation checks. If the PR touches user/developer docs, API
-contracts, examples, generated reference docs, runbooks, troubleshooting, release notes, or
-migration notes, run the planned doc build/generation/link/readability/accessibility checks
-and verify examples/snippets where practical. Record any check that cannot run locally and why.
-
-Then run the planned logging/telemetry and error-handling checks. If the PR touches
-diagnostic signal shape, redaction, correlation/support IDs, event/metric/trace schemas,
-alert hooks, or error mapping/retry/fallback/degraded behavior, run the planned tests or
-checks and record any that cannot run locally and why.
-
-Then run the general cleanup pass from `docs/cleanup-pass.md`. Re-scan touched code, tests,
-docs, config, and traceability for odd issues, dead code, debug leftovers, stale comments,
-misleading claims, brittle tests, and test/security/observability/traceability theater. Fix
-in-scope issues inside the Planned Touch Set. If cleanup reveals behavior, contract, UX,
-NFR, or broader-scope changes, stop for upstream artifact revision instead of hiding them in
-the slice. Re-run affected tests and gates after cleanup changes.
-
-Then run the simplify pass from `docs/simplify-pass.md`. Remove over-engineered
-abstractions, options, fixtures, checks, or code paths that are not justified by accepted
-scope, risk, constraints, or evidence. Preserve necessary detail, reviewability,
-traceability, and real boundaries. If simplification would change accepted behavior,
-contracts, UX, NFRs, deployment posture, or public docs, stop for governing artifact
-revision. Re-run affected tests and gates after simplification changes.
-
-Then run or perform the corresponding `/code-assess` for the completed PR boundary. If the
-host exposes sub-agent capability, use fresh-context Mechanical Verifier and Qualitative
-Reviewer sub-agents as described in `/code-assess`; this is mandatory for the create-stage
-assessment loop. If sub-agents are unavailable, state that the host lacks sub-agent
-capability, mark the assessment as degraded and non-independent where applicable, and use
-the adversarial posture. Treat any upstream spec/design/plan blocker, failing qualitative
-finding, TDD authenticity issue, design-fidelity issue, missing edge case, NFR validation
-gap, traceability issue, or production-quality concern as a defect. Revise upstream
-artifacts if the review says they must change; otherwise revise tests/code. Repeat checker +
-assessment until `/code-assess` would return Pass or an explicitly accepted Pass-with-fixes
-for that boundary.
-
-Then perform the inspect-and-adapt loop from `docs/feedback-and-learning.md`. Record feedback
-as `received`, `requested`, `unavailable`, or `not-applicable` with its source or residual
-risk. Scan affected spec, design, remaining plan, code/integration, and process guidance;
-record `no-change`, `revision-proposed`, `revision-required`, or `feedback-required` for each
-affected area. Material changes to accepted behavior, contracts, safety, or scope require
-the matching upstream create/assess flow and human review before affected work continues.
-
-## Step 6 — Human review gate (hard stop)
-
-After completing one PR/code slice and its checker/assessment loop, **stop**. Do not move to the
-next PR, perform release/deployment work, or continue downstream in the same turn unless the
-user's latest message explicitly requested unattended continuation across PRs.
-
-End with a human-review handoff that includes:
-
-- Completed PR/code slice ID and touched files.
-- Cleanup-pass summary: issues fixed, theater removed, and any follow-up findings.
-- Simplify-pass summary: over-engineered pieces removed, justified complexity kept, and any
-  deferred simplification.
-- Test, checker, pre-commit/local gate, build/deploy, and documentation results.
-- Learning target, feedback target/status/evidence, and invalidation result.
-- Ancestor-impact outcomes for spec, design, remaining plan, code/integration, and process;
-  name any active sibling work that must stop or replan.
-- Any assumptions, limitations, skipped checks, or follow-up risks.
-- Recommended next command or next PR ID only after the user approves this slice.
-- Wave checkpoint status: members remaining, feedback/integration evidence still needed,
-  or `/code-assess` readiness when every declared member has reached its boundary.
-
-If the user explicitly requested unattended implementation across all PRs, continue within
-the approved learning wave and still produce a clear boundary report after each PR. Do not
-start learning-dependent work after `revision-required` or `feedback-required`; revise or
-wait as directed by the plan. Otherwise, stop after the first completed PR boundary.
-
-## Quality rules
-
-- Every PR maps 1:1 to a plan `PR-`; `.sdlc/test-traceability.yaml` maps tests to the
-  covered FR/AT/JT/COMP/TEST IDs. PRs normally stay near the advisory 500 changed-LOC target
-  or carry a clear rationale for exceeding it.
-- Each PR implements the test levels assigned in the plan, including executable acceptance
-  coverage for assigned `AT-` items and executable `TEST-` obligations for the affected
-  core, component, contract, integration, UI, quality, migration, or operational behavior.
-- Supplemental inner tests discovered during implementation are allowed when they stay
-  within the current `PR-` and Planned Touch Set, are mapped to the nearest trace IDs in
-  `.sdlc/test-traceability.yaml`, use concrete oracles, and do not introduce new externally
-  visible behavior or scope without upstream artifact updates.
-- Test code is reviewable: meaningful assertions, realistic fixtures, clear helpers,
-  deterministic setup, no tautologies, no accidental network/time/order dependence, and no
-  brittle selectors except where style itself is under test.
-- Every test implements a concrete verification oracle aligned with the design/plan; weak
-  tests that only prove execution, mock invocation, or absence of exceptions are rejected
-  unless that is the explicitly planned behavior.
-- Boundary-facing tests use the planned fixture/schema/generated-client/contract source of
-  truth and do not drift into bespoke mock shapes.
-- Tests that mock/fake/stub an external system are flagged as verification risk in the
-  handoff and tied to a real-boundary, official-conformance, type-conformance,
-  generated-schema/client, sandbox/emulator, or captured-real-fixture test. If that is not
-  feasible, stop for explicit user approval of the residual risk.
-- UI-facing implementation includes the planned presentation/layout/responsive/accessibility
-  and readable state work without making behavior tests brittle.
-- UI-facing implementation follows the approved mock UI when one is required; if the mock is
-  missing or unapproved, production UI work blocks at the human gate.
-- Each PR implements the logging/telemetry and error-handling work assigned in the plan,
-  verifies stable structured signals and failure behavior, and avoids leaking secrets,
-  stack traces, raw objects, or unstable internals to users, logs, telemetry, or agents.
-- Each PR implements the build/deployment work assigned in the plan, verifies the expected
-  artifact or deployment validation outcome, and avoids live deployment unless explicitly
-  requested.
-- Each PR implements the user/developer documentation work assigned in the plan, verifies doc
-  build/generation/link/readability checks where practical, and keeps public docs aligned
-  with implemented behavior and contracts.
-- Every edit stays within the PR's Planned Touch Set. Out-of-scope needs stop work and trigger
-  a user-visible plan/spec/design update request.
-- No behavior-changing production line lands without a prior failing test. Narrow TDD
-  exceptions are allowed only when planned or explicitly accepted and verified with the
-  replacement evidence above. Suite is green at each PR boundary.
-- Pre-commit or an equivalent local quality gate is configured, documented, and green.
-- Formatter, lint, type, complexity, dependency/security, coverage, and test thresholds are
-  explicit and met. Coverage thresholds may be raised by the agent or project, but never
-  reduced below the Sarathi floor.
-- A general cleanup pass ran before handoff. In-scope odd issues and test/security/
-  observability/traceability theater were fixed, and out-of-scope cleanup was reported
-  honestly instead of slipped into the slice.
-- A simplify pass ran after cleanup. Unjustified abstractions, options, fixtures, checks, or
-  code paths were removed, while necessary complexity was tied to accepted scope, risk,
-  constraints, or evidence.
-- Test names stay readable; IDs live in `.sdlc/test-traceability.yaml`, not in test code.
-- No TODO/FIXME/XXX markers, skipped tests, or xfails unless the user explicitly accepts
-  them for the current code slice. Do not add SDLC-specific annotations to app code. If a
-  marker remains, surface its file, line, marker, and text in the handoff and obtain human
-  approval before proceeding. No commented-out code.
+Implement only the eligible member(s) of the active learning wave and keep every PR
+boundary shippable.
+
+## Load And Gate
+
+Read `.sdlc/wip.md`, process decisions, the governing spec/design/plan, current code/tests,
+and repository quality commands. Load:
+
+- `docs/artifact-contracts.md` for the Code and Evidence contract;
+- `docs/simplicity-first.md` for process/product separation and upstream simplification;
+- `docs/assurance-profiles.md` for selected profile/modules and escalation;
+- `docs/feedback-and-learning.md` for wave eligibility and inspect/adapt;
+- `docs/test-ownership.md` for assigned ancestor/local tests and traceability;
+- `docs/cross-cutting-concerns.md` for activated modules only;
+- `docs/cleanup-pass.md`, `docs/simplify-pass.md`, and `docs/artifact-formatting.md` for
+  handoff.
+
+Block unless the plan is Code-ready, required approvals/mock approvals exist, upstream
+intent is fit, and the selected PR is a declared eligible member of the active wave. Confirm
+the Planned Touch Set, Red tests, Green scope, IDs/obligations, oracles, profile/modules,
+feedback target, invalidation question, WIP limit, dependencies, and stop/replan triggers.
+
+Update `.sdlc/wip.md` with the exact active `WAVE-*` and active declared members. Never
+exceed WIP. Do not start a later wave merely because an agent is available.
+
+## Implement
+
+For every behavior-changing step:
+
+1. **Red**: write the smallest meaningful failing test with a concrete oracle; run it and
+   preserve failure evidence.
+2. **Green**: implement the minimum production-quality change; rerun the focused test and
+   affected suite.
+3. **Refactor**: improve structure without changing behavior; keep tests green.
+
+Narrow exceptions are generated-only, docs-only, formatting-only, build/deploy config
+validation, or characterization before legacy refactor. Record the exception and
+replacement evidence.
+
+Implement assigned `AT-*`, `JT-*`, and `TEST-*` obligations at their planned levels. Add
+supplemental inner tests when discovered, but do not use them to replace accepted coverage.
+Map executable tests in `.sdlc/test-traceability.yaml`; keep test names and bodies
+behavior-focused.
+
+Stay inside the Planned Touch Set. Stop for upstream revision when implementation reveals
+new user-visible behavior, changed contracts/UX/NFRs, material module risk, or invalidated
+assumptions. Never fabricate stakeholder, real-system, TDD, or execution evidence.
+If implementation exposes an overbuilt ancestor design or plan, classify it
+`revision-required` and simplify upstream before continuing; do not implement process-shaped
+product machinery merely because it was planned.
+
+## Verify The Boundary
+
+Run focused and full planned tests, coverage, formatter/linter/type/static/security checks,
+pre-commit or repository equivalent, build/docs/deployment/environment checks, and all
+activated module evidence assigned to this PR. Use repository thresholds; absent stricter
+policy, require at least 80% line coverage overall, 70% branch where available, and 90% line
+coverage for pure functional-core modules.
+
+Do not run live production deployment or checks without explicit user approval. Report
+unavailable checks and residual risk rather than treating them as passed.
+
+Run cleanup then simplify. Remove debug leftovers, dead code, stale comments, brittle or
+theatrical tests/checks, misleading docs, and unjustified abstractions within scope. Rerun
+affected checks.
+
+## Handoff
+
+Update `.sdlc/wip.md` and report:
+
+- PR/wave, changed paths, Red/Green/Refactor evidence, test/coverage/quality results;
+- activated module evidence and unavailable checks;
+- traceability updates, cleanup/simplify results, assumptions and risks;
+- feedback status/evidence and ancestor impact for spec, design, remaining plan,
+  code/integration, and process;
+- wave members remaining or `/code-assess` readiness.
+
+Stop for human review after the code slice. Do not start the next learning-dependent PR,
+release, or deployment without explicit approval or a latest-message unattended
+instruction; `revision-required` and `feedback-required` still block affected work.

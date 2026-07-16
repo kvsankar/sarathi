@@ -1,141 +1,40 @@
 ---
-description: Qualitatively review a Software Design Document using existing verification evidence where available.
+description: Qualitatively and adversarially review a Software Design Document using available mechanical evidence.
 agent: agent
 ---
 
 # Design Review
 
-## Workflow state
+Review the target design without editing it unless asked. Read upstream intent, `.sdlc/wip.md`,
+available verification evidence, `docs/artifact-contracts.md`,
+`docs/assurance-profiles.md`, and `docs/simplicity-first.md`. Stop as `Blocked-upstream`
+when the spec is unfit.
 
-At the start of this stage, follow `docs/work-in-progress.md`: read `.sdlc/wip.md` if it
-exists, verify important claims against the named artifacts, and use it only as a resume
-note. Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
-with the current stage, artifact paths, decisions/assumptions, verification evidence,
-blockers/open questions, bootstrap status, and next recommended action. Do not store
-secrets or long command logs.
+Use a fresh Qualitative Reviewer sub-agent when available. Otherwise disclose degraded
+non-independent review and seek counterexamples.
 
-## Artifact formatting
+## Judge
 
-For Markdown artifacts and reports produced or revised in this stage, follow
-`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
-characters where practical, while allowing longer lines for tables, URLs, code/logs,
-paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
-or readability.
+Score 1–5 and give a concrete fix below 5:
 
-## Simplify pass
+- upstream fit, scope/depth/readiness, and requirement traceability;
+- cohesive responsibilities, minimal coupling, readable architecture, and core/shell or
+  equivalent separation;
+- interfaces, lifecycle/errors/data/side effects, compatibility, and real-boundary realism;
+- decisions, alternatives, risks, verification oracles, and `TEST-*` architecture;
+- profile/module tactics and environments proportional to accepted risk;
+- complexity budget versus the user's mental model;
+- brownfield reuse of functional, acceptance, schema/OpenAPI, CI, build, deployment, and
+  operational evidence;
+- process/product firewall and concrete evidence for each framework, generator, registry,
+  manifest, schema system, extension point, or generic harness;
+- current-consumer need: generalization normally requires a second concrete use case.
 
-Before handoff, follow `docs/simplify-pass.md`: remove over-engineered requirements,
-layers, abstractions, extension points, fixtures, checks, or code paths that are not
-justified by accepted scope, risk, constraints, or evidence. Preserve necessary detail,
-reviewability, traceability, and real boundaries. If simplification would change accepted
-behavior, contracts, UX, NFRs, deployment posture, or public docs, stop for governing
-artifact revision.
+Start deletion-first. Name components, abstractions, commands, generated artifacts, tests,
+or diagrams that can be removed, deferred, collapsed, or proven by existing evidence. A
+structurally valid but overbuilt design is `Needs rework`, often with
+`revision-required` ancestor impact.
 
-Perform the qualitative review of a Software Design Document. This command judges design
-substance; it does not replace `/design-verify`. If verification evidence is absent, state
-that gap and either use the latest supplied evidence or recommend `/design-verify`. Use
-`/design-assess` when the user wants verification and review together.
-
-Target the design file the user provides, defaulting to `design.md`. Do not edit it unless
-explicitly asked.
-
-Before judging the design itself, check whether the upstream spec is fit to design from. If
-spec ambiguity, missing acceptance criteria, incorrect NFRs, missing logging/error-handling
-intent, missing build/deployment or documentation needs, or scope issues block fair design
-review, stop with an upstream spec blocker.
-
-Use an adversarial posture: try to refute the design, find missing upstream changes,
-unowned interfaces, weak trade-offs, excessive coupling, testability gaps, missing
-test-environment strategy, context-driven concerns the system likely needs, and
-traceability theater. If the host exposes sub-agent capability, run this review in a
-fresh-context Qualitative Reviewer sub-agent. This is mandatory for review stages. If
-sub-agents are unavailable, state that the host lacks sub-agent capability, mark the review
-as degraded and non-independent when the same agent created the design, and actively look
-for counterexamples.
-
-## Qualitative Review
-
-Score each item 1-5 and give one concrete fix for any score below 5:
-
-- Upstream spec fitness: requirements are clear enough to design against.
-- Scope/readiness fit: HLD, feature/component design, or slice/change LLD depth matches the
-  artifact scope and declared readiness.
-- Requirement fit and traceability: design decisions and components trace to FR/NFR/AT/JT
-  intent without inventing hidden requirements.
-- Simplicity fit: layers, components, interfaces, ADRs, extension points, and diagrams are
-  justified by accepted requirements, risks, constraints, or quality attributes.
-- Architecture views: context, logical/runtime/deployment/data views are present at the
-  right depth.
-- Functional core / imperative shell: pure policy/decision logic is separated from I/O,
-  orchestration, framework, and side-effect code where practical.
-- Responsibility design: components have cohesive responsibilities, clear ownership, and
-  manageable coupling.
-- Readable traceability presentation: human-facing layer/component/interface headings and
-  primary bullets use readable display names first, not trace IDs; `sarathi:entity`
-  annotations, compact glossaries, traceability matrices, test obligations, decision/risk
-  IDs, and exact owner/cross-reference fields preserve checker-visible IDs; diagrams use
-  readable rendered labels as primary text; and ID-heavy content is visually secondary or
-  collapsed.
-- Interfaces and contracts: APIs, schemas, events, errors, versioning, and compatibility
-  are explicit, including representative success/error variants and the fixture/schema/
-  generated-client source of truth for tests.
-- Contract realism: boundary tests and mocks are tied to documented producer/consumer
-  contracts, shared fixtures, schemas, generated clients, or contract tests, not invented
-  convenient shapes.
-- External double verification risk: any mock/fake/stub/test double/local mirror for an
-  external system is flagged as verification risk and tied to real-boundary, official
-  conformance, type-conformance, generated-schema/client, sandbox/emulator, captured-real
-  fixture, or explicit user-approved mitigation. A primary integration seam covered only by
-  a self-authored double is a blocking design defect.
-- UI presentation and feedback: UI-facing designs define baseline styling/layout,
-  responsive behavior, accessibility, and readable loading/empty/error/validation states, or
-  deliberately scope them out.
-- Mock UI gate: when the spec requires a mock UI, the design references a concrete mock UI
-  artifact, covers representative screens/states/flows, and stops for explicit user
-  approval before downstream production UI work.
-- Data and side effects: state ownership, persistence, transactions, idempotency,
-  concurrency, migrations, and rollback are addressed where relevant.
-- Quality attributes: performance, security, privacy, reliability, accessibility,
-  observability, operations, build/release/deployment, and documentation tactics fit the
-  spec.
-- Context-driven missed-concern scan: identify any dedicated performance/load, security/
-  threat-model, privacy/compliance, accessibility, resilience/DR, migration, localization,
-  abuse/fraud/safety, cost, compatibility, or operational review/test implied by context but
-  absent from the design. If material, fail or block with the required upstream/design change.
-- Logging and telemetry design: structured logs, events, metrics, traces, audit/support IDs,
-  correlation, sinks, retention/sampling, redaction/privacy, alert hooks, and human/agent
-  consumers are explicit where relevant. For production-facing systems, APM instrumentation
-  is explicit: service/resource names, spans, trace propagation, latency/throughput/error/
-  saturation metrics, dashboards, alerts, SLO/SLI signals, and exporter/provider strategy.
-- Error-handling design: UI, API, domain, integration, infrastructure, validation,
-  authorization, timeout, offline, and unexpected-failure categories have clear mapping,
-  retry/fallback/degraded behavior, escalation, and safe user/API messages.
-- Trade-offs and ADRs: meaningful options, selected decisions, rejected alternatives, and
-  consequences are surfaced and documented.
-- Testability: explicit `TEST-` obligations sensibly cover acceptance/e2e/journey,
-  unit/pure-core, component, contract, integration, UI, migration, operational, and
-  quality-attribute tests. Critical `JT-` stories from the spec are mapped to executable
-  journey/e2e/workflow obligations with ordered steps, state handoff, environment, and
-  oracle details.
-- Cross-scope integration ownership: the design separates incremental boundary evidence,
-  feature composition, and product composition where needed, and links ancestor `AT-`/`JT-`
-  intent to executable obligations suitable for code-ready descendants.
-- Test environment strategy: developer test environment is defined; shared integration/test,
-  staging/pre-production, production canary/smoke, or synthetic-monitor environments are
-  recommended or deferred with rationale based on risk, data, integrations, and deployment
-  model.
-- Verification-oracle design: each `TEST-` obligation names the observable evidence that
-  will prove pass/fail, such as return value, state, event, API response, DOM/accessibility
-  output, screenshot, artifact, log, metric, trace, deployment signal, or external call.
-- Risks: open risks, assumptions, and follow-up decisions are visible.
-
-## Output
-
-1. Upstream blockers, if any.
-2. Verification evidence considered, or a clear note that none was available.
-3. Qualitative scorecard.
-4. Top fixes ranked by impact.
-5. **Review verdict**: Pass / Pass-with-fixes / Needs rework / Blocked-upstream.
-
-After reporting the verdict, stop. Do not start `/plan-create` or any downstream command
-without explicit user approval.
+Report blockers, evidence considered, scorecard, deletion/defer/reuse findings, top fixes,
+and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
+stop; do not start planning without explicit approval.

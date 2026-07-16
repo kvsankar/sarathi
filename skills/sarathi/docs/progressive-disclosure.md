@@ -28,9 +28,12 @@ Load references only when their trigger applies:
 | --- | --- |
 | `docs/work-in-progress.md` | Starting, resuming, pausing, handing off, or blocking SDLC work in a project; reading or updating `.sdlc/wip.md`. |
 | `docs/project-entry.md` | The repo may be greenfield/brownfield, lacks a recorded entry decision, or an existing artifact/codebase is being adopted or reviewed. |
+| `docs/artifact-contracts.md` | Authoring or revising a spec, design, plan, or code evidence record. |
+| `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, brownfield compatibility evidence, or PR decomposition. |
+| `docs/assurance-profiles.md` | Selecting or changing delivery depth; activating risk-triggered assurance modules. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `/spec-create` or `/code-review`. |
-| `docs/cross-cutting-concerns.md` | Creating, reviewing, or assessing an artifact whose domain, data, UI, integration, deployment, documentation, logging, error-handling, or operational risk needs the shared concern checklist. |
+| `docs/cross-cutting-concerns.md` | Assigning ownership for assurance modules already triggered by the profile/context scan. |
 | `docs/test-ownership.md` | Creating, reviewing, assessing, or implementing decomposable work whose product/feature acceptance intent or integration evidence must be allocated to code-ready descendants. |
 | `docs/work-decomposition.md` | Creating, reviewing, assessing, visualizing, or implementing a Breakdown plan whose parent `WORK-*` allocations must resolve to correctly leveled child artifact chains. |
 | `docs/feedback-and-learning.md` | Planning or completing code-ready slices; handling stakeholder feedback, ancestor revisions, parallel agents, learning dependencies, or bounded learning waves. |
@@ -88,6 +91,8 @@ does not weaken the mechanical-plus-qualitative assessment requirement.
 ## Maintenance Rules
 
 - New shared policy belongs in a focused `docs/*.md` file when more than one stage uses it.
+- New concerns become assurance modules with explicit triggers; do not add them to every
+  stage by default.
 - Stage prompts should carry stage-specific action, outputs, gates, and stop conditions, not
   repeated global policy.
 - `SKILL.md` should point to shared docs by trigger and should not grow into a second copy

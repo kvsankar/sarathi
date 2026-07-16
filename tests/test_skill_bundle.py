@@ -4,7 +4,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "sarathi"
 SKILL_DOCS = [
     "approval-gates.md",
+    "artifact-contracts.md",
     "artifact-formatting.md",
+    "assurance-profiles.md",
     "bootstrap-instructions.md",
     "cleanup-pass.md",
     "cross-cutting-concerns.md",
@@ -14,6 +16,7 @@ SKILL_DOCS = [
     "project-entry.md",
     "release-process.md",
     "review-verification-checklist.md",
+    "simplicity-first.md",
     "simplify-pass.md",
     "srs-authoring.md",
     "test-ownership.md",
@@ -74,6 +77,10 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     assert "Slice A spec + LLD" not in guide
     assert "3. Inspect and adapt" in guide
     assert "Learning-dependent slices:" in guide
+    assert "Lean, Standard, and High-assurance" in guide
+    assert "outside product architecture" in guide
+    assert "at most three" in guide
+    assert "There are no line-count targets" in guide
 
 
 def test_feedback_and_learning_policy_is_wired_into_stage_prompts() -> None:
@@ -92,3 +99,18 @@ def test_feedback_and_learning_policy_is_wired_into_stage_prompts() -> None:
     ):
         prompt = (ROOT / "prompts" / name).read_text(encoding="utf-8")
         assert "docs/feedback-and-learning.md" in prompt
+
+
+def test_simplicity_policy_is_wired_into_creation_review_and_assessment() -> None:
+    policy = (ROOT / "docs" / "simplicity-first.md").read_text(encoding="utf-8")
+    assert "Process/Product Firewall" in policy
+    assert "Brownfield Oracle Precedence" in policy
+    assert "default to at most three" in policy
+    assert "Neutral package and current contracts" in policy
+
+    for suffix in ("create", "review", "assess"):
+        for stage in ("spec", "design", "plan", "code"):
+            prompt = (ROOT / "prompts" / f"{stage}-{suffix}.prompt.md").read_text(
+                encoding="utf-8"
+            )
+            assert "docs/simplicity-first.md" in prompt
