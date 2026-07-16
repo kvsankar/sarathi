@@ -23,6 +23,28 @@ from approvals import load_yaml_file  # noqa: E402
 from schemas import PLAN_ID_CANDIDATE, is_plan_id  # noqa: E402
 
 APPROVED_STATUSES = {"approved", "auto-approved"}
+FEEDBACK_STATUSES = {"received", "requested", "unavailable", "not-applicable"}
+WIP_LEARNING_FIELDS = (
+    ("Learning Target", "target"),
+    ("Feedback Target", "feedback_target"),
+    ("Feedback Status", "feedback_status"),
+    ("Feedback Evidence", "feedback_evidence"),
+    ("Active Learning Wave", "active_wave"),
+    ("WIP Limit", "wip_limit"),
+    ("Active Slices", "active_slices"),
+    ("Invalidation Result", "invalidation_result"),
+    ("Ancestor Impact", "ancestor_impact"),
+    ("Stop Or Replan Triggers", "stop_or_replan"),
+)
+ASSESSMENT_LEARNING_FIELDS = (
+    ("target", "target"),
+    ("feedback_target", "feedback_target"),
+    ("feedback_status", "feedback_status"),
+    ("feedback_evidence", "feedback_evidence"),
+    ("invalidation_result", "invalidation_result"),
+    ("ancestor_impact", "ancestor_impact"),
+    ("stop_or_replan", "stop_or_replan"),
+)
 EXCLUDED_DIRS = {
     ".git",
     ".mypy_cache",
@@ -151,6 +173,35 @@ def load_code_assessment_records(
     return [record for record in records if isinstance(record, dict)], None
 
 
+def compact_value(value: Any) -> str | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, dict):
+        parts = [
+            f"{key}: {rendered}"
+            for key in sorted(value, key=lambda item: str(item).casefold())
+            if (rendered := compact_value(value[key]))
+        ]
+        return "; ".join(parts) or None
+    if isinstance(value, list):
+        return (
+            ", ".join(rendered for item in value if (rendered := compact_value(item)))
+            or None
+        )
+    return str(value).strip() or None
+
+
+def assessment_learning(record: dict[str, Any]) -> dict[str, str]:
+    raw = record.get("learning")
+    if not isinstance(raw, dict):
+        return {}
+    return {
+        target: rendered
+        for source, target in ASSESSMENT_LEARNING_FIELDS
+        if (rendered := compact_value(raw.get(source)))
+    }
+
+
 def code_assessment_for(
     root: Path,
     work_item: str,
@@ -174,6 +225,8 @@ def code_assessment_for(
                 "id": record.get("id"),
                 "verdict": record.get("verdict"),
                 "hash": current_hash,
+                "assessed_at": record.get("assessed_at"),
+                "learning": assessment_learning(record),
             }
         return None
     return None
@@ -292,6 +345,16 @@ def work_items(plan_text: str) -> tuple[list[dict[str, Any]], list[str]]:
                 ),
                 "done_signal": paragraph_field(block, "Done signal"),
                 "risks": paragraph_field(block, "Risks"),
+                "learning_target": paragraph_field(block, "Learning target"),
+                "feedback_target": paragraph_field(block, "Feedback target"),
+                "feedback_method": paragraph_field(block, "Feedback method"),
+                "invalidation_question": paragraph_field(
+                    block, "Invalidation question"
+                ),
+                "dependency_types": paragraph_field(block, "Dependency types"),
+                "learning_wave": paragraph_field(block, "Learning wave"),
+                "stop_or_replan": paragraph_field(block, "Stop/replan trigger")
+                or paragraph_field(block, "Stop or replan trigger"),
             }
         )
     return result, sorted(dict.fromkeys(malformed))
@@ -299,7 +362,11 @@ def work_items(plan_text: str) -> tuple[list[dict[str, Any]], list[str]]:
 
 def parse_wip(root: Path) -> dict[str, Any]:
     path = root / ".sdlc" / "wip.md"
-    result: dict[str, Any] = {"exists": path.is_file(), "artifacts": {}}
+    result: dict[str, Any] = {
+        "exists": path.is_file(),
+        "artifacts": {},
+        "learning": {},
+    }
     if not path.is_file():
         return result
     text = read_text(path)
@@ -313,6 +380,10 @@ def parse_wip(root: Path) -> dict[str, Any]:
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match:
             result[field] = match.group(1).strip()
+    for field, key in WIP_LEARNING_FIELDS:
+        match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
+        if match:
+            result["learning"][key] = match.group(1).strip()
     current_artifacts = section(text, "Current Artifacts")
     for line in current_artifacts.splitlines():
         if not line.strip().startswith("|"):
@@ -335,6 +406,30 @@ def wip_claim_for(wip: dict[str, Any], path: str) -> dict[str, str] | None:
         candidate = str(raw_path).replace("\\", "/").lstrip("./")
         if candidate == normalized or candidate.endswith(f"/{normalized}"):
             return claim
+    return None
+
+
+def explicit_focus_item(
+    items: list[dict[str, Any]], wip: dict[str, Any]
+) -> dict[str, Any] | None:
+    active = str(wip.get("learning", {}).get("active_slices") or "")
+    identifiers = [match.group() for match in PLAN_ID_CANDIDATE.finditer(active)]
+    for identifier in identifiers:
+        if is_plan_id(identifier, "WORK"):
+            match = next((item for item in items if item["id"] == identifier), None)
+            if match:
+                return match
+        if is_plan_id(identifier, "PR"):
+            match = next(
+                (
+                    item
+                    for item in items
+                    if any(pr["id"] == identifier for pr in item.get("prs", []))
+                ),
+                None,
+            )
+            if match:
+                return match
     return None
 
 
@@ -623,6 +718,19 @@ def badge(state: str, label: str | None = None) -> str:
     )
 
 
+def feedback_badge(status: str | None) -> str:
+    normalized = str(status or "").strip().casefold()
+    if normalized == "received":
+        return badge("approved", "Feedback received")
+    if normalized in {"requested", "unavailable"}:
+        return badge("started", f"Feedback {normalized}")
+    if normalized == "not-applicable":
+        return badge("missing", "Feedback not applicable")
+    if normalized:
+        return badge("missing", f"Invalid feedback status: {status}")
+    return badge("missing", "Feedback not recorded")
+
+
 def artifact_link(root: Path, output: Path, stage: dict[str, Any]) -> str:
     href = href_for(root, output, stage.get("path"))
     if href is None:
@@ -685,6 +793,35 @@ def render_prs(prs: list[dict[str, Any]]) -> str:
             for pr in prs
         )
         + "</div>"
+    )
+
+
+def render_assessment_learning(item: dict[str, Any]) -> str:
+    assessment = item.get("code_assessment") or {}
+    if not assessment:
+        return ""
+    learning = assessment.get("learning") or {}
+    if not learning:
+        return (
+            '<div class="assessment-learning"><h3>Assessed learning</h3>'
+            '<span class="empty">Not recorded in assessment</span></div>'
+        )
+    rows = "".join(
+        f"<dt>{esc(label)}</dt><dd>{esc(learning.get(key) or 'Not recorded')}</dd>"
+        for label, key in (
+            ("Learning target", "target"),
+            ("Feedback target", "feedback_target"),
+            ("Feedback status", "feedback_status"),
+            ("Feedback evidence", "feedback_evidence"),
+            ("Invalidation result", "invalidation_result"),
+            ("Ancestor impact", "ancestor_impact"),
+            ("Stop or replan", "stop_or_replan"),
+        )
+    )
+    return (
+        '<div class="assessment-learning"><h3>Assessed learning</h3>'
+        f'<div class="assessment-feedback">{feedback_badge(learning.get("feedback_status"))}</div>'
+        f'<dl class="learning-record">{rows}</dl></div>'
     )
 
 
@@ -786,6 +923,11 @@ def render_tree_branch(
             item.get("scope"),
             item.get("parent_obligations"),
             item.get("dependencies"),
+            item.get("learning_target"),
+            item.get("feedback_target"),
+            item.get("invalidation_question"),
+            item.get("learning_wave"),
+            compact_value((item.get("code_assessment") or {}).get("learning")),
             child.get("path") if child else None,
             " ".join(pr["id"] for pr in item["prs"]),
         )
@@ -801,6 +943,13 @@ def render_tree_branch(
             ("Required child artifact", "child_requirement"),
             ("Done signal", "done_signal"),
             ("Risks", "risks"),
+            ("Learning target", "learning_target"),
+            ("Feedback target", "feedback_target"),
+            ("Feedback method", "feedback_method"),
+            ("Invalidation question", "invalidation_question"),
+            ("Dependency types", "dependency_types"),
+            ("Learning wave", "learning_wave"),
+            ("Stop or replan trigger", "stop_or_replan"),
         )
     )
     claim = item.get("wip_claim") or {}
@@ -809,6 +958,7 @@ def render_tree_branch(
         if claim.get("status")
         else ""
     )
+    assessment_learning_html = render_assessment_learning(item)
     is_focus = item["id"] == focus_id
     branch_status = {
         "frontier": "Not started",
@@ -829,7 +979,7 @@ def render_tree_branch(
     {render_flow(nodes)}
     <details class="branch-details">
       <summary>Scope, allocation, PRs, and evidence</summary>
-      <div class="detail-layout"><dl>{details}</dl><div><h3>PR evidence</h3>{render_prs(item["prs"])}{claim_html}</div></div>
+      <div class="detail-layout"><dl>{details}</dl><div><h3>PR evidence</h3>{render_prs(item["prs"])}{claim_html}{assessment_learning_html}</div></div>
     </details>
   </div>
 </details>"""
@@ -875,8 +1025,10 @@ def render_html(
         ),
     ]
     root_flow = render_flow(root_nodes)
+    wip = model["wip"]
+    explicit_focus = explicit_focus_item(model["work_items"], wip)
     active_items = [item for item in model["work_items"] if item["state"] != "frontier"]
-    focus = next(
+    focus = explicit_focus or next(
         (item for item in active_items if item.get("wip_claim")),
         active_items[0] if active_items else None,
     )
@@ -896,9 +1048,13 @@ def render_html(
         f"<td><code>{esc(source['sha256'][:16])}</code></td></tr>"
         for source in model["sources"]
     )
-    wip = model["wip"]
     current_stage = wip.get("Current Stage", "Not recorded")
     current_gate = wip.get("Current Gate", "Not recorded")
+    learning = wip.get("learning", {})
+    learning_target = learning.get("target") or "Not recorded"
+    feedback_status = learning.get("feedback_status")
+    active_wave = learning.get("active_wave") or "Not recorded"
+    active_slices = learning.get("active_slices") or "Not recorded"
     summary = model["summary"]
     awaiting_count = summary["work_items"] - summary["expanded_items"]
     parent_gate_text = (
@@ -939,6 +1095,24 @@ def render_html(
         focus_heading = "Decomposition is ready to begin"
         focus_detail = "No allocation has started"
         attention = "Choose a WORK item and create its required child artifacts."
+    learning_action = " ".join(
+        str(learning.get(key) or "")
+        for key in ("invalidation_result", "ancestor_impact", "stop_or_replan")
+    ).casefold()
+    if "revision-required" in learning_action:
+        attention = (
+            "An explicit ancestor revision is required before affected work continues."
+        )
+    elif "feedback-required" in learning_action:
+        attention = "Explicit feedback is required before affected work continues."
+    elif str(feedback_status or "").casefold() == "requested":
+        attention = "Feedback has been requested and remains pending."
+    elif str(feedback_status or "").casefold() == "unavailable":
+        attention = (
+            "The planned feedback source is unavailable; inspect the recorded risk."
+        )
+    elif feedback_status and str(feedback_status).casefold() not in FEEDBACK_STATUSES:
+        attention = "Feedback status is invalid; use the canonical status vocabulary."
     expansion_text = (
         f"{summary['expanded_items']} of {summary['work_items']} allocations "
         f"have child plans; {awaiting_count} await decomposition."
@@ -989,6 +1163,26 @@ def render_html(
     assessment_note = (
         f'<p class="warning">Code-assessment ledger could not be parsed: {esc(model["assessment_error"])}</p>'
         if model.get("assessment_error")
+        else ""
+    )
+    learning_detail_rows = "".join(
+        f"<dt>{esc(label)}</dt><dd>{esc(learning.get(key) or 'Not recorded')}</dd>"
+        for label, key in (
+            ("Feedback target", "feedback_target"),
+            ("Feedback evidence", "feedback_evidence"),
+            ("WIP limit", "wip_limit"),
+            ("Invalidation result", "invalidation_result"),
+            ("Ancestor impact", "ancestor_impact"),
+            ("Stop or replan triggers", "stop_or_replan"),
+        )
+    )
+    learning_open = (
+        " open"
+        if (
+            "revision-required" in learning_action
+            or "feedback-required" in learning_action
+            or str(feedback_status or "").casefold() in {"requested", "unavailable"}
+        )
         else ""
     )
     guide_link = (
@@ -1059,6 +1253,17 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .executive-fact span {{ display: block; color: var(--muted); font-size: 0.68rem; font-weight: 750; text-transform: uppercase; }}
 .executive-fact strong {{ display: block; margin-top: 0.2rem; font-size: 0.82rem; overflow-wrap: anywhere; }}
 .executive-fact-attention strong {{ color: #8a3b12; }}
+.learning-facts {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); background: var(--surface-alt); }}
+.learning-fact {{ min-width: 0; padding: 0.7rem 1.1rem; border-right: 1px solid var(--line); }}
+.learning-fact:last-child {{ border-right: 0; }}
+.learning-fact > span {{ display: block; color: var(--muted); font-size: 0.68rem; font-weight: 750; text-transform: uppercase; }}
+.learning-fact > strong {{ display: block; margin-top: 0.2rem; font-size: 0.82rem; overflow-wrap: anywhere; }}
+.learning-fact .status {{ margin-top: 0.25rem; }}
+.learning-details {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
+.learning-details summary {{ cursor: pointer; color: var(--text); font-weight: 750; }}
+.learning-details dl, .learning-record {{ display: grid; grid-template-columns: 11rem 1fr; gap: 0.35rem 0.75rem; margin: 0.65rem 0; }}
+.learning-details dt, .learning-record dt {{ color: var(--muted); font-weight: 700; }}
+.learning-details dd, .learning-record dd {{ margin: 0; overflow-wrap: anywhere; }}
 .read-note {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
 .read-note summary {{ cursor: pointer; font-weight: 700; }}
 .read-note p {{ margin: 0.5rem 0; }}
@@ -1123,6 +1328,9 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .detail-layout dd {{ margin: 0; overflow-wrap: anywhere; }}
 .detail-layout h3 {{ margin: 0 0 0.5rem; font-size: 0.82rem; }}
 .wip-claim {{ margin: 0.5rem 0 0; color: var(--muted); font-size: 0.75rem; }}
+.assessment-learning {{ margin-top: 0.9rem; padding-top: 0.7rem; border-top: 1px dashed var(--line); }}
+.assessment-feedback {{ margin-bottom: 0.5rem; }}
+.learning-record {{ grid-template-columns: 8rem 1fr; font-size: 0.75rem; }}
 .tree-heading {{ display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-top: 1.4rem; }}
 .tree-heading h2 {{ margin: 0; }}
 .tree-heading p {{ margin: 0.15rem 0 0; color: var(--muted); font-size: 0.78rem; }}
@@ -1151,6 +1359,10 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   .executive-facts {{ grid-template-columns: 1fr 1fr; }}
   .executive-fact:nth-child(2) {{ border-right: 0; }}
   .executive-fact:nth-child(-n+2) {{ border-bottom: 1px solid var(--line); }}
+  .learning-facts {{ grid-template-columns: 1fr 1fr; }}
+  .learning-fact:nth-child(2) {{ border-right: 0; }}
+  .learning-fact:nth-child(-n+2) {{ border-bottom: 1px solid var(--line); }}
+  .learning-details dl, .learning-record {{ grid-template-columns: 1fr; }}
   .tree-heading {{ align-items: stretch; flex-direction: column; }}
   .toolbar {{ flex: 1 1 auto; flex-wrap: wrap; justify-content: start; }}
   .search {{ flex-basis: 100%; }}
@@ -1194,9 +1406,19 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
       <div class="executive-fact"><span>Implementation evidence</span><strong>{focus_detail}</strong></div>
       <div class="executive-fact executive-fact-attention"><span>Needs attention</span><strong>{esc(attention)}</strong></div>
     </div>
+    <div class="learning-facts" aria-label="Current learning loop">
+      <div class="learning-fact"><span>Learning target</span><strong>{esc(learning_target)}</strong></div>
+      <div class="learning-fact"><span>Feedback</span>{feedback_badge(feedback_status)}</div>
+      <div class="learning-fact"><span>Active wave</span><strong>{esc(active_wave)}</strong></div>
+      <div class="learning-fact"><span>Active slices</span><strong>{esc(active_slices)}</strong></div>
+    </div>
+    <details class="learning-details"{learning_open}>
+      <summary>Learning evidence and adaptation</summary>
+      <dl>{learning_detail_rows}</dl>
+    </details>
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean hash-current approval, a hash-current passing code assessment, or an approved code-slice handoff. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Mapped tests are implementation evidence, not a completion estimate; WIP status remains a project-authored claim.</p>
+      <p>Green checks mean hash-current approval, a hash-current passing code assessment, or an approved code-slice handoff. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields are explicit WIP or assessment claims; the renderer never infers them from Git, approvals, or passing tests.</p>
       {approval_note}
       {traceability_note}
       {assessment_note}

@@ -16,6 +16,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Add bounded learning-wave guidance for agent parallelism, distinguishing preferred
   intra-slice work, independent concurrent slices, and exceptional speculative downstream
   work through execution, learning, and integration dependencies.
+- Show the current learning target, feedback state, active wave and slices, WIP limit,
+  invalidation result, ancestor impact, and stop/replan triggers in workflow-status HTML;
+  preserve completed-slice learning evidence in hash-current code assessments.
 - Add the top-level changelog and maintainer release/tagging process.
 - Add a deterministic workflow-status HTML renderer and `/workflow-status` command that
   visualize real artifact gates, known-unknown decomposition, PR slices, and mapped test

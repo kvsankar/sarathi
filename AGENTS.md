@@ -82,8 +82,9 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
 - **`/workflow-status`** —
   [prompts/workflow-status.prompt.md](prompts/workflow-status.prompt.md)
   Generates a deterministic, read-only HTML tree of artifact gates, decomposition, PR
-  slices, and mapped implementation evidence using the process guide's visual grammar,
-  plus the linked static process guide. It does not advance an SDLC gate.
+  slices, mapped implementation evidence, and explicit learning/feedback state using the
+  process guide's visual grammar, plus the linked static process guide. It does not advance
+  an SDLC gate.
 
 ## Test responsibility by command
 
@@ -497,7 +498,9 @@ only when `.sdlc/gates.yaml` allows that gate and scope.
 
 When `/code-assess` returns `Pass` for a known `WORK-*` item, record the assessment in
 `.sdlc/code-assessments.yaml` with the child implementation plan path and current SHA-256.
-This supports a hash-current `Assessed` workflow state without pretending the assessment is
+Preserve the slice's explicit learning target, feedback status/evidence, invalidation result,
+ancestor-impact decision, and stop/replan result in that record. This supports a hash-current
+`Assessed` workflow state and branch learning history without pretending the assessment is
 human approval. Bind `code_slice.approved` to that same child plan when the user approves the
 slice handoff; workflow status then displays `Completed`.
 

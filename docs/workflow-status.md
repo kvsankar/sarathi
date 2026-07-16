@@ -12,6 +12,9 @@ substitute for verification and review.
 - **Executive summary**: the current allocation and product-to-child breadcrumb, current
   stage, next gate, implementation evidence, and the most immediate artifact gap. This is
   orientation, not a percentage-complete estimate.
+- **Current learning loop**: the explicit learning target, feedback state, active wave,
+  WIP limit, active slices, invalidation result, ancestor impact, and stop/replan triggers
+  recorded in `.sdlc/wip.md`. Missing fields display as `Not recorded`.
 - **Progressively disclosed workflow tree**: the product Spec/Design/Plan trunk remains
   visible, the current `WORK-` allocation opens by default, and other allocations stay
   collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
@@ -20,6 +23,8 @@ substitute for verification and review.
 - **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
   `WORK-AREA-NAME` remain visible in a repair warning but are excluded from valid
   allocation counts and workflow branches.
+- **Assessed learning evidence**: a completed branch can disclose the learning and
+  adaptation record attached to its hash-current passing code assessment.
 - **Provenance**: relative source paths and SHA-256 prefixes used for the snapshot.
 
 The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
@@ -59,6 +64,27 @@ allocation, linking discovered artifacts and leaving missing ones visibly blank.
 verified. WIP statuses are shown only as project-authored claims. The renderer never infers
 completion from source-file counts or ordinary Git activity.
 
+Learning state follows the same evidence rule. The current loop comes only from these exact
+`.sdlc/wip.md` fields:
+
+```text
+Learning Target: assumption, behavior, boundary, or risk under test
+Feedback Target: stakeholder, real system, environment, or objective evidence source
+Feedback Status: received | requested | unavailable | not-applicable
+Feedback Evidence: path, review, observation, or concise residual-risk note
+Active Learning Wave: wave name or none
+WIP Limit: positive integer or not-recorded
+Active Slices: comma-separated WORK-* or PR-* IDs, or none
+Invalidation Result: concise evidence-backed result
+Ancestor Impact: spec/design/plan/code/process outcome and affected paths
+Stop Or Replan Triggers: conditions that pause or cancel active sibling work
+```
+
+An explicit valid `WORK-*` or `PR-*` in `Active Slices` selects the branch opened as the
+current focus. A `PR-*` selects its owning `WORK-*` branch. The renderer does not infer an
+active wave, active slice, feedback result, or ancestor decision from Git activity,
+approvals, mapped tests, or passing commands.
+
 The renderer and `check_plan.py` share the same plan-ID grammar. `MILE-*`, `WORK-*`, and
 `PR-*` identifiers require exactly two uppercase slug tokens after the kind. One-token,
 extra-token, lowercase, numeric-placeholder, and otherwise malformed candidates are not
@@ -76,11 +102,26 @@ assessments:
       sha256: "<current child-plan sha256>"
     verdict: Pass
     assessed_at: "2026-07-15T12:00:00Z"
+    learning:
+      target: Validate the sign-in boundary with a production-like identity provider.
+      feedback_target: Security reviewer and identity-provider sandbox.
+      feedback_status: received
+      feedback_evidence: docs/reviews/auth-signin.md
+      invalidation_result: The token-refresh assumption held; retry timing changed.
+      ancestor_impact:
+        spec: "no-change: accepted behavior remains correct"
+        design: "revision-proposed: document the observed retry timing"
+        plan: "no-change: remaining allocations are unaffected"
+        code_integration: "no-change: contract suite covers the shared boundary"
+        process: "no-change: no reusable process gap was found"
+      stop_or_replan: Pause sibling auth work if the provider contract changes.
 ```
 
 Only `Pass` is green. `Pass-with-fixes`, stale plan hashes, WIP prose, mapped tests, and Git
 or GitHub state do not imply assessment or completion. `Completed` additionally requires a
 hash-current `code_slice.approved` record whose artifact is the child implementation plan.
+Legacy passing assessment records without a `learning` mapping remain valid and display
+`Not recorded in assessment`; the renderer does not backfill a story from unrelated state.
 
 ## Generate And Check
 
@@ -109,10 +150,10 @@ python checkers/render_workflow_status.py . --output docs/sdlc-status.html --gui
 
 ## Maintenance
 
-Regenerate the page after accepted artifact, approval, decomposition, WIP, traceability, or
-process-guide changes. CI may use `--check` to reject a stale status page or static guide.
-Do not hand-edit generated HTML; change governing artifacts, the guide source, or the
-renderer instead.
+Regenerate the page after accepted artifact, approval, decomposition, WIP, learning,
+feedback, assessment, traceability, or process-guide changes. CI may use `--check` to reject
+a stale status page or static guide. Do not hand-edit generated HTML; change governing
+artifacts, the guide source, or the renderer instead.
 
 The canonical repository also runs responsive browser checks for the status page and
 process guide:

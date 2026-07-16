@@ -24,7 +24,8 @@ generating an artifact.
 - A native `sarathi` skill for agents that support skills.
 - Structural checkers for specs, designs, plans, and code/test traceability.
 - A deterministic workflow-status HTML tree for artifact gates, decomposition, PR slices,
-  and mapped implementation evidence, using the same visual grammar as the process guide.
+  mapped implementation evidence, and explicit learning/feedback state, using the same
+  visual grammar as the process guide.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
 - Change history in [CHANGELOG.md](CHANGELOG.md) and release/tagging guidance in
@@ -144,7 +145,7 @@ The core stage names are:
 | `/code-verify` | Run tests, coverage, quality gates, logging/error-handling/build/docs/deployment checks, and structural code evidence. |
 | `/code-review` | Qualitatively review code, tests, logging/error-handling, docs, build/deploy work, quality gates, and upstream consistency. |
 | `/code-assess` | Run `/code-verify` plus `/code-review`. |
-| `/workflow-status` | Render a read-only HTML snapshot of workflow expansion and evidence. |
+| `/workflow-status` | Render workflow expansion, evidence, and explicit learning status as read-only HTML. |
 
 Generate the live status page and its linked static process guide directly with:
 

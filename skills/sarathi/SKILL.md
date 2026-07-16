@@ -150,9 +150,8 @@ Select the narrowest command that matches the user's current artifact:
 - `/code-review`: qualitatively review implementation, tests, traceability, quality gates,
   logging/error-handling fitness, and upstream consistency.
 - `/code-assess`: run `/code-verify` plus `/code-review` as the full code gate.
-- `/workflow-status`: generate a deterministic HTML tree of artifact gates, decomposition,
-  PR slices, and mapped implementation evidence using the static process guide's visual
-  grammar, plus the linked guide, without advancing a gate.
+- `/workflow-status`: render deterministic HTML of gates, decomposition, PRs, evidence, and
+  explicit learning/feedback state using the linked process guide, without advancing a gate.
 
 `/workflow-status` is a read-only projection command, not an SDLC creation or assessment
 stage. It may run at any point, including when only a spec exists. It does not require or
@@ -245,8 +244,9 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   timestamp ending in `Z`. Use `status: auto-approved` only when `.sdlc/gates.yaml` allows
   that gate and scope.
 - When `/code-assess` returns `Pass` for a known `WORK-*` item, record it in
-  `.sdlc/code-assessments.yaml` against the child plan hash. This is an assessment claim;
-  only a separate `code_slice.approved` record marks the handoff completed.
+  `.sdlc/code-assessments.yaml` against the child plan hash with its explicit learning,
+  feedback, and ancestor-impact evidence. This is an assessment claim; only a separate
+  `code_slice.approved` record marks the handoff completed.
 - Never represent policy-bounded auto-approval as human approval.
 - Use the three-scope model: product/system, feature/component, slice/change. Every artifact
   should declare Implementation Readiness as Exploratory, Decomposable, or Code-ready.
