@@ -150,8 +150,8 @@ Select the narrowest command that matches the user's current artifact:
 - `/code-review`: qualitatively review implementation, tests, traceability, quality gates,
   logging/error-handling fitness, and upstream consistency.
 - `/code-assess`: run `/code-verify` plus `/code-review` as the full code gate.
-- `/workflow-status`: render deterministic HTML of gates, decomposition, PRs, evidence, and
-  explicit learning/feedback state using the linked process guide, without advancing a gate.
+- `/workflow-status`: render deterministic artifact-tree and ordered learning-wave HTML with
+  explicit evidence and feedback state, without advancing a gate.
 
 `/workflow-status` is a read-only projection command, not an SDLC creation or assessment
 stage. It may run at any point, including when only a spec exists. It does not require or
@@ -257,11 +257,11 @@ pause after an artifact unless the user also explicitly asks for end-to-end cont
   allocate slice/change children. Cross-feature integration or acceptance work may allocate
   directly to a slice/change child. Every allocation names parent scope, child scope,
   inherited obligations, and required child artifact chain before implementation.
-- Prefer intra-slice parallelism. Independent slices need a bounded wave with dependency
-  types, WIP cap, checkpoints, convergence owner, and stop/replan triggers. Speculative
-  downstream work is reversible and timeboxed; agent availability proves no independence.
-- Use slug-only IDs. Specs and plans use `KIND-AREA-NAME`, for example
-  `FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, and `PR-AUTH-SIGNIN`.
+- Prefer intra-slice parallelism. Bounded waves need dependency types, WIP caps, checkpoints,
+  convergence owners, and stop/replan triggers. Plans assign every delivery item once to an
+  ordered `WAVE-*`; checkpoints close only that wave. Speculative work stays reversible.
+- Use slug-only `KIND-AREA-NAME` IDs such as `FR-AUTH-SIGNIN`, `PR-AUTH-SIGNIN`, and
+  `WAVE-AUTH-BOUNDARY`.
   Design entities use `KIND-SLUG`, for example `COMP-AUTH` and `IFACE-AUTH`. Design test
   obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric suffixes such
   as `FR-AUTH-10` are invalid.

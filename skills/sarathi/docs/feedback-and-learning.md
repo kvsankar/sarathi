@@ -103,6 +103,19 @@ triggers. Close the wave by assessing its slices, collecting available feedback,
 ancestor-impact scan, and revising the next wave. Prefer progressively detailed near-term
 plans over elaborating distant slices whose assumptions have not yet been tested.
 
+Plans make that sequence deterministic in an exact `Learning Waves` section. Each
+`WAVE-AREA-NAME` block declares `Order`, `Learning Target`, `Members`, `WIP Limit`,
+`Feedback/Integration Checkpoint`, and `Stop/Replan Triggers`. Breakdown-plan members are
+`WORK-*` allocations; Implementation-plan members are `PR-*` items. Every delivery item
+belongs to exactly one wave, and order is local to the governing plan.
+
+The current wave and active members live in `.sdlc/wip.md`. A completed checkpoint lives in
+`.sdlc/wave-checkpoints.yaml` and binds the wave ID and exact members to the current governing
+plan SHA-256. It records `status: completed`, completion time, feedback evidence,
+invalidation result, and ancestor impact. This is a wave-boundary evidence record, not a
+full code assessment, human approval, merge claim, or authorization to begin the next wave.
+Changing the plan or wave membership makes the checkpoint stale.
+
 Unattended or end-to-end mode may cross human collaboration pauses when explicitly requested,
 but it does not remove learning dependencies. The agent must still stop or replan work whose
 governing assumptions were invalidated.

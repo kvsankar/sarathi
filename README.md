@@ -23,9 +23,9 @@ generating an artifact.
   assessment.
 - A native `sarathi` skill for agents that support skills.
 - Structural checkers for specs, designs, plans, and code/test traceability.
-- A deterministic workflow-status HTML tree for artifact gates, decomposition, PR slices,
-  mapped implementation evidence, and explicit learning/feedback state, using the same
-  visual grammar as the process guide.
+- Deterministic workflow-status HTML views for the artifact tree and each plan's ordered
+  learning waves, including mapped evidence, explicit feedback state, and hash-current wave
+  checkpoints.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
 - Change history in [CHANGELOG.md](CHANGELOG.md) and release/tagging guidance in
@@ -145,7 +145,7 @@ The core stage names are:
 | `/code-verify` | Run tests, coverage, quality gates, logging/error-handling/build/docs/deployment checks, and structural code evidence. |
 | `/code-review` | Qualitatively review code, tests, logging/error-handling, docs, build/deploy work, quality gates, and upstream consistency. |
 | `/code-assess` | Run `/code-verify` plus `/code-review`. |
-| `/workflow-status` | Render workflow expansion, evidence, and explicit learning status as read-only HTML. |
+| `/workflow-status` | Render the artifact tree and ordered learning-wave status as read-only HTML. |
 
 Generate the live status page and its linked static process guide directly with:
 
@@ -195,7 +195,8 @@ test code remains slice-level code carrying product-owned test intent. See
 ## ID Format
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
-`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, and `PR-AUTH-SIGNIN`. Design
+`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, `PR-AUTH-SIGNIN`, and
+`WAVE-AUTH-BOUNDARY`. Design
 entities keep the shorter `KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`.
 Design test obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric
 suffixes such as `FR-AUTH-10` are rejected by the checkers.
@@ -326,6 +327,11 @@ learning wave when feedback from one cannot materially invalidate another, depen
 touch ownership are explicit, WIP is capped, and convergence plus stop/replan triggers are
 planned. Speculative downstream work stays exceptional and reversible. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
+
+Plans assign every `WORK-*` or `PR-*` to an ordered `WAVE-*`. The live status page shows
+that delivery sequence beside the decomposition tree. `.sdlc/wip.md` identifies the active
+wave; a hash-current `.sdlc/wave-checkpoints.yaml` record closes a wave without pretending
+the enclosing plan is fully assessed or the next wave is automatically approved.
 
 ## Human Gates And YOLO Mode
 

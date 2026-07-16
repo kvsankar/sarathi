@@ -81,10 +81,9 @@ Source command prompts live in [prompts](prompts). Command verbs are deliberatel
   Runs `/code-verify` plus `/code-review` as the full code gate.
 - **`/workflow-status`** —
   [prompts/workflow-status.prompt.md](prompts/workflow-status.prompt.md)
-  Generates a deterministic, read-only HTML tree of artifact gates, decomposition, PR
-  slices, mapped implementation evidence, and explicit learning/feedback state using the
-  process guide's visual grammar, plus the linked static process guide. It does not advance
-  an SDLC gate.
+  Generates deterministic, read-only HTML artifact and ordered learning-wave views with
+  decomposition, PR slices, mapped evidence, explicit feedback state, and hash-current wave
+  checkpoints, plus the linked static process guide. It does not advance an SDLC gate.
 
 ## Test responsibility by command
 
@@ -352,10 +351,17 @@ stop/replan triggers. Ask whether feedback from one slice could materially inval
 already underway. Speculative downstream work is exceptional, reversible, and timeboxed. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
 
+Plans declare each local sequence in an exact `Learning Waves` section using
+`WAVE-AREA-NAME`, ordered membership, WIP limits, checkpoints, and stop/replan triggers.
+`.sdlc/wip.md` names the current wave and members. A hash-current
+`.sdlc/wave-checkpoints.yaml` record closes one wave with feedback and ancestor-impact
+evidence; it does not assess the enclosing plan, approve the next wave, or prove merge state.
+
 ## ID format
 
 Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
-`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, and `PR-AUTH-SIGNIN`. Design
+`FR-AUTH-SIGNIN`, `AT-AUTH-SIGNIN`, `JT-AUTH-ONBOARDING`, `PR-AUTH-SIGNIN`, and
+`WAVE-AUTH-BOUNDARY`. Design
 entities keep the shorter `KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`.
 Design test obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric
 suffixes such as `FR-AUTH-10` are invalid and should be migrated using
@@ -427,7 +433,7 @@ stop after checker JSON. The canonical checklist is
 | --- | --- | --- |
 | `/spec-assess` | `/spec-verify`: `check_spec.py` on the target spec. | `/spec-review`: spec quality, problem framing, needs, non-goals, scope/readiness, use cases, requirements, NFRs, acceptance tests, UI mock preference, external contracts and real-boundary testability, logging/error-handling intent, build/deployment intent, documentation intent, context-driven missed concerns, traceability. |
 | `/design-assess` | `/design-verify`: `check_spec.py` on upstream spec, then `check_design.py` on design. | `/design-review`: first judge upstream spec fitness; then judge design quality, UI mock artifact/approval when required, logging/telemetry/APM and error-handling design, build/deployment design, test-environment strategy, context-driven review/test recommendations, documentation design, decisions, risks, external-double verification risk/mitigation, testability, verification-oracle design, and traceability. |
-| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, test-environment allocation, context-driven review/test allocation, verification-oracle allocation, external-double mitigation allocation, UI mock approval allocation, logging/error-handling allocation, build/deployment allocation, documentation allocation, sequencing, and worktrees. |
+| `/plan-assess` | `/plan-verify`: `check_spec.py` + `check_design.py` on upstream artifacts, then `check_plan.py` on plan, including exact wave membership. | `/plan-review`: first judge upstream spec/design fitness; then judge plan slicing, TDD, touch sets, test allocation, test-environment allocation, context-driven review/test allocation, verification-oracle allocation, external-double mitigation allocation, UI mock approval allocation, logging/error-handling allocation, build/deployment allocation, documentation allocation, ordered waves, sequencing, and worktrees. |
 | `/code-assess` | `/code-verify`: `check_spec.py` + `check_design.py` + `check_plan.py`, `check_code.py`, pre-commit/equivalent gate, and planned logging/telemetry/APM/error-handling/build/docs/deployment/environment/context-driven checks. | `/code-review`: first judge upstream code-readiness; then judge implementation correctness, test implementation quality, verification-oracle rigor, external-double verification risk, mock UI fidelity when required, logging/telemetry/APM and error-handling verification, build/deployment verification, test-environment execution, context-driven concern verification, documentation verification, TDD evidence, scope fidelity, production quality, and quality-gate fitness. |
 
 Agents should infer the likely scope from the user's request and state it explicitly:
@@ -503,6 +509,11 @@ ancestor-impact decision, and stop/replan result in that record. This supports a
 `Assessed` workflow state and branch learning history without pretending the assessment is
 human approval. Bind `code_slice.approved` to that same child plan when the user approves the
 slice handoff; workflow status then displays `Completed`.
+
+When a declared wave's exact members and feedback/integration checkpoint are complete,
+record `.sdlc/wave-checkpoints.yaml` against the governing plan's current SHA-256. Preserve
+feedback, invalidation, and ancestor-impact evidence. This closes only that wave; stale or
+member-mismatched records do not display as completed.
 
 Default gate ownership:
 
@@ -592,7 +603,8 @@ design), `--spec <file>` (resolve FR/UC/JT refs). Exits non-zero on any gate fai
 [checkers/check_plan.py](checkers/check_plan.py) enforces structural plan hygiene:
 slug-only `KIND-AREA-NAME` plan ID format, duplicates, orphan refs, FR/AT/JT/COMP/TEST
 reference coverage, advisory PR LOC estimates, Red/Green step text, no forward dependencies,
-external-double mitigation allocation, and banned vague terms.
+ordered `WAVE-*` declarations and complete member allocation, external-double mitigation
+allocation, and banned vague terms.
 
 ```pwsh
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json

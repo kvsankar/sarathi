@@ -143,6 +143,9 @@ Score each item 1-5 and give one concrete fix for any score below 5:
   execution, learning, and integration dependencies, WIP limits, review/feedback capacity,
   convergence ownership, and stop/replan triggers. Speculative downstream work is
   reversible, timeboxed, and never represented as validated production progress.
+- Ordered wave model: the exact `Learning Waves` section assigns every delivery item once,
+  uses local deterministic order, keeps later waves provisional, and places mutually
+  invalidating work in separate waves.
 - Risk and rollback: high-risk changes have mitigation, validation, and rollback strategy.
 
 ## Output

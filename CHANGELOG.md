@@ -10,6 +10,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Added
 
+- Add ordered learning-wave declarations and a second workflow-status projection: plans
+  assign `WORK-*` or `PR-*` members to `WAVE-*` sequences, while hash-current wave
+  checkpoints preserve completed feedback and ancestor-impact evidence.
 - Add an iterative feedback-and-learning policy: code-ready slices declare learning and
   feedback targets, code assessment records honest feedback status and ancestor impact, and
   the static process guide shows the inspect/adapt loop.

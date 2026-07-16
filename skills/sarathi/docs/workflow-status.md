@@ -20,6 +20,10 @@ substitute for verification and review.
   collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
   backgrounds and Product/Feature/Slice level tags as the static process guide. Missing
   artifacts remain explicit `Not yet done` nodes.
+- **Ordered learning waves**: each discovered plan contributes its own ordered wave
+  sequence. Completed waves collapse by default, the active wave opens, and member badges
+  distinguish completed checkpoints, assessed slices, mapped evidence, active work, and
+  work not started.
 - **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
   `WORK-AREA-NAME` remain visible in a repair warning but are excluded from valid
   allocation counts and workflow branches.
@@ -29,9 +33,9 @@ substitute for verification and review.
 
 The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
 designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
-the first heading; `.sdlc/approvals.yaml`; `.sdlc/code-assessments.yaml`; `.sdlc/wip.md`;
-and `.sdlc/test-traceability.yaml`. It ignores common dependency, cache, and VCS
-directories.
+the first heading; plan `Learning Waves` sections; `.sdlc/approvals.yaml`;
+`.sdlc/code-assessments.yaml`; `.sdlc/wave-checkpoints.yaml`; `.sdlc/wip.md`; and
+`.sdlc/test-traceability.yaml`. It ignores common dependency, cache, and VCS directories.
 
 ## Evidence Semantics
 
@@ -48,6 +52,9 @@ directories.
 | Assessed | A hash-current `.sdlc/code-assessments.yaml` entry records a `Pass` verdict for the child plan and `WORK-*` item. |
 | Completed | A hash-current `code_slice.approved` record attests the child plan as an approved slice handoff. |
 | Not yet decomposed | A parent `WORK-` item has no discovered child implementation plan. |
+| Wave completed | A hash-current wave checkpoint matches the plan, wave ID, and exact member list. |
+| Wave in progress | The wave is explicitly active or at least one member has implementation evidence. |
+| Wave not started | No member has implementation evidence and the wave is not active. |
 
 The visual status grammar is deliberately small: a green check means hash-current artifact
 approval, passing code assessment, or approved code-slice handoff; an amber dot means work
@@ -72,9 +79,9 @@ Learning Target: assumption, behavior, boundary, or risk under test
 Feedback Target: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise residual-risk note
-Active Learning Wave: wave name or none
+Active Learning Wave: exact WAVE-AREA-NAME from the governing plan, or none
 WIP Limit: positive integer or not-recorded
-Active Slices: comma-separated WORK-* or PR-* IDs, or none
+Active Slices: comma-separated members from that wave (WORK-* or PR-*), or none
 Invalidation Result: concise evidence-backed result
 Ancestor Impact: spec/design/plan/code/process outcome and affected paths
 Stop Or Replan Triggers: conditions that pause or cancel active sibling work
@@ -84,6 +91,56 @@ An explicit valid `WORK-*` or `PR-*` in `Active Slices` selects the branch opene
 current focus. A `PR-*` selects its owning `WORK-*` branch. The renderer does not infer an
 active wave, active slice, feedback result, or ancestor decision from Git activity,
 approvals, mapped tests, or passing commands.
+
+Each new plan declares an exact sequence:
+
+```markdown
+## Learning Waves
+
+### WAVE-AUTH-BOUNDARY
+Order: 1
+Learning Target: Validate the external identity boundary.
+Members: PR-AUTH-CONTRACT, PR-AUTH-SIGNIN
+WIP Limit: 2
+Feedback/Integration Checkpoint: Review sandbox and consumer contract evidence.
+Stop/Replan Triggers: Stop later auth work if the public token contract changes.
+```
+
+`WAVE-*` uses the same two uppercase slug-token rule as delivery IDs. Wave order is local to
+the governing plan. Every `WORK-*` in a Breakdown plan or `PR-*` in an Implementation plan
+belongs to exactly one declared wave. Later waves are provisional, not promises.
+
+A completed wave is recorded separately from full code assessment or human approval:
+
+```yaml
+version: 1
+checkpoints:
+  - id: CHECK-WAVE-AUTH-BOUNDARY
+    wave: WAVE-AUTH-BOUNDARY
+    plan:
+      path: docs/plans/work_auth_signin.md
+      sha256: "<current governing-plan sha256>"
+    members:
+      - PR-AUTH-CONTRACT
+      - PR-AUTH-SIGNIN
+    status: completed
+    completed_at: "2026-07-16T12:00:00Z"
+    learning:
+      target: Validate the external identity boundary.
+      feedback_target: Security reviewer and provider sandbox.
+      feedback_status: received
+      feedback_evidence: docs/reviews/auth-boundary.md
+      invalidation_result: The token contract held.
+      ancestor_impact:
+        spec: "no-change: accepted behavior remains correct"
+        design: "no-change: boundary design remains valid"
+        plan: "no-change: the next wave may begin"
+      stop_or_replan: Stop if the provider contract changes.
+```
+
+The renderer excludes a stale or member-mismatched checkpoint from completion. A checkpoint
+closes only its wave; it does not mark the enclosing slice assessed, merged, approved, or
+ready for release.
 
 The renderer and `check_plan.py` share the same plan-ID grammar. `MILE-*`, `WORK-*`, and
 `PR-*` identifiers require exactly two uppercase slug tokens after the kind. One-token,
@@ -151,9 +208,9 @@ python checkers/render_workflow_status.py . --output docs/sdlc-status.html --gui
 ## Maintenance
 
 Regenerate the page after accepted artifact, approval, decomposition, WIP, learning,
-feedback, assessment, traceability, or process-guide changes. CI may use `--check` to reject
-a stale status page or static guide. Do not hand-edit generated HTML; change governing
-artifacts, the guide source, or the renderer instead.
+feedback, wave-checkpoint, assessment, traceability, or process-guide changes. CI may use
+`--check` to reject a stale status page or static guide. Do not hand-edit generated HTML;
+change governing artifacts, the guide source, or the renderer instead.
 
 The canonical repository also runs responsive browser checks for the status page and
 process guide:
