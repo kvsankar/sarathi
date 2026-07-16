@@ -261,6 +261,9 @@ Reasoned judgment, scored 1–5 with one concrete fix each:
   account for review/feedback capacity, avoid unsafe touch-set overlap, name convergence
   ownership and stop/replan triggers, and state how worktrees rejoin. Speculative downstream
   work is exceptional, reversible, and timeboxed.
+- **Ordered wave model** — the exact `Learning Waves` section assigns every `WORK-*` or
+  `PR-*` once, orders waves locally, and keeps later waves provisional until checkpoints
+  resolve learning dependencies.
 - **Production quality** — logging/telemetry, error handling, NFR validation, rollback per PR.
 - **Shippability** — the plan introduces build, deployment, and documentation capability
   before dependent feature work, keeps each PR independently buildable and explainable, and

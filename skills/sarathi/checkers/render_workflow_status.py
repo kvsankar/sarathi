@@ -20,7 +20,8 @@ if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
 from approvals import load_yaml_file  # noqa: E402
-from schemas import PLAN_ID_CANDIDATE, is_plan_id  # noqa: E402
+from schemas import PLAN_ID_CANDIDATE, is_plan_id, is_wave_id  # noqa: E402
+from waves import parse_learning_waves  # noqa: E402
 
 APPROVED_STATUSES = {"approved", "auto-approved"}
 FEEDBACK_STATUSES = {"received", "requested", "unavailable", "not-applicable"}
@@ -173,6 +174,22 @@ def load_code_assessment_records(
     return [record for record in records if isinstance(record, dict)], None
 
 
+def load_wave_checkpoint_records(
+    root: Path,
+) -> tuple[list[dict[str, Any]], str | None]:
+    path = root / ".sdlc" / "wave-checkpoints.yaml"
+    if not path.is_file():
+        return [], None
+    try:
+        loaded = load_yaml_file(path)
+    except (OSError, ValueError) as exc:
+        return [], str(exc)
+    records = loaded.get("checkpoints") if isinstance(loaded, dict) else None
+    if not isinstance(records, list):
+        return [], "checkpoints must be a list"
+    return [record for record in records if isinstance(record, dict)], None
+
+
 def compact_value(value: Any) -> str | None:
     if value is None or value == "":
         return None
@@ -230,6 +247,44 @@ def code_assessment_for(
             }
         return None
     return None
+
+
+def wave_checkpoint_for(
+    root: Path,
+    wave: dict[str, Any],
+    plan_path: Path,
+    records: list[dict[str, Any]],
+) -> tuple[dict[str, Any] | None, str | None]:
+    current_hash = sha256_file(plan_path)
+    for record in reversed(records):
+        if record.get("wave") != wave["id"]:
+            continue
+        plan = record.get("plan")
+        if not isinstance(plan, dict):
+            return None, "wave checkpoint has no plan record"
+        resolved = resolve_ledger_path(root, str(plan.get("path", "")))
+        if resolved is None or resolved.resolve() != plan_path.resolve():
+            continue
+        if plan.get("sha256") != current_hash:
+            return None, "wave checkpoint plan hash is stale"
+        if str(record.get("status", "")).casefold() != "completed":
+            return None, f"latest wave checkpoint status is {record.get('status')}"
+        members = record.get("members")
+        if not isinstance(members, list) or list(map(str, members)) != wave["members"]:
+            return None, "wave checkpoint members do not match the current plan"
+        return (
+            {
+                "state": "completed",
+                "id": record.get("id"),
+                "status": record.get("status"),
+                "hash": current_hash,
+                "completed_at": record.get("completed_at"),
+                "members": list(map(str, members)),
+                "learning": assessment_learning(record),
+            },
+            None,
+        )
+    return None, None
 
 
 def approval_for(
@@ -524,6 +579,244 @@ def traceability_counts(root: Path) -> tuple[dict[str, int], str | None]:
     return counts, None
 
 
+def plan_prs(plan_text: str, traces: dict[str, int]) -> list[dict[str, Any]]:
+    identifiers = []
+    for line in plan_text.splitlines():
+        match = re.match(r"^\s*[-*+]\s+(\S+)", line)
+        if match and is_plan_id(match.group(1), "PR"):
+            identifiers.append(match.group(1))
+    return [
+        {"id": identifier, "evidence_count": traces.get(identifier, 0)}
+        for identifier in dict.fromkeys(identifiers)
+    ]
+
+
+def active_delivery_ids(wip: dict[str, Any]) -> set[str]:
+    raw = str(wip.get("learning", {}).get("active_slices") or "")
+    return {
+        match.group()
+        for match in PLAN_ID_CANDIDATE.finditer(raw)
+        if is_plan_id(match.group(), "WORK") or is_plan_id(match.group(), "PR")
+    }
+
+
+def wave_member_state(
+    identifier: str,
+    work_by_id: dict[str, dict[str, Any]],
+    pr_by_id: dict[str, tuple[dict[str, Any] | None, dict[str, Any]]],
+    active_ids: set[str],
+    wave_completed: bool,
+) -> dict[str, Any]:
+    if wave_completed:
+        return {
+            "id": identifier,
+            "state": "completed",
+            "detail": "Wave checkpoint complete",
+        }
+    if identifier in work_by_id:
+        item = work_by_id[identifier]
+        state = item["state"]
+        if state in {"assessed", "completed"}:
+            return {"id": identifier, "state": "assessed", "detail": state_label(state)}
+        if identifier in active_ids or state in {"started", "expanded"}:
+            return {"id": identifier, "state": "in-progress", "detail": "In progress"}
+        if state == "evidence":
+            return {
+                "id": identifier,
+                "state": "evidence",
+                "detail": "Evidence mapped",
+            }
+        return {"id": identifier, "state": "not-started", "detail": "Not started"}
+    if identifier in pr_by_id:
+        owner, pr = pr_by_id[identifier]
+        if owner and owner["state"] in {"assessed", "completed"}:
+            return {"id": identifier, "state": "assessed", "detail": "Slice assessed"}
+        if identifier in active_ids:
+            return {"id": identifier, "state": "in-progress", "detail": "In progress"}
+        if pr["evidence_count"]:
+            return {
+                "id": identifier,
+                "state": "evidence",
+                "detail": f"{pr['evidence_count']} mapped tests",
+            }
+        return {"id": identifier, "state": "not-started", "detail": "Not started"}
+    return {"id": identifier, "state": "unknown", "detail": "Member not discovered"}
+
+
+def build_learning_wave_model(
+    root: Path,
+    parent_plan_path: Path | None,
+    root_prs: list[dict[str, Any]],
+    items: list[dict[str, Any]],
+    checkpoint_records: list[dict[str, Any]],
+    wip: dict[str, Any],
+) -> dict[str, Any]:
+    plan_sources: list[tuple[Path, str]] = []
+    if parent_plan_path:
+        plan_sources.append((parent_plan_path, "Product plan"))
+    for item in items:
+        child = item.get("child_plan") or {}
+        child_path = resolve_ledger_path(root, str(child.get("path", "")))
+        if child_path:
+            plan_sources.append((child_path, f"{item['name']} plan"))
+
+    unique_sources: list[tuple[Path, str]] = []
+    seen_paths: set[Path] = set()
+    for path, label in plan_sources:
+        resolved = path.resolve()
+        if resolved not in seen_paths:
+            unique_sources.append((path, label))
+            seen_paths.add(resolved)
+
+    work_by_id = {item["id"]: item for item in items}
+    pr_by_id: dict[str, tuple[dict[str, Any] | None, dict[str, Any]]] = {
+        pr["id"]: (None, pr) for pr in root_prs
+    }
+    pr_by_id.update(
+        {pr["id"]: (item, pr) for item in items for pr in item.get("prs", [])}
+    )
+    active_ids = active_delivery_ids(wip)
+    active_wave = str(wip.get("learning", {}).get("active_wave") or "").strip()
+    seen_waves: set[str] = set()
+    sequences: list[dict[str, Any]] = []
+    issues: list[dict[str, str]] = []
+
+    for plan_path, plan_label in unique_sources:
+        plan_relative = relative_path(plan_path, root)
+        parsed = parse_learning_waves(read_text(plan_path), plan_relative)
+        if not parsed["declared"]:
+            continue
+        issue_values = {
+            "malformed wave IDs": parsed["malformed_ids"],
+            "duplicate wave IDs": parsed["duplicates"],
+            "waves with missing fields": sorted(parsed["missing_fields"]),
+            "waves with invalid order": parsed["invalid_orders"],
+            "waves with invalid WIP limit": parsed["invalid_wip_limits"],
+            "duplicate wave order values": parsed["duplicate_orders"],
+            "waves with malformed members": sorted(parsed["invalid_members"]),
+            "waves with members of the wrong plan type": sorted(
+                parsed["invalid_member_kinds"]
+            ),
+            "waves with duplicate members": sorted(parsed["duplicate_members"]),
+            "waves with no valid members": parsed["empty_members"],
+        }
+        for label, values in issue_values.items():
+            if values:
+                issues.append(
+                    {
+                        "plan_path": plan_relative,
+                        "message": f"{label}: {', '.join(map(str, values))}",
+                    }
+                )
+        sequence_waves = []
+        for wave in parsed["waves"]:
+            if wave["id"] in seen_waves:
+                issues.append(
+                    {
+                        "plan_path": plan_relative,
+                        "message": f"duplicate project wave ID: {wave['id']}",
+                    }
+                )
+                continue
+            seen_waves.add(wave["id"])
+            checkpoint, checkpoint_issue = wave_checkpoint_for(
+                root, wave, plan_path, checkpoint_records
+            )
+            unknown_members = [
+                identifier
+                for identifier in wave["members"]
+                if identifier not in work_by_id and identifier not in pr_by_id
+            ]
+            if checkpoint and unknown_members:
+                checkpoint = None
+                checkpoint_issue = (
+                    "completed wave checkpoint references undiscovered members: "
+                    + ", ".join(unknown_members)
+                )
+            members = [
+                wave_member_state(
+                    identifier,
+                    work_by_id,
+                    pr_by_id,
+                    active_ids,
+                    checkpoint is not None,
+                )
+                for identifier in wave["members"]
+            ]
+            if checkpoint:
+                state = "completed"
+                checkpoint_state = "complete"
+            elif active_wave == wave["id"] or any(
+                member["state"] not in {"not-started", "unknown"} for member in members
+            ):
+                state = "in-progress"
+                checkpoint_state = (
+                    "pending"
+                    if members
+                    and all(
+                        member["state"] in {"assessed", "completed"}
+                        for member in members
+                    )
+                    else "open"
+                )
+            else:
+                state = "not-started"
+                checkpoint_state = "not-started"
+            wave.update(
+                {
+                    "state": state,
+                    "checkpoint_state": checkpoint_state,
+                    "active": active_wave == wave["id"],
+                    "member_states": members,
+                    "checkpoint_record": checkpoint,
+                    "checkpoint_issue": checkpoint_issue,
+                }
+            )
+            if checkpoint_issue:
+                issues.append({"plan_path": plan_relative, "message": checkpoint_issue})
+            sequence_waves.append(wave)
+        sequence_waves.sort(
+            key=lambda wave: (
+                wave["order"] if wave["order"] is not None else 10**9,
+                wave["id"],
+            )
+        )
+        sequences.append(
+            {
+                "plan_path": plan_relative,
+                "plan_label": plan_label,
+                "waves": sequence_waves,
+            }
+        )
+
+    if active_wave and active_wave.casefold() != "none":
+        if not is_wave_id(active_wave):
+            issues.append(
+                {
+                    "plan_path": str(wip.get("path") or ".sdlc/wip.md"),
+                    "message": f"active wave ID is malformed: {active_wave}",
+                }
+            )
+        elif active_wave not in seen_waves:
+            issues.append(
+                {
+                    "plan_path": str(wip.get("path") or ".sdlc/wip.md"),
+                    "message": f"active wave is not declared in a discovered plan: {active_wave}",
+                }
+            )
+    all_waves = [wave for sequence in sequences for wave in sequence["waves"]]
+    return {
+        "sequences": sequences,
+        "issues": issues,
+        "summary": {
+            "total": len(all_waves),
+            "completed": sum(wave["state"] == "completed" for wave in all_waves),
+            "in_progress": sum(wave["state"] == "in-progress" for wave in all_waves),
+            "not_started": sum(wave["state"] == "not-started" for wave in all_waves),
+        },
+    }
+
+
 def project_title(root: Path, spec: dict[str, Any]) -> str:
     title = str(spec.get("title") or "").strip()
     if title:
@@ -538,6 +831,7 @@ def build_model(root: Path) -> dict[str, Any]:
     root = root.resolve()
     records, approval_error = load_approval_records(root)
     assessment_records, assessment_error = load_code_assessment_records(root)
+    checkpoint_records, checkpoint_error = load_wave_checkpoint_records(root)
     paths = {
         kind: canonical_artifact(root, kind) for kind in ("spec", "design", "plan")
     }
@@ -549,6 +843,7 @@ def build_model(root: Path) -> dict[str, Any]:
     linked_artifacts = child_artifacts(root, paths)
     traces, traceability_error = traceability_counts(root)
     parent_text = read_text(paths["plan"]) if paths["plan"] else ""
+    root_prs = plan_prs(parent_text, traces)
     items, malformed_allocations = work_items(parent_text)
     parent_level = scope_level(
         stages["plan"].get("metadata", {}).get("Work Scope")
@@ -585,16 +880,7 @@ def build_model(root: Path) -> dict[str, Any]:
             continue
         child_text = read_text(child_path)
         child_relative = relative_path(child_path, root)
-        prs = []
-        pr_candidates = (
-            match.group(1)
-            for line in child_text.splitlines()
-            if (match := re.fullmatch(r"-\s+(\S+)\s*", line))
-        )
-        for identifier in dict.fromkeys(
-            candidate for candidate in pr_candidates if is_plan_id(candidate, "PR")
-        ):
-            prs.append({"id": identifier, "evidence_count": traces.get(identifier, 0)})
+        prs = plan_prs(child_text, traces)
         evidence_count = sum(pr["evidence_count"] for pr in prs)
         claim = wip_claim_for(wip, child_relative)
         code_slice_approval = approval_for(
@@ -626,17 +912,21 @@ def build_model(root: Path) -> dict[str, Any]:
             }
         )
         item["child_level"] = child_level(item, item["child_plan"])
+    learning_waves = build_learning_wave_model(
+        root, paths["plan"], root_prs, items, checkpoint_records, wip
+    )
     expanded = sum(item["child_plan"] is not None for item in items)
-    pr_count = sum(len(item["prs"]) for item in items)
+    pr_count = len(root_prs) + sum(len(item["prs"]) for item in items)
     evidenced_prs = sum(
         pr["evidence_count"] > 0 for item in items for pr in item["prs"]
-    )
+    ) + sum(pr["evidence_count"] > 0 for pr in root_prs)
     source_paths = [path for path in paths.values() if path is not None]
     for optional in (
         root / ".sdlc" / "approvals.yaml",
         root / ".sdlc" / "wip.md",
         root / ".sdlc" / "test-traceability.yaml",
         root / ".sdlc" / "code-assessments.yaml",
+        root / ".sdlc" / "wave-checkpoints.yaml",
     ):
         if optional.is_file():
             source_paths.append(optional)
@@ -651,6 +941,8 @@ def build_model(root: Path) -> dict[str, Any]:
         "stages": stages,
         "wip": wip,
         "work_items": items,
+        "root_prs": root_prs,
+        "learning_waves": learning_waves,
         "malformed_allocations": malformed_allocations,
         "summary": {
             "approved_stages": sum(
@@ -663,10 +955,14 @@ def build_model(root: Path) -> dict[str, Any]:
             "evidenced_prs": evidenced_prs,
             "assessed_items": sum(item["state"] == "assessed" for item in items),
             "completed_items": sum(item["state"] == "completed" for item in items),
+            "learning_waves": learning_waves["summary"]["total"],
+            "completed_waves": learning_waves["summary"]["completed"],
+            "active_waves": learning_waves["summary"]["in_progress"],
         },
         "approval_error": approval_error,
         "traceability_error": traceability_error,
         "assessment_error": assessment_error,
+        "wave_checkpoint_error": checkpoint_error,
         "sources": [
             {"path": relative_path(path, root), "sha256": sha256_file(path)}
             for path in unique_sources
@@ -708,7 +1004,15 @@ def state_label(state: str) -> str:
 def badge(state: str, label: str | None = None) -> str:
     if state in {"approved", "assessed", "completed"}:
         visual, symbol = "success", "&#10003;"
-    elif state in {"stale", "unapproved", "expanded", "started", "evidence", "planned"}:
+    elif state in {
+        "stale",
+        "unapproved",
+        "expanded",
+        "started",
+        "in-progress",
+        "evidence",
+        "planned",
+    }:
         visual, symbol = "progress", "&#9679;"
     else:
         visual, symbol = "pending", "&#9675;"
@@ -870,6 +1174,140 @@ def render_malformed_warning(identifiers: list[str]) -> str:
 </aside>"""
 
 
+def render_wave_issues(issues: list[dict[str, str]]) -> str:
+    if not issues:
+        return ""
+    rows = "".join(
+        f"<li><code>{esc(issue['plan_path'])}</code>: {esc(issue['message'])}</li>"
+        for issue in issues
+    )
+    return f"""
+<aside class="validation-warning wave-warning" role="alert">
+  <strong>Learning-wave declarations need attention</strong>
+  <ul>{rows}</ul>
+</aside>"""
+
+
+def render_wave_member(member: dict[str, Any], compact: bool = False) -> str:
+    label = member["detail"]
+    content = f"<code>{esc(member['id'])}</code>{badge(member['state'], label)}"
+    if compact:
+        return f'<span class="wave-member-compact">{content}</span>'
+    return f'<li class="wave-member" data-state="{esc(member["state"])}">{content}</li>'
+
+
+def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> str:
+    wave_model = model["learning_waves"]
+    summary = wave_model["summary"]
+    issues = render_wave_issues(wave_model["issues"])
+    if not wave_model["sequences"]:
+        body = """
+<div class="empty-state wave-empty">
+  <strong>No ordered learning waves declared</strong>
+  <span>Add a machine-readable Learning Waves section to a plan; legacy plans remain valid.</span>
+</div>"""
+    else:
+        sequences = []
+        for sequence in wave_model["sequences"]:
+            cards = []
+            for wave in sequence["waves"]:
+                members_compact = (
+                    "".join(
+                        render_wave_member(member, compact=True)
+                        for member in wave["member_states"]
+                    )
+                    or '<span class="empty">No valid members declared</span>'
+                )
+                member_rows = (
+                    "".join(
+                        render_wave_member(member) for member in wave["member_states"]
+                    )
+                    or '<li class="empty">No valid members declared</li>'
+                )
+                checkpoint_record = wave.get("checkpoint_record") or {}
+                checkpoint_learning = checkpoint_record.get("learning") or {}
+                checkpoint_label = {
+                    "complete": "Checkpoint complete",
+                    "pending": "Checkpoint pending",
+                    "open": "Checkpoint open",
+                    "not-started": "Checkpoint not started",
+                }[wave["checkpoint_state"]]
+                status_label = {
+                    "completed": "Completed",
+                    "in-progress": "In progress",
+                    "not-started": "Not started",
+                }[wave["state"]]
+                detail_rows = "".join(
+                    f"<dt>{esc(label)}</dt><dd>{esc(value or 'Not recorded')}</dd>"
+                    for label, value in (
+                        ("WIP limit", wave.get("wip_limit")),
+                        ("Planned checkpoint", wave.get("checkpoint")),
+                        ("Stop or replan", wave.get("stop_or_replan")),
+                        ("Checkpoint state", checkpoint_label),
+                        ("Feedback status", checkpoint_learning.get("feedback_status")),
+                        (
+                            "Feedback evidence",
+                            checkpoint_learning.get("feedback_evidence"),
+                        ),
+                        (
+                            "Invalidation result",
+                            checkpoint_learning.get("invalidation_result"),
+                        ),
+                        ("Ancestor impact", checkpoint_learning.get("ancestor_impact")),
+                    )
+                )
+                assessment_note = (
+                    f'<p class="warning">{esc(wave["checkpoint_issue"])}</p>'
+                    if wave.get("checkpoint_issue")
+                    else ""
+                )
+                feedback_html = (
+                    feedback_badge(checkpoint_learning.get("feedback_status"))
+                    if checkpoint_record
+                    else badge("missing", "Feedback checkpoint not assessed")
+                )
+                open_attribute = " open" if wave["state"] == "in-progress" else ""
+                cards.append(
+                    f"""
+<li class="wave-step" data-state="{esc(wave["state"])}">
+  <details class="wave-card"{open_attribute}>
+    <summary>
+      <span class="wave-order">Wave {esc(wave.get("order") or "?")}</span>
+      <span class="wave-title"><code>{esc(wave["id"])}</code><strong>{esc(wave["name"])}</strong></span>
+      {badge(wave["state"], status_label)}
+      <span class="wave-target">{esc(wave.get("learning_target") or "Learning target not recorded")}</span>
+      <span class="wave-members-compact">{members_compact}</span>
+    </summary>
+    <div class="wave-body">
+      <div><h4>Members</h4><ul class="wave-members">{member_rows}</ul><div class="wave-feedback">{feedback_html}</div></div>
+      <dl>{detail_rows}</dl>
+      {assessment_note}
+    </div>
+  </details>
+</li>"""
+                )
+            href = href_for(root, output, sequence["plan_path"])
+            plan_label = esc(sequence["plan_label"])
+            plan_heading = f'<a href="{href}">{plan_label}</a>' if href else plan_label
+            sequences.append(
+                f"""
+<section class="wave-sequence">
+  <div class="wave-sequence-head"><h3>{plan_heading}</h3><code>{esc(sequence["plan_path"])}</code></div>
+  <ol>{"".join(cards)}</ol>
+</section>"""
+            )
+        body = f'<div class="wave-sequences">{"".join(sequences)}</div>'
+    return f"""
+<section class="waves-view" aria-labelledby="waves-title">
+  <div class="waves-heading">
+    <div><h2 id="waves-title">Learning waves</h2><p>Ordered delivery and feedback checkpoints declared by each plan.</p></div>
+    <div class="wave-totals"><strong>{summary["completed"]} / {summary["total"]}</strong><span>completed</span><strong>{summary["in_progress"]}</strong><span>in progress</span></div>
+  </div>
+  {issues}
+  {body}
+</section>"""
+
+
 def render_tree_branch(
     root: Path,
     output: Path,
@@ -995,13 +1433,16 @@ def render_html(
     root_level = (
         scope_level(stages["spec"].get("metadata", {}).get("Work Scope")) or "product"
     )
+    root_level_label = display_level(root_level)
+    root_plan_type = stages["plan"].get("metadata", {}).get("Plan Type", "").casefold()
+    root_is_implementation = root_plan_type == "implementation"
     root_nodes = [
         render_artifact_node(
             root,
             output,
             "spec",
             root_level,
-            "Product spec",
+            f"{root_level_label} spec",
             stages["spec"],
             "No product spec discovered",
         ),
@@ -1010,7 +1451,7 @@ def render_html(
             output,
             "design",
             root_level,
-            "Product design / HLD",
+            f"{root_level_label} design / {'LLD' if root_level == 'slice' else 'HLD'}",
             stages["design"],
             "No product design discovered",
         ),
@@ -1019,13 +1460,34 @@ def render_html(
             output,
             "plan",
             root_level,
-            "Product Breakdown plan",
+            "Implementation plan" if root_is_implementation else "Breakdown plan",
             stages["plan"],
             "No product plan discovered",
         ),
     ]
+    if root_is_implementation or model["root_prs"]:
+        root_evidence = sum(pr["evidence_count"] for pr in model["root_prs"])
+        root_nodes.append(
+            render_code_node(
+                {
+                    "prs": model["root_prs"],
+                    "evidence_count": root_evidence,
+                    "state": "evidence" if root_evidence else "planned",
+                    "child_level": root_level,
+                }
+            )
+        )
     root_flow = render_flow(root_nodes)
     wip = model["wip"]
+    active_wave_model = next(
+        (
+            wave
+            for sequence in model["learning_waves"]["sequences"]
+            for wave in sequence["waves"]
+            if wave["active"]
+        ),
+        None,
+    )
     explicit_focus = explicit_focus_item(model["work_items"], wip)
     active_items = [item for item in model["work_items"] if item["state"] != "frontier"]
     focus = explicit_focus or next(
@@ -1038,11 +1500,18 @@ def render_html(
     )
     malformed_warning = render_malformed_warning(model["malformed_allocations"])
     if not branches:
-        branches = """
+        branches = (
+            ""
+            if root_is_implementation
+            else """
 <div class="empty-state">
   <strong>No valid decomposition discovered</strong>
   <span>A breakdown plan with valid WORK-AREA-NAME identifiers will expand this view.</span>
 </div>"""
+        )
+    branches_html = (
+        f'<div id="work-items" class="branches">{branches}</div>' if branches else ""
+    )
     source_rows = "".join(
         f'<tr><td><a href="{href_for(root, output, source["path"])}">{esc(source["path"])}</a></td>'
         f"<td><code>{esc(source['sha256'][:16])}</code></td></tr>"
@@ -1057,10 +1526,11 @@ def render_html(
     active_slices = learning.get("active_slices") or "Not recorded"
     summary = model["summary"]
     awaiting_count = summary["work_items"] - summary["expanded_items"]
+    gate_scope = "Artifact" if root_is_implementation else "Parent"
     parent_gate_text = (
-        "Parent gates approved"
+        f"{gate_scope} gates approved"
         if summary["approved_stages"] == 3
-        else f"{summary['approved_stages']} of 3 parent gates approved"
+        else f"{summary['approved_stages']} of 3 {gate_scope.casefold()} gates approved"
     )
     if focus:
         focus_name = focus.get("name") or focus["id"]
@@ -1089,6 +1559,23 @@ def render_html(
             if missing_focus
             else "No artifact gaps discovered on the current branch."
         )
+    elif active_wave_model:
+        focus_name = active_wave_model["name"]
+        focus_breadcrumb = (
+            f"{esc(root_level_label)} &rarr; Implementation plan &rarr; "
+            f"{esc(active_wave_model['id'])}"
+        )
+        focus_heading = f"{esc(focus_name)} is in progress"
+        member_count = len(active_wave_model["member_states"])
+        active_count = sum(
+            member["state"] == "in-progress"
+            for member in active_wave_model["member_states"]
+        )
+        focus_detail = (
+            f"{member_count} wave member{'s' if member_count != 1 else ''} &middot; "
+            f"{active_count} active"
+        )
+        attention = "Complete the active wave's feedback/integration checkpoint."
     else:
         focus_name = "No active allocation"
         focus_breadcrumb = "Product/system &rarr; Breakdown plan"
@@ -1114,7 +1601,11 @@ def render_html(
     elif feedback_status and str(feedback_status).casefold() not in FEEDBACK_STATUSES:
         attention = "Feedback status is invalid; use the canonical status vocabulary."
     expansion_text = (
-        f"{summary['expanded_items']} of {summary['work_items']} allocations "
+        f"{summary['pr_slices']} PR slice{'s' if summary['pr_slices'] != 1 else ''} "
+        f"are organized into {summary['learning_waves']} learning wave"
+        f"{'s' if summary['learning_waves'] != 1 else ''}."
+        if root_is_implementation
+        else f"{summary['expanded_items']} of {summary['work_items']} allocations "
         f"have child plans; {awaiting_count} await decomposition."
     )
     malformed_count = summary["malformed_work_items"]
@@ -1165,6 +1656,11 @@ def render_html(
         if model.get("assessment_error")
         else ""
     )
+    wave_checkpoint_note = (
+        f'<p class="warning">Wave-checkpoint ledger could not be parsed: {esc(model["wave_checkpoint_error"])}</p>'
+        if model.get("wave_checkpoint_error")
+        else ""
+    )
     learning_detail_rows = "".join(
         f"<dt>{esc(label)}</dt><dd>{esc(learning.get(key) or 'Not recorded')}</dd>"
         for label, key in (
@@ -1190,6 +1686,7 @@ def render_html(
         if guide_href
         else ""
     )
+    waves_html = render_learning_waves(model, root, output)
     embedded_model = json.dumps(model, sort_keys=True).replace("</", "<\\/")
     return f"""<!doctype html>
 <html lang="en">
@@ -1342,6 +1839,43 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .pr-list {{ display: grid; gap: 0.4rem; }}
 .pr {{ display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; border-bottom: 1px solid var(--surface-alt); padding-bottom: 0.3rem; }}
 .pr small {{ white-space: nowrap; }}
+.waves-view {{ margin-top: 1.5rem; }}
+.waves-heading {{ display: flex; align-items: end; justify-content: space-between; gap: 1rem; }}
+.waves-heading h2 {{ margin: 0; }}
+.waves-heading p {{ margin: 0.15rem 0 0; color: var(--muted); font-size: 0.78rem; }}
+.wave-totals {{ display: grid; grid-template-columns: auto auto auto auto; align-items: baseline; gap: 0.2rem 0.45rem; color: var(--muted); font-size: 0.72rem; }}
+.wave-totals strong {{ color: var(--text); font-size: 0.9rem; }}
+.wave-sequences {{ display: grid; gap: 1rem; margin-top: 0.75rem; }}
+.wave-sequence {{ min-width: 0; }}
+.wave-sequence-head {{ display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--line); }}
+.wave-sequence-head h3 {{ margin: 0; font-size: 0.9rem; }}
+.wave-sequence-head > code {{ color: var(--muted); font-size: 0.7rem; }}
+.wave-sequence ol {{ display: grid; gap: 0.5rem; margin: 0.65rem 0 0 0.8rem; padding: 0 0 0 1.35rem; border-left: 2px solid #aab6c0; list-style: none; }}
+.wave-step {{ position: relative; min-width: 0; }}
+.wave-step::before {{ position: absolute; top: 1.25rem; left: -1.45rem; width: 1.35rem; border-top: 2px solid #aab6c0; content: ""; }}
+.wave-card {{ min-width: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }}
+.wave-card > summary {{ display: grid; grid-template-columns: auto minmax(10rem, 1fr) auto; align-items: center; gap: 0.35rem 0.75rem; min-height: 3.2rem; padding: 0.6rem 0.75rem; cursor: pointer; }}
+.wave-order {{ color: var(--muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }}
+.wave-title {{ display: flex; min-width: 0; align-items: baseline; gap: 0.5rem; }}
+.wave-title code {{ color: #52616f; font-size: 0.72rem; font-weight: 800; }}
+.wave-title strong {{ overflow-wrap: anywhere; font-size: 0.84rem; }}
+.wave-target {{ grid-column: 2 / -1; color: var(--muted); font-size: 0.76rem; overflow-wrap: anywhere; }}
+.wave-members-compact {{ display: flex; grid-column: 2 / -1; flex-wrap: wrap; gap: 0.35rem; }}
+.wave-member-compact {{ display: inline-flex; min-width: 0; align-items: center; gap: 0.3rem; padding-right: 0.35rem; border-right: 1px solid var(--line); }}
+.wave-member-compact:last-child {{ border-right: 0; }}
+.wave-member-compact code {{ font-size: 0.68rem; }}
+.wave-member-compact .status {{ min-height: 1.25rem; font-size: 0.62rem; }}
+.wave-body {{ display: grid; grid-template-columns: minmax(12rem, 0.65fr) minmax(0, 1.35fr); gap: 1rem; padding: 0.75rem; border-top: 1px solid var(--line); background: var(--surface-alt); }}
+.wave-body h4 {{ margin: 0 0 0.45rem; font-size: 0.78rem; }}
+.wave-body > dl {{ display: grid; grid-template-columns: 10rem 1fr; gap: 0.35rem 0.65rem; margin: 0; font-size: 0.75rem; }}
+.wave-body dt {{ color: var(--muted); font-weight: 700; }}
+.wave-body dd {{ margin: 0; overflow-wrap: anywhere; }}
+.wave-members {{ display: grid; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }}
+.wave-member {{ display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 0.5rem; }}
+.wave-member code {{ font-size: 0.7rem; }}
+.wave-feedback {{ margin-top: 0.65rem; }}
+.wave-warning ul {{ margin: 0.25rem 0 0; padding-left: 1.25rem; }}
+.wave-empty {{ margin-top: 0.75rem; }}
 .empty {{ color: var(--muted); font-style: italic; }}
 .empty-state {{ padding: 2rem; border: 1px solid var(--line); background: var(--surface); text-align: center; }}
 .empty-state span {{ display: block; color: var(--muted); margin-top: 0.35rem; }}
@@ -1379,6 +1913,16 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   .branch-path {{ margin-right: auto; white-space: normal; }}
   .detail-layout, .detail-layout dl {{ grid-template-columns: 1fr; }}
   .detail-layout dd {{ margin-bottom: 0.35rem; }}
+  .waves-heading {{ align-items: start; flex-direction: column; }}
+  .wave-totals {{ grid-template-columns: auto auto; }}
+  .wave-sequence-head {{ align-items: start; flex-direction: column; }}
+  .wave-card > summary {{ grid-template-columns: auto 1fr; align-items: start; }}
+  .wave-card > summary > .status {{ justify-self: start; }}
+  .wave-target, .wave-members-compact {{ grid-column: 1 / -1; }}
+  .wave-members-compact {{ display: grid; width: 100%; }}
+  .wave-member-compact {{ justify-content: space-between; padding: 0.25rem 0; border-right: 0; border-bottom: 1px solid var(--line); }}
+  .wave-body, .wave-body > dl {{ grid-template-columns: 1fr; }}
+  .wave-body dd {{ margin-bottom: 0.3rem; }}
 }}
 </style>
 </head>
@@ -1418,10 +1962,11 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
     </details>
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean hash-current approval, a hash-current passing code assessment, or an approved code-slice handoff. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields are explicit WIP or assessment claims; the renderer never infers them from Git, approvals, or passing tests.</p>
+      <p>Green checks mean hash-current approval, passing code assessment, approved code-slice handoff, or an exact hash-current wave checkpoint. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields are explicit WIP, assessment, or checkpoint claims; the renderer never infers them from Git, approvals, or passing tests.</p>
       {approval_note}
       {traceability_note}
       {assessment_note}
+      {wave_checkpoint_note}
     </details>
   </section>
   {malformed_warning}
@@ -1442,10 +1987,11 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
     </div>
   </details>
   <section class="tree-panel" aria-label="Workflow expansion tree">
-    <div class="product-heading"><strong>Product workflow</strong>{badge(parent_state, parent_gate_text)}</div>
+    <div class="product-heading"><strong>{esc(root_level_label)} workflow</strong>{badge(parent_state, parent_gate_text)}</div>
     {root_flow}
-    <div id="work-items" class="branches">{branches}</div>
+    {branches_html}
   </section>
+  {waves_html}
   <details class="provenance">
     <summary>Snapshot provenance</summary>
     <table><thead><tr><th>Source</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table>

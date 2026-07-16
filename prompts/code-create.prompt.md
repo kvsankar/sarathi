@@ -321,8 +321,10 @@ Sarathi floor. If the repo lacks stricter thresholds, use these defaults:
 ## Step 1 — Confirm context
 
 Read `plan.md`, `design.md`, `spec.md`. Apply the Code-ready scope gate above. Then identify
-the next PR (lowest number, deps merged, not yet built). State the PR, its Red tests, Green
-scope, Planned Touch Set, the COMP/FR/AT/JT/TEST it covers, the planned test levels, the
+the exact active `WAVE-*` from the plan's ordered `Learning Waves` section and the next
+eligible unbuilt member in that wave; do not select a later-wave PR merely because an agent
+is available. State the PR, its Red tests, Green scope, Planned Touch Set, the
+COMP/FR/AT/JT/TEST it covers, the planned test levels, the
 verification oracle for each planned test, any likely supplemental inner-test discovery
 areas, and the quality-gate command(s) that must pass at the PR boundary. Also state any
 mock UI dependency and approval status for UI-facing work. If the spec/design/plan requires
@@ -330,6 +332,8 @@ a mock UI and approval is missing, **stop before editing production UI code** an
 human mock approval.
 State the slice learning target, feedback target/method, invalidation question, active
 learning wave and WIP limit, dependency types, convergence owner, and stop/replan triggers.
+Update `.sdlc/wip.md` with that exact wave and its currently active declared members; never
+exceed the wave WIP limit.
 If feedback from an unfinished slice could materially invalidate this PR and the plan does
 not contain that risk, stop for plan revision instead of starting speculative production
 work.
@@ -530,6 +534,8 @@ End with a human-review handoff that includes:
   name any active sibling work that must stop or replan.
 - Any assumptions, limitations, skipped checks, or follow-up risks.
 - Recommended next command or next PR ID only after the user approves this slice.
+- Wave checkpoint status: members remaining, feedback/integration evidence still needed,
+  or `/code-assess` readiness when every declared member has reached its boundary.
 
 If the user explicitly requested unattended implementation across all PRs, continue within
 the approved learning wave and still produce a clear boundary report after each PR. Do not

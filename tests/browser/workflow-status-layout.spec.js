@@ -88,6 +88,16 @@ Implementation Readiness: Code-ready
 ## Pull Requests / Child Work Items
 
 - PR-DEMO-ALPHA
+
+## Learning Waves
+
+### WAVE-DEMO-BOUNDARY
+Order: 1
+Learning Target: Verify that a long wave target wraps without obscuring member state or the feedback checkpoint.
+Members: PR-DEMO-ALPHA
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review responsive browser evidence at mobile and desktop viewports before opening the next wave.
+Stop/Replan Triggers: Stop if any wave member label, status badge, checkpoint, or evidence row overflows its container.
 `,
   );
   write(
@@ -100,9 +110,9 @@ Learning Target: Verify that a long learning target remains contained on a narro
 Feedback Target: Product stakeholder, accessibility reviewer, and observed responsive browser behavior.
 Feedback Status: requested
 Feedback Evidence: A deliberately long evidence path and review note that exercises wrapping in the executive learning strip.
-Active Learning Wave: WAVE-RESPONSIVE-LAYOUT
+Active Learning Wave: WAVE-DEMO-BOUNDARY
 WIP Limit: 2
-Active Slices: WORK-DEMO-ALPHA
+Active Slices: PR-DEMO-ALPHA
 Invalidation Result: Pending mobile and desktop browser evidence.
 Ancestor Impact: feedback-required: preserve the current layout contract until browser evidence is reviewed.
 Stop Or Replan Triggers: Stop if any visible label, link, readiness note, badge, or detail row overflows its containing node.
@@ -127,7 +137,7 @@ async function layoutEvidence(page) {
     const visible = (element) => element.checkVisibility();
     const clippedNodes = [
       ...document.querySelectorAll(
-        ".node, .learning-step, .learning-fact, .learning-details, .assessment-learning",
+        ".node, .learning-step, .learning-fact, .learning-details, .assessment-learning, .wave-card, .wave-body, .wave-member",
       ),
     ]
       .filter(visible)
@@ -149,6 +159,24 @@ async function layoutEvidence(page) {
         const overlapY = Math.min(previous.bottom, current.bottom) - Math.max(previous.top, current.top);
         if (overlapX > 0.5 && overlapY > 0.5) {
           overlaps.push({ index, overlapX, overlapY });
+        }
+      }
+    }
+    for (const list of [
+      ...document.querySelectorAll(".wave-sequence > ol"),
+    ].filter(visible)) {
+      const steps = [...list.children].filter(
+        (child) => child.classList.contains("wave-step") && visible(child),
+      );
+      for (let index = 1; index < steps.length; index += 1) {
+        const previous = steps[index - 1].getBoundingClientRect();
+        const current = steps[index].getBoundingClientRect();
+        if (current.top < previous.bottom - 0.5) {
+          overlaps.push({
+            type: "wave-step",
+            index,
+            overlapY: previous.bottom - current.top,
+          });
         }
       }
     }

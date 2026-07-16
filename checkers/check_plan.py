@@ -4,7 +4,8 @@
 Parses a plan markdown file, validates IDs/structure, and computes structural
 metrics: every spec FR/AT/JT, design COMP, and design TEST obligation is referenced
 by child WORK items or PRs; implementation PRs include Red+Green step text, do not
-depend on a later PR, and report LOC sizing as advisory reviewability evidence.
+depend on a later PR, ordered learning waves cover every delivery item exactly once,
+and LOC sizing remains advisory reviewability evidence.
 Exits 0 only when every structural gate passes. No semantic judgment, reproducible.
 
 Usage:
@@ -43,6 +44,7 @@ from schemas import (  # noqa: E402
     PLAN_SECTIONS,
     SLUG_TOKEN,
 )
+from waves import parse_learning_waves  # noqa: E402
 
 ID = PLAN_ID
 FR = re.compile(rf"\bFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
@@ -254,6 +256,7 @@ def main() -> int:
     text = path.read_text(encoding="utf-8")
     defined, refs = defs_and_refs(text)
     all_ids = set().union(*defined.values()) | parent_ids
+    wave_result = parse_learning_waves(text, str(path))
 
     # Per-delivery blocks: from one WORK/PR def line to the next def/heading.
     lines = text.splitlines()
@@ -289,6 +292,19 @@ def main() -> int:
         for identifier, block in work_blocks.items()
         if missing_work_allocation_fields(block)
     }
+    delivery_ids = set(work_blocks) | set(pr_blocks)
+    wave_member_counts = Counter(
+        member for wave in wave_result["waves"] for member in wave["members"]
+    )
+    unknown_wave_members = sorted(set(wave_member_counts) - delivery_ids)
+    unassigned_wave_members = (
+        sorted(delivery_ids - set(wave_member_counts))
+        if wave_result["declared"]
+        else []
+    )
+    duplicate_wave_members = sorted(
+        member for member, count in wave_member_counts.items() if count > 1
+    )
 
     large_prs = [
         p for p, b in pr_blocks.items() if any(n > loc_target for n in loc_values(b))
@@ -393,6 +409,21 @@ def main() -> int:
         "test_obligation_coverage_100": test_c == design_tests,
         "external_double_mitigation_present": external_double_mitigation_present,
         "work_allocations_well_formed": not incomplete_work_allocations,
+        "learning_waves_well_formed": not (
+            wave_result["malformed_ids"]
+            or wave_result["duplicates"]
+            or wave_result["missing_fields"]
+            or wave_result["invalid_orders"]
+            or wave_result["invalid_wip_limits"]
+            or wave_result["duplicate_orders"]
+            or wave_result["invalid_members"]
+            or wave_result["invalid_member_kinds"]
+            or wave_result["duplicate_members"]
+            or wave_result["empty_members"]
+        ),
+        "learning_wave_members_complete": not (
+            unknown_wave_members or unassigned_wave_members or duplicate_wave_members
+        ),
         "pr_tdd_red_green": not no_tdd,
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -410,6 +441,25 @@ def main() -> int:
         ),
         "work_items": sorted(work_blocks),
         "incomplete_work_allocations": incomplete_work_allocations,
+        "learning_waves": wave_result["waves"],
+        "learning_wave_issues": {
+            key: wave_result[key]
+            for key in (
+                "malformed_ids",
+                "duplicates",
+                "missing_fields",
+                "invalid_orders",
+                "invalid_wip_limits",
+                "duplicate_orders",
+                "invalid_members",
+                "invalid_member_kinds",
+                "duplicate_members",
+                "empty_members",
+            )
+        },
+        "unknown_wave_members": unknown_wave_members,
+        "unassigned_wave_members": unassigned_wave_members,
+        "duplicate_wave_members": duplicate_wave_members,
         "fr_coverage_pct": pct(fr_c, spec_frs),
         "uc_coverage_pct": pct(uc_c, spec_ucs),
         "nfr_coverage_pct": pct(nfr_c, spec_nfrs),

@@ -77,9 +77,9 @@ Learning Target: assumption, behavior, boundary, or risk tested by the current s
 Feedback Target: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise residual-risk note
-Active Learning Wave: wave name or none
+Active Learning Wave: exact WAVE-AREA-NAME from the governing plan, or none
 WIP Limit: positive integer or not-recorded
-Active Slices: comma-separated WORK-* or PR-* IDs, or none
+Active Slices: comma-separated members from that wave (WORK-* or PR-*), or none
 Invalidation Result: concise evidence-backed result
 Ancestor Impact: spec/design/plan/code/process outcome and affected paths
 Stop Or Replan Triggers: conditions that pause or cancel active sibling work
@@ -108,7 +108,8 @@ A fresh agent context should:
 
 1. Read the repository bootstrap file, if present.
 2. Read `.sdlc/wip.md`.
-3. Read `.sdlc/process-decisions.yaml` and `.sdlc/approvals.yaml` when present.
+3. Read `.sdlc/process-decisions.yaml`, `.sdlc/approvals.yaml`,
+   `.sdlc/code-assessments.yaml`, and `.sdlc/wave-checkpoints.yaml` when present.
 4. Load the selected stage prompt and triggered docs using `docs/progressive-disclosure.md`.
 5. Re-open the governing artifact paths named in WIP before editing or judging them.
 6. Check feedback status, active learning dependencies, and ancestor-impact outcomes before

@@ -70,6 +70,8 @@ Report:
 - Any upstream spec/design failures.
 - Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, large declared
   PRs, missing LOC estimates, missing Red/Green text, forward dependencies, or vague hits.
+- Declared learning waves, malformed or duplicate `WAVE-*` IDs/orders, missing required wave
+  fields, invalid WIP limits, and unknown, duplicate, or unassigned `WORK-*`/`PR-*` members.
 - `external_double_mentions` and `external_double_mitigation_present`. If a plan uses a
   mock/fake/stub/test double for an external system, the structural gate requires a
   real-boundary, official-conformance, type-conformance, generated-schema/client,

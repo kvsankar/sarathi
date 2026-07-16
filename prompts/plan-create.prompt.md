@@ -343,7 +343,8 @@ work.
 ## Step 2 — ID convention
 
 - Use slug-only `KIND-AREA-NAME` IDs: `MILE-<AREA>-<NAME>` (milestone),
-  `WORK-<AREA>-<NAME>` (child work item), and `PR-<AREA>-<NAME>` (pull request).
+  `WORK-<AREA>-<NAME>` (child work item), `PR-<AREA>-<NAME>` (pull request), and
+  `WAVE-<AREA>-<NAME>` (ordered learning wave).
 - `AREA` and `NAME` are uppercase slug tokens, 2-32 characters each, using `A-Z` and
   digits only after the first character. Do not use trailing numbers.
 - Each PR cites the `FR-`/`UC-`/`AT-`/`JT-` it delivers, the `COMP-` it implements, and the
@@ -407,14 +408,19 @@ work.
    obligation to the child work that will make it executable. For an Implementation plan,
    map each `FR-`/`UC-`/`NFR-`/`AT-`/`JT-`/`COMP-` and each `TEST-` obligation to the PR
    delivering it.
-6. **Sequencing & Risks** — merge order, parallelizable PRs, build before deployment
+6. **Learning Waves** — declare the ordered waves mechanically. Each `###
+   WAVE-<AREA>-<NAME>` block contains exact `Order:`, `Learning Target:`, `Members:`, `WIP
+   Limit:`, `Feedback/Integration Checkpoint:`, and `Stop/Replan Triggers:` lines. Members
+   are `WORK-*` items in a Breakdown plan or `PR-*` items in an Implementation plan; assign
+   every delivery item to exactly one wave. A single-item wave is valid and often preferable.
+   Wave order is local to this plan. Later waves remain provisional until earlier checkpoint
+   evidence permits them to start.
+7. **Sequencing & Risks** — merge order, parallelizable PRs, build before deployment
    dependencies, documentation before/with behavior dependencies, environment promotion
    order, rollback per PR, likely merge conflicts/shared files, planned touch-set overlaps,
-   and worktree recommendations. State the bounded parallel **learning waves** (sets of PRs
-   runnable at once), their WIP limits, invalidation risks, feedback/integration checkpoint,
-   stop/replan triggers, which waves are suitable for separate Git worktrees, and the
-   critical path explicitly. Mark speculative downstream work as exceptional, reversible,
-   and timeboxed.
+   and worktree recommendations. Explain the declared waves' invalidation risks, worktree
+   suitability, convergence ownership, and critical path. Mark speculative downstream work
+   as exceptional, reversible, and timeboxed.
 
 ## Step 4 — Render an HTML companion
 

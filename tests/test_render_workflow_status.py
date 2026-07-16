@@ -63,6 +63,9 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
         "evidenced_prs": 0,
         "assessed_items": 0,
         "completed_items": 0,
+        "learning_waves": 0,
+        "completed_waves": 0,
+        "active_waves": 0,
     }
     assert "Not yet done" in rendered
     assert "No valid decomposition discovered" in rendered
@@ -178,6 +181,24 @@ Implementation Readiness: Code-ready
 - PR-ALPHA-ONE
 
 - PR-ALPHA-TWO
+
+## Learning Waves
+
+### WAVE-DEMO-FIRST
+Order: 1
+Learning Target: Validate the public API boundary.
+Members: PR-ALPHA-ONE
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review the contract and consumer evidence.
+Stop/Replan Triggers: Stop if the public request shape changes.
+
+### WAVE-DEMO-NEXT
+Order: 2
+Learning Target: Exercise edge behavior after the boundary is accepted.
+Members: PR-ALPHA-TWO
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review regression and edge-case evidence.
+Stop/Replan Triggers: Replan if Wave 1 changes the public contract.
 """,
     )
     write(
@@ -258,7 +279,7 @@ Learning Target: validate the public API boundary before expanding the next capa
 Feedback Target: API consumer and sandbox response evidence
 Feedback Status: requested
 Feedback Evidence: docs/reviews/api-boundary.md
-Active Learning Wave: WAVE-DEMO-FIRST
+Active Learning Wave: WAVE-DEMO-NEXT
 WIP Limit: 2
 Active Slices: PR-ALPHA-TWO
 Invalidation Result: pending feedback
@@ -290,6 +311,97 @@ Stop Or Replan Triggers: stop sibling work if the public request shape changes
     return project
 
 
+def test_pr_sized_root_plan_renders_ordered_pr_waves(tmp_path):
+    module = load_renderer()
+    project = tmp_path / "leaf"
+    write(
+        project / "docs" / "spec.md",
+        """# Leaf - Software Requirements Specification
+Work Scope: slice/change
+Implementation Readiness: Code-ready
+""",
+    )
+    write(
+        project / "docs" / "design.md",
+        """# Leaf Design
+Work Scope: slice/change
+Design Depth: LLD
+Implementation Readiness: Code-ready
+""",
+    )
+    write(
+        project / "docs" / "plan.md",
+        """# Leaf Implementation Plan
+Work Scope: slice/change
+Plan Type: Implementation
+Implementation Readiness: Code-ready
+
+## Pull Requests / Child Work Items
+- PR-LEAF-BOUNDARY Scope: establish the boundary.
+- PR-LEAF-FINISH Scope: finish the behavior.
+
+## Learning Waves
+
+### WAVE-LEAF-BOUNDARY
+Order: 1
+Learning Target: Validate the smallest runnable boundary.
+Members: PR-LEAF-BOUNDARY
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review boundary evidence.
+Stop/Replan Triggers: Stop if the boundary changes.
+
+### WAVE-LEAF-FINISH
+Order: 2
+Learning Target: Complete behavior after boundary feedback.
+Members: PR-LEAF-FINISH
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review acceptance evidence.
+Stop/Replan Triggers: Replan if the first wave changes intent.
+""",
+    )
+    write(
+        project / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+Current Stage: code-create
+Current Gate: wave-checkpoint
+Active Learning Wave: WAVE-LEAF-BOUNDARY
+Active Slices: PR-LEAF-BOUNDARY
+""",
+    )
+    write(
+        project / ".sdlc" / "test-traceability.yaml",
+        """tests:
+  - name: test_leaf_boundary
+    path: tests/test_leaf.py
+    plan: PR-LEAF-BOUNDARY
+""",
+    )
+    write(project / "tests" / "test_leaf.py", "def test_leaf():\n    assert True\n")
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+    waves = model["learning_waves"]["sequences"][0]["waves"]
+
+    assert model["work_items"] == []
+    assert [pr["id"] for pr in model["root_prs"]] == [
+        "PR-LEAF-BOUNDARY",
+        "PR-LEAF-FINISH",
+    ]
+    assert model["summary"]["pr_slices"] == 2
+    assert waves[0]["member_states"][0]["state"] == "in-progress"
+    assert waves[1]["member_states"][0]["state"] == "not-started"
+    assert "Leaf Boundary is in progress" in rendered
+    assert "Slice workflow" in rendered
+    assert "No valid decomposition discovered" not in rendered
+    assert "WAVE-LEAF-BOUNDARY" in rendered
+    assert "PR-LEAF-FINISH" in rendered
+
+
 def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
     module = load_renderer()
     project = make_decomposed_project(tmp_path)
@@ -305,6 +417,9 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
         "evidenced_prs": 2,
         "assessed_items": 0,
         "completed_items": 0,
+        "learning_waves": 2,
+        "completed_waves": 0,
+        "active_waves": 2,
     }
     alpha, beta = model["work_items"]
     assert alpha["state"] == "evidence"
@@ -333,7 +448,7 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
         "feedback_target": "API consumer and sandbox response evidence",
         "feedback_status": "requested",
         "feedback_evidence": "docs/reviews/api-boundary.md",
-        "active_wave": "WAVE-DEMO-FIRST",
+        "active_wave": "WAVE-DEMO-NEXT",
         "wip_limit": "2",
         "active_slices": "PR-ALPHA-TWO",
         "invalidation_result": "pending feedback",
@@ -343,6 +458,20 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
     assert module.explicit_focus_item(model["work_items"], model["wip"])["id"] == (
         "WORK-DEMO-ALPHA"
     )
+    sequence = model["learning_waves"]["sequences"][0]
+    assert sequence["plan_path"] == "docs/plans/work_alpha.md"
+    assert [wave["id"] for wave in sequence["waves"]] == [
+        "WAVE-DEMO-FIRST",
+        "WAVE-DEMO-NEXT",
+    ]
+    assert sequence["waves"][0]["member_states"] == [
+        {
+            "id": "PR-ALPHA-ONE",
+            "state": "evidence",
+            "detail": "1 mapped tests",
+        }
+    ]
+    assert sequence["waves"][1]["active"] is True
     assert beta["state"] == "frontier"
     assert beta["child_level"] == "feature"
     assert beta["child_plan"] is None
@@ -456,6 +585,114 @@ assessments:
     assert "revision-proposed: record observed retry timing" in rendered
 
 
+def test_hash_current_wave_checkpoint_closes_one_wave_only(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    write(
+        project / ".sdlc" / "wave-checkpoints.yaml",
+        f"""version: 1
+checkpoints:
+  - id: CHECK-WAVE-DEMO-FIRST
+    wave: WAVE-DEMO-FIRST
+    plan:
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{digest(child)}"
+    members:
+      - PR-ALPHA-ONE
+    status: completed
+    completed_at: "2026-07-15T00:00:04Z"
+    learning:
+      target: Validate the public API boundary.
+      feedback_target: API consumer review.
+      feedback_status: received
+      feedback_evidence: docs/reviews/api-boundary.md
+      invalidation_result: The request-shape assumption held.
+      ancestor_impact:
+        spec: "no-change: accepted behavior remains correct"
+        design: "no-change: boundary design remains valid"
+        plan: "no-change: Wave 2 may continue"
+      stop_or_replan: Stop if the provider contract changes.
+""",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+    waves = model["learning_waves"]["sequences"][0]["waves"]
+
+    assert model["work_items"][0]["state"] == "evidence"
+    assert model["summary"]["completed_waves"] == 1
+    assert model["summary"]["active_waves"] == 1
+    assert waves[0]["state"] == "completed"
+    assert waves[0]["member_states"][0]["state"] == "completed"
+    assert waves[1]["state"] == "in-progress"
+    assert "1 / 2" in rendered
+    assert "WAVE-DEMO-FIRST" in rendered
+    assert "WAVE-DEMO-NEXT" in rendered
+    assert "Checkpoint complete" in rendered
+    assert "Feedback received" in rendered
+
+
+def test_stale_wave_checkpoint_does_not_complete_wave(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    write(
+        project / ".sdlc" / "wave-checkpoints.yaml",
+        f"""version: 1
+checkpoints:
+  - id: CHECK-WAVE-DEMO-FIRST
+    wave: WAVE-DEMO-FIRST
+    plan:
+      path: demo/docs/plans/work_alpha.md
+      sha256: "{"0" * 64}"
+    members:
+      - PR-ALPHA-ONE
+    status: completed
+""",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["summary"]["completed_waves"] == 0
+    assert "wave checkpoint plan hash is stale" in rendered
+
+
+def test_malformed_wave_declaration_stays_visible_for_repair(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    child.write_text(
+        child.read_text(encoding="utf-8").replace("WAVE-DEMO-FIRST", "WAVE-FIRST"),
+        encoding="utf-8",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["summary"]["learning_waves"] == 1
+    assert model["learning_waves"]["issues"][0]["message"] == (
+        "malformed wave IDs: WAVE-FIRST"
+    )
+    assert "Learning-wave declarations need attention" in rendered
+    assert "WAVE-FIRST" in rendered
+
+
 def test_legacy_passing_assessment_without_learning_remains_valid(tmp_path):
     module = load_renderer()
     project = make_decomposed_project(tmp_path)
@@ -560,10 +797,13 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert "validate the public API boundary" in first
     assert "Feedback requested" in first
     assert "WAVE-DEMO-FIRST" in first
+    assert "WAVE-DEMO-NEXT" in first
     assert "PR-ALPHA-TWO" in first
     assert '<details class="learning-details" open>' in first
     assert "Explicit feedback is required before affected work continues." in first
     assert "Workflow tree" in first
+    assert "Learning waves" in first
+    assert "Ordered delivery and feedback checkpoints" in first
     assert re.search(
         r'<details class="tree-branch" data-state="evidence"[^>]* open>', first
     )

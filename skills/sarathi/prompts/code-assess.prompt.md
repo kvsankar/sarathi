@@ -403,6 +403,16 @@ or blocked results as passing assessments. This ledger is a project-authored ass
 claim, not human approval; use a separate hash-current `code_slice.approved` record when the
 user approves the completed slice handoff.
 
+When every member of a declared active `WAVE-*` has reached its planned boundary and the
+feedback/integration checkpoint plus ancestor-impact scan are complete, create or update
+`.sdlc/wave-checkpoints.yaml`. Record a stable checkpoint ID, exact `wave`, governing plan
+`path` and current `sha256`, exact ordered `members`, `status: completed`, UTC
+`completed_at`, and the same evidence-backed `learning` mapping. Do not close a wave when a
+member, required feedback, convergence check, or `revision-required` decision remains open.
+A wave checkpoint closes only that wave; it does not assess the enclosing implementation
+plan or approve the next wave. If later plan bytes or membership change, the old checkpoint
+is stale and the status renderer must not show it as completed.
+
 ## Human review gate (hard stop)
 
 After reporting the code assessment verdict and inspect/adapt outcomes, **stop**. Do not move

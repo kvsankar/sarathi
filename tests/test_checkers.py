@@ -778,6 +778,107 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["test_obligation_coverage_pct"] == 100.0
 
 
+def test_check_plan_accepts_ordered_learning_waves(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "# Sequencing & Risks",
+        """# Learning Waves
+
+## WAVE-AUTH-BOUNDARY
+Order: 1
+Learning Target: Validate the authentication boundary.
+Members: PR-AUTH-SIGNIN
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review acceptance and contract evidence.
+Stop/Replan Triggers: Stop if the credential boundary changes.
+
+# Sequencing & Risks""",
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert report["gates"]["learning_waves_well_formed"] is True
+    assert report["gates"]["learning_wave_members_complete"] is True
+    assert report["learning_waves"][0]["id"] == "WAVE-AUTH-BOUNDARY"
+    assert report["learning_waves"][0]["members"] == ["PR-AUTH-SIGNIN"]
+
+
+def test_check_plan_rejects_malformed_or_incomplete_learning_waves(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "# Sequencing & Risks",
+        """# Learning Waves
+
+## WAVE-AUTH
+Order: first
+Learning Target: Validate the authentication boundary.
+Members: PR-AUTH-SIGNIN, PR-AUTH-EXTRA
+WIP Limit: 0
+Feedback/Integration Checkpoint: Review acceptance evidence.
+
+# Sequencing & Risks""",
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["learning_waves_well_formed"] is False
+    assert report["gates"]["learning_wave_members_complete"] is False
+    assert report["learning_wave_issues"]["malformed_ids"] == ["WAVE-AUTH"]
+    assert report["unassigned_wave_members"] == ["PR-AUTH-SIGNIN"]
+
+
+def test_check_plan_rejects_wrong_wave_member_kind(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = (
+        plan_path.read_text(encoding="utf-8")
+        .replace(
+            "Plan Type: Implementation",
+            "Plan Type: Breakdown",
+        )
+        .replace(
+            "# Sequencing & Risks",
+            """# Learning Waves
+
+## WAVE-AUTH-BOUNDARY
+Order: 1
+Learning Target: Validate the authentication boundary.
+Members: PR-AUTH-SIGNIN
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review acceptance evidence.
+Stop/Replan Triggers: Stop if the credential boundary changes.
+
+# Sequencing & Risks""",
+        )
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["learning_waves_well_formed"] is False
+    assert report["learning_wave_issues"]["invalid_member_kinds"] == {
+        "WAVE-AUTH-BOUNDARY": ["PR-AUTH-SIGNIN"]
+    }
+
+
 def test_check_plan_requires_complete_work_allocation_fields(
     tmp_path, monkeypatch, capsys
 ):

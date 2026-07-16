@@ -41,7 +41,8 @@ character. Do not use trailing numbers or internal hyphens.
 
 - Spec IDs: `UN-AREA-NAME`, `FEAT-AREA-NAME`, `UC-AREA-NAME`, `FR-AREA-NAME`,
   `NFR-AREA-NAME`, `AT-AREA-NAME`, `JT-AREA-NAME`.
-- Plan IDs: `MILE-AREA-NAME`, `WORK-AREA-NAME`, `PR-AREA-NAME`.
+- Plan IDs: `MILE-AREA-NAME`, `WORK-AREA-NAME`, `PR-AREA-NAME`, and
+  `WAVE-AREA-NAME` for ordered learning waves.
 - Design entity IDs: unchanged `LAYER-SLUG`, `COMP-SLUG`, `IFACE-SLUG`, `DEC-SLUG`,
   `RISK-SLUG`.
 - Design test obligation IDs: `TEST-AREA-NAME`.

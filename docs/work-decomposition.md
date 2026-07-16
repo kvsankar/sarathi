@@ -50,7 +50,8 @@ For work that can advance in parallel, also record the learning controls from
 - learning target and feedback target;
 - execution, learning, and integration dependencies as applicable;
 - the invalidation question for sibling work;
-- learning wave, WIP limit, integration/feedback checkpoint, and stop/replan trigger.
+- `WAVE-AREA-NAME` membership, WIP limit, integration/feedback checkpoint, and stop/replan
+  trigger, with the ordered sequence declared in the plan's `Learning Waves` section.
 
 These controls distinguish useful agent parallelism from a speculative batch. Plan review
 must reject a wave when feedback from one active slice could materially invalidate another
