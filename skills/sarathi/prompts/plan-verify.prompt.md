@@ -55,6 +55,11 @@ When verifying a downstream gate that depends on approved upstream artifacts, ad
 `design.approved`, and, when applicable, `ux.mock.approved` records with UTC `approved_at`
 timestamps. Do not require approvals while drafting a plan that still needs human review.
 
+For a bounded Slice/change plan with more than three `PR-*` items, draft verification checks
+the exact complexity budget and exception rationale without requiring approval. Before
+`/plan-assess`, rerun with `--require-complexity-approval`; this requires a hash-current
+`plan.complexity-approved` attestation without conflating it with final `plan.approved`.
+
 For focused feature/component or slice/change plans, add `--feature` and `--parent` when
 applicable.
 
@@ -68,11 +73,11 @@ Report:
 - Exit codes.
 - `passed/total`.
 - Any upstream spec/design failures.
-- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, missing
-  Red/Green text, forward dependencies, or vague hits.
+- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, invalid
+  Red/Green or TDD-exception contracts, forward dependencies, or vague hits.
 - Declared learning waves, malformed or duplicate `WAVE-*` IDs/orders, missing required wave
   fields, invalid WIP limits, and unknown, duplicate, or unassigned `WORK-*`/`PR-*` members.
-- Complexity-budget presence, generic-machinery signals, and the bounded Slice/change
+- Exact complexity-budget fields/count, generic-machinery signals, and the bounded Slice/change
   implementation PR gate, including exception rationale and hash-current approval evidence.
 - `external_double_mentions` and `external_double_mitigation_present`. If a plan uses a
   mock/fake/stub/test double for an external system, the structural gate requires a

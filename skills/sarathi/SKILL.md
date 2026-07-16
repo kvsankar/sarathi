@@ -37,7 +37,8 @@ Apply `docs/simplicity-first.md`: keep process evidence outside product architec
 with the smallest direct implementation, reuse brownfield compatibility suites, generalize
 after a second concrete use case, and stop when conceptual complexity exceeds the user's
 mental model. Bounded slices default to at most three implementation PRs; exceptions need
-concise justification and explicit plan approval. Do not use LOC targets.
+concise justification and hash-current `plan.complexity-approved` attestation before plan
+assessment. Do not use LOC targets.
 
 ## Route The Request
 

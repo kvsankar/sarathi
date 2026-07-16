@@ -47,25 +47,31 @@ before inventing a parallel harness.
 ## Complexity Budget
 
 Before accepting a design or implementation plan, compare it with the user's stated mental
-model. Record a compact budget in the design or plan:
+model. Record one checker-visible `## Complexity Budget` section:
 
-- the user's one-sentence mental model;
-- current consumers and behavior that must remain;
-- proposed new components;
-- proposed abstractions/frameworks/registries/generators/manifests/schemas/commands;
-- generated or persistent artifacts;
-- implementation PR count;
-- existing evidence reused;
-- machinery deleted or deferred.
+```markdown
+## Complexity Budget
+- Mental Model: one sentence in the user's terms.
+- Current Consumers: concrete current consumers and behavior that must remain.
+- Proposed Additions: components, machinery, commands, and persistent/generated artifacts.
+- Existing Evidence Reused: current tests, contracts, CI, build, and deployment evidence.
+- Deleted or Deferred: machinery intentionally omitted until evidence justifies it.
+- Implementation PR Count: 1
+```
+
+Designs use the first five fields. Plans use all six; Breakdown plans record `0`. The
+checker verifies exact fields and, for plans, that the declared count matches actual
+`PR-*` items. Qualitative review decides whether the content is honest and proportionate.
 
 The budget is qualitative. Sarathi has no source-file, module, diff, or PR line-count
 target. Stop for user review before materially exceeding the mental model.
 
 For a bounded Slice/change Implementation plan, default to at most three `PR-*` items. More
-than three requires a concise `Complexity Budget Exception:` in the plan and explicit
-hash-current plan approval. Prefer one cohesive change over artificial setup, scaffold,
-routing, generated-output, parity, or cleanup PRs. Product/feature Breakdown-plan work-item
-counts are not subject to this slice PR limit.
+than three requires a concise `Complexity Budget Exception:` in the plan and a dedicated
+hash-current `plan.complexity-approved` attestation before plan assessment. Final
+`plan.approved` remains a separate downstream-code gate. Prefer one cohesive change over
+artificial setup, scaffold, routing, generated-output, parity, or cleanup PRs.
+Product/feature Breakdown-plan work-item counts are not subject to this slice PR limit.
 
 ## Deletion-First Review
 

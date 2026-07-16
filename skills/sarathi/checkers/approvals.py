@@ -312,6 +312,7 @@ def approval_requirement(
     scope: str | None = None,
     artifact_kind: str | None = None,
     expected_sha256: str | None = None,
+    allowed_statuses: set[str] | None = None,
 ) -> dict[str, Any]:
     wanted = _norm_project_path(project_root, artifact_path)
     result: dict[str, Any] = {
@@ -335,6 +336,7 @@ def approval_requirement(
     invalid_by_id = {
         item["id"]: item["issues"] for item in context.get("invalid_records", [])
     }
+    candidate_issues: list[str] = []
     for record in context.get("records", []):
         if not isinstance(record, dict):
             continue
@@ -353,13 +355,23 @@ def approval_requirement(
             continue
         result["approval_id"] = record.get("id")
         result["status"] = record.get("status")
-        issues = invalid_by_id.get(record.get("id"), [])
+        issues = list(invalid_by_id.get(record.get("id"), []))
+        if (
+            allowed_statuses is not None
+            and record.get("status") not in allowed_statuses
+        ):
+            allowed = ", ".join(sorted(allowed_statuses))
+            issues.append(f"approval status must be one of: {allowed}")
         if issues:
-            result["issues"].extend(issues)
-            return result
+            candidate_issues.extend(issues)
+            continue
         result["approved"] = True
+        result["issues"] = []
         return result
-    result["issues"].append("matching approval not found")
+    if candidate_issues:
+        result["issues"] = list(dict.fromkeys(candidate_issues))
+    else:
+        result["issues"].append("matching approval not found")
     return result
 
 

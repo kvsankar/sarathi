@@ -38,6 +38,21 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Fixed
 
+- Resolve transitive verify/review prompts from the sibling Sarathi bundle in direct stage
+  aliases, with project-install regression coverage.
+- Install complete executable checker bundles, including shared parser/support modules.
+- Require every delivery plan to declare complete ordered learning waves instead of
+  allowing an absent wave section to pass structurally.
+- Separate four-plus-PR exception approval into `plan.complexity-approved`, allowing draft
+  verification before the targeted approval and reserving `plan.approved` for code entry.
+- Match complexity approvals to Slice/change Plan artifacts, reject auto-approval, and let
+  later valid reapprovals supersede stale or ineligible earlier records.
+- Validate an exact structured complexity budget and declared PR count instead of accepting
+  any non-empty one-line mention.
+- Restore explicit TDD-exception categories, scope, replacement evidence, and qualitative
+  safety boundaries while replacing lexical Red/Green matching with labeled contracts.
+- Ignore fenced Markdown examples when parsing complexity budgets, learning waves, and TDD
+  fields; require exact TDD-exception category values.
 - Use one canonical `MILE|WORK|PR-AREA-NAME` grammar in plan verification and workflow
   rendering; reject one-token and extra-token IDs, avoid valid-prefix matches, and display
   malformed allocations as excluded repair warnings.

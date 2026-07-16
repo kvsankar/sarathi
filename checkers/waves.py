@@ -12,6 +12,7 @@ CHECKER_DIR = Path(__file__).resolve().parent
 if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
+from markdown_structure import strip_fenced_code  # noqa: E402
 from schemas import (  # noqa: E402
     PLAN_ID_CANDIDATE,
     WAVE_ID_CANDIDATE,
@@ -69,6 +70,7 @@ def _field(block: str, label: str) -> str | None:
 
 def parse_learning_waves(text: str, plan_path: str | None = None) -> dict[str, Any]:
     """Parse an optional ``Learning Waves`` section without inventing status."""
+    text = strip_fenced_code(text)
     body = _section(text, "Learning Waves")
     result: dict[str, Any] = {
         "declared": body is not None,

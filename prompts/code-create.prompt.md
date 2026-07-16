@@ -41,8 +41,10 @@ For every behavior-changing step:
 3. **Refactor**: improve structure without changing behavior; keep tests green.
 
 Narrow exceptions are generated-only, docs-only, formatting-only, build/deploy config
-validation, or characterization before legacy refactor. Record the exception and
-replacement evidence.
+validation, or characterization before legacy refactor. Use the exact TDD-exception fields
+and safety rules in `docs/artifact-contracts.md`. Exceptions never cover new/changed product
+behavior, bug fixes, contracts, validation, security/privacy behavior, errors,
+logging/telemetry, or UI behavior. Record and run the replacement evidence.
 
 Implement assigned `AT-*`, `JT-*`, and `TEST-*` obligations at their planned levels. Add
 supplemental inner tests when discovered, but do not use them to replace accepted coverage.

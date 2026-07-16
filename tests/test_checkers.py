@@ -34,7 +34,7 @@ def write_approval_ledger(
     gates_yaml: str | None = None,
 ) -> None:
     sdlc = root / ".sdlc"
-    sdlc.mkdir()
+    sdlc.mkdir(exist_ok=True)
     lines = ["version: 1", "approvals:"]
     for entry in entries:
         lines.extend(
@@ -133,8 +133,14 @@ Implementation Readiness: Code-ready
 Python.
 
 # Drivers & Constraints
-Complexity Budget: one auth component; no generic machinery; existing tests reused.
 FR-AUTH-SIGNIN and UC-AUTH-SIGNIN drive the design.
+
+## Complexity Budget
+- Mental Model: authenticate through one existing boundary.
+- Current Consumers: the current application.
+- Proposed Additions: one authentication component; no generic machinery.
+- Existing Evidence Reused: current acceptance and contract tests.
+- Deleted or Deferred: future-consumer extension points.
 
 # Layers
 Application Layer handles request orchestration and dependency direction.
@@ -220,15 +226,25 @@ Plan Type: Implementation
 Implementation Readiness: Code-ready
 
 # Strategy
-Complexity Budget: one cohesive PR; existing acceptance tests reused; no new machinery.
 Use Red/Green TDD and one small PR.
+
+## Complexity Budget
+- Mental Model: implement sign-in through the existing authentication boundary.
+- Current Consumers: the current application.
+- Proposed Additions: one cohesive behavior change; no new machinery.
+- Existing Evidence Reused: current acceptance and contract tests.
+- Deleted or Deferred: future-consumer abstractions.
+- Implementation PR Count: 1
 
 # Milestones
 - MILE-AUTH-LOGIN Deliver login.
 
 # Pull Requests / Child Work Items
-- PR-AUTH-SIGNIN Scope: implement login. Red: failing AT-AUTH-SIGNIN test.
-  Green: implement COMP-AUTH. Delivers FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN,
+- PR-AUTH-SIGNIN
+  Scope: implement login.
+  Red: failing AT-AUTH-SIGNIN test.
+  Green: implement COMP-AUTH.
+  Delivers FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN,
   AT-AUTH-SIGNIN, COMP-AUTH, TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT.
 
 # Coverage Map
@@ -237,6 +253,16 @@ Use Red/Green TDD and one small PR.
             "COMP-AUTH, TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT map to "
             "PR-AUTH-SIGNIN.\n"
             """
+
+# Learning Waves
+
+## WAVE-AUTH-BOUNDARY
+Order: 1
+Learning Target: Validate the authentication boundary.
+Members: PR-AUTH-SIGNIN
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review acceptance and contract evidence.
+Stop/Replan Triggers: Stop if the credential boundary changes.
 
 # Sequencing & Risks
 PR-AUTH-SIGNIN has no dependency.
@@ -385,6 +411,46 @@ auto_approval:
 
     assert rc == 0
     assert report["approval_requirements"][0]["status"] == "auto-approved"
+
+
+def test_approval_requirement_uses_later_valid_reapproval(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-OLD-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": "0" * 64,
+            },
+            {
+                "id": "APR-CURRENT-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+            },
+        ],
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["approval_requirements"][0]["approval_id"] == "APR-CURRENT-SPEC"
 
 
 def test_check_spec_rejects_nfr_without_units(tmp_path, monkeypatch, capsys):
@@ -561,7 +627,7 @@ def test_check_design_accepts_complete_structural_design(tmp_path, monkeypatch, 
     assert rc == 0
     assert report["comp_req_coverage_pct"] == 100.0
     assert report["comp_test_coverage_pct"] == 100.0
-    assert report["gates"]["complexity_budget_present"] is True
+    assert report["gates"]["complexity_budget_complete"] is True
 
 
 def test_check_design_requires_budget_and_reports_generic_machinery_signals(
@@ -573,8 +639,13 @@ def test_check_design_requires_budget_and_reports_generic_machinery_signals(
     write_valid_design(design_path)
     design_path.write_text(
         design_path.read_text(encoding="utf-8").replace(
-            "Complexity Budget: one auth component; no generic machinery; "
-            "existing tests reused.",
+            "## Complexity Budget\n"
+            "- Mental Model: authenticate through one existing boundary.\n"
+            "- Current Consumers: the current application.\n"
+            "- Proposed Additions: one authentication component; "
+            "no generic machinery.\n"
+            "- Existing Evidence Reused: current acceptance and contract tests.\n"
+            "- Deleted or Deferred: future-consumer extension points.",
             "Introduce a generic evidence platform and registry for future consumers.",
         ),
         encoding="utf-8",
@@ -590,7 +661,7 @@ def test_check_design_requires_budget_and_reports_generic_machinery_signals(
     )
 
     assert rc == 1
-    assert report["gates"]["complexity_budget_present"] is False
+    assert report["gates"]["complexity_budget_complete"] is False
     assert report["complexity_budget"]["generic_machinery_signals"] == [
         "Introduce a generic evidence platform and registry for future consumers."
     ]
@@ -811,7 +882,169 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["plan_kind"] == "implementation"
     assert report["at_coverage_pct"] == 100.0
     assert report["test_obligation_coverage_pct"] == 100.0
-    assert report["gates"]["complexity_budget_present"] is True
+    assert report["gates"]["complexity_budget_complete"] is True
+
+
+def test_check_plan_requires_declared_learning_waves(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8")
+    wave_start = text.index("# Learning Waves")
+    sequencing_start = text.index("# Sequencing & Risks")
+    plan_path.write_text(text[:wave_start] + text[sequencing_start:], encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["learning_waves_well_formed"] is False
+    assert report["gates"]["learning_wave_members_complete"] is False
+    assert report["unassigned_wave_members"] == ["PR-AUTH-SIGNIN"]
+
+
+def test_check_plan_rejects_inline_or_incomplete_complexity_budget(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8")
+    budget_start = text.index("## Complexity Budget")
+    milestone_start = text.index("# Milestones")
+    plan_path.write_text(
+        text[:budget_start] + "Complexity Budget: x\n\n" + text[milestone_start:],
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["complexity_budget_complete"] is False
+    assert report["complexity_budget"]["declared"] is False
+
+
+def test_check_plan_rejects_complexity_pr_count_mismatch(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace(
+            "- Implementation PR Count: 1",
+            "- Implementation PR Count: 2",
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["complexity_budget_complete"] is False
+    assert report["complexity_budget"]["implementation_pr_count_matches"] is False
+
+
+def test_check_plan_ignores_fenced_complexity_budget(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8")
+    budget_start = text.index("## Complexity Budget")
+    milestone_start = text.index("# Milestones")
+    fenced = """```markdown
+## Complexity Budget
+- Mental Model: example only.
+- Current Consumers: example only.
+- Proposed Additions: example only.
+- Existing Evidence Reused: example only.
+- Deleted or Deferred: example only.
+- Implementation PR Count: 1
+```
+
+"""
+    plan_path.write_text(
+        text[:budget_start] + fenced + text[milestone_start:], encoding="utf-8"
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["complexity_budget_complete"] is False
+    assert report["complexity_budget"]["declared"] is False
+
+
+def test_check_plan_accepts_structured_tdd_exception(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "Red: failing AT-AUTH-SIGNIN test.\n  Green: implement COMP-AUTH.",
+        "TDD Exception: docs-only.\n"
+        "  Exception Scope: update existing sign-in documentation only.\n"
+        "  Replacement Evidence: deterministic documentation build and link check.",
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert report["gates"]["pr_tdd_contract"] is True
+    assert report["pr_tdd_contracts"]["PR-AUTH-SIGNIN"]["mode"] == "exception"
+
+
+def test_check_plan_rejects_unsafe_or_incomplete_tdd_exception(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "Red: failing AT-AUTH-SIGNIN test.\n  Green: implement COMP-AUTH.",
+        "TDD Exception: docs-only-but-changes-code.",
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["pr_tdd_contract"] is False
+    assert report["prs_invalid_tdd_contract"]["PR-AUTH-SIGNIN"] == [
+        "invalid_exception_category",
+        "missing_red",
+        "missing_green",
+    ]
+
+
+def test_check_plan_ignores_fenced_tdd_fields(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "Red: failing AT-AUTH-SIGNIN test.\n  Green: implement COMP-AUTH.",
+        "```text\n  Red: example failure.\n  Green: example implementation.\n  ```",
+    )
+    plan_path.write_text(text, encoding="utf-8")
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["pr_tdd_contract"] is False
+    assert report["prs_invalid_tdd_contract"]["PR-AUTH-SIGNIN"] == [
+        "missing_red",
+        "missing_green",
+    ]
 
 
 def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
@@ -820,16 +1053,29 @@ def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
     extra_prs = """
-- PR-AUTH-SETUP Scope: prepare the current boundary. Red: failing boundary test.
+- PR-AUTH-SETUP
+  Scope: prepare the current boundary.
+  Red: failing boundary test.
   Green: prepare the current boundary.
-- PR-AUTH-WIRING Scope: wire the current consumer. Red: failing integration test.
+- PR-AUTH-WIRING
+  Scope: wire the current consumer.
+  Red: failing integration test.
   Green: wire the current consumer.
-- PR-AUTH-PROOF Scope: prove current compatibility. Red: failing compatibility test.
+- PR-AUTH-PROOF
+  Scope: prove current compatibility.
+  Red: failing compatibility test.
   Green: prove current compatibility.
 
 """
     text = plan_path.read_text(encoding="utf-8").replace(
         "# Coverage Map", extra_prs + "# Coverage Map"
+    )
+    text = text.replace(
+        "- Implementation PR Count: 1",
+        "- Implementation PR Count: 4",
+    ).replace(
+        "Members: PR-AUTH-SIGNIN",
+        "Members: PR-AUTH-SIGNIN, PR-AUTH-SETUP, PR-AUTH-WIRING, PR-AUTH-PROOF",
     )
     plan_path.write_text(text, encoding="utf-8")
     module = load_checker("check_plan")
@@ -849,23 +1095,85 @@ def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
         ),
         encoding="utf-8",
     )
+    rc, report = run_main(module, ["plan.md", "--json"], monkeypatch, capsys, tmp_path)
+
+    assert rc == 0
+    assert report["gates"]["bounded_slice_pr_budget"] is True
+    assert "complexity_exception_approved" not in report["gates"]
+
+    rc, report = run_main(
+        module,
+        ["plan.md", "--require-complexity-approval", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["complexity_exception_approved"] is False
+
     write_approval_ledger(
         tmp_path,
         [
             {
-                "id": "APPROVAL-PLAN-COMPLEXITY",
-                "gate": "plan.approved",
-                "scope": "slice/change",
-                "kind": "plan",
+                "id": "WRONG-SCOPE-KIND",
+                "gate": "plan.complexity-approved",
+                "scope": "product/system",
+                "kind": "spec",
                 "path": "plan.md",
                 "sha256": file_hash(plan_path),
             }
         ],
     )
-
     rc, report = run_main(
         module,
-        ["plan.md", "--require-approvals", "--json"],
+        ["plan.md", "--require-complexity-approval", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["complexity_exception_approved"] is False
+
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "AUTO-PLAN-COMPLEXITY",
+                "gate": "plan.complexity-approved",
+                "scope": "slice/change",
+                "kind": "plan",
+                "path": "plan.md",
+                "sha256": file_hash(plan_path),
+                "status": "auto-approved",
+                "approved_by": "AUTO",
+                "policy": "internal-prototype",
+                "reason": "Local policy attempted to approve complexity.",
+            },
+            {
+                "id": "APPROVAL-PLAN-COMPLEXITY",
+                "gate": "plan.complexity-approved",
+                "scope": "slice/change",
+                "kind": "plan",
+                "path": "plan.md",
+                "sha256": file_hash(plan_path),
+            },
+        ],
+        gates_yaml="""version: 1
+auto_approval:
+  enabled: true
+  mode: internal-prototype
+  expires_at: "2999-01-01T00:00:00Z"
+  allowed_scopes:
+    - slice/change
+  allowed_gates:
+    - plan.complexity-approved
+""",
+    )
+    rc, report = run_main(
+        module,
+        ["plan.md", "--require-complexity-approval", "--json"],
         monkeypatch,
         capsys,
         tmp_path,
@@ -873,27 +1181,16 @@ def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
 
     assert rc == 0
     assert report["gates"]["bounded_slice_pr_budget"] is True
+    assert report["gates"]["complexity_exception_approved"] is True
     assert report["complexity_budget"]["approval"]["approved"] is True
+    assert report["complexity_budget"]["approval"]["approval_id"] == (
+        "APPROVAL-PLAN-COMPLEXITY"
+    )
 
 
 def test_check_plan_accepts_ordered_learning_waves(tmp_path, monkeypatch, capsys):
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
-    text = plan_path.read_text(encoding="utf-8").replace(
-        "# Sequencing & Risks",
-        """# Learning Waves
-
-## WAVE-AUTH-BOUNDARY
-Order: 1
-Learning Target: Validate the authentication boundary.
-Members: PR-AUTH-SIGNIN
-WIP Limit: 1
-Feedback/Integration Checkpoint: Review acceptance and contract evidence.
-Stop/Replan Triggers: Stop if the credential boundary changes.
-
-# Sequencing & Risks""",
-    )
-    plan_path.write_text(text, encoding="utf-8")
     module = load_checker("check_plan")
 
     rc, report = run_main(
@@ -907,23 +1204,48 @@ Stop/Replan Triggers: Stop if the credential boundary changes.
     assert report["learning_waves"][0]["members"] == ["PR-AUTH-SIGNIN"]
 
 
+def test_check_plan_ignores_fenced_learning_waves(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8")
+    wave_start = text.index("# Learning Waves")
+    sequencing_start = text.index("# Sequencing & Risks")
+    fenced_wave = (
+        "~~~markdown\n~~~not-a-close\n" + text[wave_start:sequencing_start] + "~~~\n\n"
+    )
+    plan_path.write_text(
+        text[:wave_start] + fenced_wave + text[sequencing_start:], encoding="utf-8"
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["learning_waves_well_formed"] is False
+    assert report["gates"]["learning_wave_members_complete"] is False
+
+
 def test_check_plan_rejects_malformed_or_incomplete_learning_waves(
     tmp_path, monkeypatch, capsys
 ):
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
     text = plan_path.read_text(encoding="utf-8").replace(
-        "# Sequencing & Risks",
-        """# Learning Waves
-
-## WAVE-AUTH
+        """## WAVE-AUTH-BOUNDARY
+Order: 1
+Learning Target: Validate the authentication boundary.
+Members: PR-AUTH-SIGNIN
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review acceptance and contract evidence.
+Stop/Replan Triggers: Stop if the credential boundary changes.""",
+        """## WAVE-AUTH
 Order: first
 Learning Target: Validate the authentication boundary.
 Members: PR-AUTH-SIGNIN, PR-AUTH-EXTRA
 WIP Limit: 0
-Feedback/Integration Checkpoint: Review acceptance evidence.
-
-# Sequencing & Risks""",
+Feedback/Integration Checkpoint: Review acceptance evidence.""",
     )
     plan_path.write_text(text, encoding="utf-8")
     module = load_checker("check_plan")
@@ -942,26 +1264,9 @@ Feedback/Integration Checkpoint: Review acceptance evidence.
 def test_check_plan_rejects_wrong_wave_member_kind(tmp_path, monkeypatch, capsys):
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
-    text = (
-        plan_path.read_text(encoding="utf-8")
-        .replace(
-            "Plan Type: Implementation",
-            "Plan Type: Breakdown",
-        )
-        .replace(
-            "# Sequencing & Risks",
-            """# Learning Waves
-
-## WAVE-AUTH-BOUNDARY
-Order: 1
-Learning Target: Validate the authentication boundary.
-Members: PR-AUTH-SIGNIN
-WIP Limit: 1
-Feedback/Integration Checkpoint: Review acceptance evidence.
-Stop/Replan Triggers: Stop if the credential boundary changes.
-
-# Sequencing & Risks""",
-        )
+    text = plan_path.read_text(encoding="utf-8").replace(
+        "Plan Type: Implementation",
+        "Plan Type: Breakdown",
     )
     plan_path.write_text(text, encoding="utf-8")
     module = load_checker("check_plan")
@@ -988,8 +1293,15 @@ Plan Type: Breakdown
 Implementation Readiness: Decomposable
 
 # Strategy
-Complexity Budget: one child allocation; no new generic machinery.
 Allocate one feature child.
+
+## Complexity Budget
+- Mental Model: allocate one feature child.
+- Current Consumers: the current product.
+- Proposed Additions: one child allocation; no new generic machinery.
+- Existing Evidence Reused: current product acceptance tests.
+- Deleted or Deferred: implementation detail until the child plan.
+- Implementation PR Count: 0
 
 # Milestones
 - MILE-AUTH-DELIVERY
@@ -1008,6 +1320,16 @@ Allocate one feature child.
 
 # Coverage Map
 Authentication maps to WORK-AUTH-FEATURE.
+
+# Learning Waves
+
+## WAVE-AUTH-FEATURE
+Order: 1
+Learning Target: Validate the feature boundary before implementation planning.
+Members: WORK-AUTH-FEATURE
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review the child artifact chain.
+Stop/Replan Triggers: Stop if the feature boundary changes.
 
 # Sequencing & Risks
 The child starts after parent approval.

@@ -23,6 +23,7 @@ Then score:
 
 - implementation correctness, edge cases, accepted behavior, and design/plan fidelity;
 - test bodies, concrete oracles, fixtures/data/selectors, determinism, and false-result risk;
+- Red/Green evidence or TDD-exception eligibility, scope, and replacement evidence;
 - real-boundary evidence and double drift risk;
 - traceability spot-checks against actual test behavior;
 - profile/module implementation and production fitness proportional to accepted risk;

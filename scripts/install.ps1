@@ -259,7 +259,8 @@ function Copy-Checkers {
         }
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
-    Get-ChildItem -LiteralPath $CheckerSource -Filter "check_*.py" | Copy-Item -Destination $dest -Force
+    Get-ChildItem -LiteralPath $CheckerSource -Filter "*.py" |
+        Copy-Item -Destination $dest -Force
     Write-Host "Installed checkers -> $dest"
 }
 
@@ -317,8 +318,9 @@ This is a direct GitHub Copilot CLI skill alias for the Sarathi $stageName stage
 
 Follow the bundled prompt file prompts/$promptFileName exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
-Resolve referenced shared docs from ../sarathi/docs/. Load only the docs triggered by the
-stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
+Resolve any transitive prompts referenced as prompts/*.prompt.md from
+../sarathi/prompts/, and shared docs from ../sarathi/docs/. Load only the files triggered
+by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
 This stage is part of the broader Sarathi workflow. Preserve input gates, human
 review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode

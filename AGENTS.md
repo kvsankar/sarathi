@@ -56,7 +56,9 @@ Process evidence must not become product architecture. Start with the smallest d
 implementation, reuse brownfield suites/contracts as compatibility oracles, generalize
 after a second concrete use case, and stop when conceptual complexity exceeds the user's
 mental model. A bounded slice defaults to at most three implementation PRs; exceptions need
-concise justification and explicit plan approval. Sarathi has no LOC constraints.
+concise justification and the dedicated hash-current `plan.complexity-approved` gate before
+assessment; final `plan.approved` remains the downstream code gate. Sarathi has no LOC
+constraints.
 
 Record profile, triggered modules, rationale, and escalation triggers in
 `.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the governing artifact.
