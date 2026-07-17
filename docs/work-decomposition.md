@@ -1,12 +1,12 @@
-# Work Decomposition And Child Artifacts
+# Breaking Work Into Child Documents
 
 Use this policy whenever a Breakdown plan divides parent scope into `WORK-*` items.
 
 ## Core Model
 
-A `WORK-*` item is an allocation record inside a parent Breakdown plan. It is not a Spec,
-Design, Plan, Code artifact, approval gate, or implementation level. It names work that a
-child scope must take through its own artifact chain.
+A `WORK-*` item assigns part of a parent Breakdown plan to a child. It is not itself a
+Spec, Design, Plan, Code document, approval, or implementation level. The child must take
+that work through its own Spec/Design/Plan chain.
 
 The normal recursive mapping is:
 
@@ -28,7 +28,7 @@ Feature/component Breakdown plan
 A sufficiently small feature/component may become code-ready without another slice level.
 Product-level integration, acceptance, migration, release, or other cross-feature work may
 also allocate directly to a slice/change child when that is the smallest coherent executable
-scope. The allocation remains owned by the product plan, but every resulting artifact and
+scope. The assignment remains owned by the product plan, but every resulting document and
 all code are labeled with the child scope.
 
 ## Required Allocation Fields
@@ -40,7 +40,8 @@ Every `WORK-*` item in a Breakdown plan must state:
 - **Scope**: the bounded outcome assigned to the child.
 - **Parent IDs / inherited obligations**: requirements, design entities, and test intent the
   child must preserve.
-- **Required child artifacts**: child spec, child design/HLD/LLD, and child Breakdown or
+- **Required child artifacts**: the checker field listing the required child spec, child
+  design/HLD/LLD, and child Breakdown or
   Implementation plan as applicable.
 - **Dependencies**, **readiness target**, **risks**, and **done signal**.
 
@@ -49,11 +50,11 @@ For work that can advance in parallel, also record the learning controls from
 
 - learning target and feedback target;
 - execution, learning, and integration dependencies as applicable;
-- the invalidation question for sibling work;
+- what result would change or stop sibling work (`Invalidation Question`);
 - `WAVE-AREA-NAME` membership, WIP limit, integration/feedback checkpoint, and stop/replan
   trigger, with the ordered sequence declared in the plan's `Learning Waves` section.
 
-These controls distinguish useful agent parallelism from a speculative batch. Plan review
+These rules distinguish useful agent parallelism from an untested batch. Plan review
 must reject a wave when feedback from one active slice could materially invalidate another
 and the plan has no containment or cancellation strategy.
 
@@ -62,31 +63,31 @@ extra-token, lowercase, or numeric-placeholder forms fail plan verification. Sta
 retain malformed allocation bullets in an explicit warning for repair, but exclude them
 from valid allocation counts and child workflow branches.
 
-`check_plan.py` mechanically rejects allocations missing parent scope, child scope, scope,
+`check_plan.py` automatically rejects assignments missing parent scope, child scope, scope,
 parent IDs/inherited obligations, or required child artifacts. Review still judges whether
-the declared mapping and artifact chain are semantically appropriate.
+the declared mapping and document chain make sense.
 
-Child artifacts should reference and refine parent intent rather than copy it. Referencing
+Child documents should reference and refine parent intent rather than copy it. Referencing
 the parent keeps them concise; it does not remove the requirement for a child spec, design,
 and plan at the level that will authorize implementation.
 
-## Scope And Traceability Rules
+## Scope And Linking Rules
 
 - The parent plan owns the `WORK-*` identifier and allocation status.
-- The child spec begins the child artifact chain and records its parent plan plus a plain
+- The child spec begins the child document chain and records its parent plan plus a plain
   `Parent Work Item: WORK-<AREA>-<NAME>` metadata line.
 - Child design and plan preserve the same plain `Parent Work Item:` line. This gives status
-  renderers a deterministic link without inferring ancestry from prose or directories.
-- Ancestor `AT-`, `JT-`, and `TEST-` obligations remain owned by their governing artifacts
+  renderers a reliable link without guessing the parent from prose or directories.
+- Parent `AT-`, `JT-`, and `TEST-` obligations remain owned by their source documents
   but are allocated to child implementation PRs through the Coverage Map.
 - `/code-create` runs only from a code-ready child Implementation plan. It never runs from
   a parent Breakdown plan or directly from a `WORK-*` item.
 - After each assessed code-ready leaf, run the inspect-and-adapt loop in
   [feedback-and-learning.md](feedback-and-learning.md) before starting learning-dependent
-  siblings. Revise affected ancestors or the remaining breakdown when new evidence requires
-  it; decomposition is not a promise to execute every originally listed allocation.
-- Diagrams and status views show `WORK-*` as a parent-to-child allocation link. Artifact
-  background encodes Spec/Design/Plan/Code; level labels encode the artifact's own scope.
+  siblings. Revise affected parent documents or the remaining breakdown when new evidence
+  requires it; a breakdown is not a promise to execute every originally listed item.
+- Diagrams and status views show `WORK-*` as a parent-to-child assignment. Background color
+  shows Spec/Design/Plan/Code; level labels show the document's own scope.
 
 ## Integration Example
 
@@ -100,5 +101,5 @@ Product Breakdown plan
 ```
 
 The slice may implement product-owned acceptance, journey, integration, deployment, and
-quality obligations. Traceability preserves that ownership; calling the code
-"product-level code" would confuse governing intent with implementation scope.
+quality obligations. Requirement-to-test links preserve that ownership; calling the code
+"product-level code" would confuse parent intent with implementation scope.

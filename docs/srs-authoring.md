@@ -1,7 +1,7 @@
 # Detailed SRS Quality Rules
 
 Use these rules when drafting, reconstructing, or reviewing a Software Requirements
-Specification. They extend Sarathi's structural SRS format with a stricter quality bar.
+Specification. They extend Sarathi's required SRS format with a stricter quality bar.
 
 ## Research Basis
 
@@ -44,10 +44,11 @@ Functional requirements:
 Acceptance tests:
 
 - Write one scenario, rule example, or measurable quality check per `AT-`.
-- Prefer Given/When/Then or an equivalent setup/action/oracle shape.
+- Prefer Given/When/Then or an equivalent setup/action/expected-result shape.
 - Map each `AT-` to one `UC-` and a small set of `FR-`/`NFR-` IDs. If one `AT-` needs many
   requirements, split it or make it a `JT-` journey.
-- The oracle must be externally observable: UI/API output, event, file, log/metric/trace,
+- The expected result must be externally observable: UI/API output, event, file,
+  log/metric/trace,
   deployment artifact, notification, support ID, or measurable threshold.
 
 ## Fully Dressed Use Cases
@@ -98,7 +99,7 @@ Consider each area and either write measurable `NFR-` items or explicitly defer/
 - Migration/compatibility: data transition, backward compatibility, version support.
 - Documentation: user guides, developer/API docs, examples, troubleshooting, release notes.
 
-## Brownfield Reconstruction
+## Reconstructing Requirements For An Existing System
 
 Before writing a retrospective baseline SRS, inventory source sets:
 
@@ -111,15 +112,15 @@ Before writing a retrospective baseline SRS, inventory source sets:
 
 Classify each source set:
 
-- Current governing source: authoritative behavior or policy to preserve.
+- Current controlling source: authoritative behavior or policy to preserve.
 - Adopted source: non-authoritative but accepted as current intended behavior.
 - Adapted source: useful but revised to match current intent.
 - Background proposal: informative but not current requirement intent.
-- Historical review evidence: useful defect/risk evidence, not itself governing behavior.
+- Historical review evidence: useful defect/risk evidence, not itself controlling behavior.
 - Open-decision ledger: unresolved conflict or decision still needing human choice.
 - Rejected/stale source: explicitly not used.
 
-Brownfield SRS rules:
+Existing-system SRS rules:
 
 - Add a `Source Reconciliation` section or equivalent subsection.
 - Preserve useful detail from existing behavior, tests, and docs. Do not collapse separate
@@ -131,15 +132,15 @@ Brownfield SRS rules:
 
 ## Review Failure Conditions
 
-Fail or require rework even if the structural checker passes when the SRS is:
+Fail or require rework even if the automatic checker passes when the SRS is:
 
 - Terse: use cases or requirements are too short for a human to validate behavior.
 - Cryptic: domain terms, states, actors, or outcomes are not explained.
 - Over-bundled: one need, FR, NFR, or AT carries multiple unrelated behaviors.
 - Under-scenarioed: important alternate/error paths are absent.
-- Under-sourced in brownfield work: current behavior was summarized without source
+- Under-sourced in existing-system work: current behavior was summarized without source
   reconciliation.
-- Traceability theater: IDs are linked, but the linked content does not actually verify or
+- Empty linking: IDs are linked, but the linked content does not actually verify or
   derive the behavior.
 - Design-heavy: implementation choices appear where external behavior or constraints are
   required.
@@ -147,7 +148,7 @@ Fail or require rework even if the structural checker passes when the SRS is:
 
 ## Checker Recommendations
 
-Mechanical checks can catch likely problems, not prove quality. Useful checks:
+Automatic checks can catch likely problems, not prove quality. Useful checks:
 
 - Missing use-case fields from the fully dressed template.
 - Main success scenario without numbered steps.
@@ -155,6 +156,6 @@ Mechanical checks can catch likely problems, not prove quality. Useful checks:
 - `UN-`/`FR-` items with multiple sentences, semicolons, repeated "shall", or obvious
   conjunction bundling.
 - `AT-` items that reference more than one `UC-` or too many `FR-`/`NFR-` IDs.
-- Brownfield specs without `Source Reconciliation` and source classification terms.
+- Existing-system specs without `Source Reconciliation` and source classification terms.
 - NFRs lacking numeric thresholds, units, scope, or verification method.
 - Vague terms such as "etc.", "as appropriate", "fast", "easy", and "TBD".

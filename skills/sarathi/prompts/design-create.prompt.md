@@ -9,22 +9,22 @@ Translate accepted requirements into a testable design at HLD, feature, or LLD d
 
 ## Load And Gate
 
-Read `.sdlc/wip.md`, process decisions, the governing spec, existing design/code evidence,
-and relevant ADRs. Block when upstream intent is materially ambiguous or unfit.
+Read `.sdlc/wip.md`, process decisions, the accepted spec, existing design/code evidence,
+and relevant ADRs. Block when requirements are materially ambiguous or unfit.
 
 Load:
 
 - `docs/artifact-contracts.md` for the Design contract and IDs;
-- `docs/simplicity-first.md` for the complexity budget and brownfield oracle precedence;
-- `docs/assurance-profiles.md` for selected depth and modules;
-- `docs/cross-cutting-concerns.md` for ownership of activated modules only;
-- `docs/test-ownership.md` when ancestor or cross-child test intent is involved;
+- `docs/simplicity-first.md` for the complexity budget and precedence of existing tests;
+- `docs/assurance-profiles.md` for selected review depth and extra risk checks;
+- `docs/cross-cutting-concerns.md` for ownership of those extra checks only;
+- `docs/test-ownership.md` when parent or cross-child test intent is involved;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md` before handoff.
 
-Use the recorded profile unless scope/risk evidence requires escalation. Record profile,
-modules, rationale, and escalation triggers in the design. High-assurance strengthens
-boundary evidence and review; it does not require designing distant learning-dependent
-work up front.
+Use the recorded profile unless new scope or risk evidence requires stronger review.
+Record the profile, extra risk checks, reason, and conditions for stronger review in the
+design. High-assurance strengthens evidence and review at important boundaries; it does
+not require designing distant work before nearer feedback arrives.
 
 Ask one focused question per turn only for a decision that materially changes architecture,
 contracts, risk, or readiness. In YOLO mode, record assumptions and trade-offs; do not
@@ -32,8 +32,8 @@ invent external contracts or user approval.
 
 ## Design
 
-Follow the Design contract in `docs/artifact-contracts.md`. Keep human-facing labels
-readable and machine IDs in trace anchors, glossaries, matrices, obligations, and exact
+Follow the Design contract in `docs/artifact-contracts.md`. Keep labels readable. Put
+machine IDs in compact link records, glossaries, tables, test obligations, and exact
 references.
 
 - Trace requirements and quality attributes into components, interfaces, decisions, and
@@ -44,16 +44,17 @@ references.
   material interfaces.
 - Compare realistic alternatives for material decisions and create/update ADRs.
 - For external systems, name the contract source and real/official conformance strategy.
-  Treat self-authored doubles as residual risk until tied to reality.
+  Treat self-authored doubles as a remaining risk until tied to reality.
 - Define developer verification and only the additional environments/module tactics
-  justified by the selected profile and context.
+  justified by the chosen review depth and context.
 - Keep logging, errors, deployment, docs, security/privacy, UI/accessibility, migration,
-  resilience, performance/cost, and operations proportional to activated modules.
+  resilience, performance/cost, and operations proportional to the risks actually present.
 - Require accepted behavior, two concrete consumers, measured inadequacy, or material risk
   before adding generic frameworks, registries, generators, manifests, schema systems,
   extension points, or harnesses.
-- For brownfield refactors, reuse existing functional, acceptance, schema/OpenAPI, CI,
-  build, and deployment tests; add only focused changed-boundary evidence.
+- For refactors in an existing system, reuse existing functional, acceptance,
+  schema/OpenAPI, CI, build, and deployment tests; add only focused proof for the changed
+  boundary.
 
 Write `design.md` and deterministic `design.html` unless other paths are named. Child
 designs include `Parent Work Item: WORK-AREA-NAME`.
@@ -71,12 +72,12 @@ python checkers/check_spec.py spec.md --json
 python checkers/check_design.py design.md --spec spec.md --json
 ```
 
-Retry launchers when needed. For child artifacts, use checker feature/parent options. Then
-run `/design-assess`, with fresh Mechanical Verifier and Qualitative Reviewer sub-agents
-when available. Revise design or upstream intent until Pass or explicitly accepted
+Retry launchers when needed. For child documents, use checker feature/parent options. Then
+run `/design-assess`, with one fresh sub-agent for checks and another for independent review
+when available. Revise the design or requirements until Pass or explicitly accepted
 Pass-with-fixes.
 
 Run simplify, update `.sdlc/wip.md`, and stop for human review. Report design/ADR/mock paths,
-depth, readiness, profile/modules, assessment, key decisions/risks, and recommended
+depth, readiness, review depth and extra checks, assessment, key decisions/risks, and recommended
 `/plan-create`. Do not start planning in the same turn without an explicit end-to-end
 instruction.

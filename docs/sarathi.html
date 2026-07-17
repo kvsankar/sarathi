@@ -535,14 +535,14 @@
       <div class="header-row">
         <div>
           <h1>Sarathi process</h1>
-          <p class="lede">Two trees show how current accepted artifacts expand into code;
+          <p class="lede">Two trees show how accepted documents lead to code;
           the learning loop shows how evidence changes what comes next.</p>
         </div>
         <a href="sdlc-status.html">Open live project status</a>
       </div>
       <div class="legend" aria-label="Diagram encoding">
         <div class="legend-row">
-          <span class="legend-label">Background = artifact type</span>
+          <span class="legend-label">Background = document type</span>
           <span class="key key-spec">Spec</span>
           <span class="key key-design">Design</span>
           <span class="key key-plan">Plan</span>
@@ -558,7 +558,7 @@
         <div class="legend-row">
           <span class="legend-label"><code>WORK-*</code> = parent allocation</span>
           <span class="allocation-key"><code>WORK-EXAMPLE</code> Parent plan
-            <span class="allocation-arrow">&rarr;</span> Child artifact chain</span>
+            <span class="allocation-arrow">&rarr;</span> Child document chain</span>
         </div>
       </div>
       <p class="rule">Only code-ready leaves invoke <code>/code-create</code>. Approval means
@@ -572,7 +572,7 @@
     <section aria-labelledby="simple-tree">
       <div class="section-head">
         <h2 id="simple-tree">1. PR-sized leaf</h2>
-        <p>No decomposition is needed.</p>
+        <p>No breakdown is needed.</p>
       </div>
       <div class="flow" aria-label="Simple code-ready workflow">
         <div class="node artifact-spec">
@@ -608,7 +608,7 @@
             <span class="status code-ready">Code-ready</span>
           </div>
           <strong>Implementation plan</strong>
-          <small><code>PR-*</code>, Red/Green, touch set, oracles</small>
+          <small><code>PR-*</code>, Red/Green, files to change, pass/fail checks</small>
         </div>
         <span class="arrow" aria-hidden="true"></span>
         <div class="node artifact-code">
@@ -627,11 +627,11 @@
 
     <section aria-labelledby="decomposed-tree">
       <div class="section-head">
-        <h2 id="decomposed-tree">2. Decomposable product</h2>
+        <h2 id="decomposed-tree">2. Product that needs breakdown</h2>
         <p>Each branch repeats until it reaches a code-ready leaf.</p>
       </div>
 
-      <div class="flow" aria-label="Product artifact chain">
+      <div class="flow" aria-label="Product document chain">
         <div class="node artifact-spec">
           <div class="node-meta">
             <div class="identity-tags">
@@ -665,7 +665,7 @@
             <span class="status approved">Approved</span>
           </div>
           <strong>Breakdown plan</strong>
-          <small>Allocates work and ancestor test intent</small>
+          <small>Assigns work and parent test intent</small>
         </div>
       </div>
 
@@ -733,7 +733,7 @@
             <code>WORK-FEATURE-TWO</code>
             <span>Product plan allocation</span>
             <span class="allocation-arrow">&rarr;</span>
-            <strong>Feature child: decomposes again</strong>
+            <strong>Feature child: needs another breakdown</strong>
           </div>
           <div class="flow">
             <div class="node artifact-spec">
@@ -766,7 +766,7 @@
                   <span class="level level-feature">Feature</span>
                   <span class="kind">Plan</span>
                 </div>
-                <span class="status allocated">Decomposable</span>
+                <span class="status allocated">Needs breakdown</span>
               </div>
               <strong>Feature breakdown plan</strong>
               <small>Allocates slices and feature integration</small>
@@ -814,7 +814,7 @@
                   <span class="status code-ready">Code-ready</span>
                 </div>
                 <strong>Slice A plan</strong>
-                <small>Assigned ancestor and local tests</small>
+                <small>Assigned parent and local tests</small>
               </div>
               <span class="arrow" aria-hidden="true"></span>
               <div class="node artifact-code">
@@ -869,7 +869,7 @@
                   <span class="status code-ready">Code-ready</span>
                 </div>
                 <strong>Slice B plan</strong>
-                <small>Assigned ancestor and local tests</small>
+                <small>Assigned parent and local tests</small>
               </div>
               <span class="arrow" aria-hidden="true"></span>
               <div class="node artifact-code">
@@ -928,7 +928,7 @@
                 <span class="status code-ready">Code-ready</span>
               </div>
               <strong>Integration implementation plan</strong>
-              <small>PR ownership, environments, oracles, and traceability</small>
+              <small>PR ownership, environments, pass/fail checks, and requirement links</small>
             </div>
             <span class="arrow" aria-hidden="true"></span>
             <div class="node artifact-code">
@@ -948,13 +948,13 @@
 
       <p class="footnote">Integration is incremental: slices prove boundaries, features
       prove local composition, and explicit integration slices prove cross-feature
-      behavior. Traceability maps ownership; execution results prove outcomes.</p>
+      behavior. Requirement links show ownership; execution results prove outcomes.</p>
     </section>
 
     <section aria-labelledby="learning-loop">
       <div class="section-head">
         <h2 id="learning-loop">3. Inspect and adapt</h2>
-        <p>Every assessed slice can change its ancestors and the next wave.</p>
+        <p>Every assessed slice can change its parent documents and the next wave.</p>
       </div>
       <div class="learning-flow" aria-label="Post-slice feedback loop">
         <div class="learning-step">
@@ -966,7 +966,7 @@
           <small>Received, requested, unavailable, or not applicable</small>
         </div>
         <div class="learning-step">
-          <strong>Ancestor impact</strong>
+          <strong>Parent documents</strong>
           <small>Spec, design, plan, integration, and process</small>
         </div>
         <div class="learning-step">

@@ -1,40 +1,43 @@
 ---
-description: Qualitatively and adversarially review a Software Design Document using available mechanical evidence.
+description: Independently review a Software Design Document using checker results and look for counterexamples.
 agent: agent
 ---
 
 # Design Review
 
-Review the target design without editing it unless asked. Read upstream intent, `.sdlc/wip.md`,
-available verification evidence, `docs/artifact-contracts.md`,
+Review the target design without editing it unless asked. Read the accepted requirements,
+`.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
 `docs/assurance-profiles.md`, and `docs/simplicity-first.md`. Stop as `Blocked-upstream`
 when the spec is unfit.
 
-Use a fresh Qualitative Reviewer sub-agent when available. Otherwise disclose degraded
-non-independent review and seek counterexamples.
+Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
+independent and seek counterexamples.
 
 ## Judge
 
 Score 1–5 and give a concrete fix below 5:
 
-- upstream fit, scope/depth/readiness, and requirement traceability;
+- fit with requirements, scope/depth/readiness, and requirement links;
 - cohesive responsibilities, minimal coupling, readable architecture, and core/shell or
   equivalent separation;
 - interfaces, lifecycle/errors/data/side effects, compatibility, and real-boundary realism;
-- decisions, alternatives, risks, verification oracles, and `TEST-*` architecture;
-- profile/module tactics and environments proportional to accepted risk;
+- decisions, alternatives, risks, clear pass/fail checks, and `TEST-*` architecture;
+- review depth, extra risk checks, and environments proportional to accepted risk;
 - complexity budget versus the user's mental model;
-- brownfield reuse of functional, acceptance, schema/OpenAPI, CI, build, deployment, and
+- reuse of existing functional, acceptance, schema/OpenAPI, CI, build, deployment, and
   operational evidence;
-- process/product firewall and concrete evidence for each framework, generator, registry,
+- separation of process records from product code, plus concrete evidence for each
+  framework, generator, registry,
   manifest, schema system, extension point, or generic harness;
 - current-consumer need: generalization normally requires a second concrete use case.
 
-Start deletion-first. Name components, abstractions, commands, generated artifacts, tests,
+Start with simplification. Name components, abstractions, commands, generated files, tests,
 or diagrams that can be removed, deferred, collapsed, or proven by existing evidence. A
-structurally valid but overbuilt design is `Needs rework`, often with
-`revision-required` ancestor impact.
+a design with every required section can still be `Needs rework` when it is overbuilt,
+often with
+`revision-required` changes to parent documents.
 
-Report blockers, evidence considered, scorecard, deletion/defer/reuse findings, top fixes,
+Report blockers, evidence considered, scorecard, what can be deleted, deferred, or reused,
+top fixes,
 and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
 stop; do not start planning without explicit approval.

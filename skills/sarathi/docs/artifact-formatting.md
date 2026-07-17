@@ -1,6 +1,6 @@
-# Artifact Formatting
+# Document Formatting
 
-Sarathi-generated Markdown artifacts and reports should be easy to review in terminals,
+Sarathi-generated Markdown documents and reports should be easy to review in terminals,
 diffs, and narrow editor panes.
 
 ## Column Width
@@ -13,7 +13,7 @@ diffs, and narrow editor panes.
 
 ## Exceptions
 
-Allow lines over 80 characters when wrapping would make the artifact less correct or less
+Allow lines over 80 characters when wrapping would make the document less correct or less
 readable:
 
 - Markdown tables.
@@ -25,5 +25,5 @@ readable:
 ## Review Guidance
 
 Treat excessive line width as a readability finding, not a semantic failure, unless the
-artifact is consistently hard to review. A few justified long lines are acceptable; a
+document is consistently hard to review. A few justified long lines are acceptable; a
 document full of unwrapped prose should be revised before handoff.

@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Guidance for coding agents maintaining this repository. Sarathi is spec-first,
-feedback-driven, and artifact-governed; it is not a linear waterfall checklist.
+Guidance for coding agents maintaining this repository. Sarathi starts from an accepted
+specification and learns through feedback; it is not a linear waterfall checklist.
 
 ## Canonical Sources
 
@@ -9,7 +9,7 @@ feedback-driven, and artifact-governed; it is not a linear waterfall checklist.
 - `prompts/`: canonical stage prompts and command definitions.
 - `skills/`: installable skill bundles. `skills/sarathi` mirrors selected canonical
   prompts, docs, and checkers.
-- `checkers/`: deterministic structural verification.
+- `checkers/`: repeatable checks for required structure and links.
 - `scripts/`: Windows, macOS, Linux, and WSL installers.
 - `tests/`: checker, bundle, renderer, prompt-budget, and browser regressions.
 
@@ -20,9 +20,9 @@ GitHub Copilot installation target.
 
 Command verbs are intentionally distinct:
 
-- `create`: author or revise an artifact.
-- `verify`: collect deterministic/mechanical evidence only.
-- `review`: make the qualitative adversarial judgment using available evidence.
+- `create`: write or revise a document or code slice.
+- `verify`: run repeatable checks and report their limits.
+- `review`: independently judge quality and look for counterexamples.
 - `assess`: run verification and review as the full gate.
 
 The stage sequence is `spec -> design -> plan -> code`, with matching `create`, `verify`,
@@ -38,7 +38,7 @@ All production work uses the same loop:
 accepted intent -> smallest useful slice -> evidence -> feedback -> inspect/adapt
 ```
 
-Use [docs/assurance-profiles.md](docs/assurance-profiles.md):
+Use [docs/assurance-profiles.md](docs/assurance-profiles.md) to choose review depth:
 
 - **Lean** for small, reversible, low-risk production changes.
 - **Standard** as the ordinary default or when risk is unclear.
@@ -46,59 +46,64 @@ Use [docs/assurance-profiles.md](docs/assurance-profiles.md):
   financial, availability, migration, or irreversible-data consequences.
 - **Exploratory** remains a separate non-production track for timeboxed spikes.
 
-Profiles calibrate depth; they never waive current intent, code readiness, tests, honest
-feedback, ancestor-impact review, human gates, or safety constraints. Activate only
-context-triggered assurance modules. High-assurance strengthens evidence at each learning
-boundary rather than front-loading the whole project.
+Profiles change review depth; they never waive accepted intent, readiness to implement,
+tests, honest feedback, review of parent documents, human approval points, or safety
+limits. Add only the extra risk checks that the work actually needs. High-assurance asks
+for stronger proof at each delivery step instead of front-loading the whole project.
 
 Apply [docs/simplicity-first.md](docs/simplicity-first.md) as a hard design constraint.
 Process evidence must not become product architecture. Start with the smallest direct
-implementation, reuse brownfield suites/contracts as compatibility oracles, generalize
+implementation, reuse existing suites and contracts as compatibility proof, generalize
 after a second concrete use case, and stop when conceptual complexity exceeds the user's
 mental model. A bounded slice defaults to at most three implementation PRs; exceptions need
-concise justification and the dedicated hash-current `plan.complexity-approved` gate before
-assessment; final `plan.approved` remains the downstream code gate. Sarathi has no LOC
+concise justification and a `plan.complexity-approved` record that matches the current plan
+before assessment; final `plan.approved` remains the approval required for code. Sarathi has no LOC
 constraints.
 
-Record profile, triggered modules, rationale, and escalation triggers in
-`.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the governing artifact.
+Record the profile, extra risk checks, reason, and conditions that would require stronger
+review in `.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the source
+document.
 
 ## Scope And Readiness
 
-- **Product/system**: broad boundary and capabilities; usually decomposable.
-- **Feature/component**: coherent capability or subsystem; may be decomposable.
+- **Product/system**: broad boundary and capabilities; usually needs breakdown.
+- **Feature/component**: coherent capability or subsystem; may need breakdown.
 - **Slice/change**: smallest implementable unit; normally code-ready.
 
-Artifacts declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
+Documents declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
 `/code-create` blocks without a code-ready implementation plan for a slice or sufficiently
 small feature.
 
-A `WORK-*` item is an allocation in a parent Breakdown plan, not an artifact or code level.
+A `WORK-*` item assigns child work in a parent Breakdown plan; it is not a document or code
+level.
 Product plans normally allocate feature children; feature plans normally allocate slice
 children. Integration work may allocate directly to the smallest coherent executable
 scope. Every child follows its own Spec/Design/Plan chain. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
 Plans assign every `WORK-*` or `PR-*` exactly once to an ordered `WAVE-*` declaration.
-Waves carry learning target, WIP limit, feedback/integration checkpoint, and stop/replan
-triggers. A hash-current `.sdlc/wave-checkpoints.yaml` record closes only its wave. See
+Each wave states what it should teach us, how much may run at once, when feedback and
+integration happen, and when to stop or replan. A `.sdlc/wave-checkpoints.yaml` record that
+matches the current plan closes only its wave. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
 
 ## Non-Negotiable Evidence Rules
 
 - Requirements own black-box `AT-*` acceptance and `JT-*` journey intent.
 - Designs own executable `TEST-*` obligations and verification architecture.
-- Plans allocate ancestor and local obligations to child work or PRs.
+- Plans assign parent and local test obligations to child work or PRs.
 - Code implements assigned tests and records claims in `.sdlc/test-traceability.yaml`.
-- Traceability is a claim map, not proof. Reviewers spot-check test bodies and oracles.
+- Requirement-to-test links are claims, not proof. Reviewers inspect test bodies and their
+  pass/fail checks.
 - A primary external seam cannot rely only on a self-authored double without explicit
-  residual-risk acceptance. Prefer real or official conformance surfaces.
+  acceptance of the remaining risk. Prefer the real dependency or its official test
+  surface.
 - Build, deployment, environments, docs, observability, error handling, UI/accessibility,
   security, privacy, resilience, performance/cost, and migration depth are activated by
-  accepted requirements or assurance-module triggers. Follow
+  accepted requirements or identified risks. Follow
   [docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md).
 - Never infer passing tests, true TDD history, stakeholder feedback, merge state, or human
-  approval from a structural checker or Git activity.
+  approval from an automatic checker or Git activity.
 - Live production deployment/checks require explicit user approval.
 
 Behavior-changing code uses Red/Green/Refactor. Narrow exceptions are generated-only,
@@ -106,22 +111,23 @@ docs-only, formatting-only, build/deploy configuration validation, or characteri
 before legacy refactor; each needs replacement evidence.
 
 Run bounded cleanup and simplify passes before handoff. Fix in-scope oddities, avoid
-unrelated refactors, and revise upstream artifacts if simplification changes accepted
+unrelated refactors, and revise earlier documents if simplification changes accepted
 behavior or contracts. See `docs/cleanup-pass.md` and `docs/simplify-pass.md`.
 
 ## Feedback And Parallelism
 
 Approval means sufficient for the next learning step, not frozen forever. Every code-ready
-slice names a learning target, feedback target/method, invalidation question, and
-post-slice ancestor-impact checkpoint. Feedback status is `received`, `requested`,
+slice states what it should teach us, who or what can judge the result, how feedback will
+be gathered, what result would change the plan (`Invalidation Question`), and which parent
+documents may need revision (`Ancestor Impact`). Feedback status is `received`, `requested`,
 `unavailable`, or `not-applicable`; never fabricate evidence.
 
-After each assessed slice, classify ancestor impact as `no-change`, `revision-proposed`,
+After each assessed slice, classify changes to parent documents as `no-change`, `revision-proposed`,
 `revision-required`, or `feedback-required`. Revise before affected work continues.
 
 Prefer intra-slice sub-agent parallelism. Run independent slices concurrently only in a
-bounded wave with explicit execution, learning, and integration dependencies, WIP cap,
-convergence owner, and stop/replan triggers.
+bounded wave with clear execution, learning, and integration dependencies, a WIP cap, who
+will combine the work, and conditions for stopping or replanning.
 
 ## IDs
 
@@ -136,8 +142,8 @@ required references. See [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
 ## Entry, WIP, And Human Gates
 
-Use [docs/project-entry.md](docs/project-entry.md) for Greenfield, Brownfield Baseline, or
-Brownfield Delta-Only adoption. Brownfield adoption reconstructs accepted intent; current
+Use [docs/project-entry.md](docs/project-entry.md) to choose how Sarathi starts in a new or
+existing system. Baseline adoption reconstructs accepted intent; current
 code is evidence, not truth. A planless baseline review is a conformance audit and must be
 explicitly authorized in `.sdlc/process-decisions.yaml`.
 
@@ -148,25 +154,25 @@ When `sarathi` is invoked generally, run only the next appropriate stage. After 
 materially revising a spec, design, ADR, plan, code slice, assessment, or review report:
 
 1. Update `.sdlc/wip.md`.
-2. Report artifact path, status/readiness, evidence, open questions, and next command.
-3. End the turn before starting the downstream stage.
+2. Report document or code path, status/readiness, evidence, open questions, and next command.
+3. End the turn before starting the next stage.
 
 Continue across stages only when the latest user request explicitly asks for end-to-end or
 unattended execution. YOLO permits reasonable assumptions but does not bypass readiness,
-touch-set, upstream-blocker, evidence, safety, or human-review gates.
+touch-set, earlier-document blockers, evidence, safety, or human-review gates.
 
-Approval attestations use `.sdlc/approvals.yaml`; optional bounded auto-policy uses
+Approval records use `.sdlc/approvals.yaml`; optional limited automatic approval policy uses
 `.sdlc/gates.yaml`. Follow [docs/approval-gates.md](docs/approval-gates.md).
 
 ## Verification Independence
 
 When sub-agents are available, use fresh-context passes:
 
-- Mechanical Verifier: deterministic checks and raw evidence.
-- Qualitative Reviewer: adversarial judgment using artifact plus evidence.
+- Check pass: repeatable checks and raw results.
+- Review pass: independent judgment using the document or code plus those results.
 
 An assessment runs both. If sub-agents are unavailable, disclose non-independence and keep
-the passes separate. Stop downstream assessment when an upstream artifact is unfit. Follow
+the passes separate. Stop assessment when an earlier required document is unfit. Follow
 [docs/review-verification-checklist.md](docs/review-verification-checklist.md).
 
 ## Maintenance Rules
@@ -176,11 +182,11 @@ the passes separate. Stop downstream assessment when an upstream artifact is unf
 - Keep global routing and stage contracts concise. Shared rules belong in one triggered
   reference; deterministic rules belong in checkers.
 - Use `apply_patch` for manual edits. Do not overwrite user changes or generated consumer
-  artifacts.
+  documents.
 - Mirror canonical prompts/checkers and the selected docs into `skills/sarathi`.
 - Update `CHANGELOG.md` for user-visible process, checker, installer, or skill changes.
 - Keep deterministic output free of timestamps, randomness, network assets, and
-  environment-dependent content unless the artifact schema explicitly requires them.
+  environment-dependent content unless the document schema explicitly requires them.
 
 Run before publishing:
 

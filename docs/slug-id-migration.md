@@ -59,8 +59,8 @@ character. Do not use trailing numbers or internal hyphens.
    TEST-AUTH-10 -> TEST-AUTH-POLICY
    ```
 
-2. Replace every occurrence in specs, designs, plans, traceability matrices, and
-   `.sdlc/test-traceability.yaml`. Remove artifact IDs from test names, source comments, and
+2. Replace every occurrence in specs, designs, plans, requirement-link matrices, and
+   `.sdlc/test-traceability.yaml`. Remove process IDs from test names, source comments, and
    docstrings unless the project has explicitly adopted inline metadata.
 
 3. Keep the area token stable when possible and make the name token describe the behavior,

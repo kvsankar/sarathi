@@ -6,7 +6,7 @@ state and continue without depending on chat history.
 
 `wip.md` is not an approval ledger, a source of product truth, or proof that checks passed.
 Specs, designs, plans, code, tests, `.sdlc/process-decisions.yaml`, and
-`.sdlc/approvals.yaml` remain the governing artifacts. Treat `.sdlc/wip.md` as a current
+`.sdlc/approvals.yaml` remain the source records. Treat `.sdlc/wip.md` as a current
 navigation note that can become stale.
 
 ## When To Read
@@ -15,26 +15,26 @@ At the start of any SDLC stage or general SDLC request:
 
 - read `.sdlc/wip.md` if it exists;
 - read `.sdlc/process-decisions.yaml` if it exists;
-- use both only to orient stage selection and artifact discovery;
-- verify important claims against the named artifact files before acting.
+- use both only to choose the next stage and find relevant documents;
+- check important claims against the named files before acting.
 
-If `.sdlc/wip.md` conflicts with governing artifacts or the user's latest instruction, the
-governing artifact or latest instruction wins. Update the WIP file to remove the stale
+If `.sdlc/wip.md` conflicts with a source document or the user's latest instruction, the
+source document or latest instruction wins. Update the WIP file to remove the stale
 claim before continuing.
 
 ## When To Create Or Update
 
 Create `.sdlc/wip.md` when SDLC work starts in a project and no WIP file exists. Update it:
 
-- after creating, materially revising, reviewing, verifying, or assessing an artifact;
+- after creating, materially revising, reviewing, checking, or assessing a document;
 - before every hard human gate stop;
 - before ending a turn with unresolved blockers or open questions;
-- after the user approves an artifact, changes adoption mode, changes scope, or explicitly
-  chooses YOLO/lightweight/degraded verification behavior;
+- after the user approves a document, changes the starting mode, changes scope, or
+  explicitly chooses YOLO/lightweight/degraded check behavior;
 - after bootstrap instruction injection is accepted, declined, or deferred.
 
 Do not store secrets, credentials, private tokens, raw sensitive data, or long command logs.
-Summarize evidence and link to artifact paths instead.
+Summarize evidence and link to document paths instead.
 
 ## Required Shape
 
@@ -69,7 +69,7 @@ One short paragraph describing what a fresh context must know first.
 
 - Decision or assumption, with source path when applicable.
 
-## Verification Evidence
+## Check And Review Evidence
 
 - Command or review performed, date, result, and where details live.
 
@@ -78,8 +78,8 @@ One short paragraph describing what a fresh context must know first.
 Learning Target: assumption, behavior, boundary, or risk tested by the current slice
 Feedback Target: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable
-Feedback Evidence: path, review, observation, or concise residual-risk note
-Active Learning Wave: exact WAVE-AREA-NAME from the governing plan, or none
+Feedback Evidence: path, review, observation, or concise remaining-risk note
+Active Learning Wave: exact WAVE-AREA-NAME from the plan, or none
 WIP Limit: positive integer or not-recorded
 Active Slices: comma-separated members from that wave (WORK-* or PR-*), or none
 Invalidation Result: concise evidence-backed result
@@ -102,7 +102,7 @@ Notes: ...
 ```
 
 Add compact subsections only when they improve resumability. Keep the file short enough for
-a fresh context to read quickly; prefer links to artifacts over copied content.
+a fresh context to read quickly; prefer links to documents over copied content.
 
 ## Fresh Context Resume Procedure
 
@@ -113,12 +113,12 @@ A fresh agent context should:
 3. Read `.sdlc/process-decisions.yaml`, `.sdlc/approvals.yaml`,
    `.sdlc/code-assessments.yaml`, and `.sdlc/wave-checkpoints.yaml` when present.
 4. Load the selected stage prompt and triggered docs using `docs/progressive-disclosure.md`.
-5. Re-open the governing artifact paths named in WIP before editing or judging them.
-6. Check feedback status, active learning dependencies, and ancestor-impact outcomes before
+5. Re-open the source document paths named in WIP before editing or judging them.
+6. Check feedback status, active learning dependencies, and parent-document outcomes before
    starting another slice.
 7. Continue from `Next Recommended Action`, unless the user's latest instruction changes
    the stage or scope.
 
 If WIP is missing in a project that is already using the process, reconstruct the smallest
-accurate WIP from existing artifacts and ask the user to confirm when the reconstruction
+accurate WIP from existing documents and ask the user to confirm when the reconstruction
 materially affects the next stage.

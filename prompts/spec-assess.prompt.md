@@ -1,5 +1,5 @@
 ---
-description: Run structural verification and independent qualitative review as the full spec gate.
+description: Run repeatable checks and an independent judgment review as the full spec gate.
 agent: agent
 ---
 
@@ -11,20 +11,20 @@ profile/modules from `docs/assurance-profiles.md`. Apply `docs/simplicity-first.
 
 ## Run
 
-1. **Mechanical Verifier**: in a fresh sub-agent when available, run `/spec-verify` and
-   return raw checker command, IDs, metrics, failures, and approval evidence without making
-   the qualitative verdict.
-2. **Qualitative Reviewer**: in a different fresh sub-agent when available, run
-   `/spec-review` using the artifact and mechanical evidence. Judge depth against the
-   selected profile and activated modules, not a universal concern list.
+1. **Check pass**: in a fresh sub-agent when available, run `/spec-verify` and return the
+   command, IDs, metrics, failures, and approval evidence without judging overall quality.
+2. **Review pass**: in a different fresh sub-agent when available, run `/spec-review` using
+   the spec and check results. Judge depth against the selected profile and extra risk
+   checks, not a universal concern list.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and execute the
-passes separately with an adversarial posture. Never treat checker JSON as semantic review.
+passes separately and actively look for counterexamples. Never treat checker JSON as proof
+that the requirements are good.
 
-Stop as `Blocked-upstream` when the artifact cannot be judged responsibly. Otherwise report:
+Stop as `Blocked-upstream` when the spec cannot be judged responsibly. Otherwise report:
 
-1. Mechanical scorecard with command and totals.
-2. Qualitative scorecard with profile/module fitness.
+1. Check results with command and totals.
+2. Review scorecard with review-depth and extra-check fitness.
 3. Top fixes ranked by impact.
 4. Verdict: `Pass | Pass-with-fixes | Needs rework`.
 

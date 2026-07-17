@@ -3,9 +3,9 @@
 A simplify pass is a deliberate pass to remove over-engineered pieces after the work is
 otherwise coherent. It normally runs after cleanup when both apply and before a human
 handoff for specs, designs, plans, and code slices. Apply `docs/simplicity-first.md`;
-simplification can require upstream artifact revision, not only local implementation edits.
+simplification can require revision of earlier documents, not only local implementation edits.
 
-The goal is not to make artifacts brief or code clever. The goal is to keep the solution
+The goal is not to make documents brief or code clever. The goal is to keep the solution
 only as structured as the problem, risk, and evidence require. Preserve necessary detail,
 accepted constraints, and useful tests; remove speculative machinery, premature generality,
 and process-shaped weight that does not earn its keep.
@@ -45,14 +45,14 @@ During the simplify pass, ask:
 2. What would break if this layer, option, abstraction, requirement, or test fixture were
    removed?
 3. Can the same behavior be expressed more directly while preserving reviewability,
-   traceability, and evidence?
+   requirement links and evidence?
 4. Is this supporting current accepted scope, or is it preparing for an unapproved future?
-5. Does this make the next maintainer's job easier, or only make the artifact look more
+5. Does this make the next maintainer's job easier, or only make the document look more
    sophisticated?
 
-If the answer is weak, simplify in scope. If the governing artifact itself created the
-unjustified complexity, classify ancestor impact as `revision-required`, revise that
-artifact, and then continue. Do not preserve an overbuilt spec/design/plan merely because
+If the answer is weak, simplify in scope. If the controlling document itself created the
+unjustified complexity, mark its parent-document impact as `revision-required`, revise
+that document, and then continue. Do not preserve an overbuilt spec/design/plan merely because
 implementation began. If simplification changes accepted behavior, contracts, quality
 attributes, UX, deployment posture, or public documentation, make that revision explicit.
 
@@ -65,4 +65,4 @@ Creation stages should mention the simplify pass in the handoff when it was rele
 - Any larger simplification deferred because it would exceed the current scope.
 
 Review and assessment stages should flag unjustified complexity as a finding, even when the
-artifact is structurally valid and all checks pass.
+document has every required section and all checks pass.

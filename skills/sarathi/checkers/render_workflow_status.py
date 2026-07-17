@@ -628,7 +628,7 @@ def wave_member_state(
             return {
                 "id": identifier,
                 "state": "evidence",
-                "detail": "Evidence mapped",
+                "detail": "Tests linked",
             }
         return {"id": identifier, "state": "not-started", "detail": "Not started"}
     if identifier in pr_by_id:
@@ -1009,10 +1009,10 @@ def state_label(state: str) -> str:
         "unapproved": "Present",
         "stale": "Approval stale",
         "missing": "Not yet done",
-        "frontier": "Not yet decomposed",
-        "expanded": "Plan expanded",
-        "started": "Artifacts started",
-        "evidence": "Evidence mapped",
+        "frontier": "Not yet broken down",
+        "expanded": "Child plan found",
+        "started": "Documents started",
+        "evidence": "Tests linked",
         "planned": "PRs planned",
         "assessed": "Assessed",
         "completed": "Completed",
@@ -1056,7 +1056,7 @@ def feedback_badge(status: str | None) -> str:
 def artifact_link(root: Path, output: Path, stage: dict[str, Any]) -> str:
     href = href_for(root, output, stage.get("path"))
     if href is None:
-        return '<span class="empty">No artifact discovered</span>'
+        return '<span class="empty">No document found</span>'
     return f'<a href="{href}">{esc(stage["path"])}</a>'
 
 
@@ -1135,8 +1135,8 @@ def render_assessment_learning(item: dict[str, Any]) -> str:
             ("Feedback target", "feedback_target"),
             ("Feedback status", "feedback_status"),
             ("Feedback evidence", "feedback_evidence"),
-            ("Invalidation result", "invalidation_result"),
-            ("Ancestor impact", "ancestor_impact"),
+            ("What feedback changed", "invalidation_result"),
+            ("Parent documents", "ancestor_impact"),
             ("Stop or replan", "stop_or_replan"),
         )
     )
@@ -1268,10 +1268,13 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
                             checkpoint_learning.get("feedback_evidence"),
                         ),
                         (
-                            "Invalidation result",
+                            "What feedback changed",
                             checkpoint_learning.get("invalidation_result"),
                         ),
-                        ("Ancestor impact", checkpoint_learning.get("ancestor_impact")),
+                        (
+                            "Parent documents",
+                            checkpoint_learning.get("ancestor_impact"),
+                        ),
                     )
                 )
                 assessment_note = (
@@ -1523,7 +1526,7 @@ def render_html(
             if root_is_implementation
             else """
 <div class="empty-state">
-  <strong>No valid decomposition discovered</strong>
+  <strong>No valid work breakdown found</strong>
   <span>A breakdown plan with valid WORK-AREA-NAME identifiers will expand this view.</span>
 </div>"""
         )
@@ -1544,7 +1547,7 @@ def render_html(
     active_slices = learning.get("active_slices") or "Not recorded"
     summary = model["summary"]
     awaiting_count = summary["work_items"] - summary["expanded_items"]
-    gate_scope = "Artifact" if root_is_implementation else "Parent"
+    gate_scope = "Document" if root_is_implementation else "Parent"
     parent_gate_text = (
         f"{gate_scope} gates approved"
         if summary["approved_stages"] == 3
@@ -1575,7 +1578,7 @@ def render_html(
         attention = (
             f"Expected child {' and '.join(missing_focus)} not discovered."
             if missing_focus
-            else "No artifact gaps discovered on the current branch."
+            else "No document gaps found on the current branch."
         )
     elif active_wave_model:
         focus_name = active_wave_model["name"]
@@ -1597,17 +1600,15 @@ def render_html(
     else:
         focus_name = "No active allocation"
         focus_breadcrumb = "Product/system &rarr; Breakdown plan"
-        focus_heading = "Decomposition is ready to begin"
+        focus_heading = "Work is ready to be broken down"
         focus_detail = "No allocation has started"
-        attention = "Choose a WORK item and create its required child artifacts."
+        attention = "Choose a WORK item and create its required child documents."
     learning_action = " ".join(
         str(learning.get(key) or "")
         for key in ("invalidation_result", "ancestor_impact", "stop_or_replan")
     ).casefold()
     if "revision-required" in learning_action:
-        attention = (
-            "An explicit ancestor revision is required before affected work continues."
-        )
+        attention = "A parent document must be revised before affected work continues."
     elif "feedback-required" in learning_action:
         attention = "Explicit feedback is required before affected work continues."
     elif str(feedback_status or "").casefold() == "requested":
@@ -1624,7 +1625,7 @@ def render_html(
         f"{'s' if summary['learning_waves'] != 1 else ''}."
         if root_is_implementation
         else f"{summary['expanded_items']} of {summary['work_items']} allocations "
-        f"have child plans; {awaiting_count} await decomposition."
+        f"have child plans; {awaiting_count} await breakdown."
     )
     malformed_count = summary["malformed_work_items"]
     if malformed_count:
@@ -1648,7 +1649,7 @@ def render_html(
     elif focus:
         overall_state, overall_label = "started", "In progress"
     elif summary["work_items"]:
-        overall_state, overall_label = "missing", "Ready to decompose"
+        overall_state, overall_label = "missing", "Ready for breakdown"
     elif any(stage["state"] != "missing" for stage in stages.values()):
         overall_state, overall_label = "started", "In progress"
     else:
@@ -1665,7 +1666,7 @@ def render_html(
         else ""
     )
     traceability_note = (
-        f'<p class="warning">Traceability ledger could not be parsed: {esc(model["traceability_error"])}</p>'
+        f'<p class="warning">Test-link file could not be parsed: {esc(model["traceability_error"])}</p>'
         if model.get("traceability_error")
         else ""
     )
@@ -1682,16 +1683,16 @@ def render_html(
     learning_detail_rows = "".join(
         f"<dt>{esc(label)}</dt><dd>{esc(value)}</dd>"
         for label, value in (
-            ("Delivery profile", model["delivery"]["profile"]),
-            ("Assurance modules", model["delivery"]["modules"]),
+            ("Review depth", model["delivery"]["profile"]),
+            ("Extra risk checks", model["delivery"]["modules"]),
             ("Feedback target", learning.get("feedback_target") or "Not recorded"),
             ("Feedback evidence", learning.get("feedback_evidence") or "Not recorded"),
             ("WIP limit", learning.get("wip_limit") or "Not recorded"),
             (
-                "Invalidation result",
+                "What feedback changed",
                 learning.get("invalidation_result") or "Not recorded",
             ),
-            ("Ancestor impact", learning.get("ancestor_impact") or "Not recorded"),
+            ("Parent documents", learning.get("ancestor_impact") or "Not recorded"),
             (
                 "Stop or replan triggers",
                 learning.get("stop_or_replan") or "Not recorded",
@@ -1983,12 +1984,12 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
       <div class="learning-fact"><span>Active slices</span><strong>{esc(active_slices)}</strong></div>
     </div>
     <details class="learning-details"{learning_open}>
-      <summary>Learning evidence and adaptation</summary>
+      <summary>Learning and next decisions</summary>
       <dl>{learning_detail_rows}</dl>
     </details>
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean hash-current approval, passing code assessment, approved code-slice handoff, or an exact hash-current wave checkpoint. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields are explicit WIP, assessment, or checkpoint claims; the renderer never infers them from Git, approvals, or passing tests.</p>
+      <p>Green checks mean an approval matches the current file, a code assessment passed, a code slice was approved, or a wave checkpoint exactly matches the current plan. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields come only from WIP, assessment, or checkpoint records; this page never guesses them from Git, approvals, or passing tests.</p>
       {approval_note}
       {traceability_note}
       {assessment_note}
@@ -1997,7 +1998,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   </section>
   {malformed_warning}
   <div class="tree-heading">
-    <div><h2>Workflow tree</h2><p>Open an allocation to inspect its artifact path.</p></div>
+    <div><h2>Work tree</h2><p>Open a work item to inspect its document path.</p></div>
     <div class="toolbar">
       <label class="search"><input id="search" type="search" placeholder="Filter allocations" aria-label="Filter allocations"></label>
       <button class="tree-action" id="expand-all" type="button">Expand all</button>
@@ -2007,7 +2008,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   <details class="legend">
     <summary>Legend</summary>
     <div class="encoding" aria-label="Tree encoding">
-      <div class="encoding-row"><span class="encoding-label">Background = artifact type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
+      <div class="encoding-row"><span class="encoding-label">Background = document type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
       <div class="encoding-row"><span class="encoding-label">Level tag = work scope</span><span class="level level-product">Product</span><span class="level level-feature">Feature</span><span class="level level-slice">Slice</span></div>
       <div class="encoding-row"><span class="encoding-label">Status = observed state</span>{badge("approved")}{badge("started", "In progress")}{badge("missing", "Not started")}</div>
     </div>
@@ -2019,7 +2020,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   </section>
   {waves_html}
   <details class="provenance">
-    <summary>Snapshot provenance</summary>
+    <summary>Files used for this page</summary>
     <table><thead><tr><th>Source</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table>
   </details>
 </main>
