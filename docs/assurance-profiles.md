@@ -30,7 +30,7 @@ uncertainty, and evidence. The profile may differ by feature or slice.
 
 | Profile | Use when | Expected depth |
 | --- | --- | --- |
-| Lean | The change is small, reversible, well understood, and affects little. | Compact documents, one or few PRs, targeted tests, one small wave, and direct feedback. |
+| Lean | The change is small, reversible, well understood, and affects little. | Compact documents, one or few PRs, targeted tests, one small wave, and direct feedback. A code-ready slice may use one Lean Change Record instead of a child spec/design/plan chain. |
 | Standard | Ordinary product or feature delivery with meaningful integration or operational concerns. This is the default when risk is unclear. | Normal document depth, explicit integration and deployment evidence, incremental waves, and independent assessment when available. |
 | High-assurance | Failure could cause material security, privacy, safety, regulatory, financial, availability, migration, or irreversible data harm. | Stronger independent review, realistic-boundary evidence, rehearsals where applicable, auditable decisions, and tighter approval gates. |
 
@@ -55,6 +55,10 @@ Escalate before affected work continues when new evidence increases blast radius
 irreversibility, uncertainty, external-boundary risk, or legal/safety consequence.
 Reducing review depth requires evidence and must not remove obligations already accepted
 by a parent document.
+
+A Lean Change Record is allowed only for a code-ready Slice/change that has no new external
+contract, data migration, material security/privacy risk, or unresolved design decision.
+Any of those facts escalates the child to the Standard Spec/Design/Plan chain.
 
 ## Extra Risk Checks
 

@@ -71,7 +71,7 @@ def _field(block: str, label: str) -> str | None:
 def parse_learning_waves(text: str, plan_path: str | None = None) -> dict[str, Any]:
     """Parse an optional ``Learning Waves`` section without inventing status."""
     text = strip_fenced_code(text)
-    body = _section(text, "Learning Waves")
+    body = _section(text, "Waves") or _section(text, "Learning Waves")
     result: dict[str, Any] = {
         "declared": body is not None,
         "waves": [],

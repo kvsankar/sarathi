@@ -1,5 +1,5 @@
 ---
-description: Independently review a work plan's simplicity, readiness, evidence reuse, learning waves, slicing, and risk.
+description: Independently review a work plan's simplicity, readiness, evidence reuse, scheduling, slicing, and risk.
 agent: agent
 ---
 
@@ -19,17 +19,15 @@ independent and seek counterexamples.
 
 Score 1–5 and give a concrete fix below 5:
 
-- plan type/readiness, complete intent/test assignment, touch sets, pass/fail checks, and TDD;
+- plan type/readiness, complete intent/test assignment, touch sets, and pass/fail checks;
 - cohesive independently testable/rollback-capable delivery items;
-- ordered learning waves, feedback, dependency types, WIP, ownership for combining work,
-  and stop/replan rules;
+- optional wave scheduling only where near-term work shares a real checkpoint, plus feedback,
+  dependency types, WIP, ownership for combining work, and stop/replan rules;
 - selected review depth and extra risk checks proportional to actual risk;
 - complexity budget versus the user's mental model and current consumers;
 - reuse of existing compatibility suites and focused changed-boundary tests;
 - at most three implementation PRs for a bounded slice, unless a concise exception has
   `plan.complexity-approved` approval that matches the current plan;
-- valid Red/Green plans or a genuinely eligible TDD exception with exact scope and useful
-  replacement evidence under `docs/artifact-contracts.md`;
 - absence of artificial setup, scaffold, routing, generated-output, parity, or cleanup PRs;
 - no process-shaped product architecture or speculative generalization.
 

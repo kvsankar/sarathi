@@ -31,6 +31,7 @@ WIP_LEARNING_FIELDS = (
     ("Feedback Status", "feedback_status"),
     ("Feedback Evidence", "feedback_evidence"),
     ("Active Learning Wave", "active_wave"),
+    ("Active Work Item", "active_work_item"),
     ("WIP Limit", "wip_limit"),
     ("Active Slices", "active_slices"),
     ("Invalidation Result", "invalidation_result"),
@@ -64,6 +65,7 @@ METADATA_FIELDS = (
     "Delivery Profile",
     "Assurance Modules",
     "Plan Type",
+    "Lean Change Record",
     "Design Depth",
 )
 GUIDE_FILENAME = "sarathi-process.html"
@@ -356,12 +358,20 @@ def approval_for(
                 "id": record.get("id"),
                 "status": record.get("status"),
                 "hash": current_hash,
+                "record_hash": artifact.get("sha256"),
+                "approved_by": record.get("approved_by"),
+                "approved_at": record.get("approved_at"),
             }
+    latest = path_matches[0] if path_matches else {}
+    latest_artifact = latest.get("artifact", {}) if isinstance(latest, dict) else {}
     return {
         "state": "stale" if path_matches else "unapproved",
-        "id": path_matches[0].get("id") if path_matches else None,
-        "status": path_matches[0].get("status") if path_matches else None,
+        "id": latest.get("id") if latest else None,
+        "status": latest.get("status") if latest else None,
         "hash": current_hash,
+        "record_hash": latest_artifact.get("sha256") if latest_artifact else None,
+        "approved_by": latest.get("approved_by") if latest else None,
+        "approved_at": latest.get("approved_at") if latest else None,
     }
 
 
@@ -638,7 +648,10 @@ def plan_prs(plan_text: str, traces: dict[str, int]) -> list[dict[str, Any]]:
 
 
 def active_delivery_ids(wip: dict[str, Any]) -> set[str]:
-    raw = str(wip.get("learning", {}).get("active_slices") or "")
+    learning = wip.get("learning", {})
+    raw = " ".join(
+        str(learning.get(key) or "") for key in ("active_work_item", "active_slices")
+    )
     return {
         match.group()
         for match in PLAN_ID_CANDIDATE.finditer(raw)
@@ -697,10 +710,18 @@ def build_learning_wave_model(
     checkpoint_records: list[dict[str, Any]],
     wip: dict[str, Any],
 ) -> dict[str, Any]:
+    def flatten(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [
+            item
+            for node in nodes
+            for item in (node, *flatten(node.get("children") or []))
+        ]
+
+    all_items = flatten(items)
     plan_sources: list[tuple[Path, str]] = []
     if parent_plan_path:
         plan_sources.append((parent_plan_path, "Product plan"))
-    for item in items:
+    for item in all_items:
         child = item.get("child_plan") or {}
         child_path = resolve_ledger_path(root, str(child.get("path", "")))
         if child_path:
@@ -714,16 +735,17 @@ def build_learning_wave_model(
             unique_sources.append((path, label))
             seen_paths.add(resolved)
 
-    work_by_id = {item["id"]: item for item in items}
+    work_by_id = {item["id"]: item for item in all_items}
     pr_by_id: dict[str, tuple[dict[str, Any] | None, dict[str, Any]]] = {
         pr["id"]: (None, pr) for pr in root_prs
     }
     pr_by_id.update(
-        {pr["id"]: (item, pr) for item in items for pr in item.get("prs", [])}
+        {pr["id"]: (item, pr) for item in all_items for pr in item.get("prs", [])}
     )
     active_ids = active_delivery_ids(wip)
     active_wave = str(wip.get("learning", {}).get("active_wave") or "").strip()
     seen_waves: set[str] = set()
+    work_waves: dict[str, dict[str, Any]] = {}
     sequences: list[dict[str, Any]] = []
     issues: list[dict[str, str]] = []
 
@@ -732,14 +754,7 @@ def build_learning_wave_model(
         plan_text = read_text(plan_path)
         parsed = parse_learning_waves(plan_text, plan_relative)
         plan_type = metadata(plan_text).get("Plan Type", "").casefold()
-        if plan_type != "implementation":
-            if parsed["declared"]:
-                issues.append(
-                    {
-                        "plan_path": plan_relative,
-                        "message": "Breakdown plans must not declare Learning Waves",
-                    }
-                )
+        if plan_type not in {"breakdown", "implementation"}:
             continue
         if not parsed["declared"]:
             continue
@@ -829,6 +844,8 @@ def build_learning_wave_model(
                     "checkpoint_issue": checkpoint_issue,
                 }
             )
+            for member in wave["members"]:
+                work_waves[member] = wave
             if checkpoint_issue:
                 issues.append({"plan_path": plan_relative, "message": checkpoint_issue})
             sequence_waves.append(wave)
@@ -865,6 +882,7 @@ def build_learning_wave_model(
     return {
         "sequences": sequences,
         "issues": issues,
+        "work_waves": work_waves,
         "summary": {
             "total": len(all_waves),
             "completed": sum(wave["state"] == "completed" for wave in all_waves),
@@ -1066,6 +1084,13 @@ def build_model(root: Path) -> dict[str, Any]:
     learning_waves = build_learning_wave_model(
         root, paths["plan"], root_prs, items, checkpoint_records, wip
     )
+
+    def attach_waves(nodes: list[dict[str, Any]]) -> None:
+        for item in nodes:
+            item["wave"] = learning_waves["work_waves"].get(item["id"])
+            attach_waves(item.get("children") or [])
+
+    attach_waves(items)
     expanded = sum(item["child_plan"] is not None for item in items)
     pr_count = len(root_prs) + sum(len(item["prs"]) for item in items)
     evidenced_prs = sum(
@@ -1178,6 +1203,70 @@ def badge(state: str, label: str | None = None) -> str:
     )
 
 
+def render_parent_approval_dialog(
+    stages: dict[str, dict[str, Any]], root: Path, output: Path
+) -> str:
+    rows = []
+    for kind, label in (
+        ("spec", "Requirements"),
+        ("design", "Design"),
+        ("plan", "Delivery plan"),
+    ):
+        stage = stages[kind]
+        state = stage["state"]
+        approval = stage.get("approval") or {}
+        path = stage.get("path")
+        link = href_for(root, output, path)
+        path_html = (
+            f'<a href="{link}">{esc(path)}</a>' if link else esc(path or "Not found")
+        )
+        gate = f"{kind}.approved"
+        if state == "approved":
+            detail = (
+                f"Current approval {esc(approval.get('id') or 'record')}"
+                f" by {esc(approval.get('approved_by') or 'Not recorded')}"
+                f" at {esc(approval.get('approved_at') or 'Not recorded')}."
+            )
+        elif state == "stale":
+            detail = (
+                f"{esc(approval.get('id') or 'The latest approval')} covers an earlier version"
+                f" from {esc(approval.get('approved_at') or 'an unrecorded time')}. "
+                f"Needed: review the current document and record a fresh {esc(gate)} approval."
+            )
+        elif state == "unapproved":
+            detail = (
+                f"No {esc(gate)} record was found. Needed: review the current document and"
+                f" record its first {esc(gate)} approval."
+            )
+        else:
+            detail = (
+                "The document is missing. Needed: create it before requesting approval."
+            )
+        hashes = ""
+        if state == "stale":
+            hashes = (
+                '<div class="approval-hashes"><span>Approved version '
+                f"<code>{esc(str(approval.get('record_hash') or 'Not recorded')[:16])}</code></span>"
+                "<span>Current version "
+                f"<code>{esc(str(approval.get('hash') or 'Not recorded')[:16])}</code></span></div>"
+            )
+        rows.append(
+            f"""<li class=\"approval-row\">
+  <div class=\"approval-row-head\"><strong>{esc(label)}</strong>{badge(state)}</div>
+  <div class=\"approval-path\">{path_html}</div>
+  <p>{detail}</p>
+  {hashes}
+</li>"""
+        )
+    return f"""
+<dialog id="approval-details" class="approval-dialog" aria-labelledby="approval-details-title">
+  <form method="dialog">
+    <div class="approval-dialog-head"><div><h2 id="approval-details-title">Parent approvals</h2><p>Each approval applies only to the exact current document version.</p></div><button class="dialog-close" value="close" aria-label="Close approval details">Close</button></div>
+    <ol class="approval-rows">{"".join(rows)}</ol>
+  </form>
+</dialog>"""
+
+
 def feedback_badge(status: str | None) -> str:
     normalized = str(status or "").strip().casefold()
     if normalized == "received":
@@ -1242,14 +1331,21 @@ def render_artifact_node(
 </div>"""
 
 
-def render_prs(prs: list[dict[str, Any]]) -> str:
+def render_prs(prs: list[dict[str, Any]], item_state: str) -> str:
     if not prs:
         return '<span class="empty">Not yet known</span>'
+    state = (
+        item_state
+        if item_state in {"completed", "assessed"}
+        else "evidence"
+        if any(pr["evidence_count"] for pr in prs)
+        else "planned"
+    )
     return (
-        '<div class="pr-list">'
+        '<div class="pr-list tree-pr-list">'
         + "".join(
             f'<span class="pr"><code>{esc(pr["id"])}</code>'
-            f"<small>{pr['evidence_count']} mapped tests</small></span>"
+            f"<small>{pr['evidence_count']} mapped tests</small>{badge(state)}</span>"
             for pr in prs
         )
         + "</div>"
@@ -1355,10 +1451,10 @@ def render_wave_issues(issues: list[dict[str, str]]) -> str:
         for issue in issues
     )
     return f"""
-<aside class="validation-warning wave-warning" role="alert">
-  <strong>Learning-wave declarations need attention</strong>
+<details class="wave-issues">
+  <summary>Plan checks needing attention</summary>
   <ul>{rows}</ul>
-</aside>"""
+</details>"""
 
 
 def render_wave_member(member: dict[str, Any], compact: bool = False) -> str:
@@ -1490,17 +1586,23 @@ def render_tree_branch(
     owner_name: str = "Product",
 ) -> str:
     child = item.get("child_plan")
-    wave_ids = []
-    if child and child.get("path"):
-        wave_ids = re.findall(
-            r"(?mi)^###\s+(WAVE-[A-Z0-9-]+)\s*$",
-            read_text(root / child["path"]),
-        )
     child_level_value = item.get("child_level")
+    wave = item.get("wave") or {}
+    wave_ids = [wave["id"]] if wave.get("id") else []
+    wave_label = (
+        f'<span class="wave-marker" title="{esc(wave["id"])}">Wave {esc(wave.get("order") or "?")}</span>'
+        if wave
+        else ""
+    )
     parent_label = display_level(item.get("parent_level"))
     child_label = display_level(child_level_value)
     plan_type = (
         child.get("metadata", {}).get("Plan Type", "").casefold() if child else ""
+    )
+    lean_change_record = (
+        child.get("metadata", {}).get("Lean Change Record", "").casefold() == "yes"
+        if child
+        else False
     )
     if plan_type == "breakdown":
         plan_title = "Breakdown plan"
@@ -1510,28 +1612,36 @@ def render_tree_branch(
         plan_title = "Feature plan"
     else:
         plan_title = "Child plan"
-    nodes = [
-        render_artifact_node(
-            root,
-            output,
-            "spec",
-            child_level_value,
-            f"{child_label} spec",
-            item.get("child_spec"),
-        ),
-        render_artifact_node(
-            root,
-            output,
-            "design",
-            child_level_value,
-            f"{child_label} design / LLD",
-            item.get("child_design"),
-        ),
-        render_artifact_node(
-            root, output, "plan", child_level_value, plan_title, child
-        ),
-        render_code_node(item),
-    ]
+    if lean_change_record:
+        nodes = [
+            render_artifact_node(
+                root, output, "plan", child_level_value, "Lean change record", child
+            ),
+            render_code_node(item),
+        ]
+    else:
+        nodes = [
+            render_artifact_node(
+                root,
+                output,
+                "spec",
+                child_level_value,
+                f"{child_label} spec",
+                item.get("child_spec"),
+            ),
+            render_artifact_node(
+                root,
+                output,
+                "design",
+                child_level_value,
+                f"{child_label} design / LLD",
+                item.get("child_design"),
+            ),
+            render_artifact_node(
+                root, output, "plan", child_level_value, plan_title, child
+            ),
+            render_code_node(item),
+        ]
     searchable = " ".join(
         str(value or "")
         for value in (
@@ -1567,10 +1677,19 @@ def render_tree_branch(
             ("Feedback method", "feedback_method"),
             ("Invalidation question", "invalidation_question"),
             ("Dependency types", "dependency_types"),
-            ("Learning wave", "learning_wave"),
             ("Stop or replan trigger", "stop_or_replan"),
         )
     )
+    if wave:
+        details += "".join(
+            f"<dt>{esc(label)}</dt><dd>{esc(value or 'Not recorded')}</dd>"
+            for label, value in (
+                ("Wave", f"Wave {wave.get('order') or '?'}: {wave.get('id') or ''}"),
+                ("Wave purpose", wave.get("learning_target")),
+                ("Wave review point", wave.get("checkpoint")),
+                ("Wave stop or change trigger", wave.get("stop_or_replan")),
+            )
+        )
     claim = item.get("wip_claim") or {}
     claim_html = (
         f'<p class="wip-claim">WIP claim: {esc(claim.get("status"))}</p>'
@@ -1578,6 +1697,11 @@ def render_tree_branch(
         else ""
     )
     assessment_learning_html = render_assessment_learning(item)
+    prs_html = (
+        f'<div class="tree-prs"><strong>Implementation PRs</strong>{render_prs(item["prs"], item["state"])}</div>'
+        if item["prs"]
+        else ""
+    )
     children = item.get("children") or []
     children_html = (
         '<div class="branches nested-branches">'
@@ -1602,15 +1726,17 @@ def render_tree_branch(
   <summary class="branch-summary">
     <span class="branch-title"><code>{esc(item["id"])}</code><strong>{esc(item["name"])}</strong></span>
     <span class="branch-path">{esc(parent_label)} &rarr; {esc(child_label)}</span>
+    {wave_label}
     {focus_label}
     {badge(item["state"], branch_status)}
   </summary>
   <div class="branch-content">
     {render_flow(nodes)}
+    {prs_html}
     {children_html}
     <details class="branch-details">
       <summary>Scope, allocation, PRs, and evidence</summary>
-      <div class="detail-layout"><dl>{details}</dl><div><h3>PR evidence</h3>{render_prs(item["prs"])}{claim_html}{assessment_learning_html}</div></div>
+      <div class="detail-layout"><dl>{details}</dl><div>{claim_html}{assessment_learning_html}</div></div>
     </details>
   </div>
 </details>"""
@@ -1729,11 +1855,6 @@ def render_html(
     branches_html = (
         f'<div id="work-items" class="branches">{branches}</div>' if branches else ""
     )
-    source_rows = "".join(
-        f'<tr><td><a href="{href_for(root, output, source["path"])}">{esc(source["path"])}</a></td>'
-        f"<td><code>{esc(source['sha256'][:16])}</code></td></tr>"
-        for source in model["sources"]
-    )
     feature_rollup = delivery_rollup(model["work_items"], "feature")
     feature_slice_rollup = delivery_rollup(
         [child for item in model["work_items"] for child in item.get("children") or []],
@@ -1751,24 +1872,13 @@ def render_html(
             ("plan", "Delivery plan"),
         )
     )
-    current_stage = wip.get("Current Stage", "Not recorded")
-    current_gate = wip.get("Current Gate", "Not recorded")
-    learning = wip.get("learning", {})
-    learning_target = learning.get("target") or "Not recorded"
-    feedback_status = learning.get("feedback_status")
-    active_wave = learning.get("active_wave") or "Not recorded"
-    active_slices = learning.get("active_slices") or "Not recorded"
-    learning_action = " ".join(
-        str(learning.get(key) or "")
-        for key in ("invalidation_result", "ancestor_impact", "stop_or_replan")
-    ).casefold()
     summary = model["summary"]
     awaiting_count = summary["work_items"] - summary["expanded_items"]
-    gate_scope = "Artifact" if root_is_implementation else "Parent"
+    approval_scope = "Artifact" if root_is_implementation else "Parent"
     parent_gate_text = (
-        f"{gate_scope} gates approved"
+        f"All {approval_scope.casefold()} approvals current"
         if summary["approved_stages"] == 3
-        else f"{summary['approved_stages']} of 3 {gate_scope.casefold()} gates approved"
+        else f"{summary['approved_stages']} of 3 {approval_scope.casefold()} approvals current"
     )
     expansion_text = (
         f"{summary['pr_slices']} PR slice{'s' if summary['pr_slices'] != 1 else ''} "
@@ -1790,6 +1900,7 @@ def render_html(
         parent_state = "started"
     else:
         parent_state = "missing"
+    approval_dialog = render_parent_approval_dialog(stages, root, output)
     approval_note = (
         f'<p class="warning">Approval ledger could not be parsed: {esc(model["approval_error"])}</p>'
         if model.get("approval_error")
@@ -1810,50 +1921,12 @@ def render_html(
         if model.get("wave_checkpoint_error")
         else ""
     )
-    learning_detail_rows = "".join(
-        f"<dt>{esc(label)}</dt><dd>{esc(value)}</dd>"
-        for label, value in (
-            ("Delivery profile", model["delivery"]["profile"]),
-            ("Assurance modules", model["delivery"]["modules"]),
-            ("Feedback target", learning.get("feedback_target") or "Not recorded"),
-            ("Feedback evidence", learning.get("feedback_evidence") or "Not recorded"),
-            ("WIP limit", learning.get("wip_limit") or "Not recorded"),
-            (
-                "Invalidation result",
-                learning.get("invalidation_result") or "Not recorded",
-            ),
-            ("Ancestor impact", learning.get("ancestor_impact") or "Not recorded"),
-            (
-                "Stop or replan triggers",
-                learning.get("stop_or_replan") or "Not recorded",
-            ),
-        )
-    )
-    operational_detail_rows = (
-        f"<dt>Workflow stage</dt><dd>{esc(current_stage)}</dd>"
-        f"<dt>Recorded gate</dt><dd>{esc(current_gate)}</dd>"
-        f"<dt>Parent approvals</dt><dd>{esc(parent_gate_text)}</dd>"
-        f"<dt>Learning target</dt><dd>{esc(learning_target)}</dd>"
-        f"<dt>Feedback</dt><dd>{feedback_badge(feedback_status)}</dd>"
-        f"<dt>Active wave</dt><dd>{esc(active_wave)}</dd>"
-        f"<dt>Active slices</dt><dd>{esc(active_slices)}</dd>"
-        f"{learning_detail_rows}"
-    )
-    learning_open = (
-        " open"
-        if (
-            "revision-required" in learning_action
-            or "feedback-required" in learning_action
-            or str(feedback_status or "").casefold() in {"requested", "unavailable"}
-        )
-        else ""
-    )
     guide_link = (
         f'<a class="process-guide" href="{esc(guide_href)}">Process guide</a>'
         if guide_href
         else ""
     )
-    waves_html = render_learning_waves(model, root, output)
+    wave_issues = render_wave_issues(model["learning_waves"]["issues"])
     embedded_model = json.dumps(model, sort_keys=True).replace("</", "<\\/")
     return f"""<!doctype html>
 <html lang="en">
@@ -1901,7 +1974,6 @@ code {{ font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; ove
 .process-guide {{ color: #b9d9eb; font-size: 0.82rem; font-weight: 700; white-space: nowrap; }}
 .eyebrow {{ color: #a9c7d8; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; }}
 h1 {{ margin: 0.25rem 0 0; font-size: 2.25rem; line-height: 1.15; }}
-.snapshot {{ color: #d8e1e8; font-size: 0.82rem; text-align: right; }}
 main {{ max-width: 92rem; margin: 0 auto; padding: 1.25rem; }}
 h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .executive {{ border: 1px solid var(--line); border-left: 5px solid var(--stale); background: var(--surface); }}
@@ -1916,11 +1988,9 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .delivery-scope a {{ color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }}
 .delivery-states {{ color: var(--text); font-size: 0.84rem; font-weight: 700; overflow-wrap: anywhere; }}
 .delivery-total {{ grid-column: 2; color: var(--muted); font-size: 0.78rem; }}
-.operational-details {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
-.operational-details summary {{ cursor: pointer; color: var(--text); font-weight: 750; }}
-.operational-details dl, .learning-record {{ display: grid; grid-template-columns: 11rem 1fr; gap: 0.35rem 0.75rem; margin: 0.65rem 0; }}
-.learning-details dt, .learning-record dt {{ color: var(--muted); font-weight: 700; }}
-.learning-details dd, .learning-record dd {{ margin: 0; overflow-wrap: anywhere; }}
+.learning-record {{ display: grid; grid-template-columns: 11rem 1fr; gap: 0.35rem 0.75rem; margin: 0.65rem 0; }}
+.learning-record dt {{ color: var(--muted); font-weight: 700; }}
+.learning-record dd {{ margin: 0; overflow-wrap: anywhere; }}
 .read-note {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
 .read-note summary {{ cursor: pointer; font-weight: 700; }}
 .read-note p {{ margin: 0.5rem 0; }}
@@ -1945,6 +2015,23 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .tree-panel {{ padding: 1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }}
 .product-heading {{ display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.65rem; }}
 .product-heading strong {{ font-size: 0.9rem; }}
+.approval-trigger {{ border: 0; background: transparent; padding: 0; cursor: pointer; font: inherit; }}
+.approval-trigger .status {{ text-decoration: underline; text-underline-offset: 0.16rem; }}
+.approval-dialog {{ width: min(42rem, calc(100vw - 2rem)); max-width: 42rem; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: var(--surface); padding: 0; box-shadow: 0 1rem 3rem rgb(23 33 43 / 24%); }}
+.approval-dialog::backdrop {{ background: rgb(23 33 43 / 42%); }}
+.approval-dialog form {{ margin: 0; }}
+.approval-dialog-head {{ display: flex; align-items: start; justify-content: space-between; gap: 1rem; padding: 1rem 1rem 0.75rem; border-bottom: 1px solid var(--line); }}
+.approval-dialog h2 {{ margin: 0; font-size: 1.1rem; }}
+.approval-dialog-head p {{ margin: 0.25rem 0 0; color: var(--muted); font-size: 0.78rem; }}
+.dialog-close {{ min-height: 2rem; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); color: var(--text); padding: 0.3rem 0.55rem; font: inherit; font-size: 0.75rem; font-weight: 700; cursor: pointer; }}
+.approval-rows {{ display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }}
+.approval-row {{ padding: 0.75rem 1rem; border-bottom: 1px solid var(--line); }}
+.approval-row:last-child {{ border-bottom: 0; }}
+.approval-row-head {{ display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }}
+.approval-row-head strong {{ font-size: 0.86rem; }}
+.approval-path {{ margin-top: 0.25rem; font-size: 0.75rem; }}
+.approval-row p {{ margin: 0.45rem 0 0; font-size: 0.8rem; line-height: 1.45; }}
+.approval-hashes {{ display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; margin-top: 0.45rem; color: var(--muted); font-size: 0.7rem; }}
 .flow {{ display: flex; align-items: stretch; gap: 0.5rem; min-width: 0; }}
 .node {{ flex: 1 1 0; min-width: 0; min-height: 7.2rem; padding: 0.75rem; border: 1px solid var(--line); border-left-width: 4px; border-radius: 4px; overflow-wrap: anywhere; }}
 .artifact-spec {{ border-left-color: var(--spec); background: var(--spec-bg); }}
@@ -1975,8 +2062,11 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .branch-title code {{ color: #52616f; font-size: 0.72rem; font-weight: 800; }}
 .branch-title strong {{ overflow-wrap: anywhere; font-size: 0.82rem; }}
 .branch-path {{ color: var(--muted); font-size: 0.72rem; font-weight: 700; white-space: nowrap; }}
+.wave-marker {{ display: inline-flex; align-items: center; min-height: 1.35rem; border: 1px solid #b6cbe6; border-radius: 3px; background: #edf4fd; color: #2457a6; padding: 0.1rem 0.35rem; font-size: 0.66rem; font-weight: 800; white-space: nowrap; }}
 .focus-label {{ color: var(--stale); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }}
 .branch-content {{ padding: 0.25rem 0.75rem 0.75rem; border-top: 1px solid var(--line); }}
+.tree-prs {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.75rem; margin-top: 0.65rem; padding: 0.5rem 0.65rem; border: 1px solid var(--line); background: var(--surface-alt); }}
+.tree-prs > strong {{ font-size: 0.76rem; }}
 .branch-details {{ margin-top: 0.4rem; border-top: 1px dashed var(--line); padding-top: 0.35rem; }}
 .branch-details summary {{ cursor: pointer; color: var(--muted); font-size: 0.75rem; font-weight: 700; }}
 .detail-layout {{ display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(14rem, 0.8fr); gap: 1rem; padding: 0.75rem; background: var(--surface-alt); }}
@@ -2045,21 +2135,16 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .empty {{ color: var(--muted); font-style: italic; }}
 .empty-state {{ padding: 2rem; border: 1px solid var(--line); background: var(--surface); text-align: center; }}
 .empty-state span {{ display: block; color: var(--muted); margin-top: 0.35rem; }}
-.provenance {{ margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }}
 .technical-details {{ margin-top: 1.5rem; border: 1px solid var(--line); background: var(--surface); }}
-.technical-details .operational-details, .technical-details .read-note {{ border-top: 0; }}
-.provenance summary {{ cursor: pointer; font-weight: 700; }}
-table {{ width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.78rem; }}
-th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; overflow-wrap: anywhere; }}
+.technical-details .read-note {{ border-top: 0; }}
 .warning {{ color: #8a3b12; font-weight: 700; }}
 @media (max-width: 760px) {{
   h1 {{ font-size: 1.5rem; }}
   .topbar-inner {{ align-items: start; flex-direction: column; }}
   .topbar-meta {{ align-items: start; flex-direction: column-reverse; gap: 0.4rem; }}
-  .snapshot {{ text-align: left; }}
   .delivery-row {{ grid-template-columns: 1fr; gap: 0.2rem; }}
   .delivery-total {{ grid-column: auto; }}
-  .operational-details dl, .learning-record {{ grid-template-columns: 1fr; }}
+  .learning-record {{ grid-template-columns: 1fr; }}
   .tree-heading {{ align-items: stretch; flex-direction: column; }}
   .toolbar {{ flex: 1 1 auto; flex-wrap: wrap; justify-content: start; }}
   .search {{ flex-basis: 100%; }}
@@ -2093,7 +2178,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
 <header class="topbar">
   <div class="topbar-inner">
     <div><div class="eyebrow">Sarathi workflow status</div><h1>{esc(model["project"])}</h1></div>
-    <div class="topbar-meta">{guide_link}<div class="snapshot">Snapshot <code>{esc(model["fingerprint"])}</code></div></div>
+    <div class="topbar-meta">{guide_link}</div>
   </div>
 </header>
 <main>
@@ -2104,7 +2189,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
         <h2 id="delivery-title">Product delivery plan</h2>
       </div>
     </div>
-    <p class="delivery-intro">Select a scope to open its detailed tree below, or view the <a href="#waves-title">learning waves</a>.</p>
+    <p class="delivery-intro">Select a scope to open its detailed tree below.</p>
     <div class="delivery-rows">
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#product-workflow" data-level-filter="">Product</a></div>
@@ -2114,7 +2199,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="feature">Features</a></div>
         <div class="delivery-states">{feature_rollup["complete"]} / {feature_rollup["total"]} complete | {feature_rollup["in_progress"]} in progress | {feature_rollup["planned"]} planned next | {feature_rollup["not_planned"]} not yet planned</div>
-        <div class="delivery-total">Feature work is planned through child requirements, design, and delivery artifacts.</div>
+        <div class="delivery-total">Feature work is planned through child records and delivery evidence.</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Feature slices</a></div>
@@ -2147,16 +2232,12 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
     </div>
   </details>
   <section id="product-workflow" class="tree-panel" aria-label="Workflow expansion tree">
-    <div class="product-heading"><strong>{esc(root_level_label)} workflow</strong>{badge(parent_state, parent_gate_text)}</div>
+    <div class="product-heading"><strong>{esc(root_level_label)} workflow</strong><button id="approval-details-trigger" class="approval-trigger" type="button" aria-haspopup="dialog" aria-controls="approval-details">{badge(parent_state, parent_gate_text)}</button></div>
     {root_flow}
     {branches_html}
   </section>
-  {waves_html}
+  {approval_dialog}
   <section class="technical-details" aria-label="Workflow details">
-    <details class="operational-details"{learning_open}>
-      <summary>Workflow and learning details</summary>
-      <dl>{operational_detail_rows}</dl>
-    </details>
     <details class="read-note">
       <summary>How to read this status</summary>
       <p>Green checks mean hash-current approval, passing code assessment, approved code-slice handoff, or an exact hash-current wave checkpoint. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields are explicit WIP, assessment, or checkpoint claims; the renderer never infers them from Git, approvals, or passing tests.</p>
@@ -2165,11 +2246,8 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
       {assessment_note}
       {wave_checkpoint_note}
     </details>
+    {wave_issues}
   </section>
-  <details class="provenance">
-    <summary>Snapshot provenance</summary>
-    <table><thead><tr><th>Source</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table>
-  </details>
 </main>
 <script type="application/json" id="workflow-model">{embedded_model}</script>
 <script>
@@ -2180,6 +2258,7 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   const treeDescription = document.querySelector('#tree-description');
   const filterHost = document.querySelector('#structured-filters');
   const selected = {{ feature: new Set(), slice: new Set(), wave: new Set() }};
+  const approvalDialog = document.querySelector('#approval-details');
   let activeLevel = '';
   const unique = values => [...new Map(values.map(value => [value.id, value])).values()];
   const addMenu = (title, key, options) => {{
@@ -2243,6 +2322,8 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   }}));
   document.querySelector('#expand-all').addEventListener('click', () => rows.forEach(row => {{ row.open = true; }}));
   document.querySelector('#collapse-all').addEventListener('click', () => rows.forEach(row => {{ row.open = false; }}));
+  document.querySelector('#approval-details-trigger').addEventListener('click', () => approvalDialog.showModal());
+  approvalDialog.addEventListener('click', event => {{ if (event.target === approvalDialog) approvalDialog.close(); }});
 }})();
 </script>
 </body>

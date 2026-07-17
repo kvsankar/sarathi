@@ -14,8 +14,8 @@ Assess the implemented slice using a separate check pass and review pass. Load
 ## Run
 
 1. **Check pass**: in a fresh sub-agent when available, run `/code-verify`, including
-   earlier checkers, tests, coverage, requirement-to-test links, repository quality gates,
-   and extra risk checks. Return commands and evidence only.
+   earlier checkers, planned tests, repository quality gates, and extra risk checks. Return
+   commands and evidence only.
 2. **Review pass**: in a different fresh sub-agent when available, run `/code-review` using
    the code and check results. Judge correctness, test pass/fail checks, boundary realism,
    plan fidelity, review-depth evidence, production quality, feedback, and parent-document
@@ -42,10 +42,11 @@ time, and evidence-backed learning mapping. Do not record other verdicts as Pass
 agent/project assessment claim, not approval.
 
 Close an active wave in `.sdlc/wave-checkpoints.yaml` only when every exact declared member
-has reached its boundary and feedback/integration plus parent-document decisions are
-complete. Bind exact ordered members to the current plan SHA-256. Do not close when required
-feedback, work to combine parallel changes, or `revision-required` work remains. The checkpoint closes one wave
-only; it does not assess the enclosing plan, approve the next wave, or prove merge/release.
+has reached its boundary and feedback/integration plus parent-document decisions are complete.
+Do not create a checkpoint for an unscheduled child. Bind exact ordered members to the current
+plan SHA-256. Do not close when required feedback, work to combine parallel changes, or
+`revision-required` work remains. The checkpoint closes one wave only; it does not assess the
+enclosing plan, approve the next wave, or prove merge/release.
 
 Update `.sdlc/wip.md` and stop. Do not start the next PR, release, or deployment in the same
 turn without an explicit latest-message unattended instruction; `revision-required` and

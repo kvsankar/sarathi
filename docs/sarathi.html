@@ -557,16 +557,17 @@
         </div>
         <div class="legend-row">
           <span class="legend-label"><code>WORK-*</code> = parent allocation</span>
-          <span class="allocation-key"><code>WORK-EXAMPLE</code> Parent plan
-            <span class="allocation-arrow">&rarr;</span> Child document chain</span>
+            <span class="allocation-key"><code>WORK-EXAMPLE</code> Parent plan
+            <span class="allocation-arrow">&rarr;</span> Child record or chain</span>
         </div>
       </div>
       <p class="rule">Only code-ready leaves invoke <code>/code-create</code>. Approval means
       safe enough for the next learning step, not frozen or final.</p>
       <p class="rule"><strong>Lean, Standard, and High-assurance</strong> change evidence
-      depth, not the loop. Start with the smallest current-consumer solution; process
-      evidence stays outside product architecture. Bounded slices default to at most three
-      implementation PRs. There are no line-count targets.</p>
+      depth, not the loop. An eligible Lean slice can use one compact change record; Standard
+      work uses the full child chain. Start with the smallest current-consumer solution;
+      process evidence stays outside product architecture. Bounded slices default to at most
+      three implementation PRs. There are no line-count targets.</p>
     </header>
 
     <section aria-labelledby="simple-tree">
@@ -954,7 +955,7 @@
     <section aria-labelledby="learning-loop">
       <div class="section-head">
         <h2 id="learning-loop">3. Inspect and adapt</h2>
-        <p>Every assessed slice can change its parent documents and the next wave.</p>
+        <p>Every assessed slice can change its parent documents and the next selected work.</p>
       </div>
       <div class="learning-flow" aria-label="Post-slice feedback loop">
         <div class="learning-step">
@@ -970,14 +971,14 @@
           <small>Spec, design, plan, integration, and process</small>
         </div>
         <div class="learning-step">
-          <strong>Next learning wave</strong>
-          <small>Continue, revise, stop, cancel, split, or reorder</small>
+          <strong>Next selected work</strong>
+          <small>Continue, revise, stop, cancel, split, reorder, or schedule a wave</small>
         </div>
       </div>
       <div class="parallel-rule" aria-label="Parallel learning rules">
         <span><strong>Simplicity:</strong> delete, defer, collapse, or reuse evidence first</span>
         <span><strong>Inside one slice:</strong> parallelism preferred</span>
-        <span><strong>Independent slices:</strong> bounded WIP wave</span>
+        <span><strong>Independent slices:</strong> use a bounded WIP wave only for a shared checkpoint</span>
         <span><strong>Learning-dependent slices:</strong> wait for evidence</span>
       </div>
     </section>

@@ -11,16 +11,20 @@ intent, not implementation architecture.
 ## Load
 
 Read `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, existing documents, and relevant
-repository evidence. Load these Sarathi references:
+repository evidence. Load `docs/artifact-contracts.md` for the Spec contract and IDs.
 
-- `docs/artifact-contracts.md` for the Spec contract and IDs;
-- `docs/simplicity-first.md` for smallest-current-behavior and process/product separation;
-- `docs/assurance-profiles.md` to choose review depth and extra risk checks;
-- `docs/project-entry.md` when it is unclear how to start in an existing codebase;
-- `docs/srs-authoring.md` for product/system scope, reconstructed baseline intent, or terse
+## Triggered References
+
+Load only when the trigger applies:
+
+- `docs/project-entry.md`: starting in an unfamiliar or existing codebase;
+- `docs/srs-authoring.md`: Product/system scope, reconstructed behavior, or terse
   requirements risk;
-- `docs/cross-cutting-concerns.md` only for modules triggered by context;
-- `docs/artifact-formatting.md` and `docs/simplify-pass.md` before handoff.
+- `docs/assurance-profiles.md`: selecting or changing the delivery profile or extra checks;
+- `docs/simplicity-first.md`: proposed implementation machinery, reuse, or a refactor affects
+  the requirement boundary;
+- `docs/cross-cutting-concerns.md`: a concrete risk module applies;
+- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before handoff.
 
 If a required reference cannot be found in the active skill bundle or canonical repo,
 report an incomplete installation instead of recreating policy from memory.
@@ -66,7 +70,9 @@ Apply these requirements rules:
   Do not specify hypothetical future consumers.
 
 Write `spec.md` unless another path is named. Child specs include
-`Parent Work Item: WORK-AREA-NAME`.
+`Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec for an eligible
+code-ready Lean Change Record; its compact plan records the changed behavior and acceptance
+basis from approved parent intent.
 
 ## Verify And Handoff
 

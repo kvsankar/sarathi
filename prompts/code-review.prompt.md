@@ -24,9 +24,8 @@ Then score:
 - implementation correctness, edge cases, accepted behavior, and design/plan fidelity;
 - test bodies, clear pass/fail checks, fixtures/data/selectors, repeatability, and
   false-result risk;
-- Red/Green evidence or TDD-exception eligibility, scope, and replacement evidence;
 - real-boundary evidence and double drift risk;
-- spot-checks that requirement-to-test links match actual test behavior;
+- whether planned behavior has focused, meaningful verification rather than superficial tests;
 - review-depth and extra-risk work proportional to accepted risk;
 - Planned Touch Set, quality-gate, cleanup, and documentation fidelity;
 - feedback evidence and decisions about parent documents;

@@ -3,9 +3,9 @@
 
 Parses a plan markdown file, validates IDs/structure, and computes structural
 metrics: every spec FR/AT/JT, design COMP, and design TEST obligation is referenced
-by child WORK items or PRs; implementation PRs include Red+Green step text, do not
-depend on a later PR, ordered learning waves cover every delivery item exactly once,
-and bounded slices remain structurally traceable.
+by child WORK items or PRs; implementation PRs do not depend on a later PR;
+optional Breakdown-plan waves are well formed and only name known children; and
+bounded slices remain structurally traceable.
 Exits 0 only when every structural gate passes. No semantic judgment, reproducible.
 
 Usage:
@@ -40,7 +40,6 @@ from approvals import (  # noqa: E402
     load_approval_context,
 )
 from complexity import parse_complexity_budget  # noqa: E402
-from markdown_structure import strip_fenced_code  # noqa: E402
 from schemas import (  # noqa: E402
     PLAN_ID,
     PLAN_ID_BY_KIND,
@@ -74,27 +73,18 @@ VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.",
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
 UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
 SLICE_SCOPE = re.compile(r"^\s*Work Scope\s*:\s*Slice/change\s*$", re.I | re.M)
+LEAN_CHANGE_RECORD = re.compile(r"^\s*Lean Change Record\s*:\s*Yes\s*$", re.I | re.M)
+DELIVERY_PROFILE = re.compile(r"^\s*Delivery Profile\s*:\s*(.+?)\s*$", re.I | re.M)
+IMPLEMENTATION_READINESS = re.compile(
+    r"^\s*Implementation Readiness\s*:\s*(.+?)\s*$", re.I | re.M
+)
+PARENT_WORK_ITEM = re.compile(
+    r"^\s*Parent Work Item\s*:\s*(WORK-[A-Z][A-Z0-9]*-[A-Z][A-Z0-9]*)\s*$",
+    re.I | re.M,
+)
 COMPLEXITY_EXCEPTION = re.compile(
     r"^\s*Complexity Budget Exception\s*:\s*(\S.*)$", re.I | re.M
 )
-TDD_EXCEPTION_CANDIDATE = re.compile(
-    r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?TDD Exception(?:\*\*)?\s*:\s*(\S.*?)\s*$"
-)
-TDD_RED = re.compile(r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Red(?:\*\*)?\s*:\s*\S")
-TDD_GREEN = re.compile(r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Green(?:\*\*)?\s*:\s*\S")
-TDD_EXCEPTION_SCOPE = re.compile(
-    r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Exception Scope(?:\*\*)?\s*:\s*\S"
-)
-TDD_REPLACEMENT_EVIDENCE = re.compile(
-    r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Replacement Evidence(?:\*\*)?\s*:\s*\S"
-)
-TDD_EXCEPTION_CATEGORIES = {
-    "generated-only",
-    "docs-only",
-    "formatting-only",
-    "build/deploy-config",
-    "legacy-characterization",
-}
 GENERIC_MACHINERY = re.compile(
     r"\b(?:framework|generator|registry|manifest|schema system|extension point|"
     r"generic harness|evidence platform|resource[- ]lease)\b",
@@ -127,6 +117,13 @@ WORK_ALLOCATION_FIELDS = {
     "Parent IDs / inherited obligations": "parent_obligations",
     "Required child artifacts": "required_child_artifacts",
 }
+LEAN_CHANGE_FIELDS = (
+    "Why Lean",
+    "Changed Behavior",
+    "Parent IDs / inherited obligations",
+    "Acceptance & Verification",
+    "Escalate If",
+)
 
 
 def _defline(line: str):
@@ -233,41 +230,32 @@ def missing_work_allocation_fields(block: str) -> list[str]:
     return missing
 
 
-def tdd_contract(block: str) -> dict[str, object]:
-    block = strip_fenced_code(block)
-    red = TDD_RED.search(block) is not None
-    green = TDD_GREEN.search(block) is not None
-    candidate = TDD_EXCEPTION_CANDIDATE.search(block)
-    candidate_value = (
-        candidate.group(1).strip().removesuffix(".").casefold() if candidate else None
-    )
-    exception_category = (
-        candidate_value if candidate_value in TDD_EXCEPTION_CATEGORIES else None
-    )
+def lean_change_record_issues(text: str, implementation_plan: bool) -> list[str]:
+    """Check the compact record needed when Lean replaces child spec/design files."""
+    if not LEAN_CHANGE_RECORD.search(text):
+        return []
     issues = []
-    if candidate and not exception_category:
-        issues.append("invalid_exception_category")
-    if candidate and (red or green):
-        issues.append("mixed_tdd_and_exception")
-    if exception_category:
-        if TDD_EXCEPTION_SCOPE.search(block) is None:
-            issues.append("missing_exception_scope")
-        if TDD_REPLACEMENT_EVIDENCE.search(block) is None:
-            issues.append("missing_replacement_evidence")
-        mode = "exception"
-    elif red and green:
-        mode = "red-green"
-    else:
-        mode = "missing"
-        if not red:
-            issues.append("missing_red")
-        if not green:
-            issues.append("missing_green")
-    return {
-        "mode": mode,
-        "exception_category": exception_category,
-        "issues": issues,
-    }
+    profile = DELIVERY_PROFILE.search(text)
+    if not profile or profile.group(1).strip().casefold() != "lean":
+        issues.append("delivery_profile_must_be_lean")
+    if not SLICE_SCOPE.search(text):
+        issues.append("work_scope_must_be_slice_change")
+    readiness = IMPLEMENTATION_READINESS.search(text)
+    if not readiness or readiness.group(1).strip().casefold() != "code-ready":
+        issues.append("implementation_readiness_must_be_code_ready")
+    if not implementation_plan:
+        issues.append("plan_type_must_be_implementation")
+    if not PARENT_WORK_ITEM.search(text):
+        issues.append("parent_work_item_missing_or_invalid")
+    for label in LEAN_CHANGE_FIELDS:
+        pattern = re.compile(
+            rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
+            rf"(?:\*\*)?\s*:\s*\S"
+        )
+        if not pattern.search(text):
+            field_key = label.casefold().replace(" ", "_").replace("/", "_")
+            issues.append(f"missing_{field_key.replace('&', 'and')}")
+    return issues
 
 
 def main() -> int:
@@ -350,24 +338,26 @@ def main() -> int:
         for identifier, block in work_blocks.items()
         if missing_work_allocation_fields(block)
     }
-    delivery_ids = set(work_blocks) | set(pr_blocks)
+    plan_type_match = re.search(r"(?mi)^Plan Type:\s*(.+?)\s*$", text)
+    breakdown_plan = bool(
+        plan_type_match and plan_type_match.group(1).strip().casefold() == "breakdown"
+    )
+    implementation_plan = bool(
+        plan_type_match
+        and plan_type_match.group(1).strip().casefold() == "implementation"
+    )
+    lean_change_record = LEAN_CHANGE_RECORD.search(text) is not None
+    lean_change_issues = lean_change_record_issues(text, implementation_plan)
+    work_ids = set(work_blocks) if breakdown_plan else set()
     wave_member_counts = Counter(
         member for wave in wave_result["waves"] for member in wave["members"]
     )
-    unknown_wave_members = sorted(set(wave_member_counts) - delivery_ids)
-    unassigned_wave_members = sorted(delivery_ids - set(wave_member_counts))
+    unknown_wave_members = sorted(set(wave_member_counts) - work_ids)
+    unscheduled_work_items = sorted(work_ids - set(wave_member_counts))
     duplicate_wave_members = sorted(
         member for member, count in wave_member_counts.items() if count > 1
     )
 
-    tdd_contracts = {
-        identifier: tdd_contract(block) for identifier, block in pr_blocks.items()
-    }
-    invalid_tdd = {
-        identifier: contract["issues"]
-        for identifier, contract in tdd_contracts.items()
-        if contract["issues"]
-    }
     pr_order = {p: i for i, p in enumerate(pr_blocks)}
     fwd = []
     for p, b in pr_blocks.items():
@@ -476,11 +466,6 @@ def main() -> int:
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
 
-    plan_type_match = re.search(r"(?mi)^Plan Type:\s*(.+?)\s*$", text)
-    implementation_plan = bool(
-        plan_type_match
-        and plan_type_match.group(1).strip().casefold() == "implementation"
-    )
     wave_declaration_valid = bool(
         wave_result["declared"] and wave_result["waves"]
     ) and not (
@@ -510,27 +495,27 @@ def main() -> int:
         "external_double_mitigation_present": external_double_mitigation_present,
         "work_allocations_well_formed": not incomplete_work_allocations,
         "learning_waves_well_formed": (
-            wave_declaration_valid
-            if implementation_plan
-            else not wave_result["declared"]
+            True
+            if implementation_plan or not wave_result["declared"]
+            else wave_declaration_valid
         ),
         "learning_wave_members_complete": (
-            not (
-                unknown_wave_members
-                or unassigned_wave_members
-                or duplicate_wave_members
-            )
-            if implementation_plan
-            else not wave_result["declared"]
+            True
+            if implementation_plan or not wave_result["declared"]
+            else not (unknown_wave_members or duplicate_wave_members)
         ),
         "bounded_slice_pr_budget": not pr_budget_exceeded or bool(complexity_exception),
         "complexity_budget_complete": bool(
-            complexity_budget["declared"]
+            not lean_change_record
+            and complexity_budget["declared"]
             and not complexity_budget["missing_fields"]
             and not complexity_budget["invalid_implementation_pr_count"]
             and complexity_pr_count_matches
+        )
+        or (lean_change_record and not lean_change_issues),
+        "lean_change_record_well_formed": (
+            not lean_change_record or not lean_change_issues
         ),
-        "pr_tdd_contract": not invalid_tdd,
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
@@ -550,6 +535,13 @@ def main() -> int:
             "breakdown" if work_blocks and not pr_blocks else "implementation"
         ),
         "implementation_plan": implementation_plan,
+        "lean_change_record": {
+            "declared": lean_change_record,
+            "issues": lean_change_issues,
+            "replaces": ["child spec", "child design", "child plan"]
+            if lean_change_record
+            else [],
+        },
         "work_items": sorted(work_blocks),
         "incomplete_work_allocations": incomplete_work_allocations,
         "learning_waves": wave_result["waves"],
@@ -569,7 +561,8 @@ def main() -> int:
             )
         },
         "unknown_wave_members": unknown_wave_members,
-        "unassigned_wave_members": unassigned_wave_members,
+        "unscheduled_work_items": unscheduled_work_items,
+        "unassigned_wave_members": unscheduled_work_items,
         "duplicate_wave_members": duplicate_wave_members,
         "complexity_budget": {
             **complexity_budget,
@@ -603,8 +596,6 @@ def main() -> int:
         "uncovered_test_obligations": sorted(design_tests - test_c),
         "external_double_mentions": ext_double_mentions,
         "external_double_mitigation_present": external_double_mitigation_present,
-        "pr_tdd_contracts": tdd_contracts,
-        "prs_invalid_tdd_contract": invalid_tdd,
         "forward_deps": sorted(fwd),
         "approval_requirements": approval_requirements,
         "approval_ledger": {

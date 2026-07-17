@@ -11,16 +11,23 @@ test-first implementation sequence.
 ## Load And Gate
 
 Read `.sdlc/wip.md`, process decisions, accepted spec/design/ADRs, existing plan, and repo
-delivery conventions. Load:
+delivery conventions. Load `docs/artifact-contracts.md` for the Plan contract, item fields,
+and IDs.
 
-- `docs/artifact-contracts.md` for the Plan contract, item fields, IDs, and wave grammar;
-- `docs/simplicity-first.md` for complexity budget, PR default, and deletion/defer rules;
-- `docs/assurance-profiles.md` for review depth and extra risk checks;
-- `docs/work-decomposition.md` for Breakdown plans;
-- `docs/test-ownership.md` for parent and integration-test assignment;
-- `docs/feedback-and-learning.md` for learning targets, waves, feedback, and parallelism;
-- `docs/cross-cutting-concerns.md` for the extra risk checks this work needs;
-- `docs/artifact-formatting.md` and `docs/simplify-pass.md` before handoff.
+## Triggered References
+
+Load only when the trigger applies:
+
+- `docs/work-decomposition.md`: creating or revising a Breakdown plan;
+- `docs/feedback-and-learning.md`: scheduling Breakdown-plan waves, active code-ready work,
+  feedback dependencies, or parallel work;
+- `docs/test-ownership.md`: allocating inherited or cross-child acceptance, journey, or
+  design-test obligations;
+- `docs/simplicity-first.md`: a Standard complexity budget, PR breakdown, new machinery, or
+  deferral decision is needed;
+- `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: selecting/changing a
+  profile or assigning a concrete risk module;
+- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before handoff.
 
 Block on unfit requirements or design. Select `Plan Type: Breakdown` for Decomposable work
 and `Plan Type: Implementation` only when the scope is code-ready. Preserve or escalate the
@@ -52,12 +59,20 @@ For Implementation plans:
 - prefer one cohesive PR over artificial scaffold, routing, generated-output, or parity
   PRs; judge reviewability by purpose, touch scope, tests, rollback, and mental model.
 
-For Implementation plans, assign every `PR-*` exactly once to an ordered `WAVE-*`.
-Breakdown plans allocate `WORK-*` children and dependencies but do not declare waves.
-Prefer one-item waves when feedback can change later work. Running PRs together requires
-clear execution, learning, and integration dependencies, a WIP cap, a named owner for
-combining the work, a checkpoint, and conditions for stopping or replanning. Later waves
-stay tentative and less detailed.
+For an eligible code-ready Lean Slice/change child, create one compact Implementation plan
+marked `Lean Change Record: Yes` instead of separate child spec, design, and plan files.
+It must state `Why Lean`, `Changed Behavior`, `Parent IDs / inherited obligations`,
+`Acceptance & Verification`, and `Escalate If`, then list the bounded `PR-*` work. Escalate
+to the Standard chain for a new external contract, data migration, material security/privacy
+risk, or unresolved design decision.
+
+For Breakdown plans, declare a `WAVE-*` only when one or more near-term `WORK-*` children
+share a real feedback or integration checkpoint. Every scheduled child belongs to exactly one
+wave; unscheduled children have no wave. Implementation plans list the PRs that implement one
+child; PRs do not belong to waves. Running child work together requires clear execution,
+learning, and integration dependencies, a WIP cap, a named owner for combining the work, a
+checkpoint, and conditions for stopping or replanning. Later waves stay tentative and less
+detailed.
 
 For a bounded slice, default to at most three implementation PRs. Prefer one cohesive PR to
 setup/scaffold/routing/generated-output/parity splits. More than three requires a
@@ -65,7 +80,8 @@ setup/scaffold/routing/generated-output/parity splits. More than three requires 
 and record a `plan.complexity-approved` approval that matches the current plan. Do not run `/plan-assess`
 until that targeted approval exists. Final `plan.approved` remains separate.
 
-Write `plan.md` and deterministic `plan.html` unless other paths are named. Child plans
+Write `plan.md` unless another path is named. The workflow-status page is the shared HTML
+plan-progress view; do not create `plan.html`. Child plans, including Lean Change Records,
 include `Parent Work Item: WORK-AREA-NAME`.
 
 ## Verify And Handoff

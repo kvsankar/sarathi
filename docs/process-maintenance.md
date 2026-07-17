@@ -74,8 +74,8 @@ Use precise language:
 - "Verified" should be reserved for evidence backed by a command, observed output, real
   dependency, generated file, matching approval record, or independent review.
 
-Do not let a green checker result imply semantic correctness, human consent, true TDD
-history, or real-boundary execution unless the evidence actually proves that.
+Do not let a green checker result imply semantic correctness, human consent, or
+real-boundary execution unless the evidence actually proves that.
 
 ## Change And Release Records
 

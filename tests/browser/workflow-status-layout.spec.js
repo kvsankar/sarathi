@@ -192,6 +192,18 @@ async function layoutEvidence(page) {
 test.beforeAll(() => generateFixture());
 test.afterAll(() => rmSync(projectRoot, { recursive: true, force: true }));
 
+test("parent approval details open on demand", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(pathToFileURL(statusPath).href);
+  await page.locator("#approval-details-trigger").click();
+  const dialog = page.locator("#approval-details");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Parent approvals");
+  await expect(dialog).toContainText("No spec.approved record was found");
+  await dialog.getByRole("button", { name: "Close approval details" }).click();
+  await expect(dialog).not.toBeVisible();
+});
+
 for (const [name, path] of [
   ["workflow status", statusPath],
   ["process guide", guidePath],

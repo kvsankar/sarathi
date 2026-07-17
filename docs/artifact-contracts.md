@@ -85,38 +85,42 @@ observability/error behavior, and other extra risk checks only when triggered by
 intent or context. A primary external boundary needs real or official conformance evidence
 or explicit acceptance of the remaining risk.
 
-Write `design.md` plus deterministic `design.html`. When the spec says a UI mock is
-Required, produce/update `mock-ui.html` and stop for explicit approval before production UI
-implementation.
+Write `design.md` plus a reviewable `design.html` for Product/system designs. For a
+Feature/component or Slice/change design, create `design.html` only when diagrams or another
+visual review surface materially help the decision. `design.md` remains the source of truth;
+the HTML view must stay aligned with it. A Lean Change Record does not create a separate
+design document. When the spec says a UI mock is Required, produce/update `mock-ui.html` and
+stop for explicit approval before production UI implementation.
 
 ## Plan Contract
 
 Plans declare `Plan Type: Breakdown | Implementation` and use this checker-visible order:
 
 1. **Overview**: goal, common metadata, plan type, branch/CI context.
-2. **Strategy**: delivery/TDD approach, extra risk checks, integration cadence, review
+2. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
    depth, cleanup/simplify, and feedback cadence.
 3. **Milestones**: `MILE-AREA-NAME` outcome groups.
 4. **Pull Requests / Child Work Items**.
 5. **Coverage Map**: parent/local intent and `TEST-*` obligations assigned completely.
-6. **Learning Waves**: exact ordered wave declarations for Implementation plans only.
+6. **Waves**: optional near-term child-work coordination for Breakdown plans.
 7. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
    ownership for combining parallel work, and stop/replan conditions.
 
-Include the exact `## Complexity Budget` section from `docs/simplicity-first.md`, including
-`Implementation PR Count`. Slice/change Implementation plans default to at most three PRs.
-An exception requires a concise reason plus a `plan.complexity-approved` approval that
-matches the current plan before assessment; this is distinct from final `plan.approved`.
+Standard plans include the exact `## Complexity Budget` section from
+`docs/simplicity-first.md`, including `Implementation PR Count`. An eligible Lean Change
+Record uses its shorter required fields instead. Slice/change Implementation plans default to
+at most three PRs. An exception requires a concise reason plus a
+`plan.complexity-approved` approval that matches the current plan before assessment; this is
+distinct from final `plan.approved`.
 
 A Breakdown plan defines `WORK-AREA-NAME` allocations. Each names parent/child scope,
-inherited IDs and test obligations, required child Spec/Design/Plan documents, dependencies,
-readiness target, risks, and done signal. It never authorizes code directly.
+inherited IDs and test obligations, required child documents, dependencies, readiness target,
+risks, and done signal. It never authorizes code directly.
 
-An Implementation plan defines `PR-AREA-NAME` items. Each PR states:
+A Standard Implementation plan defines `PR-AREA-NAME` items. Each PR states:
 
 - bounded scope and Planned Touch Set;
-- Red test and Green implementation, or a narrow TDD exception with replacement evidence;
-- assigned FR/AT/JT/COMP/TEST IDs and clear pass/fail checks;
+- assigned FR/AT/JT/COMP/TEST IDs, focused verification, and clear pass/fail checks;
 - test levels and real-boundary/fixture strategy;
 - extra risk work (build/release, docs, observability, errors, environments,
   security/privacy/UI/migration/etc.) or a concise applicable rationale;
@@ -125,33 +129,20 @@ An Implementation plan defines `PR-AREA-NAME` items. Each PR states:
 - learning wave, checkpoint, and stop/replan trigger;
 - a concise reason the PR is cohesive and independently reviewable.
 
-Every implementation PR uses labeled `Red:` and `Green:` steps. A PR that truly cannot use
-Red/Green instead declares all three fields:
+In a Lean Change Record, each `PR-*` states the Planned Touch Set, focused verification,
+inherited IDs and pass/fail checks, and any risk evidence that actually applies. The record
+as a whole owns the concise Lean rationale, acceptance/verification, and escalation fields.
+
+When a Breakdown plan schedules near-term work, it declares one or more waves. Each scheduled
+`WORK-*` appears exactly once in:
 
 ```markdown
-TDD Exception: docs-only
-Exception Scope: exact files/behavior and why Red/Green cannot apply
-Replacement Evidence: exact repeatable command or observed pass/fail result
-```
-
-Allowed categories are `generated-only`, `docs-only`, `formatting-only`,
-`build/deploy-config`, and `legacy-characterization`. Exceptions never authorize new or
-changed product behavior, bug fixes, contracts, validation, security/privacy behavior,
-error handling, logging/telemetry, or UI behavior. Generated output needs downstream
-validation; docs/formatting must not change executable behavior; build/deploy configuration
-needs validator/dry-run/build/smoke evidence; characterization captures existing behavior
-only and cannot cover the subsequent intentional change. The checker validates the fields
-and category; independent review judges whether the exception and evidence are sound.
-
-Every Implementation-plan `PR-*` item appears exactly once in:
-
-```markdown
-## Learning Waves
+## Waves
 
 ### WAVE-AREA-NAME
 Order: 1
 Learning Target: ...
-Members: PR-AREA-NAME
+Members: WORK-AREA-NAME
 WIP Limit: 1
 Feedback/Integration Checkpoint: ...
 Stop/Replan Triggers: ...
@@ -159,21 +150,47 @@ Stop/Replan Triggers: ...
 
 The declaration must be real Markdown structure; a fenced example does not satisfy it.
 
-Breakdown plans do not declare waves. Later Implementation-plan waves stay at the least
-detail justified by current evidence. Prefer one-item waves when learning from one PR can
-change the next.
+Implementation plans do not declare waves; they list the PRs needed for one child. A
+Breakdown-plan `WORK-*` may remain unscheduled. Later waves stay at the least detail justified
+by current evidence. Use a wave only when one or more near-term children share a real
+feedback or integration checkpoint.
 
-Write `plan.md` plus deterministic `plan.html` with readable dependency/wave views and
-touch-set/coverage tables. Markdown remains the source of truth.
+Write `plan.md`. Markdown remains the source of truth. The generated workflow-status page is
+the shared HTML view for delivery progress, allocated work, waves, and PRs; do not create a
+separate `plan.html` by default.
+
+## Lean Change Record
+
+A code-ready Slice/change child with `Delivery Profile: Lean` may use one compact
+Implementation plan in place of separate child spec, design, and plan documents. Mark that
+plan with `Lean Change Record: Yes`. It remains a plan for approval, code assessment, and
+status purposes; "record" describes its compact combined content, not a
+new artifact kind.
+
+The record states its `Parent Work Item` and these concise fields:
+
+- `Why Lean`: why the change is small, reversible, and already understood;
+- `Changed Behavior`: the accepted behavior and explicit non-goal;
+- `Parent IDs / inherited obligations`: the parent intent and tests it owns;
+- `Acceptance & Verification`: pass/fail checks, including real-boundary evidence when
+  applicable;
+- `Escalate If`: facts that require a Standard child Spec/Design/Plan chain instead.
+
+It still has a bounded `PR-*` list with focused verification, a Planned Touch Set, and clear
+pass/fail checks. Use the Standard child chain when the work introduces an external contract, data
+migration, material security/privacy risk, or unresolved design decision.
 
 ## Code And Evidence Contract
 
-`/code-create` implements only a code-ready plan's eligible active-wave members, respects
-the Planned Touch Set, and keeps the suite green at each PR boundary. It records executable
-test links in `.sdlc/test-traceability.yaml`; test names remain behavior-focused.
+`/code-create` implements only an explicitly selected code-ready child plan, including a Lean
+Change Record, respects the Planned Touch Set, and keeps the suite green at each PR
+boundary. It records the exact test and verification commands run, their observed results,
+and any unavailable evidence. Test names remain behavior-focused.
 
-Before handoff, run planned tests, coverage, quality gates, extra risk checks,
-checks, cleanup, and simplify. Report unavailable evidence as unavailable, not passing.
+Before handoff, run planned tests, repository quality gates, applicable extra-risk checks,
+cleanup, and simplify. Coverage or detailed test-link inventories are used only when the
+project or accepted risk profile calls for them. Report unavailable evidence as unavailable,
+not passing.
 
 `/code-assess` may write a `.sdlc/code-assessments.yaml` Pass record that matches the current plan using the
 schema in `docs/workflow-status.md`. When every exact wave member, feedback/integration

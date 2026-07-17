@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +19,7 @@ SKILL_DOCS = [
     "review-verification-checklist.md",
     "simplicity-first.md",
     "simplify-pass.md",
+    "slug-id-migration.md",
     "srs-authoring.md",
     "test-ownership.md",
     "work-decomposition.md",
@@ -79,7 +81,7 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     assert "Learning-dependent slices:" in guide
     assert "Lean, Standard, and High-assurance" in guide
     assert "outside product architecture" in guide
-    assert "at most three" in guide
+    assert re.search(r"at most\s+three", guide)
     assert "There are no line-count targets" in guide
 
 

@@ -11,33 +11,32 @@ an approval record, completion percentage, or substitute for checks and review.
 - **Executive summary**: the current allocation and product-to-child breadcrumb, current
   stage, next gate, implementation evidence, and the most immediate document gap. This is
   orientation, not a percentage-complete estimate.
-- **Current learning loop**: the explicit learning target, feedback state, active wave,
-  WIP limit, active slices, what feedback changed, changes needed in parent documents, and
-  conditions for stopping or replanning recorded in `.sdlc/wip.md`. Missing fields display
-  as `Not recorded`.
-- **Review depth**: the selected delivery profile and extra risk checks from
-  `.sdlc/wip.md`, falling back to the Plan, Design, then Spec metadata.
 - **Progressively disclosed workflow tree**: the product Spec/Design/Plan trunk remains
   visible, the current `WORK-` allocation opens by default, and other allocations stay
   collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
   backgrounds and Product/Feature/Slice level tags as the static process guide. Missing
   documents remain explicit `Not yet done` nodes.
-- **Ordered learning waves**: each discovered Implementation plan contributes its ordered
-  PR-wave sequence. Completed waves collapse by default, the active wave opens, and member badges
-  distinguish completed checkpoints, assessed slices, mapped evidence, active work, and
-  work not started.
+- **Schedule and PRs in the tree**: each child-work row shows its one `Wave N` label.
+  Expanding that row shows its implementation PRs and their state. Opening its existing
+  details reveals the wave purpose, review point, and conditions that stop or change the
+  plan. PRs do not have wave assignments.
+- **Approval details on demand**: the compact parent-approval badge opens a dialog listing the
+  requirements, design, and delivery-plan records. A stale row identifies the last approval,
+  the approved and current hash prefixes, and the exact fresh approval gate needed; the page
+  does not expand this detail by default.
 - **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
   `WORK-AREA-NAME` remain visible in a repair warning but are excluded from valid
   allocation counts and workflow branches.
 - **Assessed learning evidence**: a completed branch can show the learning and next
   decisions recorded in a passing code assessment that matches the current plan.
-- **Files used**: relative source paths and SHA-256 prefixes used to build the page.
 
 The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
 designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
-the first heading; plan `Learning Waves` sections; `.sdlc/approvals.yaml`;
+the first heading. A Lean Change Record is discovered through the child plan path and shown
+as one compact record. It also reads Breakdown-plan `Waves` sections; `.sdlc/approvals.yaml`;
 `.sdlc/code-assessments.yaml`; `.sdlc/wave-checkpoints.yaml`; `.sdlc/wip.md`; and
-`.sdlc/test-traceability.yaml`. It ignores common dependency, cache, and VCS directories.
+`.sdlc/test-traceability.yaml` when a project voluntarily maintains one. It ignores common
+dependency, cache, and VCS directories.
 
 ## What Each Status Means
 
@@ -45,9 +44,10 @@ the first heading; plan `Learning Waves` sections; `.sdlc/approvals.yaml`;
 | --- | --- |
 | Approved | A local approval record matches the document path and current SHA-256. |
 | Present | The document exists without a matching current approval record. |
-| Approval stale | An approval exists for the path, but not for the current bytes. |
+| Approval stale | An approval exists for the path, but not for the current bytes. Select the parent-approval badge for the affected record, hash prefixes, and required fresh approval. |
 | Not yet done | No document was found for that stage. |
 | Documents started | A child spec or design exists, but no child plan was found. |
+| Lean record found | An eligible Lean child has one compact implementation plan instead of child spec/design files. |
 | Child plan found | A parent `WORK-` item has a child implementation plan. |
 | PRs planned | A child plan declares PR slices without linked executable tests. |
 | Tests linked | At least one child `PR-` has entries in the test-link file. |
@@ -83,36 +83,40 @@ Assurance Modules: comma-separated module names or none
 Feedback Target: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise remaining-risk note
-Active Learning Wave: exact WAVE-AREA-NAME from the plan, or none
+Active Learning Wave: exact WAVE-AREA-NAME from the plan, or none when the selected work is not wave-scheduled
+Active Work Item: exact selected WORK-AREA-NAME, or none
 WIP Limit: positive integer or not-recorded
-Active Slices: comma-separated members from that wave (WORK-* or PR-*), or none
+Active Slices: legacy optional detail; do not use it to invent a wave assignment
 Invalidation Result: concise evidence-backed result
 Ancestor Impact: spec/design/plan/code/process outcome and affected paths
 Stop Or Replan Triggers: conditions that pause or cancel active sibling work
 ```
 
-An explicit valid `WORK-*` or `PR-*` in `Active Slices` selects the branch opened as the
-current focus. A `PR-*` selects its owning `WORK-*` branch. The renderer does not infer an
-active wave, active slice, feedback result, or parent-document decision from Git activity,
-approvals, mapped tests, or passing commands.
+An explicit valid `WORK-*` in `Active Work Item` selects the branch opened as the current
+focus. `Active Slices` remains readable for older files. The renderer does not infer an
+active wave, active slice, feedback result, or
+parent-document decision from Git activity, approvals, mapped tests, or passing commands.
 
-Each new plan declares an exact sequence:
+A plan declares a wave only when near-term children need a shared feedback or integration
+checkpoint:
 
 ```markdown
-## Learning Waves
+## Waves
 
 ### WAVE-AUTH-BOUNDARY
 Order: 1
 Learning Target: Validate the external identity boundary.
-Members: PR-AUTH-CONTRACT, PR-AUTH-SIGNIN
+Members: WORK-AUTH-SIGNIN, WORK-AUTH-RECOVERY
 WIP Limit: 2
 Feedback/Integration Checkpoint: Review sandbox and consumer contract evidence.
 Stop/Replan Triggers: Stop later auth work if the public token contract changes.
 ```
 
 `WAVE-*` uses the same two uppercase slug-token rule as delivery IDs. Wave order is local to
-an Implementation plan. Every planned `PR-*` belongs to exactly one declared wave. Later
-waves are provisional, not promises. Breakdown plans do not declare waves.
+a Breakdown plan. A scheduled `WORK-*` belongs to exactly one declared wave; unscheduled work
+has no wave. A slice can contain one or more `PR-*` entries, but PRs are not scheduled
+independently. Later waves are provisional, not promises. Existing Implementation-plan wave
+declarations remain readable for older projects but are not the format for new plans.
 
 A completed wave is recorded separately from full code assessment or human approval:
 
@@ -122,11 +126,11 @@ checkpoints:
   - id: CHECK-WAVE-AUTH-BOUNDARY
     wave: WAVE-AUTH-BOUNDARY
     plan:
-      path: docs/plans/work_auth_signin.md
+      path: docs/plan.md
       sha256: "<current plan sha256>"
     members:
-      - PR-AUTH-CONTRACT
-      - PR-AUTH-SIGNIN
+      - WORK-AUTH-SIGNIN
+      - WORK-AUTH-RECOVERY
     status: completed
     completed_at: "2026-07-16T12:00:00Z"
     learning:
@@ -143,8 +147,8 @@ checkpoints:
 ```
 
 The renderer excludes a stale or member-mismatched checkpoint from completion. A checkpoint
-closes only its wave; it does not mark the enclosing slice assessed, merged, approved, or
-ready for release.
+closes only its wave; it does not mark a member slice assessed, merged, approved, or ready for
+release.
 
 The renderer and `check_plan.py` share the same plan-ID grammar. `MILE-*`, `WORK-*`, and
 `PR-*` identifiers require exactly two uppercase slug tokens after the kind. One-token,
@@ -197,8 +201,8 @@ When using an installed skill without project-local checkers, run the same scrip
 installed `sarathi/checkers` directory and pass the target project root explicitly.
 
 The output is a standalone LF UTF-8 HTML file with embedded CSS, JavaScript, and a normalized
-JSON snapshot. It contains no clock value, random identifier, network dependency, or external
-asset. The command also publishes the static process guide as
+JSON model. It contains no clock value, random identifier, network dependency, or external
+asset. The page does not expose source hashes or a provenance table. The command also publishes the static process guide as
 `docs/sarathi-process.html`; the status page and guide link to each other. Identical source
 content and paths produce identical output bytes, with the published guide normalized to LF.
 

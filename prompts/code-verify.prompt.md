@@ -9,7 +9,8 @@ Collect repeatable check results for implemented code. Do not edit code or judge
 quality. Use `/code-review` for judgment and `/code-assess` for the full gate.
 
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
-selected review depth and extra checks. Use a fresh checker sub-agent when available;
+selected review depth and extra checks. For a Lean Change Record, use approved parent intent
+in place of missing child spec/design files. Use a fresh checker sub-agent when available;
 otherwise disclose that sub-agents are unavailable and run the same checks directly.
 
 ## Earlier Documents
@@ -32,20 +33,16 @@ Run the planned test command through:
 python checkers/check_code.py \
   --plan plan.md \
   --tests-argv '<json-array>' \
-  --cov-min <n> \
   --json
 ```
 
 Prefer `--tests-argv`; use `--tests-shell` only for trusted commands requiring shell
-behavior. Use `--traceability` for a non-default map, `--diff-base` when automatic TDD
-history resolution is unsuitable, and `--allow-inline-test-traceability` only for an
-explicit migration. Add `--require-approvals` when the code gate depends on approved plan
-or mock artifacts. Retry with `python3` or `uv run python` when needed.
+behavior. Add `--require-approvals` when the code gate depends on approved plan or mock
+artifacts. Retry with `python3` or `uv run python` when needed.
 
-Report exact commands, raw JSON, exits, passed/total, tests, coverage, links from PRs and
-requirements to tests, invalid/unresolved map entries, bad IDs, code markers, TDD evidence,
-approval requirements, and external-boundary declarations. Link and boundary fields are
-claims; name the concrete test or command behind them.
+Report exact commands, raw JSON, exits, passed/total, code markers, approval requirements,
+and the concrete test or command behind each claimed risk check. The checker records command
+outcomes; review judges whether the tests and evidence are meaningful.
 
 ## Repository And Extra Risk Checks
 

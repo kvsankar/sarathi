@@ -226,7 +226,7 @@ Plan Type: Implementation
 Implementation Readiness: Code-ready
 
 # Strategy
-Use Red/Green TDD and one small PR.
+Use one small PR with focused verification.
 
 ## Complexity Budget
 - Mental Model: implement sign-in through the existing authentication boundary.
@@ -242,8 +242,7 @@ Use Red/Green TDD and one small PR.
 # Pull Requests / Child Work Items
 - PR-AUTH-SIGNIN
   Scope: implement login.
-  Red: failing AT-AUTH-SIGNIN test.
-  Green: implement COMP-AUTH.
+  Verification: focused AT-AUTH-SIGNIN and component tests pass.
   Delivers FR-AUTH-SIGNIN, UC-AUTH-SIGNIN, NFR-PERF-SIGNIN,
   AT-AUTH-SIGNIN, COMP-AUTH, TEST-AUTH-POLICY, and TEST-AUTH-CONTRACT.
 
@@ -885,7 +884,9 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["gates"]["complexity_budget_complete"] is True
 
 
-def test_check_plan_requires_declared_learning_waves(tmp_path, monkeypatch, capsys):
+def test_check_plan_does_not_require_pr_waves_in_implementation_plans(
+    tmp_path, monkeypatch, capsys
+):
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
     text = plan_path.read_text(encoding="utf-8")
@@ -898,10 +899,9 @@ def test_check_plan_requires_declared_learning_waves(tmp_path, monkeypatch, caps
         module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["gates"]["learning_waves_well_formed"] is False
-    assert report["gates"]["learning_wave_members_complete"] is False
-    assert report["unassigned_wave_members"] == ["PR-AUTH-SIGNIN"]
+    assert rc == 0
+    assert report["gates"]["learning_waves_well_formed"] is True
+    assert report["gates"]["learning_wave_members_complete"] is True
 
 
 def test_check_plan_rejects_inline_or_incomplete_complexity_budget(
@@ -979,74 +979,6 @@ def test_check_plan_ignores_fenced_complexity_budget(tmp_path, monkeypatch, caps
     assert report["complexity_budget"]["declared"] is False
 
 
-def test_check_plan_accepts_structured_tdd_exception(tmp_path, monkeypatch, capsys):
-    plan_path = tmp_path / "plan.md"
-    write_valid_plan(plan_path)
-    text = plan_path.read_text(encoding="utf-8").replace(
-        "Red: failing AT-AUTH-SIGNIN test.\n  Green: implement COMP-AUTH.",
-        "TDD Exception: docs-only.\n"
-        "  Exception Scope: update existing sign-in documentation only.\n"
-        "  Replacement Evidence: deterministic documentation build and link check.",
-    )
-    plan_path.write_text(text, encoding="utf-8")
-    module = load_checker("check_plan")
-
-    rc, report = run_main(
-        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
-    )
-
-    assert rc == 0
-    assert report["gates"]["pr_tdd_contract"] is True
-    assert report["pr_tdd_contracts"]["PR-AUTH-SIGNIN"]["mode"] == "exception"
-
-
-def test_check_plan_rejects_unsafe_or_incomplete_tdd_exception(
-    tmp_path, monkeypatch, capsys
-):
-    plan_path = tmp_path / "plan.md"
-    write_valid_plan(plan_path)
-    text = plan_path.read_text(encoding="utf-8").replace(
-        "Red: failing AT-AUTH-SIGNIN test.\n  Green: implement COMP-AUTH.",
-        "TDD Exception: docs-only-but-changes-code.",
-    )
-    plan_path.write_text(text, encoding="utf-8")
-    module = load_checker("check_plan")
-
-    rc, report = run_main(
-        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
-    )
-
-    assert rc == 1
-    assert report["gates"]["pr_tdd_contract"] is False
-    assert report["prs_invalid_tdd_contract"]["PR-AUTH-SIGNIN"] == [
-        "invalid_exception_category",
-        "missing_red",
-        "missing_green",
-    ]
-
-
-def test_check_plan_ignores_fenced_tdd_fields(tmp_path, monkeypatch, capsys):
-    plan_path = tmp_path / "plan.md"
-    write_valid_plan(plan_path)
-    text = plan_path.read_text(encoding="utf-8").replace(
-        "Red: failing AT-AUTH-SIGNIN test.\n  Green: implement COMP-AUTH.",
-        "```text\n  Red: example failure.\n  Green: example implementation.\n  ```",
-    )
-    plan_path.write_text(text, encoding="utf-8")
-    module = load_checker("check_plan")
-
-    rc, report = run_main(
-        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
-    )
-
-    assert rc == 1
-    assert report["gates"]["pr_tdd_contract"] is False
-    assert report["prs_invalid_tdd_contract"]["PR-AUTH-SIGNIN"] == [
-        "missing_red",
-        "missing_green",
-    ]
-
-
 def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
     tmp_path, monkeypatch, capsys
 ):
@@ -1055,16 +987,13 @@ def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
     extra_prs = """
 - PR-AUTH-SETUP
   Scope: prepare the current boundary.
-  Red: failing boundary test.
-  Green: prepare the current boundary.
+  Verification: focused boundary tests pass.
 - PR-AUTH-WIRING
   Scope: wire the current consumer.
-  Red: failing integration test.
-  Green: wire the current consumer.
+  Verification: focused integration tests pass.
 - PR-AUTH-PROOF
   Scope: prove current compatibility.
-  Red: failing compatibility test.
-  Green: prove current compatibility.
+  Verification: existing compatibility tests pass.
 
 """
     text = plan_path.read_text(encoding="utf-8").replace(
@@ -1222,9 +1151,9 @@ def test_check_plan_ignores_fenced_learning_waves(tmp_path, monkeypatch, capsys)
         module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["gates"]["learning_waves_well_formed"] is False
-    assert report["gates"]["learning_wave_members_complete"] is False
+    assert rc == 0
+    assert report["gates"]["learning_waves_well_formed"] is True
+    assert report["gates"]["learning_wave_members_complete"] is True
 
 
 def test_check_plan_rejects_malformed_or_incomplete_learning_waves(
@@ -1255,10 +1184,10 @@ Feedback/Integration Checkpoint: Review acceptance evidence.""",
     )
 
     assert rc == 1
-    assert report["gates"]["learning_waves_well_formed"] is False
-    assert report["gates"]["learning_wave_members_complete"] is False
+    assert report["gates"]["learning_waves_well_formed"] is True
+    assert report["gates"]["learning_wave_members_complete"] is True
     assert report["learning_wave_issues"]["malformed_ids"] == ["WAVE-AUTH"]
-    assert report["unassigned_wave_members"] == ["PR-AUTH-SIGNIN"]
+    assert report["unassigned_wave_members"] == []
 
 
 def test_check_plan_rejects_wrong_wave_member_kind(tmp_path, monkeypatch, capsys):
@@ -1280,6 +1209,83 @@ def test_check_plan_rejects_wrong_wave_member_kind(tmp_path, monkeypatch, capsys
     assert report["learning_wave_issues"]["invalid_member_kinds"] == {
         "WAVE-AUTH-BOUNDARY": ["PR-AUTH-SIGNIN"]
     }
+
+
+def test_check_plan_allows_unscheduled_breakdown_work(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    plan_path.write_text(
+        """# Overview
+Work Scope: Feature/component
+Plan Type: Breakdown
+Implementation Readiness: Decomposable
+
+## Complexity Budget
+- Mental Model: identify two later slices without committing their schedule.
+- Current Consumers: the current feature boundary.
+- Proposed Additions: two work allocations; no new machinery.
+- Existing Evidence Reused: the parent acceptance tests.
+- Deleted or Deferred: future scheduling until a checkpoint is known.
+- Implementation PR Count: 0
+
+## Pull Requests / Child Work Items
+- WORK-AUTH-FIRST
+  Parent scope: Feature/component.
+  Child scope: Slice/change.
+  Scope: Deliver the first bounded behavior.
+  Parent IDs / inherited obligations: FR-AUTH-SIGNIN.
+  Required child artifacts: Lean Change Record or standard child chain.
+  Dependencies: none.
+  Readiness target: Code-ready after the child boundary is selected.
+  Risks: none beyond the parent constraint.
+  Done signal: focused acceptance evidence passes.
+
+- WORK-AUTH-SECOND
+  Parent scope: Feature/component.
+  Child scope: Slice/change.
+  Scope: Deliver the later bounded behavior.
+  Parent IDs / inherited obligations: AT-AUTH-SIGNIN.
+  Required child artifacts: Lean Change Record or standard child chain.
+  Dependencies: WORK-AUTH-FIRST.
+  Readiness target: Decomposable.
+  Risks: the first child may change this scope.
+  Done signal: child scope is reviewed.
+""",
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert report["gates"]["learning_waves_well_formed"] is True
+    assert report["gates"]["learning_wave_members_complete"] is True
+    assert report["unscheduled_work_items"] == ["WORK-AUTH-FIRST", "WORK-AUTH-SECOND"]
+
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8")
+        + """
+## Waves
+
+### WAVE-AUTH-FIRST
+Order: 1
+Learning Target: Check the first behavior before scheduling the second.
+Members: WORK-AUTH-FIRST
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review the focused acceptance evidence.
+Stop/Replan Triggers: Stop if the first boundary changes the later scope.
+""",
+        encoding="utf-8",
+    )
+
+    rc, report = run_main(
+        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert report["gates"]["learning_wave_members_complete"] is True
+    assert report["unscheduled_work_items"] == ["WORK-AUTH-SECOND"]
 
 
 def test_check_plan_requires_complete_work_allocation_fields(
@@ -1321,6 +1327,16 @@ Allocate one feature child.
 # Coverage Map
 Authentication maps to WORK-AUTH-FEATURE.
 
+## Waves
+
+### WAVE-AUTH-FEATURE
+Order: 1
+Learning Target: Review the child feature plan before later work begins.
+Members: WORK-AUTH-FEATURE
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review the feature boundary.
+Stop/Replan Triggers: Stop if the parent requirement changes.
+
 # Sequencing & Risks
 The child starts after parent approval.
 """,
@@ -1351,6 +1367,60 @@ The child starts after parent approval.
     assert rc == 0
     assert report["gates"]["work_allocations_well_formed"] is True
     assert report["incomplete_work_allocations"] == {}
+
+
+def test_check_plan_accepts_well_formed_lean_change_record(
+    tmp_path, monkeypatch, capsys
+):
+    parent = tmp_path / "parent.md"
+    parent.write_text(
+        "# Parent\n\n- WORK-AUTH-CHANGE\n",
+        encoding="utf-8",
+    )
+    plan_path = tmp_path / "change.md"
+    plan_path.write_text(
+        """# Small authentication change
+
+Work Scope: Slice/change
+Implementation Readiness: Code-ready
+Delivery Profile: Lean
+Plan Type: Implementation
+Parent Work Item: WORK-AUTH-CHANGE
+Lean Change Record: Yes
+Why Lean: The existing boundary and test fixture make this reversible and understood.
+Changed Behavior: Add one validation rule; do not change the public contract.
+Parent IDs / inherited obligations: FR-AUTH-SIGNIN and AT-AUTH-SIGNIN.
+Acceptance & Verification: Focused validation and acceptance tests pass.
+Escalate If: The public contract or stored data must change.
+
+## Pull Requests / Child Work Items
+
+- PR-AUTH-CHANGE
+
+  Planned Touch Set: auth validation and focused tests.
+  Verification: focused validation and acceptance tests pass.
+  FR-AUTH-SIGNIN and AT-AUTH-SIGNIN have focused pass/fail tests.
+""",
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [str(plan_path), "--feature", "--parent", str(parent), "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["lean_change_record"] == {
+        "declared": True,
+        "issues": [],
+        "replaces": ["child spec", "child design", "child plan"],
+    }
+    assert report["gates"]["complexity_budget_complete"] is True
+    assert report["gates"]["lean_change_record_well_formed"] is True
 
 
 def test_check_plan_rejects_malformed_work_ids_without_prefix_matches(
@@ -1487,8 +1557,8 @@ def test_check_plan_flags_external_double_without_mitigation(
     write_valid_plan(plan_path)
     plan_path.write_text(
         plan_path.read_text(encoding="utf-8").replace(
-            "Green: implement COMP-AUTH.",
-            "Green: implement COMP-AUTH with a fake external vendor SDK host.",
+            "Verification: focused AT-AUTH-SIGNIN and component tests pass.",
+            "Verification: focused tests use a fake external vendor SDK host.",
         ),
         encoding="utf-8",
     )
@@ -1524,8 +1594,8 @@ def test_check_plan_accepts_external_double_with_real_boundary_mitigation(
     write_valid_plan(plan_path)
     plan_path.write_text(
         plan_path.read_text(encoding="utf-8").replace(
-            "Green: implement COMP-AUTH.",
-            "Green: implement COMP-AUTH with a fake external vendor SDK host and\n"
+            "Verification: focused AT-AUTH-SIGNIN and component tests pass.",
+            "Verification: focused tests use a fake external vendor SDK host and\n"
             "  a real-boundary integration test for the SDK contract.",
         ),
         encoding="utf-8",

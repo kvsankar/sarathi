@@ -78,12 +78,14 @@ A `WORK-*` item assigns child work in a parent Breakdown plan; it is not a docum
 level.
 Product plans normally allocate feature children; feature plans normally allocate slice
 children. Integration work may allocate directly to the smallest coherent executable
-scope. Every child follows its own Spec/Design/Plan chain. See
+scope. Standard children follow their own Spec/Design/Plan chain; an eligible code-ready Lean
+slice uses one Lean Change Record. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
-Breakdown plans allocate `WORK-*` children and their dependencies; they do not declare
-waves. Implementation plans assign every `PR-*` exactly once to an ordered `WAVE-*`
-declaration. Each wave states what it should teach us, how much may run at once, when
+Breakdown plans use a `WAVE-*` only for near-term `WORK-*` children that share a real
+feedback or integration checkpoint; unscheduled children have no wave. Implementation plans
+list the PRs for one child without assigning PRs to waves. Each wave states what it should
+teach us, how much may run at once, when
 feedback and integration happen, and when to stop or replan. A
 `.sdlc/wave-checkpoints.yaml` record that matches the current plan closes only its wave. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
@@ -93,9 +95,8 @@ feedback and integration happen, and when to stop or replan. A
 - Requirements own black-box `AT-*` acceptance and `JT-*` journey intent.
 - Designs own executable `TEST-*` obligations and verification architecture.
 - Plans assign parent and local test obligations to child work or PRs.
-- Code implements assigned tests and records claims in `.sdlc/test-traceability.yaml`.
-- Requirement-to-test links are claims, not proof. Reviewers inspect test bodies and their
-  pass/fail checks.
+- Code implements assigned tests and reports exact commands, outcomes, and unavailable
+  evidence. Reviewers inspect test bodies and their pass/fail checks.
 - A primary external seam cannot rely only on a self-authored double without explicit
   acceptance of the remaining risk. Prefer the real dependency or its official test
   surface.
@@ -103,13 +104,13 @@ feedback and integration happen, and when to stop or replan. A
   security, privacy, resilience, performance/cost, and migration depth are activated by
   accepted requirements or identified risks. Follow
   [docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md).
-- Never infer passing tests, true TDD history, stakeholder feedback, merge state, or human
+- Never infer passing tests, stakeholder feedback, merge state, or human
   approval from an automatic checker or Git activity.
 - Live production deployment/checks require explicit user approval.
 
-Behavior-changing code uses Red/Green/Refactor. Narrow exceptions are generated-only,
-docs-only, formatting-only, build/deploy configuration validation, or characterization
-before legacy refactor; each needs replacement evidence.
+Behavior-changing code has focused, meaningful verification. The implementation approach is
+chosen by the repository; review evaluates whether the resulting tests and commands are
+credible.
 
 Run bounded cleanup and simplify passes before handoff. Fix in-scope oddities, avoid
 unrelated refactors, and revise earlier documents if simplification changes accepted

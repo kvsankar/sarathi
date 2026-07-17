@@ -69,7 +69,6 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
     }
     assert "Not yet done" in rendered
     assert "No valid decomposition discovered" in rendered
-    assert "Feedback not recorded" in rendered
     assert "Not recorded" in rendered
     assert 'href="sarathi-process.html">Process guide</a>' in rendered
     parser = HTMLParser()
@@ -483,6 +482,42 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
     assert beta["child_plan"] is None
 
 
+def test_lean_change_record_replaces_child_spec_and_design_nodes(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    child.write_text(
+        child.read_text(encoding="utf-8")
+        + """
+Delivery Profile: Lean
+Lean Change Record: Yes
+Why Lean: The boundary is local, reversible, and covered by existing fixtures.
+Changed Behavior: Add one validation rule; do not change the public contract.
+Parent IDs / inherited obligations: FR-ALPHA and TEST-ALPHA.
+Acceptance & Verification: Focused validation and acceptance tests pass.
+Escalate If: The public contract or stored data must change.
+""",
+        encoding="utf-8",
+    )
+    (project / "docs" / "work" / "alpha" / "spec.md").unlink()
+    (project / "docs" / "work" / "alpha" / "design.md").unlink()
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    alpha = model["work_items"][0]
+    assert alpha["child_spec"] is None
+    assert alpha["child_design"] is None
+    assert alpha["child_plan"]["metadata"]["Lean Change Record"] == "Yes"
+    assert "Lean change record" in rendered
+    assert "Slice spec" not in rendered
+
+
 def test_stale_approval_is_distinct_from_missing_approval(tmp_path):
     module = load_renderer()
     project = make_decomposed_project(tmp_path)
@@ -637,11 +672,8 @@ checkpoints:
     assert waves[0]["state"] == "completed"
     assert waves[0]["member_states"][0]["state"] == "completed"
     assert waves[1]["state"] == "in-progress"
-    assert "1 / 2" in rendered
-    assert "WAVE-DEMO-FIRST" in rendered
-    assert "WAVE-DEMO-NEXT" in rendered
-    assert "Checkpoint complete" in rendered
-    assert "Feedback received" in rendered
+    assert 'class="waves-view"' not in rendered
+    assert "Plan checks needing attention" not in rendered
 
 
 def test_stale_wave_checkpoint_does_not_complete_wave(tmp_path):
@@ -695,7 +727,7 @@ def test_malformed_wave_declaration_stays_visible_for_repair(tmp_path):
     assert model["learning_waves"]["issues"][0]["message"] == (
         "malformed wave IDs: WAVE-FIRST"
     )
-    assert "Learning-wave declarations need attention" in rendered
+    assert "Plan checks needing attention" in rendered
     assert "WAVE-FIRST" in rendered
 
 
@@ -801,19 +833,22 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert "WORK-DEMO-ALPHA" in first
     assert 'aria-label="Workflow details"' in first
     assert "validate the public API boundary" in first
-    assert "Feedback requested" in first
     assert "WAVE-DEMO-FIRST" in first
     assert "WAVE-DEMO-NEXT" in first
+    assert "Wave 1" in first
+    assert "Implementation PRs" in first
+    assert "PR-ALPHA-ONE" in first
     assert "PR-ALPHA-TWO" in first
-    assert '<details class="operational-details" open>' in first
-    assert "Workflow and learning details" in first
+    assert '<dialog id="approval-details"' in first
+    assert 'id="approval-details-trigger"' in first
+    assert "APR-SPEC covers an earlier version" in first
+    assert "record a fresh spec.approved approval" in first
+    assert 'class="operational-details"' not in first
+    assert "Workflow and learning details" not in first
     assert "Workflow tree" in first
     assert "mapped test" in first
     assert "Evidence mapped" in first
-    assert "Invalidation result" in first
-    assert "Ancestor impact" in first
-    assert "Learning waves" in first
-    assert "Ordered delivery and feedback checkpoints" in first
+    assert 'class="waves-view"' not in first
     assert re.search(
         r'<details class="tree-branch"[^>]*data-state="evidence"[^>]* open>', first
     )

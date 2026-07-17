@@ -141,8 +141,8 @@ The core stage names are:
 | `/plan-verify` | Run checks for the spec, design, and plan. |
 | `/plan-review` | Independently review plan readiness, slicing, assignment, and sequencing. |
 | `/plan-assess` | Run `/plan-verify` plus `/plan-review`. |
-| `/code-create` | Implement a code-ready plan using Red/Green/Refactor TDD, including planned logging/error-handling/docs/build/deploy work. |
-| `/code-verify` | Run tests, coverage, quality gates, logging/error-handling/build/docs/deployment checks, and code-link checks. |
+| `/code-create` | Implement a code-ready plan with focused verification, including planned logging/error-handling/docs/build/deploy work. |
+| `/code-verify` | Run planned tests, quality gates, and applicable logging/error-handling/build/docs/deployment checks. |
 | `/code-review` | Independently review code, tests, operational work, quality gates, and consistency with earlier documents. |
 | `/code-assess` | Run `/code-verify` plus `/code-review`. |
 | `/workflow-status` | Render the work tree and ordered learning-wave status as read-only HTML. |
@@ -188,8 +188,9 @@ Documents declare one readiness value:
 Breakdown plans use `WORK-*` IDs to assign parent work to children; they are not another document
 type. A product plan normally maps each `WORK-*` allocation to a feature spec, design, and
 plan. A feature Breakdown plan normally maps each allocation to a slice spec, LLD, and
-Implementation plan. Product integration work may map directly to a slice child, but its
-test code remains slice-level code carrying product-owned test intent. See
+Implementation plan. An eligible code-ready Lean slice instead uses one compact Lean Change
+Record. Product integration work may map directly to a slice child, but its test code remains
+slice-level code carrying product-owned test intent. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
 ## ID Format
@@ -344,9 +345,10 @@ touch ownership are explicit, WIP is capped, and ownership for combining work pl
 stop/replan rules are planned. Speculative later work stays exceptional and reversible. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
 
-Implementation plans assign every `PR-*` to an ordered `WAVE-*`; Breakdown plans allocate
-`WORK-*` children without waves. The live status page shows that delivery sequence beside
-the work tree. `.sdlc/wip.md` identifies the active
+Breakdown plans use a `WAVE-*` only for near-term `WORK-*` children that share a feedback or
+integration checkpoint; unscheduled children have no wave. Implementation plans list the PRs
+for one child without assigning PRs to waves. The live status page shows that delivery sequence
+beside the work tree. `.sdlc/wip.md` identifies the active
 wave; a `.sdlc/wave-checkpoints.yaml` record matching the current plan closes a wave without pretending
 the enclosing plan is fully assessed or the next wave is automatically approved.
 
@@ -427,22 +429,15 @@ Test responsibility is split by document and code stage:
   covered only by a self-authored double.
 - Plans assign `AT-` acceptance coverage, `JT-` journey coverage, and `TEST-` obligations
   to PRs.
-- Code writes the executable tests and implementation, and records executable-test
-  requirement-to-test links in `.sdlc/test-traceability.yaml` rather than cluttering test
-  code with process IDs. This is where unit, component, contract, integration, UI, journey/e2e,
-  quality, migration, build/deploy, docs, and operational test implementations are created
-  when planned. The test-link file is a structured project claim; reviewers still inspect
-  linked tests and their pass/fail checks.
-- Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
-  when planned or explicitly accepted: generated code only, docs-only, formatting-only,
-  build/deploy config validation, and characterization before legacy refactor. Each
-  exception needs replacement verification evidence.
-- Code may also add implementation-local supplemental inner tests discovered during
-  Red/Green/Refactor, such as helper, pure-core, parser, mapper, regression,
-  characterization, table/property, adapter, or edge-case tests. These supplement, never
-  replace, planned `AT-`/`JT-`/`TEST-` coverage; they stay within the current `PR-` and
-  Planned Touch Set, map to the nearest trace IDs in `.sdlc/test-traceability.yaml` when
-  applicable, and use a clear pass/fail check.
+- Code writes the executable tests and implementation. This is where unit, component,
+  contract, integration, UI, journey/e2e, quality, migration, build/deploy, docs, and
+  operational test implementations are created when planned. A project may maintain a
+  requirement-to-test inventory when its audit or assurance needs justify it; reviewers
+  still inspect tests and their pass/fail checks.
+- Code may also add implementation-local supplemental tests, such as helper, pure-core,
+  parser, mapper, regression, characterization, table/property, adapter, or edge-case
+  tests. These supplement, never replace, planned `AT-`/`JT-`/`TEST-` coverage; they stay
+  within the current `PR-` and Planned Touch Set and use a clear pass/fail check.
   If they imply new externally visible behavior, contract, UX/NFR, or scope, revise the
   controlling document first.
 - Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
@@ -464,8 +459,8 @@ Test responsibility is split by document and code stage:
   warranted: latency, throughput, error rate, saturation/resource use, critical spans, trace
   propagation, dashboards, alerts, and SLO/SLI signals.
 
-Use `/code-verify` when you simply want a confidence run after a change: test suite,
-coverage, pre-commit/equivalent gates, logging/error-handling checks, build checks,
+Use `/code-verify` when you simply want a confidence run after a change: planned tests,
+pre-commit/equivalent gates, logging/error-handling checks, build checks,
 documentation checks, deployment dry-runs or smoke checks where planned, and `check_code.py`.
 Use `/code-review` when you want independent judgment. Use `/code-assess` when you want both
 in one gate.
@@ -476,25 +471,14 @@ The checkers provide repeatable evidence about required structure and links:
 python checkers/check_spec.py spec.md --json
 python checkers/check_design.py design.md --json
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
-python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --cov-min 80 --json
+python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --json
 ```
-
-For code work, Sarathi's executable coverage floor is 80% line coverage overall, 70% branch
-coverage where available, and 90% line coverage for pure functional core modules. Agents may
-raise the threshold when the risk profile warrants it, and must never lower it below that
-floor.
 
 If `python` is unavailable, try `python3`, then `uv run python`.
 
-`check_code.py` reads executable-test links from `.sdlc/test-traceability.yaml` by
-default. Use `--traceability <file>` for a project-specific map location. Use
-`--allow-inline-test-traceability` only as a temporary migration flag for older repos that
-still carry artifact IDs in test comments or docstrings.
-Test-link entries may also include `boundary`, `level`, `uses_double`, `real_boundary`,
-and `type_conformance`. If tests for a boundary use a double, at least one test for that
-same boundary must be marked as a real-boundary or type-conformance check. Those fields are
-declarations, not proof; `/code-review` and `/code-assess` must identify the concrete
-command/test evidence behind them.
+Coverage targets and requirement-to-test inventories are project-level controls, not Sarathi
+defaults. When a project adopts them, document the purpose and owner in that project and
+review the resulting evidence; neither a percentage nor a mapping proves meaningful tests.
 Reviewability is judged by cohesive purpose, conceptual complexity, touch scope, evidence,
 and rollback. Sarathi does not impose source-file, module, diff, or PR line-count targets.
 TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not

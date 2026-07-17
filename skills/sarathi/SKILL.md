@@ -84,14 +84,15 @@ Documents declare `Implementation Readiness: Exploratory | Decomposable | Code-r
 small feature.
 
 A `WORK-*` is a parent-plan allocation. Product plans normally allocate feature children;
-feature plans normally allocate slice children. Each child follows its own Spec/Design/Plan
-chain. Use `docs/work-decomposition.md`.
+feature plans normally allocate slice children. Standard children follow their own
+Spec/Design/Plan chain. An eligible code-ready Lean slice uses one compact Lean Change Record
+instead. Use `docs/work-decomposition.md`.
 
-Implementation plans assign every `PR-*` exactly once to an ordered `WAVE-*`. Breakdown
-plans allocate `WORK-*` children and dependencies without waves. A wave is a small set of
-work that can proceed before the next feedback and integration check. Use
-`docs/feedback-and-learning.md`. A checkpoint that matches the current plan closes one
-wave only; it does not approve the whole plan or authorize the next wave.
+Breakdown plans use a `WAVE-*` only for near-term `WORK-*` children that share a feedback or
+integration check; unscheduled children have no wave. Implementation plans list the PRs that
+implement one child; PRs do not belong to waves. Use `docs/feedback-and-learning.md`. A
+checkpoint that matches the current plan closes one wave only; it does not approve the whole
+plan or authorize the next wave.
 
 ## Human Gate
 
@@ -111,10 +112,9 @@ sets, blockers in earlier documents, evidence, safety, approval, or human-review
 - Specs own `AT-*` and `JT-*` black-box intent.
 - Designs own executable `TEST-*` obligations and test architecture.
 - Plans assign tests from parent and local documents to child work or PRs.
-- Code implements assigned tests and records links from intent to executable tests.
-- Format checks and requirement-to-test links do not prove correct meaning, true TDD
-  history, stakeholder
-  feedback, real-boundary execution, merge state, or human approval.
+- Code implements assigned tests and reports the commands and outcomes that exercised them.
+- Format checks and optional requirement-to-test links do not prove correct meaning,
+  stakeholder feedback, real-boundary execution, merge state, or human approval.
 - A primary external boundary cannot rely only on a self-authored test double unless the
   user explicitly accepts the remaining risk.
 - Live production deployment or production checks require explicit user approval.

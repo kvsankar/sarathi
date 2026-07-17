@@ -21,8 +21,8 @@ passes separate. A failed or unfit earlier document blocks the later verdict.
 | --- | --- |
 | `/spec-assess` | `check_spec.py`, ID/section/coverage structure, approval evidence when required. |
 | `/design-assess` | Spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
-| `/plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, labeled Red/Green or TDD-exception contracts, exact wave membership, structured complexity budget/count, and targeted exception approval. |
-| `/code-assess` | Earlier checks, `check_code.py`, tests, coverage, requirement-to-test links, TDD evidence, repository quality gate, planned extra-risk commands. |
+| `/plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, pass/fail verification, exact wave membership, structured complexity budget/count, and targeted exception approval. |
+| `/code-assess` | Earlier checks, `check_code.py`, planned tests, repository quality gate, and planned extra-risk commands. |
 
 Check results prove only what the command observes. They do not prove
 correctness, meaningful tests, stakeholder feedback, real-boundary execution, merge state,
@@ -37,7 +37,7 @@ Every reviewer judges:
 - clear pass/fail checks, real-boundary confidence, risks, and remaining uncertainty;
 - feedback/learning dependencies and changes to parent documents where applicable;
 - simplicity using `docs/simplicity-first.md`.
-- TDD-exception eligibility and replacement evidence when a plan does not use Red/Green.
+- whether the chosen verification is focused, meaningful, and proportionate to risk.
 
 Start with simplification: what can be deleted, deferred, collapsed, implemented directly,
 or proved by existing evidence? A document with every required section still fails when it is overbuilt,

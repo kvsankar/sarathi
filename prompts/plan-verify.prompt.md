@@ -37,7 +37,7 @@ explicitly asked.
 
 ## Checks
 
-When earlier documents exist, first run:
+When checking a Standard plan, first run:
 
 ```pwsh
 python checkers/check_spec.py spec.md --json
@@ -61,8 +61,10 @@ the exact complexity budget and exception rationale without requiring approval. 
 `plan.complexity-approved` approval whose saved hash matches the current plan. It remains
 separate from final `plan.approved`.
 
-For focused feature/component or slice/change plans, add `--feature` and `--parent` when
-applicable.
+For a Lean Change Record, verify the approved parent spec/design first, then run the plan
+checker against the compact record with `--feature` and the parent document options needed to
+check its inherited IDs. Do not require missing child spec/design files. For focused
+feature/component or slice/change plans, add `--feature` and `--parent` when applicable.
 
 If `python` is unavailable or fails because the launcher is missing, retry with `python3`;
 if that is unavailable, retry with `uv run python`.
@@ -74,10 +76,10 @@ Report:
 - Exit codes.
 - `passed/total`.
 - Any spec/design failures.
-- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, invalid
-  Red/Green or TDD-exception contracts, forward dependencies, or vague hits.
-- Declared learning waves, malformed or duplicate `WAVE-*` IDs/orders, missing required wave
-  fields, invalid WIP limits, and unknown, duplicate, or unassigned `WORK-*`/`PR-*` members.
+- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, forward
+  dependencies, or vague hits.
+- Declared waves, malformed or duplicate `WAVE-*` IDs/orders, missing required wave fields,
+  invalid WIP limits, and unknown or duplicate members. Unscheduled `WORK-*` items are valid.
 - Exact complexity-budget fields/count, generic-machinery signals, and the bounded Slice/change
   implementation PR gate, including exception rationale and hash-current approval evidence.
 - `external_double_mentions` and `external_double_mitigation_present`. If a plan uses a
@@ -93,5 +95,5 @@ End with:
 
 - **Verification result**: Pass / Fail / Unable to run.
 - **Evidence limits**: format and link checks only; independent review is still required for
-  slicing, sequencing, TDD usefulness, touch-set fidelity, and risk.
+  slicing, sequencing, touch-set fidelity, verification fitness, and risk.
 - **Recommended next command**: `/plan-review` or `/plan-assess`.

@@ -20,7 +20,9 @@ Assess the target plan using two separate passes. Load `prompts/plan-verify.prom
    waves, review-depth allocation, and readiness.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
-passes separate. Failed or unfit earlier documents block the plan verdict.
+passes separate. Failed or unfit earlier documents block the plan verdict. For a Lean Change
+Record, assess the approved parent intent plus the compact record; do not require separate
+child spec/design files.
 
 For a bounded Slice/change plan with more than three implementation PRs, block assessment
 until the concise exception has a `plan.complexity-approved` approval that matches the

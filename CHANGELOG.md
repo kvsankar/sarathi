@@ -10,6 +10,10 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Added
 
+- Show ordered `Wave N` labels beside scheduled child work in the workflow tree, show each
+  slice's PR state directly beneath its document chain, and let the compact parent-approval
+  status open a dialog with each approval record, stale hash prefixes, and the exact next
+  approval needed. Keep wave detail in the expanded tree row instead of a second page section.
 - Add a delivery-progress status summary and feature, slice, wave, and text filters that
   retain enough hierarchy to navigate from product progress to the detailed allocation tree.
 
@@ -21,9 +25,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Add deterministic instruction budgets and a package-extraction regression example that
   collapses speculative machinery into current contracts, consumer integration, and real
   compatibility evidence.
-- Add ordered learning-wave declarations and a second workflow-status projection: plans
-  assign `WORK-*` or `PR-*` members to `WAVE-*` sequences, while hash-current wave
-  checkpoints preserve completed feedback and ancestor-impact evidence.
+- Add ordered wave declarations and a workflow-status projection: Breakdown plans assign
+  `WORK-*` members to `WAVE-*` sequences, while hash-current wave checkpoints preserve
+  completed feedback and parent-document impact evidence.
 - Add an iterative feedback-and-learning policy: code-ready slices declare learning and
   feedback targets, code assessment records honest feedback status and ancestor impact, and
   the static process guide shows the inspect/adapt loop.
@@ -65,9 +69,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
-- Limit learning waves to executable `PR-*` work in Implementation plans. Breakdown plans
-  now allocate `WORK-*` children and dependencies without waves; plan and status checks
-  enforce that separation.
+- Move wave scheduling to Breakdown plans: they group `WORK-*` children, while an
+  Implementation plan contains the PRs for one child. Plan and status checks enforce that
+  separation.
 - Show feature-owned and product-owned slices separately in workflow status, including
   nested allocation paths and external artifact links where configured.
 
@@ -106,6 +110,10 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Removed
 
+- Remove source-hash snapshot and provenance-table UI from workflow status; hashes remain
+  available to deterministic checks without becoming status-page content.
+- Remove the workflow-and-learning diagnostics disclosure; delivery status is conveyed by the
+  progress summary, workflow tree, approval dialog, and only real plan-check warnings.
 - Remove all PR, diff, module, and source-file line-count options, metrics, warnings,
   reports, tests, and planning guidance. Reviewability now uses cohesion, conceptual
   complexity, touch scope, evidence, rollback, and learning boundaries.

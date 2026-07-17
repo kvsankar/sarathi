@@ -44,8 +44,9 @@ A Breakdown plan must create an explicit integration/acceptance `WORK-` item whe
 obligation spans multiple children and cannot be honestly owned by one existing child. That
 work item must follow [work-decomposition.md](work-decomposition.md): name its child scope
 and required child documents, then reach a code-ready child Implementation plan before
-`/code-create`. Child documents should reference clear parent requirements and design rather
-than duplicate them, but they must still exist at the scope that authorizes implementation.
+`/code-create`. Standard child documents should reference clear parent requirements and design
+rather than duplicate them. An eligible Lean slice may instead use its one Lean Change Record
+at the scope that authorizes implementation.
 
 ## Planning And Evidence
 
@@ -62,5 +63,6 @@ Keep these states distinct:
 - **Executed**: a command or environment run produced evidence.
 - **Passing/blocked**: observed results establish the current outcome.
 
-`.sdlc/test-traceability.yaml` can support assignment and implementation claims. It does not
-by itself prove execution, correctness, or a passing result.
+A project may maintain a requirement-to-test inventory for audit or assurance needs. It does
+not by itself prove execution, correctness, or a passing result and is not required by
+Sarathi.

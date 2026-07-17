@@ -1,5 +1,5 @@
 ---
-description: Render repeatable HTML work-tree and learning-wave views with implementation and feedback evidence.
+description: Render a repeatable HTML delivery-progress summary and workflow tree.
 agent: agent
 ---
 
@@ -29,22 +29,13 @@ Use `--check` when the user asks for freshness verification or CI integration.
 
 Report:
 
-- generated status and process-guide paths, plus the snapshot fingerprint;
-- the executive current-focus breadcrumb, current stage, next gate, and immediate document
-  gaps;
-- the explicit current learning target, feedback status/evidence, active learning wave, WIP
-  limit, active slice IDs, what feedback changed, changes needed in parent documents, and
-  stop/replan triggers;
-- the selected review depth and extra risk checks, or `Not recorded`;
-- the product trunk and progressively disclosed parent-allocation branches, including
-  explicit missing Spec/Design/Plan/Code nodes;
-- each plan's ordered `WAVE-*` sequence, member states, active wave, WIP limit, planned
-  feedback/integration checkpoint, and hash-current completed checkpoint evidence;
-- spec/design/plan presence and whether approvals match the current files;
-- valid and malformed parent-plan `WORK-` allocation counts, expanded child-plan count,
-  PR-slice count, PRs with mapped tests, and assessed/completed branch counts;
-- approval, assessment, or wave-checkpoint parse errors; stale approval records or checkpoints;
-  malformed wave declarations; missing expected files; or discovery limitations;
-- the evidence limit that mapped tests, WIP claims, and learning records do not prove
-  completion, quality, or stakeholder feedback beyond their explicit source. Show `Not
-  recorded` for missing learning fields and never infer them from Git, approvals, or tests.
+- generated status and process-guide paths;
+- the concise progress summary shown by the page;
+- any error, stale source, or missing input that prevents the page from being current or
+  trustworthy;
+- the workflow tree as the place to inspect a selected feature, slice, wave, or PR.
+
+Do not restate hidden or progressively disclosed details in the command response. Do not
+report snapshots, provenance, learning records, WIP limits, or exhaustive wave and PR counts
+unless they are the specific problem being reported. The page must not infer completion,
+quality, or stakeholder feedback from Git, approvals, tests, or missing records.

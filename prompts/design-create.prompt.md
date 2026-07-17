@@ -12,14 +12,18 @@ Translate accepted requirements into a testable design at HLD, feature, or LLD d
 Read `.sdlc/wip.md`, process decisions, the accepted spec, existing design/code evidence,
 and relevant ADRs. Block when requirements are materially ambiguous or unfit.
 
-Load:
+Load `docs/artifact-contracts.md` for the Design contract and IDs.
 
-- `docs/artifact-contracts.md` for the Design contract and IDs;
-- `docs/simplicity-first.md` for the complexity budget and precedence of existing tests;
-- `docs/assurance-profiles.md` for selected review depth and extra risk checks;
-- `docs/cross-cutting-concerns.md` for ownership of those extra checks only;
-- `docs/test-ownership.md` when parent or cross-child test intent is involved;
-- `docs/artifact-formatting.md` and `docs/simplify-pass.md` before handoff.
+## Triggered References
+
+Load only when the trigger applies:
+
+- `docs/simplicity-first.md`: a Standard complexity budget, new abstraction, reuse decision,
+  or refactor is in scope;
+- `docs/assurance-profiles.md`: selecting or changing review depth or extra checks;
+- `docs/cross-cutting-concerns.md`: a concrete risk module needs an owner;
+- `docs/test-ownership.md`: parent or cross-child test intent is involved;
+- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before handoff.
 
 Use the recorded profile unless new scope or risk evidence requires stronger review.
 Record the profile, extra risk checks, reason, and conditions for stronger review in the
@@ -56,8 +60,11 @@ references.
   schema/OpenAPI, CI, build, and deployment tests; add only focused proof for the changed
   boundary.
 
-Write `design.md` and deterministic `design.html` unless other paths are named. Child
-designs include `Parent Work Item: WORK-AREA-NAME`.
+Write `design.md` and, for Product/system scope, its reviewable `design.html` unless other
+paths are named. For Feature/component or Slice/change scope, create `design.html` only
+when visual review materially helps the decision. Child designs include
+`Parent Work Item: WORK-AREA-NAME`. Do not create a separate design for an eligible Lean
+Change Record; `/plan-create` owns its compact combined record.
 
 If `UI Mock Preference: Required`, create or update `mock-ui.html` with required screens,
 states, flows, responsiveness, and accessibility intent. Record approval status; production

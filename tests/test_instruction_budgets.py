@@ -46,6 +46,13 @@ def test_stage_prompt_budgets() -> None:
     assert total_bytes <= 90_000
 
 
+def test_create_prompts_make_optional_references_explicit() -> None:
+    for stage in ("spec", "design", "plan", "code"):
+        text = (PROMPTS / f"{stage}-create.prompt.md").read_text(encoding="utf-8")
+        assert "## Triggered References" in text
+        assert "Load only when the trigger applies:" in text
+
+
 def test_removed_loc_policy_has_no_active_remnants() -> None:
     active = [
         ROOT / "AGENTS.md",
@@ -102,19 +109,8 @@ def test_core_instructions_use_plain_language_without_weakening_gates() -> None:
     )
     assert "End the turn before starting the next stage" in skill
     assert "Block unless the plan is Code-ready" in code_create
-    assert all(term in code_create for term in ("**Red**", "**Green**", "**Refactor**"))
-    assert all(
-        category in code_create
-        for category in (
-            "generated-only",
-            "docs-only",
-            "formatting-only",
-            "build/deploy config",
-            "characterization before legacy refactor",
-        )
-    )
-    assert "Record and run the replacement evidence" in code_create
-    assert "Exceptions never cover new/changed product" in code_create
+    assert "smallest meaningful test" in code_create
+    assert "Sarathi does not require one" in code_create
     assert "explicit user approval" in code_create
     assert "revision-required" in code_create
     assert "changes needed in the spec, design, remaining plan" in code_create

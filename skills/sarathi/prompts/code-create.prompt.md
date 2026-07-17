@@ -1,72 +1,66 @@
 ---
-description: Implement a code-ready plan in small learning waves using Red/Green/Refactor, linked test evidence, feedback, and revision of parent documents when needed.
+description: Implement an explicitly selected code-ready plan using Red/Green/Refactor, linked test evidence, feedback, and revision of parent documents when needed.
 agent: agent
 ---
 
 # Code Create
 
-Implement only the eligible member(s) of the active learning wave and keep every PR
-boundary shippable.
+Implement only the explicitly selected code-ready child and keep every PR boundary shippable.
 
 ## Load And Gate
 
-Read `.sdlc/wip.md`, process decisions, the accepted spec/design/plan, current code/tests,
-and repository quality commands. Load:
+Read `.sdlc/wip.md`, process decisions, the accepted parent intent and code-ready child plan,
+current code/tests, and repository quality commands. A Lean Change Record is that child plan
+and replaces separate child spec/design documents. Load `docs/artifact-contracts.md` for the
+Code and Evidence contract and `docs/feedback-and-learning.md` for active-wave eligibility.
 
-- `docs/artifact-contracts.md` for the Code and Evidence contract;
-- `docs/simplicity-first.md` for keeping process machinery out of product code and revising
-  overbuilt earlier documents;
-- `docs/assurance-profiles.md` for review depth, extra risk checks, and escalation;
-- `docs/feedback-and-learning.md` for wave eligibility and inspect/adapt;
-- `docs/test-ownership.md` for assigned parent/local tests and requirement-to-test links;
-- `docs/cross-cutting-concerns.md` for extra checks required by this work;
-- `docs/cleanup-pass.md`, `docs/simplify-pass.md`, and `docs/artifact-formatting.md` for
-  handoff.
+## Triggered References
 
-Block unless the plan is Code-ready, required approvals/mock approvals exist, earlier
-intent is fit, and the selected PR is a declared eligible member of the active wave. Confirm
-the Planned Touch Set, Red tests, Green scope, IDs/obligations, pass/fail checks, review
-depth and extra checks, feedback target, what result would change the plan, WIP limit,
-dependencies, and conditions for stopping or replanning.
+Load only when the trigger applies:
 
-Update `.sdlc/wip.md` with the exact active `WAVE-*` and active declared members. Never
-exceed WIP. Do not start a later wave merely because an agent is available.
+- `docs/test-ownership.md`: the plan maps inherited `AT-*`, `JT-*`, or `TEST-*` obligations;
+- `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an assigned extra risk
+  check, escalation, or new risk needs interpretation;
+- `docs/simplicity-first.md`: implementation exposes unnecessary machinery, a refactor, or a
+  simplification decision;
+- `docs/cleanup-pass.md`, `docs/simplify-pass.md`, and `docs/artifact-formatting.md`:
+  immediately before handoff.
+
+Block unless the plan is Code-ready, required approvals/mock approvals exist, earlier intent
+is fit, and `.sdlc/wip.md` explicitly selects the owning `WORK-*` child. If that child belongs
+to a declared wave, also enforce the wave WIP limit and checkpoint rules. Confirm the Planned
+Touch Set, Red tests, Green scope, IDs/obligations, pass/fail checks, review depth and extra
+checks, feedback target, what result would change the plan, dependencies, and conditions for
+stopping or replanning.
+
+Update `.sdlc/wip.md` with the exact active `WORK-*` item and, when applicable, its active
+`WAVE-*`. Do not exceed a declared wave's WIP limit. Do not start additional work merely
+because an agent is available.
 
 ## Implement
 
-For every behavior-changing step:
-
-1. **Red**: write the smallest meaningful failing test with a clear pass/fail check; run it and
-   preserve failure evidence.
-2. **Green**: implement the minimum production-quality change; rerun the focused test and
-   affected suite.
-3. **Refactor**: improve structure without changing behavior; keep tests green.
-
-Narrow exceptions are generated-only, docs-only, formatting-only, build/deploy config
-validation, or characterization before legacy refactor. Use the exact TDD-exception fields
-and safety rules in `docs/artifact-contracts.md`. Exceptions never cover new/changed product
-behavior, bug fixes, contracts, validation, security/privacy behavior, errors,
-logging/telemetry, or UI behavior. Record and run the replacement evidence.
+For every behavior-changing step, add or update the smallest meaningful test with a clear
+pass/fail check, implement the minimum production-quality change, and rerun the focused test
+and affected suite. Refactor only after behavior is protected by that verification.
 
 Implement assigned `AT-*`, `JT-*`, and `TEST-*` obligations at their planned levels. Add
 supplemental inner tests when discovered, but do not use them to replace accepted coverage.
-Map executable tests in `.sdlc/test-traceability.yaml`; keep test names and bodies
-behavior-focused.
+Keep test names and bodies behavior-focused. A project may keep a test-link inventory when
+its audit or assurance needs justify it, but Sarathi does not require one.
 
 Stay inside the Planned Touch Set. Stop to revise earlier documents when implementation reveals
 new user-visible behavior, changed contracts/UX/NFRs, material module risk, or invalidated
-assumptions. Never fabricate stakeholder, real-system, TDD, or execution evidence.
+assumptions. Never fabricate stakeholder, real-system, or execution evidence.
 If implementation exposes an overbuilt parent design or plan, classify it
 `revision-required` and simplify that document before continuing. Do not add product
 machinery merely to satisfy the process.
 
 ## Verify The Boundary
 
-Run focused and full planned tests, coverage, formatter/linter/type/static/security checks,
-pre-commit or repository equivalent, build/docs/deployment/environment checks, and all
-extra risk checks assigned to this PR. Use repository thresholds; absent stricter
-policy, require at least 80% line coverage overall, 70% branch where available, and 90% line
-coverage for pure functional-core modules.
+Run focused and full planned tests, formatter/linter/type/static/security checks, pre-commit
+or repository equivalent, build/docs/deployment/environment checks, and all extra risk checks
+assigned to this PR. Run coverage only when the repository policy or accepted risk profile
+requires it.
 
 Do not run live production deployment or checks without explicit user approval. Report
 unavailable checks and remaining risk rather than treating them as passed.
@@ -79,9 +73,9 @@ affected checks.
 
 Update `.sdlc/wip.md` and report:
 
-- PR/wave, changed paths, Red/Green/Refactor evidence, test/coverage/quality results;
+- PR, owning work item/wave, changed paths, test/verification/quality results;
 - extra risk-check evidence and unavailable checks;
-- requirement-to-test link updates, cleanup/simplify results, assumptions and risks;
+- optional test-link inventory updates, cleanup/simplify results, assumptions and risks;
 - feedback status/evidence and changes needed in the spec, design, remaining plan,
   code/integration, and process;
 - wave members remaining or `/code-assess` readiness.

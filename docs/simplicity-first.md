@@ -46,8 +46,8 @@ before inventing a parallel harness.
 
 ## Complexity Budget
 
-Before accepting a design or implementation plan, compare it with the user's stated mental
-model. Record one checker-visible `## Complexity Budget` section:
+Before accepting a Standard design or implementation plan, compare it with the user's stated
+mental model. Record one checker-visible `## Complexity Budget` section:
 
 ```markdown
 ## Complexity Budget
@@ -61,7 +61,8 @@ model. Record one checker-visible `## Complexity Budget` section:
 
 Designs use the first five fields. Plans use all six; Breakdown plans record `0`. The
 checker verifies exact fields and, for plans, that the declared count matches actual
-`PR-*` items. Independent review decides whether the content is honest and proportionate.
+`PR-*` items. An eligible Lean Change Record uses its shorter `Why Lean` and `Escalate If`
+fields instead. Independent review decides whether the content is honest and proportionate.
 
 The budget is qualitative. Sarathi has no source-file, module, diff, or PR line-count
 target. Stop for user review before materially exceeding the mental model.
