@@ -68,7 +68,7 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
         "active_waves": 0,
     }
     assert "Not yet done" in rendered
-    assert "No valid work breakdown found" in rendered
+    assert "No valid decomposition discovered" in rendered
     assert "Feedback not recorded" in rendered
     assert "Not recorded" in rendered
     assert 'href="sarathi-process.html">Process guide</a>' in rendered
@@ -397,9 +397,9 @@ Active Slices: PR-LEAF-BOUNDARY
     assert model["summary"]["pr_slices"] == 2
     assert waves[0]["member_states"][0]["state"] == "in-progress"
     assert waves[1]["member_states"][0]["state"] == "not-started"
-    assert "Leaf Boundary is in progress" in rendered
+    assert "Product delivery plan" in rendered
     assert "Slice workflow" in rendered
-    assert "No valid work breakdown found" not in rendered
+    assert "No valid decomposition discovered" not in rendered
     assert "WAVE-LEAF-BOUNDARY" in rendered
     assert "PR-LEAF-FINISH" in rendered
 
@@ -527,7 +527,7 @@ def test_hash_current_code_slice_approval_marks_work_completed(tmp_path):
     assert model["work_items"][0]["state"] == "completed"
     assert model["work_items"][0]["code_slice_approval"]["state"] == "approved"
     assert model["summary"]["completed_items"] == 1
-    assert "Demo Alpha is completed" in rendered
+    assert "WORK-DEMO-ALPHA" in rendered
     assert "Completed" in rendered
 
 
@@ -584,7 +584,7 @@ assessments:
         "stop_or_replan": "Stop if the provider contract changes.",
     }
     assert model["summary"]["assessed_items"] == 1
-    assert "Demo Alpha is assessed" in rendered
+    assert "WORK-DEMO-ALPHA" in rendered
     assert "Assessed" in rendered
     assert "Assessed learning" in rendered
     assert "Feedback received" in rendered
@@ -796,32 +796,32 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert first.encode() == second.encode()
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
-    assert "Executive summary" in first
-    assert "Demo Alpha is in progress" in first
-    assert "Product/system &rarr; Breakdown plan &rarr; WORK-DEMO-ALPHA" in first
-    assert 'aria-label="Current learning loop"' in first
+    assert "Delivery progress" in first
+    assert "Product delivery plan" in first
+    assert "WORK-DEMO-ALPHA" in first
+    assert 'aria-label="Workflow details"' in first
     assert "validate the public API boundary" in first
     assert "Feedback requested" in first
     assert "WAVE-DEMO-FIRST" in first
     assert "WAVE-DEMO-NEXT" in first
     assert "PR-ALPHA-TWO" in first
-    assert '<details class="learning-details" open>' in first
-    assert "Explicit feedback is required before affected work continues." in first
-    assert "Work tree" in first
-    assert "Tests linked" in first
-    assert "What feedback changed" in first
-    assert "Parent documents" in first
-    assert "Evidence mapped" not in first
-    assert "Invalidation result" not in first
-    assert "Ancestor impact" not in first
+    assert '<details class="operational-details" open>' in first
+    assert "Workflow and learning details" in first
+    assert "Workflow tree" in first
+    assert "mapped test" in first
+    assert "Evidence mapped" in first
+    assert "Invalidation result" in first
+    assert "Ancestor impact" in first
     assert "Learning waves" in first
     assert "Ordered delivery and feedback checkpoints" in first
     assert re.search(
-        r'<details class="tree-branch" data-state="evidence"[^>]* open>', first
+        r'<details class="tree-branch"[^>]*data-state="evidence"[^>]* open>', first
     )
-    assert re.search(r'<details class="tree-branch" data-state="frontier"[^>]*>', first)
+    assert re.search(
+        r'<details class="tree-branch"[^>]*data-state="frontier"[^>]*>', first
+    )
     assert not re.search(
-        r'<details class="tree-branch" data-state="frontier"[^>]* open>', first
+        r'<details class="tree-branch"[^>]*data-state="frontier"[^>]* open>', first
     )
     assert "Current focus" in first
     assert "Expand all" in first

@@ -87,8 +87,9 @@ A `WORK-*` is a parent-plan allocation. Product plans normally allocate feature 
 feature plans normally allocate slice children. Each child follows its own Spec/Design/Plan
 chain. Use `docs/work-decomposition.md`.
 
-Plans assign every `WORK-*` or `PR-*` exactly once to an ordered `WAVE-*`. A wave is a
-small set of work that can proceed before the next feedback and integration check. Use
+Implementation plans assign every `PR-*` exactly once to an ordered `WAVE-*`. Breakdown
+plans allocate `WORK-*` children and dependencies without waves. A wave is a small set of
+work that can proceed before the next feedback and integration check. Use
 `docs/feedback-and-learning.md`. A checkpoint that matches the current plan closes one
 wave only; it does not approve the whole plan or authorize the next wave.
 

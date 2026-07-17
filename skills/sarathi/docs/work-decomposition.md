@@ -45,18 +45,9 @@ Every `WORK-*` item in a Breakdown plan must state:
   Implementation plan as applicable.
 - **Dependencies**, **readiness target**, **risks**, and **done signal**.
 
-For work that can advance in parallel, also record the learning controls from
-[feedback-and-learning.md](feedback-and-learning.md):
-
-- learning target and feedback target;
-- execution, learning, and integration dependencies as applicable;
-- what result would change or stop sibling work (`Invalidation Question`);
-- `WAVE-AREA-NAME` membership, WIP limit, integration/feedback checkpoint, and stop/replan
-  trigger, with the ordered sequence declared in the plan's `Learning Waves` section.
-
-These rules distinguish useful agent parallelism from an untested batch. Plan review
-must reject a wave when feedback from one active slice could materially invalidate another
-and the plan has no containment or cancellation strategy.
+Breakdown plans record execution, learning, and integration dependencies for their
+`WORK-*` children. The child Implementation plan owns its executable PR waves and their
+learning controls. This keeps allocation hierarchy separate from execution scheduling.
 
 The identifier itself must use exactly `WORK-AREA-NAME`. Malformed one-token,
 extra-token, lowercase, or numeric-placeholder forms fail plan verification. Status views

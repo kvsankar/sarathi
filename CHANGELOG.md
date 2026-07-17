@@ -10,6 +10,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Added
 
+- Add a delivery-progress status summary and feature, slice, wave, and text filters that
+  retain enough hierarchy to navigate from product progress to the detailed allocation tree.
+
 - Add Lean, Standard, and High-assurance delivery profiles with context-triggered assurance
   modules while preserving one feedback-driven lifecycle.
 - Add a hard simplicity policy: process/product architecture separation, brownfield oracle
@@ -61,6 +64,12 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   overflow at mobile and desktop viewports.
 
 ### Changed
+
+- Limit learning waves to executable `PR-*` work in Implementation plans. Breakdown plans
+  now allocate `WORK-*` children and dependencies without waves; plan and status checks
+  enforce that separation.
+- Show feature-owned and product-owned slices separately in workflow status, including
+  nested allocation paths and external artifact links where configured.
 
 - Rewrite the routing skill, stage prompts, core process docs, static guide, and workflow
   status copy in plain language while preserving checker fields, approval boundaries,

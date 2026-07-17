@@ -344,8 +344,9 @@ touch ownership are explicit, WIP is capped, and ownership for combining work pl
 stop/replan rules are planned. Speculative later work stays exceptional and reversible. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
 
-Plans assign every `WORK-*` or `PR-*` to an ordered `WAVE-*`. The live status page shows
-that delivery sequence beside the work tree. `.sdlc/wip.md` identifies the active
+Implementation plans assign every `PR-*` to an ordered `WAVE-*`; Breakdown plans allocate
+`WORK-*` children without waves. The live status page shows that delivery sequence beside
+the work tree. `.sdlc/wip.md` identifies the active
 wave; a `.sdlc/wave-checkpoints.yaml` record matching the current plan closes a wave without pretending
 the enclosing plan is fully assessed or the next wave is automatically approved.
 

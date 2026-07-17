@@ -52,11 +52,12 @@ For Implementation plans:
 - prefer one cohesive PR over artificial scaffold, routing, generated-output, or parity
   PRs; judge reviewability by purpose, touch scope, tests, rollback, and mental model.
 
-Assign every delivery item exactly once to an ordered `WAVE-*`. Prefer one-item waves when
-feedback can change later work. Running items together requires clear execution, learning,
-and integration dependencies, a WIP cap, a named owner for combining the work, a
-checkpoint, and conditions for stopping or replanning. Later waves stay tentative and less
-detailed.
+For Implementation plans, assign every `PR-*` exactly once to an ordered `WAVE-*`.
+Breakdown plans allocate `WORK-*` children and dependencies but do not declare waves.
+Prefer one-item waves when feedback can change later work. Running PRs together requires
+clear execution, learning, and integration dependencies, a WIP cap, a named owner for
+combining the work, a checkpoint, and conditions for stopping or replanning. Later waves
+stay tentative and less detailed.
 
 For a bounded slice, default to at most three implementation PRs. Prefer one cohesive PR to
 setup/scaffold/routing/generated-output/parity splits. More than three requires a

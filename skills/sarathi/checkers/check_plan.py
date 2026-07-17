@@ -476,6 +476,25 @@ def main() -> int:
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
 
+    plan_type_match = re.search(r"(?mi)^Plan Type:\s*(.+?)\s*$", text)
+    implementation_plan = bool(
+        plan_type_match
+        and plan_type_match.group(1).strip().casefold() == "implementation"
+    )
+    wave_declaration_valid = bool(
+        wave_result["declared"] and wave_result["waves"]
+    ) and not (
+        wave_result["malformed_ids"]
+        or wave_result["duplicates"]
+        or wave_result["missing_fields"]
+        or wave_result["invalid_orders"]
+        or wave_result["invalid_wip_limits"]
+        or wave_result["duplicate_orders"]
+        or wave_result["invalid_members"]
+        or wave_result["invalid_member_kinds"]
+        or wave_result["duplicate_members"]
+        or wave_result["empty_members"]
+    )
     gates = {
         "has_delivery_items": bool(work_blocks or pr_blocks),
         "id_format_slug_only": not bad,
@@ -490,23 +509,19 @@ def main() -> int:
         "test_obligation_coverage_100": test_c == design_tests,
         "external_double_mitigation_present": external_double_mitigation_present,
         "work_allocations_well_formed": not incomplete_work_allocations,
-        "learning_waves_well_formed": bool(
-            wave_result["declared"] and wave_result["waves"]
-        )
-        and not (
-            wave_result["malformed_ids"]
-            or wave_result["duplicates"]
-            or wave_result["missing_fields"]
-            or wave_result["invalid_orders"]
-            or wave_result["invalid_wip_limits"]
-            or wave_result["duplicate_orders"]
-            or wave_result["invalid_members"]
-            or wave_result["invalid_member_kinds"]
-            or wave_result["duplicate_members"]
-            or wave_result["empty_members"]
+        "learning_waves_well_formed": (
+            wave_declaration_valid
+            if implementation_plan
+            else not wave_result["declared"]
         ),
-        "learning_wave_members_complete": not (
-            unknown_wave_members or unassigned_wave_members or duplicate_wave_members
+        "learning_wave_members_complete": (
+            not (
+                unknown_wave_members
+                or unassigned_wave_members
+                or duplicate_wave_members
+            )
+            if implementation_plan
+            else not wave_result["declared"]
         ),
         "bounded_slice_pr_budget": not pr_budget_exceeded or bool(complexity_exception),
         "complexity_budget_complete": bool(
@@ -534,6 +549,7 @@ def main() -> int:
         "plan_kind": (
             "breakdown" if work_blocks and not pr_blocks else "implementation"
         ),
+        "implementation_plan": implementation_plan,
         "work_items": sorted(work_blocks),
         "incomplete_work_allocations": incomplete_work_allocations,
         "learning_waves": wave_result["waves"],

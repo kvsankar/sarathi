@@ -99,7 +99,7 @@ Plans declare `Plan Type: Breakdown | Implementation` and use this checker-visib
 3. **Milestones**: `MILE-AREA-NAME` outcome groups.
 4. **Pull Requests / Child Work Items**.
 5. **Coverage Map**: parent/local intent and `TEST-*` obligations assigned completely.
-6. **Learning Waves**: exact ordered wave declarations.
+6. **Learning Waves**: exact ordered wave declarations for Implementation plans only.
 7. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
    ownership for combining parallel work, and stop/replan conditions.
 
@@ -143,7 +143,7 @@ needs validator/dry-run/build/smoke evidence; characterization captures existing
 only and cannot cover the subsequent intentional change. The checker validates the fields
 and category; independent review judges whether the exception and evidence are sound.
 
-Every delivery item appears exactly once in:
+Every Implementation-plan `PR-*` item appears exactly once in:
 
 ```markdown
 ## Learning Waves
@@ -159,9 +159,9 @@ Stop/Replan Triggers: ...
 
 The declaration must be real Markdown structure; a fenced example does not satisfy it.
 
-Breakdown waves contain `WORK-*`; Implementation waves contain `PR-*`. Later waves stay at
-the least detail justified by current evidence. Prefer one-item waves when learning from one
-slice can change the next.
+Breakdown plans do not declare waves. Later Implementation-plan waves stay at the least
+detail justified by current evidence. Prefer one-item waves when learning from one PR can
+change the next.
 
 Write `plan.md` plus deterministic `plan.html` with readable dependency/wave views and
 touch-set/coverage tables. Markdown remains the source of truth.

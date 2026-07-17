@@ -81,10 +81,11 @@ children. Integration work may allocate directly to the smallest coherent execut
 scope. Every child follows its own Spec/Design/Plan chain. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
-Plans assign every `WORK-*` or `PR-*` exactly once to an ordered `WAVE-*` declaration.
-Each wave states what it should teach us, how much may run at once, when feedback and
-integration happen, and when to stop or replan. A `.sdlc/wave-checkpoints.yaml` record that
-matches the current plan closes only its wave. See
+Breakdown plans allocate `WORK-*` children and their dependencies; they do not declare
+waves. Implementation plans assign every `PR-*` exactly once to an ordered `WAVE-*`
+declaration. Each wave states what it should teach us, how much may run at once, when
+feedback and integration happen, and when to stop or replan. A
+`.sdlc/wave-checkpoints.yaml` record that matches the current plan closes only its wave. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
 
 ## Non-Negotiable Evidence Rules

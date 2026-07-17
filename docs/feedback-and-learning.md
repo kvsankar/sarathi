@@ -105,11 +105,12 @@ feedback, checking which parent documents need changes, and revising the next wa
 progressively detailed near-term
 plans over elaborating distant slices whose assumptions have not yet been tested.
 
-Plans make that sequence deterministic in an exact `Learning Waves` section. Each
-`WAVE-AREA-NAME` block declares `Order`, `Learning Target`, `Members`, `WIP Limit`,
-`Feedback/Integration Checkpoint`, and `Stop/Replan Triggers`. Breakdown-plan members are
-`WORK-*` allocations; Implementation-plan members are `PR-*` items. Every delivery item
-belongs to exactly one wave, and order is local to its plan.
+Implementation plans make execution order deterministic in an exact `Learning Waves`
+section. Each `WAVE-AREA-NAME` block declares `Order`, `Learning Target`, `Members`,
+`WIP Limit`, `Feedback/Integration Checkpoint`, and `Stop/Replan Triggers`. Members are
+`PR-*` items. Every planned `PR-*` belongs to exactly one wave, and order is local to its
+implementation plan. Breakdown plans allocate `WORK-*` children and record dependencies,
+but do not declare waves.
 
 The current wave and active members live in `.sdlc/wip.md`. A completed checkpoint lives in
 `.sdlc/wave-checkpoints.yaml` and binds the wave ID and exact members to the current governing

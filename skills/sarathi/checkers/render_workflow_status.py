@@ -87,7 +87,11 @@ def default_guide_source() -> Path | None:
 
 
 def relative_path(path: Path, root: Path) -> str:
-    return path.resolve().relative_to(root.resolve()).as_posix()
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return os.path.relpath(resolved, root.resolve()).replace(os.sep, "/")
 
 
 def included(path: Path, root: Path) -> bool:
@@ -144,6 +148,44 @@ def resolve_ledger_path(root: Path, raw_path: str) -> Path | None:
         if candidate.is_file():
             return candidate
     return None
+
+
+def artifact_path_mapping(
+    root: Path,
+) -> tuple[dict[str, Path], dict[str, dict[str, Path]], str | None]:
+    """Load optional repository-owned canonical and child artifact paths."""
+    path = root / ".sdlc" / "artifact-paths.yaml"
+    if not path.is_file():
+        return {}, {}, None
+    try:
+        loaded = load_yaml_file(path)
+    except (OSError, ValueError) as exc:
+        return {}, {}, str(exc)
+    if not isinstance(loaded, dict):
+        return {}, {}, "artifact paths must be a mapping"
+
+    def resolve_group(raw: Any) -> dict[str, Path]:
+        if not isinstance(raw, dict):
+            return {}
+        return {
+            kind: resolved
+            for kind in ("spec", "design", "plan")
+            if isinstance(raw.get(kind), str)
+            and (resolved := resolve_ledger_path(root, str(raw[kind]))) is not None
+        }
+
+    canonical = resolve_group(loaded.get("canonical"))
+    children_raw = loaded.get("children")
+    children = (
+        {
+            str(identifier): resolve_group(value)
+            for identifier, value in children_raw.items()
+            if isinstance(identifier, str) and resolve_group(value)
+        }
+        if isinstance(children_raw, dict)
+        else {}
+    )
+    return canonical, children, None
 
 
 def load_approval_records(root: Path) -> tuple[list[dict[str, Any]], str | None]:
@@ -586,7 +628,7 @@ def traceability_counts(root: Path) -> tuple[dict[str, int], str | None]:
 def plan_prs(plan_text: str, traces: dict[str, int]) -> list[dict[str, Any]]:
     identifiers = []
     for line in plan_text.splitlines():
-        match = re.match(r"^\s*[-*+]\s+(\S+)", line)
+        match = re.match(r"^\s*(?:[-*+]\s+|#{1,6}\s+)(\S+)", line)
         if match and is_plan_id(match.group(1), "PR"):
             identifiers.append(match.group(1))
     return [
@@ -628,7 +670,7 @@ def wave_member_state(
             return {
                 "id": identifier,
                 "state": "evidence",
-                "detail": "Tests linked",
+                "detail": "Evidence mapped",
             }
         return {"id": identifier, "state": "not-started", "detail": "Not started"}
     if identifier in pr_by_id:
@@ -687,7 +729,18 @@ def build_learning_wave_model(
 
     for plan_path, plan_label in unique_sources:
         plan_relative = relative_path(plan_path, root)
-        parsed = parse_learning_waves(read_text(plan_path), plan_relative)
+        plan_text = read_text(plan_path)
+        parsed = parse_learning_waves(plan_text, plan_relative)
+        plan_type = metadata(plan_text).get("Plan Type", "").casefold()
+        if plan_type != "implementation":
+            if parsed["declared"]:
+                issues.append(
+                    {
+                        "plan_path": plan_relative,
+                        "message": "Breakdown plans must not declare Learning Waves",
+                    }
+                )
+            continue
         if not parsed["declared"]:
             continue
         issue_values = {
@@ -836,8 +889,10 @@ def build_model(root: Path) -> dict[str, Any]:
     records, approval_error = load_approval_records(root)
     assessment_records, assessment_error = load_code_assessment_records(root)
     checkpoint_records, checkpoint_error = load_wave_checkpoint_records(root)
+    mapped_paths, mapped_children, artifact_path_error = artifact_path_mapping(root)
     paths = {
-        kind: canonical_artifact(root, kind) for kind in ("spec", "design", "plan")
+        kind: mapped_paths.get(kind) or canonical_artifact(root, kind)
+        for kind in ("spec", "design", "plan")
     }
     stages = {
         kind: artifact_model(root, kind, paths[kind], records)
@@ -855,6 +910,8 @@ def build_model(root: Path) -> dict[str, Any]:
                 stage_metadata.get("Assurance Modules") or ""
             ).strip()
     linked_artifacts = child_artifacts(root, paths)
+    for identifier, mapped in mapped_children.items():
+        linked_artifacts.setdefault(identifier, {}).update(mapped)
     traces, traceability_error = traceability_counts(root)
     parent_text = read_text(paths["plan"]) if paths["plan"] else ""
     root_prs = plan_prs(parent_text, traces)
@@ -926,6 +983,86 @@ def build_model(root: Path) -> dict[str, Any]:
             }
         )
         item["child_level"] = child_level(item, item["child_plan"])
+    for item in items:
+        child_plan = item.get("child_plan") or {}
+        child_plan_path = child_plan.get("path")
+        plan_type = str(
+            child_plan.get("metadata", {}).get("Plan Type") or ""
+        ).casefold()
+        if not child_plan_path or plan_type != "breakdown":
+            item["children"] = []
+            continue
+        child_items, child_malformed = work_items(read_text(root / child_plan_path))
+        malformed_allocations.extend(child_malformed)
+        for child in child_items:
+            child["parent_level"] = item["child_level"]
+            linked = linked_artifacts.get(child["id"], {})
+            spec_path = linked.get("spec")
+            design_path = linked.get("design")
+            leaf_plan_path = linked.get("plan")
+            child["child_spec"] = (
+                artifact_model(root, "spec", spec_path, records) if spec_path else None
+            )
+            child["child_design"] = (
+                artifact_model(root, "design", design_path, records)
+                if design_path
+                else None
+            )
+            if leaf_plan_path is None:
+                child.update(
+                    {
+                        "state": "started"
+                        if child["child_spec"] or child["child_design"]
+                        else "frontier",
+                        "child_plan": None,
+                        "child_level": child_level(child, None),
+                        "prs": [],
+                        "evidence_count": 0,
+                        "wip_claim": None,
+                        "code_slice_approval": None,
+                        "code_assessment": None,
+                        "children": [],
+                    }
+                )
+                continue
+            leaf_text = read_text(leaf_plan_path)
+            leaf_relative = relative_path(leaf_plan_path, root)
+            prs = plan_prs(leaf_text, traces)
+            evidence_count = sum(pr["evidence_count"] for pr in prs)
+            code_slice_approval = approval_for(
+                root, leaf_plan_path, "code_slice.approved", records
+            )
+            assessment = code_assessment_for(
+                root, child["id"], leaf_plan_path, assessment_records
+            )
+            child.update(
+                {
+                    "state": "completed"
+                    if code_slice_approval["state"] == "approved"
+                    else "assessed"
+                    if assessment
+                    else "evidence"
+                    if evidence_count
+                    else "expanded",
+                    "child_plan": artifact_model(root, "plan", leaf_plan_path, records),
+                    "child_level": child_level(
+                        child, artifact_model(root, "plan", leaf_plan_path, records)
+                    ),
+                    "prs": prs,
+                    "evidence_count": evidence_count,
+                    "wip_claim": wip_claim_for(wip, leaf_relative),
+                    "code_slice_approval": code_slice_approval
+                    if code_slice_approval["state"] == "approved"
+                    else None,
+                    "code_assessment": assessment,
+                    "children": [],
+                }
+            )
+        item["children"] = child_items
+        if child_items and all(
+            child["state"] in {"assessed", "completed"} for child in child_items
+        ):
+            item["state"] = "completed"
     learning_waves = build_learning_wave_model(
         root, paths["plan"], root_prs, items, checkpoint_records, wip
     )
@@ -952,6 +1089,7 @@ def build_model(root: Path) -> dict[str, Any]:
     )
     model: dict[str, Any] = {
         "project": project_title(root, stages["spec"]),
+        "artifact_path_error": artifact_path_error,
         "stages": stages,
         "wip": wip,
         "delivery": {
@@ -1009,10 +1147,10 @@ def state_label(state: str) -> str:
         "unapproved": "Present",
         "stale": "Approval stale",
         "missing": "Not yet done",
-        "frontier": "Not yet broken down",
-        "expanded": "Child plan found",
-        "started": "Documents started",
-        "evidence": "Tests linked",
+        "frontier": "Not yet decomposed",
+        "expanded": "Plan expanded",
+        "started": "Artifacts started",
+        "evidence": "Evidence mapped",
         "planned": "PRs planned",
         "assessed": "Assessed",
         "completed": "Completed",
@@ -1056,7 +1194,7 @@ def feedback_badge(status: str | None) -> str:
 def artifact_link(root: Path, output: Path, stage: dict[str, Any]) -> str:
     href = href_for(root, output, stage.get("path"))
     if href is None:
-        return '<span class="empty">No document found</span>'
+        return '<span class="empty">No artifact discovered</span>'
     return f'<a href="{href}">{esc(stage["path"])}</a>'
 
 
@@ -1135,8 +1273,8 @@ def render_assessment_learning(item: dict[str, Any]) -> str:
             ("Feedback target", "feedback_target"),
             ("Feedback status", "feedback_status"),
             ("Feedback evidence", "feedback_evidence"),
-            ("What feedback changed", "invalidation_result"),
-            ("Parent documents", "ancestor_impact"),
+            ("Invalidation result", "invalidation_result"),
+            ("Ancestor impact", "ancestor_impact"),
             ("Stop or replan", "stop_or_replan"),
         )
     )
@@ -1148,6 +1286,23 @@ def render_assessment_learning(item: dict[str, Any]) -> str:
 
 
 def render_code_node(item: dict[str, Any]) -> str:
+    children = item.get("children") or []
+    if children:
+        completed = sum(
+            child.get("state") in {"assessed", "completed"} for child in children
+        )
+        state = "completed" if completed == len(children) else "started"
+        level = item.get("child_level")
+        level_class = level if level in {"product", "feature", "slice"} else "unknown"
+        return f"""
+<div class="node artifact-code">
+  <div class="node-meta">
+    <div class="identity-tags"><span class="level level-{esc(level_class)}">{esc(display_level(level))}</span><span class="kind">Child delivery</span></div>
+    {badge(state)}
+  </div>
+  <strong>Delivered by child slices</strong>
+  <div class="node-detail">{completed} / {len(children)} child slice{"s" if len(children) != 1 else ""} complete</div>
+</div>"""
     prs = item["prs"]
     evidence_count = item["evidence_count"]
     state = item.get("state")
@@ -1268,13 +1423,10 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
                             checkpoint_learning.get("feedback_evidence"),
                         ),
                         (
-                            "What feedback changed",
+                            "Invalidation result",
                             checkpoint_learning.get("invalidation_result"),
                         ),
-                        (
-                            "Parent documents",
-                            checkpoint_learning.get("ancestor_impact"),
-                        ),
+                        ("Ancestor impact", checkpoint_learning.get("ancestor_impact")),
                     )
                 )
                 assessment_note = (
@@ -1334,8 +1486,16 @@ def render_tree_branch(
     output: Path,
     item: dict[str, Any],
     focus_id: str | None = None,
+    owner_id: str = "product",
+    owner_name: str = "Product",
 ) -> str:
     child = item.get("child_plan")
+    wave_ids = []
+    if child and child.get("path"):
+        wave_ids = re.findall(
+            r"(?mi)^###\s+(WAVE-[A-Z0-9-]+)\s*$",
+            read_text(root / child["path"]),
+        )
     child_level_value = item.get("child_level")
     parent_label = display_level(item.get("parent_level"))
     child_label = display_level(child_level_value)
@@ -1418,6 +1578,17 @@ def render_tree_branch(
         else ""
     )
     assessment_learning_html = render_assessment_learning(item)
+    children = item.get("children") or []
+    children_html = (
+        '<div class="branches nested-branches">'
+        + "".join(
+            render_tree_branch(root, output, child, focus_id, item["id"], item["name"])
+            for child in children
+        )
+        + "</div>"
+        if children
+        else ""
+    )
     is_focus = item["id"] == focus_id
     branch_status = {
         "frontier": "Not started",
@@ -1427,7 +1598,7 @@ def render_tree_branch(
     open_attribute = " open" if is_focus else ""
     focus_label = '<span class="focus-label">Current focus</span>' if is_focus else ""
     return f"""
-<details class="tree-branch" data-state="{esc(item["state"])}" data-search="{esc(searchable)}"{open_attribute}>
+<details class="tree-branch" data-id="{esc(item["id"])}" data-name="{esc(item["name"])}" data-owner-id="{esc(owner_id)}" data-owner-name="{esc(owner_name)}" data-waves="{esc(" ".join(wave_ids))}" data-level="{esc(child_level_value)}" data-state="{esc(item["state"])}" data-search="{esc(searchable)}"{open_attribute}>
   <summary class="branch-summary">
     <span class="branch-title"><code>{esc(item["id"])}</code><strong>{esc(item["name"])}</strong></span>
     <span class="branch-path">{esc(parent_label)} &rarr; {esc(child_label)}</span>
@@ -1436,12 +1607,46 @@ def render_tree_branch(
   </summary>
   <div class="branch-content">
     {render_flow(nodes)}
+    {children_html}
     <details class="branch-details">
       <summary>Scope, allocation, PRs, and evidence</summary>
       <div class="detail-layout"><dl>{details}</dl><div><h3>PR evidence</h3>{render_prs(item["prs"])}{claim_html}{assessment_learning_html}</div></div>
     </details>
   </div>
 </details>"""
+
+
+def delivery_rollup(items: list[dict[str, Any]], level: str) -> dict[str, int]:
+    def flatten(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        flattened: list[dict[str, Any]] = []
+        for node in nodes:
+            flattened.append(node)
+            flattened.extend(flatten(node.get("children") or []))
+        return flattened
+
+    scoped = [item for item in flatten(items) if item.get("child_level") == level]
+    complete = sum(item.get("state") in {"assessed", "completed"} for item in scoped)
+    in_progress = sum(
+        item.get("state") == "started"
+        or str((item.get("wip_claim") or {}).get("status") or "").casefold()
+        in {"active", "in-progress", "in progress"}
+        for item in scoped
+    )
+    planned = sum(
+        item.get("child_plan") is not None
+        and item.get("state") not in {"assessed", "completed"}
+        and item.get("state") != "started"
+        and str((item.get("wip_claim") or {}).get("status") or "").casefold()
+        not in {"active", "in-progress", "in progress"}
+        for item in scoped
+    )
+    return {
+        "total": len(scoped),
+        "complete": complete,
+        "in_progress": in_progress,
+        "planned": planned,
+        "not_planned": len(scoped) - complete - in_progress - planned,
+    }
 
 
 def render_html(
@@ -1500,15 +1705,6 @@ def render_html(
         )
     root_flow = render_flow(root_nodes)
     wip = model["wip"]
-    active_wave_model = next(
-        (
-            wave
-            for sequence in model["learning_waves"]["sequences"]
-            for wave in sequence["waves"]
-            if wave["active"]
-        ),
-        None,
-    )
     explicit_focus = explicit_focus_item(model["work_items"], wip)
     active_items = [item for item in model["work_items"] if item["state"] != "frontier"]
     focus = explicit_focus or next(
@@ -1526,7 +1722,7 @@ def render_html(
             if root_is_implementation
             else """
 <div class="empty-state">
-  <strong>No valid work breakdown found</strong>
+  <strong>No valid decomposition discovered</strong>
   <span>A breakdown plan with valid WORK-AREA-NAME identifiers will expand this view.</span>
 </div>"""
         )
@@ -1538,6 +1734,23 @@ def render_html(
         f"<td><code>{esc(source['sha256'][:16])}</code></td></tr>"
         for source in model["sources"]
     )
+    feature_rollup = delivery_rollup(model["work_items"], "feature")
+    feature_slice_rollup = delivery_rollup(
+        [child for item in model["work_items"] for child in item.get("children") or []],
+        "slice",
+    )
+    product_slice_rollup = delivery_rollup(
+        [item for item in model["work_items"] if item.get("child_level") == "slice"],
+        "slice",
+    )
+    product_stages = " | ".join(
+        f"{label} {'complete' if stages[kind]['state'] == 'approved' else state_label(stages[kind]['state'])}"
+        for kind, label in (
+            ("spec", "Requirements"),
+            ("design", "Design"),
+            ("plan", "Delivery plan"),
+        )
+    )
     current_stage = wip.get("Current Stage", "Not recorded")
     current_gate = wip.get("Current Gate", "Not recorded")
     learning = wip.get("learning", {})
@@ -1545,87 +1758,25 @@ def render_html(
     feedback_status = learning.get("feedback_status")
     active_wave = learning.get("active_wave") or "Not recorded"
     active_slices = learning.get("active_slices") or "Not recorded"
+    learning_action = " ".join(
+        str(learning.get(key) or "")
+        for key in ("invalidation_result", "ancestor_impact", "stop_or_replan")
+    ).casefold()
     summary = model["summary"]
     awaiting_count = summary["work_items"] - summary["expanded_items"]
-    gate_scope = "Document" if root_is_implementation else "Parent"
+    gate_scope = "Artifact" if root_is_implementation else "Parent"
     parent_gate_text = (
         f"{gate_scope} gates approved"
         if summary["approved_stages"] == 3
         else f"{summary['approved_stages']} of 3 {gate_scope.casefold()} gates approved"
     )
-    if focus:
-        focus_name = focus.get("name") or focus["id"]
-        focus_level = display_level(focus.get("child_level"))
-        focus_breadcrumb = (
-            f"Product/system &rarr; Breakdown plan &rarr; {esc(focus['id'])}"
-            f" &rarr; {esc(focus_level)} work"
-        )
-        focus_heading = {
-            "assessed": f"{esc(focus_name)} is assessed",
-            "completed": f"{esc(focus_name)} is completed",
-        }.get(focus["state"], f"{esc(focus_name)} is in progress")
-        focus_detail = (
-            f"{len(focus['prs'])} PR slice"
-            f"{'s' if len(focus['prs']) != 1 else ''} &middot; "
-            f"{focus['evidence_count']} mapped test entr"
-            f"{'ies' if focus['evidence_count'] != 1 else 'y'}"
-        )
-        missing_focus = [
-            label
-            for label, key in (("Spec", "child_spec"), ("Design / LLD", "child_design"))
-            if not focus.get(key)
-        ]
-        attention = (
-            f"Expected child {' and '.join(missing_focus)} not discovered."
-            if missing_focus
-            else "No document gaps found on the current branch."
-        )
-    elif active_wave_model:
-        focus_name = active_wave_model["name"]
-        focus_breadcrumb = (
-            f"{esc(root_level_label)} &rarr; Implementation plan &rarr; "
-            f"{esc(active_wave_model['id'])}"
-        )
-        focus_heading = f"{esc(focus_name)} is in progress"
-        member_count = len(active_wave_model["member_states"])
-        active_count = sum(
-            member["state"] == "in-progress"
-            for member in active_wave_model["member_states"]
-        )
-        focus_detail = (
-            f"{member_count} wave member{'s' if member_count != 1 else ''} &middot; "
-            f"{active_count} active"
-        )
-        attention = "Complete the active wave's feedback/integration checkpoint."
-    else:
-        focus_name = "No active allocation"
-        focus_breadcrumb = "Product/system &rarr; Breakdown plan"
-        focus_heading = "Work is ready to be broken down"
-        focus_detail = "No allocation has started"
-        attention = "Choose a WORK item and create its required child documents."
-    learning_action = " ".join(
-        str(learning.get(key) or "")
-        for key in ("invalidation_result", "ancestor_impact", "stop_or_replan")
-    ).casefold()
-    if "revision-required" in learning_action:
-        attention = "A parent document must be revised before affected work continues."
-    elif "feedback-required" in learning_action:
-        attention = "Explicit feedback is required before affected work continues."
-    elif str(feedback_status or "").casefold() == "requested":
-        attention = "Feedback has been requested and remains pending."
-    elif str(feedback_status or "").casefold() == "unavailable":
-        attention = (
-            "The planned feedback source is unavailable; inspect the recorded risk."
-        )
-    elif feedback_status and str(feedback_status).casefold() not in FEEDBACK_STATUSES:
-        attention = "Feedback status is invalid; use the canonical status vocabulary."
     expansion_text = (
         f"{summary['pr_slices']} PR slice{'s' if summary['pr_slices'] != 1 else ''} "
         f"are organized into {summary['learning_waves']} learning wave"
         f"{'s' if summary['learning_waves'] != 1 else ''}."
         if root_is_implementation
         else f"{summary['expanded_items']} of {summary['work_items']} allocations "
-        f"have child plans; {awaiting_count} await breakdown."
+        f"have child plans; {awaiting_count} await decomposition."
     )
     malformed_count = summary["malformed_work_items"]
     if malformed_count:
@@ -1633,27 +1784,6 @@ def render_html(
             f" {malformed_count} malformed allocation"
             f"{'s are' if malformed_count != 1 else ' is'} excluded."
         )
-    terminal_states = {"assessed", "completed"}
-    if (
-        summary["work_items"]
-        and not malformed_count
-        and all(item["state"] == "completed" for item in model["work_items"])
-    ):
-        overall_state, overall_label = "completed", "Completed"
-    elif (
-        summary["work_items"]
-        and not malformed_count
-        and all(item["state"] in terminal_states for item in model["work_items"])
-    ):
-        overall_state, overall_label = "assessed", "Assessed"
-    elif focus:
-        overall_state, overall_label = "started", "In progress"
-    elif summary["work_items"]:
-        overall_state, overall_label = "missing", "Ready for breakdown"
-    elif any(stage["state"] != "missing" for stage in stages.values()):
-        overall_state, overall_label = "started", "In progress"
-    else:
-        overall_state, overall_label = "missing", "Not started"
     if summary["approved_stages"] == 3:
         parent_state = "approved"
     elif any(stage["state"] != "missing" for stage in stages.values()):
@@ -1666,7 +1796,7 @@ def render_html(
         else ""
     )
     traceability_note = (
-        f'<p class="warning">Test-link file could not be parsed: {esc(model["traceability_error"])}</p>'
+        f'<p class="warning">Traceability ledger could not be parsed: {esc(model["traceability_error"])}</p>'
         if model.get("traceability_error")
         else ""
     )
@@ -1683,21 +1813,31 @@ def render_html(
     learning_detail_rows = "".join(
         f"<dt>{esc(label)}</dt><dd>{esc(value)}</dd>"
         for label, value in (
-            ("Review depth", model["delivery"]["profile"]),
-            ("Extra risk checks", model["delivery"]["modules"]),
+            ("Delivery profile", model["delivery"]["profile"]),
+            ("Assurance modules", model["delivery"]["modules"]),
             ("Feedback target", learning.get("feedback_target") or "Not recorded"),
             ("Feedback evidence", learning.get("feedback_evidence") or "Not recorded"),
             ("WIP limit", learning.get("wip_limit") or "Not recorded"),
             (
-                "What feedback changed",
+                "Invalidation result",
                 learning.get("invalidation_result") or "Not recorded",
             ),
-            ("Parent documents", learning.get("ancestor_impact") or "Not recorded"),
+            ("Ancestor impact", learning.get("ancestor_impact") or "Not recorded"),
             (
                 "Stop or replan triggers",
                 learning.get("stop_or_replan") or "Not recorded",
             ),
         )
+    )
+    operational_detail_rows = (
+        f"<dt>Workflow stage</dt><dd>{esc(current_stage)}</dd>"
+        f"<dt>Recorded gate</dt><dd>{esc(current_gate)}</dd>"
+        f"<dt>Parent approvals</dt><dd>{esc(parent_gate_text)}</dd>"
+        f"<dt>Learning target</dt><dd>{esc(learning_target)}</dd>"
+        f"<dt>Feedback</dt><dd>{feedback_badge(feedback_status)}</dd>"
+        f"<dt>Active wave</dt><dd>{esc(active_wave)}</dd>"
+        f"<dt>Active slices</dt><dd>{esc(active_slices)}</dd>"
+        f"{learning_detail_rows}"
     )
     learning_open = (
         " open"
@@ -1765,27 +1905,20 @@ h1 {{ margin: 0.25rem 0 0; font-size: 2.25rem; line-height: 1.15; }}
 main {{ max-width: 92rem; margin: 0 auto; padding: 1.25rem; }}
 h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .executive {{ border: 1px solid var(--line); border-left: 5px solid var(--stale); background: var(--surface); }}
-.executive-head {{ display: flex; align-items: start; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem 0.85rem; }}
+.executive-head {{ padding: 1rem 1.1rem 0.5rem; }}
 .executive-kicker {{ color: var(--stale); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }}
 .executive h2 {{ margin: 0.2rem 0; font-size: 1.35rem; }}
-.focus-path {{ margin: 0; color: var(--muted); font-size: 0.82rem; font-weight: 650; }}
-.executive-summary {{ margin: 0; padding: 0 1.1rem 0.9rem; color: var(--muted); font-size: 0.9rem; }}
-.executive-summary strong {{ color: var(--text); }}
-.executive-facts {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }}
-.executive-fact {{ min-width: 0; padding: 0.75rem 1.1rem; border-right: 1px solid var(--line); }}
-.executive-fact:last-child {{ border-right: 0; }}
-.executive-fact span {{ display: block; color: var(--muted); font-size: 0.68rem; font-weight: 750; text-transform: uppercase; }}
-.executive-fact strong {{ display: block; margin-top: 0.2rem; font-size: 0.82rem; overflow-wrap: anywhere; }}
-.executive-fact-attention strong {{ color: #8a3b12; }}
-.learning-facts {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); background: var(--surface-alt); }}
-.learning-fact {{ min-width: 0; padding: 0.7rem 1.1rem; border-right: 1px solid var(--line); }}
-.learning-fact:last-child {{ border-right: 0; }}
-.learning-fact > span {{ display: block; color: var(--muted); font-size: 0.68rem; font-weight: 750; text-transform: uppercase; }}
-.learning-fact > strong {{ display: block; margin-top: 0.2rem; font-size: 0.82rem; overflow-wrap: anywhere; }}
-.learning-fact .status {{ margin-top: 0.25rem; }}
-.learning-details {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
-.learning-details summary {{ cursor: pointer; color: var(--text); font-weight: 750; }}
-.learning-details dl, .learning-record {{ display: grid; grid-template-columns: 11rem 1fr; gap: 0.35rem 0.75rem; margin: 0.65rem 0; }}
+.delivery-intro {{ margin: 0; padding: 0 1.1rem 0.8rem; color: var(--muted); font-size: 0.86rem; }}
+.delivery-rows {{ border-top: 1px solid var(--line); }}
+.delivery-row {{ display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: 0.3rem 1rem; padding: 0.7rem 1.1rem; border-bottom: 1px solid var(--line); }}
+.delivery-row:last-child {{ border-bottom: 0; }}
+.delivery-scope {{ color: var(--text); font-size: 0.9rem; font-weight: 800; }}
+.delivery-scope a {{ color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }}
+.delivery-states {{ color: var(--text); font-size: 0.84rem; font-weight: 700; overflow-wrap: anywhere; }}
+.delivery-total {{ grid-column: 2; color: var(--muted); font-size: 0.78rem; }}
+.operational-details {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
+.operational-details summary {{ cursor: pointer; color: var(--text); font-weight: 750; }}
+.operational-details dl, .learning-record {{ display: grid; grid-template-columns: 11rem 1fr; gap: 0.35rem 0.75rem; margin: 0.65rem 0; }}
 .learning-details dt, .learning-record dt {{ color: var(--muted); font-weight: 700; }}
 .learning-details dd, .learning-record dd {{ margin: 0; overflow-wrap: anywhere; }}
 .read-note {{ border-top: 1px solid var(--line); padding: 0.5rem 1.1rem; color: var(--muted); font-size: 0.76rem; }}
@@ -1859,6 +1992,12 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .tree-heading h2 {{ margin: 0; }}
 .tree-heading p {{ margin: 0.15rem 0 0; color: var(--muted); font-size: 0.78rem; }}
 .toolbar {{ display: flex; flex: 0 1 42rem; align-items: center; justify-content: end; gap: 0.5rem; }}
+.structured-filters {{ display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0 0; }}
+.filter-menu {{ position: relative; }}
+.filter-menu > summary {{ min-height: 2.15rem; border: 1px solid var(--line); background: var(--surface); padding: 0.45rem 0.65rem; color: var(--text); cursor: pointer; font-size: 0.78rem; font-weight: 700; list-style: none; }}
+.filter-menu > summary::-webkit-details-marker {{ display: none; }}
+.filter-options {{ position: absolute; z-index: 2; display: grid; gap: 0.35rem; min-width: 18rem; max-height: 16rem; overflow: auto; margin-top: 0.2rem; padding: 0.65rem; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 0.35rem 1rem rgb(23 33 43 / 18%); }}
+.filter-options label {{ display: flex; gap: 0.45rem; align-items: start; font-size: 0.78rem; }}
 .search {{ flex: 1 1 18rem; min-width: 0; }}
 .search input {{ width: 100%; min-height: 2.3rem; border: 1px solid var(--line); background: var(--surface); color: var(--text); padding: 0.45rem 0.65rem; font: inherit; font-size: 0.82rem; }}
 .tree-action {{ min-height: 2.3rem; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); color: var(--text); padding: 0.4rem 0.65rem; font: inherit; font-size: 0.75rem; font-weight: 700; cursor: pointer; white-space: nowrap; }}
@@ -1907,6 +2046,8 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .empty-state {{ padding: 2rem; border: 1px solid var(--line); background: var(--surface); text-align: center; }}
 .empty-state span {{ display: block; color: var(--muted); margin-top: 0.35rem; }}
 .provenance {{ margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }}
+.technical-details {{ margin-top: 1.5rem; border: 1px solid var(--line); background: var(--surface); }}
+.technical-details .operational-details, .technical-details .read-note {{ border-top: 0; }}
 .provenance summary {{ cursor: pointer; font-weight: 700; }}
 table {{ width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.78rem; }}
 th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; overflow-wrap: anywhere; }}
@@ -1916,14 +2057,9 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   .topbar-inner {{ align-items: start; flex-direction: column; }}
   .topbar-meta {{ align-items: start; flex-direction: column-reverse; gap: 0.4rem; }}
   .snapshot {{ text-align: left; }}
-  .executive-head {{ flex-direction: column; }}
-  .executive-facts {{ grid-template-columns: 1fr 1fr; }}
-  .executive-fact:nth-child(2) {{ border-right: 0; }}
-  .executive-fact:nth-child(-n+2) {{ border-bottom: 1px solid var(--line); }}
-  .learning-facts {{ grid-template-columns: 1fr 1fr; }}
-  .learning-fact:nth-child(2) {{ border-right: 0; }}
-  .learning-fact:nth-child(-n+2) {{ border-bottom: 1px solid var(--line); }}
-  .learning-details dl, .learning-record {{ grid-template-columns: 1fr; }}
+  .delivery-row {{ grid-template-columns: 1fr; gap: 0.2rem; }}
+  .delivery-total {{ grid-column: auto; }}
+  .operational-details dl, .learning-record {{ grid-template-columns: 1fr; }}
   .tree-heading {{ align-items: stretch; flex-direction: column; }}
   .toolbar {{ flex: 1 1 auto; flex-wrap: wrap; justify-content: start; }}
   .search {{ flex-basis: 100%; }}
@@ -1961,66 +2097,77 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
   </div>
 </header>
 <main>
-  <section class="executive" aria-labelledby="executive-title">
+  <section class="executive" aria-labelledby="delivery-title">
     <div class="executive-head">
       <div>
-        <div class="executive-kicker">Executive summary</div>
-        <h2 id="executive-title">{focus_heading}</h2>
-        <p class="focus-path">{focus_breadcrumb}</p>
+        <div class="executive-kicker">Delivery progress</div>
+        <h2 id="delivery-title">Product delivery plan</h2>
       </div>
-      {badge(overall_state, overall_label)}
     </div>
-    <p class="executive-summary"><strong>{esc(parent_gate_text)}.</strong> {esc(expansion_text)}</p>
-    <div class="executive-facts">
-      <div class="executive-fact"><span>Current stage</span><strong>{esc(current_stage)}</strong></div>
-      <div class="executive-fact"><span>Next gate</span><strong>{esc(current_gate)}</strong></div>
-      <div class="executive-fact"><span>Implementation evidence</span><strong>{focus_detail}</strong></div>
-      <div class="executive-fact executive-fact-attention"><span>Needs attention</span><strong>{esc(attention)}</strong></div>
+    <p class="delivery-intro">Select a scope to open its detailed tree below, or view the <a href="#waves-title">learning waves</a>.</p>
+    <div class="delivery-rows">
+      <div class="delivery-row">
+        <div class="delivery-scope"><a href="#product-workflow" data-level-filter="">Product</a></div>
+        <div class="delivery-states">{esc(product_stages)}</div>
+        <div class="delivery-total">{summary["work_items"]} delivery areas identified</div>
+      </div>
+      <div class="delivery-row">
+        <div class="delivery-scope"><a href="#work-items" data-level-filter="feature">Features</a></div>
+        <div class="delivery-states">{feature_rollup["complete"]} / {feature_rollup["total"]} complete | {feature_rollup["in_progress"]} in progress | {feature_rollup["planned"]} planned next | {feature_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-total">Feature work is planned through child requirements, design, and delivery artifacts.</div>
+      </div>
+      <div class="delivery-row">
+        <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Feature slices</a></div>
+        <div class="delivery-states">{feature_slice_rollup["complete"]} / {feature_slice_rollup["total"]} complete | {feature_slice_rollup["in_progress"]} in progress | {feature_slice_rollup["planned"]} planned next | {feature_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-total">Feature-owned slices are shown with their feature prefix.</div>
+      </div>
+      <div class="delivery-row">
+        <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Product-owned slices</a></div>
+        <div class="delivery-states">{product_slice_rollup["complete"]} / {product_slice_rollup["total"]} complete | {product_slice_rollup["in_progress"]} in progress | {product_slice_rollup["planned"]} planned next | {product_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-total">Product-owned slices cover cross-feature integration and release work.</div>
+      </div>
     </div>
-    <div class="learning-facts" aria-label="Current learning loop">
-      <div class="learning-fact"><span>Learning target</span><strong>{esc(learning_target)}</strong></div>
-      <div class="learning-fact"><span>Feedback</span>{feedback_badge(feedback_status)}</div>
-      <div class="learning-fact"><span>Active wave</span><strong>{esc(active_wave)}</strong></div>
-      <div class="learning-fact"><span>Active slices</span><strong>{esc(active_slices)}</strong></div>
-    </div>
-    <details class="learning-details"{learning_open}>
-      <summary>Learning and next decisions</summary>
-      <dl>{learning_detail_rows}</dl>
-    </details>
-    <details class="read-note">
-      <summary>How to read this status</summary>
-      <p>Green checks mean an approval matches the current file, a code assessment passed, a code slice was approved, or a wave checkpoint exactly matches the current plan. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields come only from WIP, assessment, or checkpoint records; this page never guesses them from Git, approvals, or passing tests.</p>
-      {approval_note}
-      {traceability_note}
-      {assessment_note}
-      {wave_checkpoint_note}
-    </details>
   </section>
   {malformed_warning}
   <div class="tree-heading">
-    <div><h2>Work tree</h2><p>Open a work item to inspect its document path.</p></div>
+    <div><h2>Workflow tree</h2><p id="tree-description">Open an allocation to inspect its artifact path.</p></div>
     <div class="toolbar">
       <label class="search"><input id="search" type="search" placeholder="Filter allocations" aria-label="Filter allocations"></label>
       <button class="tree-action" id="expand-all" type="button">Expand all</button>
       <button class="tree-action" id="collapse-all" type="button">Collapse all</button>
     </div>
   </div>
+  <div id="structured-filters" class="structured-filters" aria-label="Workflow filters"></div>
   <details class="legend">
     <summary>Legend</summary>
     <div class="encoding" aria-label="Tree encoding">
-      <div class="encoding-row"><span class="encoding-label">Background = document type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
+      <div class="encoding-row"><span class="encoding-label">Background = artifact type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
       <div class="encoding-row"><span class="encoding-label">Level tag = work scope</span><span class="level level-product">Product</span><span class="level level-feature">Feature</span><span class="level level-slice">Slice</span></div>
       <div class="encoding-row"><span class="encoding-label">Status = observed state</span>{badge("approved")}{badge("started", "In progress")}{badge("missing", "Not started")}</div>
     </div>
   </details>
-  <section class="tree-panel" aria-label="Workflow expansion tree">
+  <section id="product-workflow" class="tree-panel" aria-label="Workflow expansion tree">
     <div class="product-heading"><strong>{esc(root_level_label)} workflow</strong>{badge(parent_state, parent_gate_text)}</div>
     {root_flow}
     {branches_html}
   </section>
   {waves_html}
+  <section class="technical-details" aria-label="Workflow details">
+    <details class="operational-details"{learning_open}>
+      <summary>Workflow and learning details</summary>
+      <dl>{operational_detail_rows}</dl>
+    </details>
+    <details class="read-note">
+      <summary>How to read this status</summary>
+      <p>Green checks mean hash-current approval, passing code assessment, approved code-slice handoff, or an exact hash-current wave checkpoint. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields are explicit WIP, assessment, or checkpoint claims; the renderer never infers them from Git, approvals, or passing tests.</p>
+      {approval_note}
+      {traceability_note}
+      {assessment_note}
+      {wave_checkpoint_note}
+    </details>
+  </section>
   <details class="provenance">
-    <summary>Files used for this page</summary>
+    <summary>Snapshot provenance</summary>
     <table><thead><tr><th>Source</th><th>SHA-256 prefix</th></tr></thead><tbody>{source_rows}</tbody></table>
   </details>
 </main>
@@ -2029,15 +2176,71 @@ th, td {{ padding: 0.45rem; border: 1px solid var(--line); text-align: left; ove
 (() => {{
   const query = document.querySelector('#search');
   const rows = [...document.querySelectorAll('.tree-branch')];
+  const scopeLinks = [...document.querySelectorAll('[data-level-filter]')];
+  const treeDescription = document.querySelector('#tree-description');
+  const filterHost = document.querySelector('#structured-filters');
+  const selected = {{ feature: new Set(), slice: new Set(), wave: new Set() }};
+  let activeLevel = '';
+  const unique = values => [...new Map(values.map(value => [value.id, value])).values()];
+  const addMenu = (title, key, options) => {{
+    const menu = document.createElement('details');
+    menu.className = 'filter-menu';
+    const summary = document.createElement('summary');
+    const updateSummary = () => {{ summary.textContent = `${{title}}: ${{selected[key].size || 'all'}}`; }};
+    updateSummary();
+    menu.append(summary);
+    const choices = document.createElement('div');
+    choices.className = 'filter-options';
+    options.forEach(option => {{
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = option.id;
+      input.addEventListener('change', () => {{
+        input.checked ? selected[key].add(option.id) : selected[key].delete(option.id);
+        updateSummary();
+        apply();
+      }});
+      label.append(input, document.createTextNode(option.label));
+      choices.append(label);
+    }});
+    menu.append(choices);
+    filterHost.append(menu);
+  }};
+  addMenu('Features', 'feature', unique(rows.filter(row => row.dataset.level === 'feature').map(row => ({{ id: row.dataset.id, label: row.dataset.name }}))));
+  addMenu('Slices', 'slice', unique(rows.filter(row => row.dataset.level === 'slice').map(row => ({{ id: row.dataset.id, label: `${{row.dataset.ownerName}} / ${{row.dataset.name}}` }}))));
+  addMenu('Waves', 'wave', unique(rows.flatMap(row => row.dataset.waves.split(' ').filter(Boolean).map(id => ({{ id, label: id }})))));
   const apply = () => {{
     const wanted = query.value.trim().toLocaleLowerCase();
-    rows.forEach(row => {{
-      const matches = row.dataset.search.includes(wanted);
-      row.hidden = !matches;
-      if (wanted && matches) row.open = true;
+    const directMatches = new Set(rows.filter(row => {{
+      const textMatch = row.dataset.search.includes(wanted);
+      const levelMatch = !activeLevel || row.dataset.level === activeLevel;
+      const featureMatch = !selected.feature.size || (row.dataset.level === 'feature'
+        ? selected.feature.has(row.dataset.id)
+        : row.dataset.level === 'slice' && selected.feature.has(row.dataset.ownerId));
+      const sliceMatch = !selected.slice.size || row.dataset.level !== 'slice' || selected.slice.has(row.dataset.id);
+      const waveMatch = !selected.wave.size || row.dataset.waves.split(' ').some(wave => selected.wave.has(wave));
+      return textMatch && levelMatch && featureMatch && sliceMatch && waveMatch;
+    }}));
+    const visible = new Set(directMatches);
+    directMatches.forEach(row => {{
+      let parent = row.parentElement.closest('.tree-branch');
+      while (parent) {{ visible.add(parent); parent = parent.parentElement.closest('.tree-branch'); }}
     }});
+    rows.forEach(row => {{
+      row.hidden = !visible.has(row);
+      if ((wanted || activeLevel || selected.feature.size || selected.slice.size || selected.wave.size) && visible.has(row)) row.open = true;
+    }});
+    treeDescription.textContent = activeLevel
+      ? `Showing ${{activeLevel}} allocations. Clear the filter by selecting Product above.`
+      : 'Open an allocation to inspect its artifact path.';
   }};
   query.addEventListener('input', apply);
+  scopeLinks.forEach(link => link.addEventListener('click', () => {{
+    activeLevel = link.dataset.levelFilter || '';
+    query.value = '';
+    apply();
+  }}));
   document.querySelector('#expand-all').addEventListener('click', () => rows.forEach(row => {{ row.open = true; }}));
   document.querySelector('#collapse-all').addEventListener('click', () => rows.forEach(row => {{ row.open = false; }}));
 }})();
@@ -2082,7 +2285,10 @@ def main() -> int:
     guide_output = output.with_name(GUIDE_FILENAME)
     try:
         model = build_model(root)
-        rendered = render_html(model, root, output, GUIDE_FILENAME).encode("utf-8")
+        rendered_text = render_html(model, root, output, GUIDE_FILENAME)
+        rendered = (
+            "\n".join(line.rstrip() for line in rendered_text.splitlines()) + "\n"
+        ).encode("utf-8")
         guide_bytes = (
             guide_source.read_text(encoding="utf-8")
             .replace("\r\n", "\n")

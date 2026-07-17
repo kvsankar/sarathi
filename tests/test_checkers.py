@@ -1321,16 +1321,6 @@ Allocate one feature child.
 # Coverage Map
 Authentication maps to WORK-AUTH-FEATURE.
 
-# Learning Waves
-
-## WAVE-AUTH-FEATURE
-Order: 1
-Learning Target: Validate the feature boundary before implementation planning.
-Members: WORK-AUTH-FEATURE
-WIP Limit: 1
-Feedback/Integration Checkpoint: Review the child artifact chain.
-Stop/Replan Triggers: Stop if the feature boundary changes.
-
 # Sequencing & Risks
 The child starts after parent approval.
 """,

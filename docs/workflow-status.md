@@ -22,8 +22,8 @@ an approval record, completion percentage, or substitute for checks and review.
   collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
   backgrounds and Product/Feature/Slice level tags as the static process guide. Missing
   documents remain explicit `Not yet done` nodes.
-- **Ordered learning waves**: each discovered plan contributes its own ordered wave
-  sequence. Completed waves collapse by default, the active wave opens, and member badges
+- **Ordered learning waves**: each discovered Implementation plan contributes its ordered
+  PR-wave sequence. Completed waves collapse by default, the active wave opens, and member badges
   distinguish completed checkpoints, assessed slices, mapped evidence, active work, and
   work not started.
 - **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
@@ -111,8 +111,8 @@ Stop/Replan Triggers: Stop later auth work if the public token contract changes.
 ```
 
 `WAVE-*` uses the same two uppercase slug-token rule as delivery IDs. Wave order is local to
-its plan. Every `WORK-*` in a Breakdown plan or `PR-*` in an Implementation plan
-belongs to exactly one declared wave. Later waves are provisional, not promises.
+an Implementation plan. Every planned `PR-*` belongs to exactly one declared wave. Later
+waves are provisional, not promises. Breakdown plans do not declare waves.
 
 A completed wave is recorded separately from full code assessment or human approval:
 
