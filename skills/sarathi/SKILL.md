@@ -1,12 +1,12 @@
 ---
 name: sarathi
-description: Sarathi is Agent-Steered SDLC for resumable, reviewable, feedback-driven software delivery. Use to create, verify, review, assess, resume, decompose, or visualize artifact-governed product, feature, and slice work.
+description: Sarathi guides resumable, reviewable, feedback-driven software delivery. Use it to create, verify, review, assess, resume, break down, or visualize product, feature, and slice work.
 ---
 
 # Sarathi
 
-Route the request, load one stage contract, and load only references triggered by the
-current scope and risk. Do not preload every stage or assurance concern.
+Choose the right stage, load its instructions, and load only the guidance needed for the
+current scope and risks. Do not preload every stage or every possible concern.
 
 The bundle must contain `prompts/`, `docs/`, and `checkers/`. If a required file is absent,
 look for another installed `sarathi` bundle or canonical repository source; otherwise
@@ -18,35 +18,36 @@ report an incomplete installation instead of inventing policy.
 accepted intent -> smallest useful slice -> evidence -> feedback -> inspect/adapt
 ```
 
-Production work always preserves current accepted intent, code readiness, appropriate
-tests and oracles, honest feedback, ancestor-impact review, human gates, and safety
-constraints.
+Production work always preserves accepted intent, readiness to implement, appropriate
+tests with clear pass/fail checks, honest feedback, review of changes needed in parent
+documents, human approval points, and safety limits.
 
-Select delivery depth using `docs/assurance-profiles.md`:
+Choose the review depth using `docs/assurance-profiles.md`:
 
 - **Lean**: small, reversible, low-risk production change.
 - **Standard**: ordinary default or unclear risk.
-- **High-assurance**: material security, privacy, safety, regulatory, financial,
+- **High-assurance**: failure could cause material security, privacy, safety, regulatory,
   availability, migration, or irreversible-data consequence.
 - **Exploratory**: separate non-production track for timeboxed learning.
 
-Profiles calibrate depth; assurance modules activate focused evidence. High-assurance
-strengthens each learning boundary and must not become big up-front design.
+The profile sets the overall review depth. `Assurance Modules` name extra checks required
+for specific risks. High-assurance strengthens each delivery step; it must not become big
+up-front design.
 
-Apply `docs/simplicity-first.md`: keep process evidence outside product architecture, start
-with the smallest direct implementation, reuse brownfield compatibility suites, generalize
-after a second concrete use case, and stop when conceptual complexity exceeds the user's
-mental model. Bounded slices default to at most three implementation PRs; exceptions need
-concise justification and hash-current `plan.complexity-approved` attestation before plan
-assessment. Do not use LOC targets.
+Apply `docs/simplicity-first.md`: keep process records out of product architecture, start
+with the smallest direct implementation, reuse tests from the existing system, generalize
+only after a second real use case, and stop when the proposed design becomes materially
+more complex than the user's description. A bounded slice defaults to at most three
+implementation PRs. More than three needs a short reason and a current
+`plan.complexity-approved` approval record before plan assessment. Do not use LOC targets.
 
 ## Route The Request
 
 Command verbs are distinct:
 
 - `create`: author or revise.
-- `verify`: deterministic/mechanical evidence only.
-- `review`: qualitative adversarial judgment.
+- `verify`: run repeatable checks and report what they prove and do not prove.
+- `review`: independently judge quality and look for counterexamples.
 - `assess`: verification plus review as the full gate.
 
 Load exactly one matching `prompts/<stage>.prompt.md`:
@@ -57,28 +58,28 @@ Load exactly one matching `prompts/<stage>.prompt.md`:
 | `design-*` | Architecture, interfaces, decisions, executable test obligations, and risks. |
 | `plan-*` | Breakdown or implementation allocation, learning waves, PRs, and evidence plan. |
 | `code-*` | Test-first implementation, verification, review, and slice assessment. |
-| `workflow-status` | Read-only deterministic artifact-tree and learning-wave HTML. |
+| `workflow-status` | Read-only, repeatable work-tree and learning-wave HTML. |
 
 When invoked generally, choose and run only the next appropriate stage.
 
 ## Orient Before Acting
 
-1. Read `.sdlc/wip.md` and `.sdlc/process-decisions.yaml` when present; verify important
-   claims against governing artifacts.
-2. Use `docs/project-entry.md` if Greenfield, Brownfield Baseline, or Brownfield Delta-Only
-   adoption is undecided.
-3. Infer Product/system, Feature/component, or Slice/change scope; ask only when ambiguity
-   materially changes the artifact.
-4. Select Lean, Standard, or High-assurance and triggered modules. Record rationale and
-   escalation triggers. In YOLO mode, default to Standard when Lean is not evidenced.
+1. Read `.sdlc/wip.md` and `.sdlc/process-decisions.yaml` when present. Check important
+   claims against the source documents.
+2. Use `docs/project-entry.md` if it is unclear whether this is a new project, adoption of
+   an existing baseline, or a change to an existing system.
+3. Infer Product/system, Feature/component, or Slice/change scope. Ask only when the answer
+   would materially change the document.
+4. Select Lean, Standard, or High-assurance and any extra risk checks. Record why and what
+   would require stronger review. In YOLO mode, use Standard unless Lean is justified.
 5. Load the selected stage prompt and only its triggered references.
 
 Maintain `.sdlc/wip.md` using `docs/work-in-progress.md`. It is a resume note, not product
 truth or approval evidence.
 
-## Readiness And Decomposition
+## Readiness And Breakdown
 
-Artifacts declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
+Documents declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
 `/code-create` blocks without a code-ready implementation plan for a slice or sufficiently
 small feature.
 
@@ -86,57 +87,60 @@ A `WORK-*` is a parent-plan allocation. Product plans normally allocate feature 
 feature plans normally allocate slice children. Each child follows its own Spec/Design/Plan
 chain. Use `docs/work-decomposition.md`.
 
-Plans assign every `WORK-*` or `PR-*` exactly once to an ordered `WAVE-*`. Use
-`docs/feedback-and-learning.md`. A hash-current wave checkpoint closes one wave only; it
-does not assess the enclosing plan or authorize the next wave.
+Plans assign every `WORK-*` or `PR-*` exactly once to an ordered `WAVE-*`. A wave is a
+small set of work that can proceed before the next feedback and integration check. Use
+`docs/feedback-and-learning.md`. A checkpoint that matches the current plan closes one
+wave only; it does not approve the whole plan or authorize the next wave.
 
 ## Human Gate
 
-After creating or materially revising a spec, design, ADR, plan, code slice, assessment, or
-review report:
+After creating or materially revising a spec, design, ADR, plan, code slice, assessment,
+or review report:
 
 1. Update `.sdlc/wip.md`.
 2. Report path, readiness/status, evidence, blockers/questions, and recommended next stage.
-3. End the turn before starting the downstream stage.
+3. End the turn before starting the next stage.
 
 Continue across stages only when the latest user request explicitly asks for end-to-end or
 unattended execution. YOLO permits assumptions but does not bypass readiness, planned touch
-sets, upstream blockers, evidence, safety, approval, or human-review stops.
+sets, blockers in earlier documents, evidence, safety, approval, or human-review stops.
 
 ## Evidence Invariants
 
 - Specs own `AT-*` and `JT-*` black-box intent.
 - Designs own executable `TEST-*` obligations and test architecture.
-- Plans allocate ancestor and local obligations to child work or PRs.
-- Code implements assigned tests and records traceability claims.
-- Structural checks and traceability do not prove semantics, true TDD history, stakeholder
+- Plans assign tests from parent and local documents to child work or PRs.
+- Code implements assigned tests and records links from intent to executable tests.
+- Format checks and requirement-to-test links do not prove correct meaning, true TDD
+  history, stakeholder
   feedback, real-boundary execution, merge state, or human approval.
-- A primary external seam cannot rely only on a self-authored double without explicit
-  residual-risk acceptance.
+- A primary external boundary cannot rely only on a self-authored test double unless the
+  user explicitly accepts the remaining risk.
 - Live production deployment or production checks require explicit user approval.
 - Run cleanup and simplify passes before handoff; do not use them for unrelated churn or
   hidden behavior changes.
 
 ## Verification Independence
 
-When sub-agents are available, use a fresh Mechanical Verifier for checker evidence and a
-fresh Qualitative Reviewer for adversarial judgment. Assessments require both. Without
-sub-agents, disclose non-independence and keep the passes separate. Stop when an upstream
-artifact is unfit. Use `docs/review-verification-checklist.md`.
+When sub-agents are available, use one fresh agent to run repeatable checks and another to
+independently judge the work and look for counterexamples. Assessments require both. If
+sub-agents are unavailable, say that the review is not independent and keep the two passes
+separate. Stop when an earlier required document is not fit. Use
+`docs/review-verification-checklist.md`.
 
 ## Triggered References
 
 | Reference | Load when |
 | --- | --- |
-| `docs/assurance-profiles.md` | Selecting profile, modules, or escalation. |
-| `docs/simplicity-first.md` | Designing/reviewing abstractions, brownfield compatibility, complexity budgets, or PR decomposition. |
-| `docs/project-entry.md` | Adoption mode or brownfield baseline semantics matter. |
+| `docs/assurance-profiles.md` | Choosing review depth or extra risk checks. |
+| `docs/simplicity-first.md` | Reviewing abstractions, existing-system compatibility, complexity budgets, or PR breakdown. |
+| `docs/project-entry.md` | Starting in a new or existing codebase. |
 | `docs/work-in-progress.md` | Starting, resuming, blocking, or handing off. |
-| `docs/artifact-formatting.md` | Writing or materially revising Markdown artifacts. |
-| `docs/cross-cutting-concerns.md` | Assigning an activated module to artifact owners. |
-| `docs/test-ownership.md` | Ancestor tests or integration span decomposed children. |
-| `docs/work-decomposition.md` | Breakdown plans or child artifact chains are involved. |
-| `docs/feedback-and-learning.md` | Planning/coding waves, feedback, or ancestor impact. |
+| `docs/artifact-formatting.md` | Writing or materially revising Markdown documents. |
+| `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document that owns them. |
+| `docs/test-ownership.md` | Parent tests or integration span several children. |
+| `docs/work-decomposition.md` | Breakdown plans or child document chains are involved. |
+| `docs/feedback-and-learning.md` | Planning/coding waves, feedback, or parent changes. |
 | `docs/approval-gates.md` | Reading or writing approval/auto-policy ledgers. |
 | `docs/cleanup-pass.md` and `docs/simplify-pass.md` | Handoff quality passes apply. |
 | `docs/workflow-status.md` | Rendering or interpreting workflow status. |

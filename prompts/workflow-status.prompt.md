@@ -1,5 +1,5 @@
 ---
-description: Render deterministic HTML artifact-tree and ordered learning-wave views with implementation and feedback evidence.
+description: Render repeatable HTML work-tree and learning-wave views with implementation and feedback evidence.
 agent: agent
 ---
 
@@ -8,8 +8,8 @@ agent: agent
 Render a read-only Sarathi workflow-status page for the target project. Load
 `docs/workflow-status.md`, `docs/work-decomposition.md`, `docs/assurance-profiles.md`, and
 `docs/feedback-and-learning.md`; read `.sdlc/wip.md`, hash-current code-assessment records,
-and hash-current wave checkpoints when present, and verify important claims against
-governing artifacts. This command does not create or revise a spec, design, plan, approval,
+and current wave checkpoints when present, and check important claims against the source
+documents. This command does not create or revise a spec, design, plan, approval,
 implementation, or review report, so it does not advance a human gate.
 
 Locate `render_workflow_status.py` in the target project's `checkers/` directory, this
@@ -30,19 +30,20 @@ Use `--check` when the user asks for freshness verification or CI integration.
 Report:
 
 - generated status and process-guide paths, plus the snapshot fingerprint;
-- the executive current-focus breadcrumb, current stage, next gate, and immediate artifact
+- the executive current-focus breadcrumb, current stage, next gate, and immediate document
   gaps;
 - the explicit current learning target, feedback status/evidence, active learning wave, WIP
-  limit, active slice IDs, invalidation result, ancestor impact, and stop/replan triggers;
-- the selected delivery profile and activated assurance modules, or `Not recorded`;
+  limit, active slice IDs, what feedback changed, changes needed in parent documents, and
+  stop/replan triggers;
+- the selected review depth and extra risk checks, or `Not recorded`;
 - the product trunk and progressively disclosed parent-allocation branches, including
   explicit missing Spec/Design/Plan/Code nodes;
 - each plan's ordered `WAVE-*` sequence, member states, active wave, WIP limit, planned
   feedback/integration checkpoint, and hash-current completed checkpoint evidence;
-- spec/design/plan presence and hash-current attestation states;
+- spec/design/plan presence and whether approvals match the current files;
 - valid and malformed parent-plan `WORK-` allocation counts, expanded child-plan count,
   PR-slice count, PRs with mapped tests, and assessed/completed branch counts;
-- approval, assessment, or wave-checkpoint parse errors; stale attestations/checkpoints;
+- approval, assessment, or wave-checkpoint parse errors; stale approval records or checkpoints;
   malformed wave declarations; missing expected files; or discovery limitations;
 - the evidence limit that mapped tests, WIP claims, and learning records do not prove
   completion, quality, or stakeholder feedback beyond their explicit source. Show `Not

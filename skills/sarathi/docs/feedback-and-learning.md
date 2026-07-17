@@ -1,19 +1,19 @@
 # Feedback And Learning
 
-Sarathi is iterative. Specs, designs, and plans are the **current accepted artifacts**:
-the best accepted understanding available for the next learning step. They are not a
-one-way handoff chain and approval does not freeze them.
+Sarathi is iterative. Specs, designs, and plans record the **current accepted
+understanding**: the best accepted basis for the next learning step. They are not a
+one-way handoff chain, and approval does not freeze them.
 
 ## Approval Meaning
 
-Approval means an artifact is sufficient and safe for the next learning step. It does not
-mean the artifact is final, complete, or presumed correct. Approval should consider
+Approval means a document is sufficient and safe for the next learning step. It does not
+mean the document is final, complete, or presumed correct. Approval should consider
 available feedback from appropriate stakeholders, record feedback not yet obtained, and
 expect revision when implementation, integration, deployment, or use produces new evidence.
 
-An approval ledger attests that a gate record is well formed and hash-current. It does not
-prove that feedback occurred, that an approver represents end users, or that the artifact
-will remain correct after the next slice.
+An approval record proves only that the required fields are present and its saved hash
+matches the current file. It does not prove that feedback occurred, that an approver
+represents end users, or that the document will remain correct after the next slice.
 
 ## Feedback Ownership
 
@@ -26,14 +26,14 @@ Every code-ready slice identifies:
   dependency, telemetry, or an executable acceptance environment.
 - **Feedback method**: demo, usability session, acceptance run, integration result,
   operational observation, review, or another concrete signal.
-- **Invalidation question**: what result would change an ancestor spec/design/plan or make
-  planned sibling work unsafe to continue.
+- **Invalidation question**: what result would change a parent spec/design/plan or make
+  planned sibling work unsafe to continue. In other words: what would change the plan?
 
 Use one feedback status at a slice boundary:
 
 - `received`: concrete stakeholder or observed-system evidence was obtained.
 - `requested`: feedback has been requested and is still pending.
-- `unavailable`: the planned source could not be reached; record the residual risk.
+- `unavailable`: the planned source could not be reached; record the remaining risk.
 - `not-applicable`: no external feedback is useful for this slice; name the objective
   evidence used instead.
 
@@ -43,7 +43,7 @@ stand in for end-user or stakeholder judgment when the learning target requires 
 ## Inspect And Adapt
 
 After each assessed code slice, and before starting learning-dependent work, inspect the
-new evidence against all affected ancestors and active siblings:
+new evidence against all affected parent documents and active sibling work:
 
 | Area | Ask |
 | --- | --- |
@@ -55,16 +55,17 @@ new evidence against all affected ancestors and active siblings:
 
 Record one outcome per affected area:
 
-- `no-change`: current accepted artifacts still fit; cite the evidence.
+- `no-change`: current accepted documents still fit; cite the evidence.
 - `revision-proposed`: a useful change is identified but does not block safe learning.
-- `revision-required`: revise and reassess the governing artifact before affected work
+- `revision-required`: revise and reassess the controlling document before affected work
   continues.
 - `feedback-required`: the next decision depends on feedback that has not arrived.
 
 Record the current loop in `.sdlc/wip.md` using the exact fields from
 [work-in-progress.md](work-in-progress.md). When a slice receives a passing code assessment,
-preserve its completed learning evidence in that hash-current assessment record so workflow
-status can show branch history without treating WIP or Git activity as proof.
+preserve its completed learning evidence in an assessment record that matches the current
+plan so workflow status can show branch history without treating WIP or Git activity as
+proof.
 
 The agent performs this scan and may draft evidence-backed revisions. It must not silently
 redefine accepted product behavior, contracts, safety posture, or scope. Material revisions
@@ -84,38 +85,39 @@ Classify dependencies explicitly:
 - **Learning dependency**: evidence from one slice may materially change another slice's
   requirement, design, or priority.
 - **Integration dependency**: slices can be built separately but need a planned convergence
-  point and shared verification.
+  point and shared checks.
 
 Use three parallelism classes:
 
 1. **Intra-slice parallelism** is preferred. Sub-agents may work concurrently on tests,
-   implementation, docs, threat review, or verification inside one governed slice when
+   implementation, docs, threat review, or checks inside one defined slice when
    touch ownership and integration are clear.
 2. **Independent-slice parallelism** is selective. Put slices in the same bounded learning
-   wave only when the invalidation question is answered no, shared touch sets are controlled,
+   wave only when feedback from one cannot materially change another, shared touch sets are controlled,
    integration ownership is explicit, and review/feedback capacity exists.
 3. **Speculative downstream parallelism** is exceptional. Keep it reversible, timeboxed,
    and easy to discard; do not present it as completed production work before its learning
    dependency resolves.
 
-Each parallel wave records its WIP limit, feedback/integration checkpoint, and stop/replan
-triggers. Close the wave by assessing its slices, collecting available feedback, running the
-ancestor-impact scan, and revising the next wave. Prefer progressively detailed near-term
+Each parallel wave records its WIP limit, feedback/integration checkpoint, and conditions
+for stopping or replanning. Close the wave by assessing its slices, collecting available
+feedback, checking which parent documents need changes, and revising the next wave. Prefer
+progressively detailed near-term
 plans over elaborating distant slices whose assumptions have not yet been tested.
 
 Plans make that sequence deterministic in an exact `Learning Waves` section. Each
 `WAVE-AREA-NAME` block declares `Order`, `Learning Target`, `Members`, `WIP Limit`,
 `Feedback/Integration Checkpoint`, and `Stop/Replan Triggers`. Breakdown-plan members are
 `WORK-*` allocations; Implementation-plan members are `PR-*` items. Every delivery item
-belongs to exactly one wave, and order is local to the governing plan.
+belongs to exactly one wave, and order is local to its plan.
 
 The current wave and active members live in `.sdlc/wip.md`. A completed checkpoint lives in
 `.sdlc/wave-checkpoints.yaml` and binds the wave ID and exact members to the current governing
-plan SHA-256. It records `status: completed`, completion time, feedback evidence,
-invalidation result, and ancestor impact. This is a wave-boundary evidence record, not a
+plan SHA-256. It records `status: completed`, completion time, feedback evidence, what the
+feedback changed, and parent-document impact. This records the end of one wave; it is not a
 full code assessment, human approval, merge claim, or authorization to begin the next wave.
 Changing the plan or wave membership makes the checkpoint stale.
 
 Unattended or end-to-end mode may cross human collaboration pauses when explicitly requested,
 but it does not remove learning dependencies. The agent must still stop or replan work whose
-governing assumptions were invalidated.
+accepted assumptions were shown to be wrong.

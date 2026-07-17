@@ -1,5 +1,5 @@
 ---
-description: Run upstream-aware structural verification and independent qualitative review as the full plan gate.
+description: Check required earlier documents, run repeatable plan checks, and perform an independent review.
 agent: agent
 ---
 
@@ -7,29 +7,30 @@ agent: agent
 
 Assess the target plan using two separate passes. Load `prompts/plan-verify.prompt.md`,
 `prompts/plan-review.prompt.md`, `docs/review-verification-checklist.md`,
-`docs/feedback-and-learning.md`, and selected profile/modules from
+`docs/feedback-and-learning.md`, and the selected review depth and extra checks from
 `docs/assurance-profiles.md`. Apply `docs/simplicity-first.md`.
 
 ## Run
 
-1. **Mechanical Verifier**: in a fresh sub-agent when available, run `/plan-verify`,
-   including upstream checkers, exact delivery IDs, coverage, and ordered wave membership.
-   Return raw commands, metrics, IDs, failures, and approval evidence only.
-2. **Qualitative Reviewer**: in a different fresh sub-agent when available, run
-   `/plan-review` using artifact plus mechanical evidence. Judge slicing, oracles,
-   dependencies, feedback, waves, profile/module allocation, and readiness.
+1. **Check pass**: in a fresh sub-agent when available, run `/plan-verify`, including the
+   earlier checkers, exact delivery IDs, coverage, and ordered wave membership. Return
+   commands, metrics, IDs, failures, and approval evidence only.
+2. **Review pass**: in a different fresh sub-agent when available, run `/plan-review` using
+   the plan plus check results. Judge slicing, pass/fail checks, dependencies, feedback,
+   waves, review-depth allocation, and readiness.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
-passes separate. Failed/unfit upstream artifacts block the plan verdict.
+passes separate. Failed or unfit earlier documents block the plan verdict.
 
 For a bounded Slice/change plan with more than three implementation PRs, block assessment
-until the concise exception has a hash-current `plan.complexity-approved` attestation. This
+until the concise exception has a `plan.complexity-approved` approval that matches the
+current plan. This
 targeted approval is not final `plan.approved` and does not authorize implementation.
 
 Report:
 
-1. Upstream blocker and required revision, or mechanical scorecard.
-2. Qualitative scorecard with profile/module and feedback/wave fitness.
+1. Earlier-document blocker and required revision, or check results.
+2. Review scorecard with review-depth, extra-check, feedback, and wave fitness.
 3. Top fixes ranked by impact.
 4. Verdict: `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`.
 

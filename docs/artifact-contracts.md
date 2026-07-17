@@ -1,23 +1,23 @@
-# Artifact Contracts
+# Required Document And Code Shape
 
-This reference defines the minimum authoring contract for Sarathi artifacts. Stage prompts
-own procedure; checkers own deterministic structure; assurance modules add only
-context-triggered depth.
+This reference lists the minimum content that Sarathi documents and code records must have.
+Stage prompts explain what to do. Checkers enforce fields and links that a program can
+check. Extra risk checks add detail only when the work needs it.
 
 Begin with the smallest direct implementation that satisfies current accepted behavior.
 Apply `docs/simplicity-first.md`; do not design product machinery to satisfy process
-traceability, evidence, approval, or status needs.
+requirement links, evidence, approval, or status needs.
 
 ## Common Metadata
 
-Every governing artifact states:
+Every controlling document states these exact machine-readable fields:
 
 - `Work Scope: product/system | feature/component | slice/change`
 - `Implementation Readiness: Exploratory | Decomposable | Code-ready`
 - `Delivery Profile: Lean | Standard | High-assurance | Exploratory`
 - `Assurance Modules: comma-separated module names or none`
 
-A child artifact also states `Parent Work Item: WORK-AREA-NAME`. Preserve stable IDs during
+A child document also states `Parent Work Item: WORK-AREA-NAME`. Preserve stable IDs during
 revision. Use descriptive uppercase slug IDs with exactly the grammar documented in
 `docs/slug-id-migration.md`.
 
@@ -40,12 +40,12 @@ Product/system specs use this checker-visible order:
 9. **Acceptance Tests**: black-box `AT-AREA-NAME` criteria mapped to requirements.
 10. **Journey Tests**: ordered `JT-AREA-NAME` compositions of acceptance scenarios, or an
     explicit reason none are needed.
-11. **Traceability Matrix**: needs through tests, including priority/risk where useful.
-12. **Assumptions & Open Questions**: unresolved facts, deferrals, profile rationale,
-    module triggers, escalation triggers, and UI mock preference.
+11. **Traceability Matrix**: links from needs through tests, including priority/risk where useful.
+12. **Assumptions & Open Questions**: unresolved facts, deferrals, reason for review depth,
+    extra risk checks, conditions for stronger review, and UI mock preference.
 
 Feature and slice specs may omit irrelevant empty sections but retain common metadata,
-changed intent, acceptance basis, traceability to parent IDs, and open assumptions. A
+changed intent, acceptance basis, links to parent IDs, and open assumptions. A
 purely internal change states which accepted behavior remains unchanged.
 
 Specs own externally observable intent. They do not prescribe unit/component architecture.
@@ -56,21 +56,21 @@ Specs own externally observable intent. They do not prescribe unit/component arc
 
 Product/system designs use this checker-visible order:
 
-1. **Overview**: context, scope, depth (`HLD | Feature | LLD`), readiness, profile/modules.
+1. **Overview**: context, scope, depth (`HLD | Feature | LLD`), readiness, review depth, and extra risk checks.
 2. **Tech Stack**: accepted choices and versions/constraints where material.
 3. **Drivers & Constraints**: requirements, quality attributes, boundaries, risks.
 4. **Layers**: readable names and responsibilities.
-5. **Components**: readable names, responsibilities, dependencies, `COMP-*` trace anchors.
-6. **Interfaces**: contracts, errors, compatibility, ownership, `IFACE-*` trace anchors.
+5. **Components**: readable names, responsibilities, dependencies, and `COMP-*` IDs.
+6. **Interfaces**: contracts, errors, compatibility, ownership, and `IFACE-*` IDs.
 7. **Core vs. Shell / Equivalent Separation**: pure decisions vs. side effects.
 8. **Key Flows**: success, failure, state, concurrency, and integration flows.
 9. **Data Model**: ownership, lifecycle, validation, migration, privacy where triggered.
 10. **Design Decisions**: `DEC-*`, alternatives, rationale, consequences; ADRs for material
     decisions.
-11. **Test Strategy**: executable `TEST-AREA-NAME` obligations, environment, oracle,
+11. **Test Strategy**: executable `TEST-AREA-NAME` obligations, environment, pass/fail check,
     real-boundary strategy, and responsible scope.
-12. **Risks & Trade-offs**: `RISK-*`, mitigations, residual risk, escalation.
-13. **Traceability Matrix**: requirements to components/interfaces/tests/decisions.
+12. **Risks & Trade-offs**: `RISK-*`, mitigations, remaining risk, and when to strengthen review.
+13. **Traceability Matrix**: links from requirements to components, interfaces, tests, and decisions.
 
 Include the exact `## Complexity Budget` section from `docs/simplicity-first.md`, using its
 five design fields. A prose mention, differently named section, or fenced example is not
@@ -81,9 +81,9 @@ boundaries. Human-facing headings remain readable; machine IDs live in annotatio
 glossaries, matrices, obligations, and exact references. Diagrams use readable labels.
 
 The design defines test architecture, build/release shape, environments, docs architecture,
-observability/error behavior, and other assurance-module tactics only when triggered by
-accepted intent or context. A primary external seam needs real/official conformance or an
-explicit residual-risk decision.
+observability/error behavior, and other extra risk checks only when triggered by accepted
+intent or context. A primary external boundary needs real or official conformance evidence
+or explicit acceptance of the remaining risk.
 
 Write `design.md` plus deterministic `design.html`. When the spec says a UI mock is
 Required, produce/update `mock-ui.html` and stop for explicit approval before production UI
@@ -94,33 +94,33 @@ implementation.
 Plans declare `Plan Type: Breakdown | Implementation` and use this checker-visible order:
 
 1. **Overview**: goal, common metadata, plan type, branch/CI context.
-2. **Strategy**: delivery/TDD approach, selected modules, integration cadence, profile
+2. **Strategy**: delivery/TDD approach, extra risk checks, integration cadence, review
    depth, cleanup/simplify, and feedback cadence.
 3. **Milestones**: `MILE-AREA-NAME` outcome groups.
 4. **Pull Requests / Child Work Items**.
-5. **Coverage Map**: ancestor/local intent and `TEST-*` obligations allocated completely.
+5. **Coverage Map**: parent/local intent and `TEST-*` obligations assigned completely.
 6. **Learning Waves**: exact ordered wave declarations.
 7. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
-   convergence ownership, and stop/replan conditions.
+   ownership for combining parallel work, and stop/replan conditions.
 
 Include the exact `## Complexity Budget` section from `docs/simplicity-first.md`, including
 `Implementation PR Count`. Slice/change Implementation plans default to at most three PRs.
-An exception requires concise rationale plus hash-current `plan.complexity-approved`
-attestation before assessment; this is distinct from final `plan.approved`.
+An exception requires a concise reason plus a `plan.complexity-approved` approval that
+matches the current plan before assessment; this is distinct from final `plan.approved`.
 
 A Breakdown plan defines `WORK-AREA-NAME` allocations. Each names parent/child scope,
-inherited IDs and test obligations, required child Spec/Design/Plan artifacts, dependencies,
+inherited IDs and test obligations, required child Spec/Design/Plan documents, dependencies,
 readiness target, risks, and done signal. It never authorizes code directly.
 
 An Implementation plan defines `PR-AREA-NAME` items. Each PR states:
 
 - bounded scope and Planned Touch Set;
 - Red test and Green implementation, or a narrow TDD exception with replacement evidence;
-- assigned FR/AT/JT/COMP/TEST IDs and concrete verification oracles;
+- assigned FR/AT/JT/COMP/TEST IDs and clear pass/fail checks;
 - test levels and real-boundary/fixture strategy;
-- activated module work (build/release, docs, observability, errors, environments,
+- extra risk work (build/release, docs, observability, errors, environments,
   security/privacy/UI/migration/etc.) or a concise applicable rationale;
-- learning target, feedback target/method, invalidation question;
+- learning target, feedback target/method, and what result would change the plan;
 - execution, learning, and integration dependencies;
 - learning wave, checkpoint, and stop/replan trigger;
 - a concise reason the PR is cohesive and independently reviewable.
@@ -131,7 +131,7 @@ Red/Green instead declares all three fields:
 ```markdown
 TDD Exception: docs-only
 Exception Scope: exact files/behavior and why Red/Green cannot apply
-Replacement Evidence: exact deterministic command or observed oracle
+Replacement Evidence: exact repeatable command or observed pass/fail result
 ```
 
 Allowed categories are `generated-only`, `docs-only`, `formatting-only`,
@@ -140,8 +140,8 @@ changed product behavior, bug fixes, contracts, validation, security/privacy beh
 error handling, logging/telemetry, or UI behavior. Generated output needs downstream
 validation; docs/formatting must not change executable behavior; build/deploy configuration
 needs validator/dry-run/build/smoke evidence; characterization captures existing behavior
-only and cannot cover the subsequent intentional change. Mechanical verification checks
-the fields/category; qualitative review judges eligibility and evidence fitness.
+only and cannot cover the subsequent intentional change. The checker validates the fields
+and category; independent review judges whether the exception and evidence are sound.
 
 Every delivery item appears exactly once in:
 
@@ -161,7 +161,7 @@ The declaration must be real Markdown structure; a fenced example does not satis
 
 Breakdown waves contain `WORK-*`; Implementation waves contain `PR-*`. Later waves stay at
 the least detail justified by current evidence. Prefer one-item waves when learning from one
-slice can invalidate the next.
+slice can change the next.
 
 Write `plan.md` plus deterministic `plan.html` with readable dependency/wave views and
 touch-set/coverage tables. Markdown remains the source of truth.
@@ -170,12 +170,13 @@ touch-set/coverage tables. Markdown remains the source of truth.
 
 `/code-create` implements only a code-ready plan's eligible active-wave members, respects
 the Planned Touch Set, and keeps the suite green at each PR boundary. It records executable
-test claims in `.sdlc/test-traceability.yaml`; test names remain behavior-focused.
+test links in `.sdlc/test-traceability.yaml`; test names remain behavior-focused.
 
-Before handoff, run planned tests, coverage, quality gates, activated assurance-module
+Before handoff, run planned tests, coverage, quality gates, extra risk checks,
 checks, cleanup, and simplify. Report unavailable evidence as unavailable, not passing.
 
-`/code-assess` may write a hash-current `.sdlc/code-assessments.yaml` Pass record using the
+`/code-assess` may write a `.sdlc/code-assessments.yaml` Pass record that matches the current plan using the
 schema in `docs/workflow-status.md`. When every exact wave member, feedback/integration
-checkpoint, and ancestor-impact decision is complete, it may write a hash-current
-`.sdlc/wave-checkpoints.yaml` record. Neither ledger is human approval.
+checkpoint, and parent-document decision is complete, it may write a
+`.sdlc/wave-checkpoints.yaml` record that matches the current plan. Neither file is human
+approval.

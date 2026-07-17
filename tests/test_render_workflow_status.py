@@ -68,7 +68,7 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
         "active_waves": 0,
     }
     assert "Not yet done" in rendered
-    assert "No valid decomposition discovered" in rendered
+    assert "No valid work breakdown found" in rendered
     assert "Feedback not recorded" in rendered
     assert "Not recorded" in rendered
     assert 'href="sarathi-process.html">Process guide</a>' in rendered
@@ -399,7 +399,7 @@ Active Slices: PR-LEAF-BOUNDARY
     assert waves[1]["member_states"][0]["state"] == "not-started"
     assert "Leaf Boundary is in progress" in rendered
     assert "Slice workflow" in rendered
-    assert "No valid decomposition discovered" not in rendered
+    assert "No valid work breakdown found" not in rendered
     assert "WAVE-LEAF-BOUNDARY" in rendered
     assert "PR-LEAF-FINISH" in rendered
 
@@ -807,7 +807,13 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert "PR-ALPHA-TWO" in first
     assert '<details class="learning-details" open>' in first
     assert "Explicit feedback is required before affected work continues." in first
-    assert "Workflow tree" in first
+    assert "Work tree" in first
+    assert "Tests linked" in first
+    assert "What feedback changed" in first
+    assert "Parent documents" in first
+    assert "Evidence mapped" not in first
+    assert "Invalidation result" not in first
+    assert "Ancestor impact" not in first
     assert "Learning waves" in first
     assert "Ordered delivery and feedback checkpoints" in first
     assert re.search(

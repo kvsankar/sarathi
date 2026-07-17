@@ -1,13 +1,13 @@
 # Sarathi
 
-Agent-Steered SDLC for resumable, reviewable software delivery
+Guided, resumable, reviewable software delivery
 
-Sarathi is a set of reusable prompts, skills, and structural checkers for spec-first
+Sarathi is a set of reusable prompts, skills, and automatic checkers for spec-first
 software delivery with AI coding agents. It helps developers move from a product request to
 requirements, design, planning, implementation, tests, and review without losing
-traceability, resumability, or human review.
+clear links between intent and tests, resumability, or human review.
 
-The workflow is intentionally artifact-driven:
+The workflow is driven by accepted documents and evidence:
 
 ```text
 request -> spec -> design -> plan -> code/tests/logging/errors/docs/build/deploy -> assess
@@ -15,16 +15,16 @@ request -> spec -> design -> plan -> code/tests/logging/errors/docs/build/deploy
 
 Each stage can be created, verified, reviewed, or assessed independently. By default, the
 skill pauses for human input when important information is missing and pauses again after
-generating an artifact.
+generating a document or code slice.
 
 ## What You Get
 
 - Slash-command prompts for specs, designs, plans, code, verification, review, and
   assessment.
 - A native `sarathi` skill for agents that support skills.
-- Structural checkers for specs, designs, plans, and code/test traceability.
-- Deterministic workflow-status HTML views for the artifact tree and each plan's ordered
-  learning waves, including mapped evidence, explicit feedback state, and hash-current wave
+- Automatic checkers for specs, designs, plans, and links from requirements to tests.
+- Repeatable workflow-status HTML views for the work tree and each plan's ordered learning
+  waves, including linked tests, explicit feedback state, and current wave
   checkpoints.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
@@ -120,9 +120,9 @@ updating to a version where that source folder is self-contained.
 
 The prompt set uses four verbs:
 
-- `create`: author or revise an artifact.
-- `verify`: run deterministic/mechanical checks and report evidence only.
-- `review`: make the qualitative adversarial judgment using available evidence.
+- `create`: write or revise a document or code slice.
+- `verify`: run repeatable checks and report what they prove and do not prove.
+- `review`: independently judge quality and look for counterexamples.
 - `assess`: run `verify` first, then `review`; this is the full gate.
 
 The core stage names are:
@@ -130,22 +130,22 @@ The core stage names are:
 | Command | Purpose |
 | --- | --- |
 | `/spec-create` | Create or revise a Software Requirements Specification. |
-| `/spec-verify` | Run structural spec checks and report evidence. |
-| `/spec-review` | Qualitatively review spec quality. |
+| `/spec-verify` | Run automatic spec checks and report evidence. |
+| `/spec-review` | Independently review spec quality. |
 | `/spec-assess` | Run `/spec-verify` plus `/spec-review`. |
 | `/design-create` | Create or revise a Software Design Document and ADRs as needed. |
-| `/design-verify` | Run upstream spec and design structural checks. |
-| `/design-review` | Qualitatively review design quality and upstream spec fitness. |
+| `/design-verify` | Run spec and design checks. |
+| `/design-review` | Independently review design quality and spec fitness. |
 | `/design-assess` | Run `/design-verify` plus `/design-review`. |
 | `/plan-create` | Create a breakdown or implementation plan with PR slices and touch sets. |
-| `/plan-verify` | Run upstream artifact and plan structural checks. |
-| `/plan-review` | Qualitatively review plan readiness, slicing, allocation, and sequencing. |
+| `/plan-verify` | Run checks for the spec, design, and plan. |
+| `/plan-review` | Independently review plan readiness, slicing, assignment, and sequencing. |
 | `/plan-assess` | Run `/plan-verify` plus `/plan-review`. |
 | `/code-create` | Implement a code-ready plan using Red/Green/Refactor TDD, including planned logging/error-handling/docs/build/deploy work. |
-| `/code-verify` | Run tests, coverage, quality gates, logging/error-handling/build/docs/deployment checks, and structural code evidence. |
-| `/code-review` | Qualitatively review code, tests, logging/error-handling, docs, build/deploy work, quality gates, and upstream consistency. |
+| `/code-verify` | Run tests, coverage, quality gates, logging/error-handling/build/docs/deployment checks, and code-link checks. |
+| `/code-review` | Independently review code, tests, operational work, quality gates, and consistency with earlier documents. |
 | `/code-assess` | Run `/code-verify` plus `/code-review`. |
-| `/workflow-status` | Render the artifact tree and ordered learning-wave status as read-only HTML. |
+| `/workflow-status` | Render the work tree and ordered learning-wave status as read-only HTML. |
 
 Generate the live status page and its linked static process guide directly with:
 
@@ -169,23 +169,23 @@ Exact invocation syntax depends on the host tool:
 
 ## Workflow Model
 
-Work is classified at three levels:
+Work uses three levels:
 
-- **Product/system**: broad product or platform scope. Usually decomposable, not directly
+- **Product/system**: broad product or platform scope. Usually needs breakdown and is not directly
   code-ready.
 - **Feature/component**: one user-facing capability, subsystem, component, integration, or
   screen family.
 - **Slice/change**: the smallest implementable unit, usually PR-sized.
 
-Artifacts declare one readiness value:
+Documents declare one readiness value:
 
 - **Exploratory**: still being shaped.
-- **Decomposable**: valid parent artifact, but needs child work before implementation.
+- **Decomposable**: valid parent document, but needs child work before implementation.
 - **Code-ready**: precise enough for implementation.
 
 `/code-create` should only run from a code-ready implementation plan.
 
-Breakdown plans use `WORK-*` IDs as parent-to-child allocations, not as another artifact
+Breakdown plans use `WORK-*` IDs to assign parent work to children; they are not another document
 type. A product plan normally maps each `WORK-*` allocation to a feature spec, design, and
 plan. A feature Breakdown plan normally maps each allocation to a slice spec, LLD, and
 Implementation plan. Product integration work may map directly to a slice child, but its
@@ -201,7 +201,7 @@ entities keep the shorter `KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-A
 Design test obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric
 suffixes such as `FR-AUTH-10` are rejected by the checkers.
 
-For older numbered artifacts, see [docs/slug-id-migration.md](docs/slug-id-migration.md).
+For older numbered IDs, see [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
 ## Builds And Deployment
 
@@ -209,18 +209,18 @@ Builds and deployment are covered from the beginning:
 
 - Specs capture externally relevant build, release, deployment, rollout, rollback,
   migration, smoke-check, and operational acceptance needs.
-- Designs define deployable artifacts, build/package strategy, release workflow,
+- Designs define deployable outputs, build/package strategy, release workflow,
   environments, configuration/secrets, promotion, deployment topology, validation, and
   ownership.
 - Plans assign build scripts, package manifests, generated outputs, CI/CD config, IaC or
   deployment manifests, migration scripts, smoke checks, rollback checks, and release docs
   to child work or PRs.
 - Code creates and verifies the planned build/deployment pieces. It should run the build,
-  verify the expected artifact, validate deployment scripts/manifests with dry-run or lint
+  verify the expected build output, validate deployment scripts/manifests with dry-run or lint
   checks where possible, and avoid live production deployment unless explicitly requested.
 
-Reviews stop with an upstream blocker when build or deployment intent is missing from the
-artifact that should own it.
+Reviews stop when build or deployment intent is missing from the earlier document that
+should own it.
 
 ## Test Environments
 
@@ -251,7 +251,7 @@ review, cost guardrails, compatibility tests, or operational reviews.
 
 Specs capture these as requirements, acceptance criteria, non-goals, assumptions, or open
 questions. Designs turn them into tactics, `TEST-` obligations, ADRs, or risks. Plans assign
-them to work items or PRs. Code verifies the planned checks and stops for upstream revision
+them to work items or PRs. Code runs the planned checks and stops to revise earlier documents
 if implementation reveals a material concern that was not planned.
 
 ## User And Developer Documentation
@@ -270,7 +270,7 @@ Documentation is also covered from the beginning:
 - Code updates and verifies the planned docs with the implementation. Public docs should
   match actual behavior and contracts, not describe unimplemented future behavior.
 
-Reviews stop with an upstream blocker when documentation intent is missing from the artifact
+Reviews stop when documentation intent is missing from the earlier document
 that should own it.
 
 ## Logging, Telemetry, And Error Handling
@@ -287,31 +287,31 @@ Diagnostics and failure behavior are covered across the lifecycle:
   retention/redaction, alert hooks, and how UI/API/domain/infrastructure errors are mapped,
   recovered, retried, degraded, or surfaced.
 - Plans assign logging, telemetry, and error-handling work to PRs, including fixtures,
-  APM setup, dashboards/alerts, verification oracles, and tests for representative success/
+  APM setup, dashboards/alerts, pass/fail checks, and tests for representative success/
   failure paths.
 - Code implements and verifies the planned diagnostics and error handling without leaking
   secrets, stack traces, raw objects, or unstable internals to users, logs, APM providers,
   or agents.
 
-Reviews stop with an upstream blocker when logging, telemetry, or error-handling intent is
-missing from the artifact that should own it.
+Reviews stop when logging, telemetry, or error-handling intent is missing from the earlier
+document that should own it.
 
 ## Delivery Profiles
 
-Production work uses one feedback loop with risk-calibrated depth: Lean for small,
+Production work uses one feedback loop with review depth matched to risk: Lean for small,
 reversible changes; Standard as the ordinary default; and High-assurance for material
 security, privacy, safety, regulatory, financial, availability, migration, or irreversible
 data risk. Exploratory remains a separate non-production track. Profiles activate only
-context-triggered assurance modules; they do not bypass readiness, tests, feedback, or
+extra checks for specific risks; they do not bypass readiness, tests, feedback, or
 human gates. See [docs/assurance-profiles.md](docs/assurance-profiles.md).
 
 ## General Cleanup
 
 Agents run a bounded cleanup pass at suitable handoff points, and always before ending a code
 slice, to remove odd issues and theater such as tautological tests, mock-only confidence,
-stale traceability claims, superficial security work, debug leftovers, and misleading docs.
+stale requirement-to-test links, superficial security work, debug leftovers, and misleading docs.
 Cleanup stays inside the current scope; larger discoveries become follow-up findings or
-upstream artifact revisions.
+revisions to earlier documents.
 
 ## Simplify Pass
 
@@ -319,33 +319,34 @@ After cleanup when both apply, and before handoff for specs, designs, plans, and
 slices, agents run a simplify pass. The pass removes over-engineered requirements, layers,
 abstractions, extension points, fixtures, checks, or code paths that are not justified by
 accepted scope, risk, constraints, or evidence. Necessary detail, reviewability,
-traceability, and real boundaries stay intact; larger simplifications become governing
-artifact revisions.
+requirement links, and real boundaries stay intact; larger simplifications require changes
+to the controlling documents.
 
-Simplicity is a hard assessment constraint. Process traceability/evidence must not become
-product architecture; brownfield work reuses existing compatibility suites by default;
+Simplicity is a hard assessment constraint. Process links and evidence must not become
+product architecture; work in an existing system reuses its compatibility suites by default;
 generalization normally waits for a second concrete consumer; and bounded slices default
 to at most three implementation PRs. Reviewers begin with deletion, deferral, collapse, and
 existing-evidence reuse. See [docs/simplicity-first.md](docs/simplicity-first.md).
 
 ## Feedback And Learning
 
-Sarathi treats specs, designs, and plans as current accepted artifacts, not frozen handoffs.
-Approval means an artifact is sufficient and safe for the next learning step. Each
+Sarathi treats specs, designs, and plans as the current accepted understanding, not frozen handoffs.
+Approval means a document is sufficient and safe for the next learning step. Each
 code-ready slice names its learning target, appropriate stakeholder or observed-system
-feedback target, invalidation question, and ancestor-impact checkpoint. After assessment,
+feedback target, what result would change the plan, and a check for changes needed in
+parent documents. After assessment,
 the agent reports honest feedback status and checks whether the spec, design, remaining
 plan, code/integration, or process guidance must change.
 
 Agent parallelism is encouraged inside a slice. Independent slices may share a bounded
-learning wave when feedback from one cannot materially invalidate another, dependencies and
-touch ownership are explicit, WIP is capped, and convergence plus stop/replan triggers are
-planned. Speculative downstream work stays exceptional and reversible. See
+learning wave when feedback from one cannot materially change another, dependencies and
+touch ownership are explicit, WIP is capped, and ownership for combining work plus
+stop/replan rules are planned. Speculative later work stays exceptional and reversible. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
 
 Plans assign every `WORK-*` or `PR-*` to an ordered `WAVE-*`. The live status page shows
-that delivery sequence beside the decomposition tree. `.sdlc/wip.md` identifies the active
-wave; a hash-current `.sdlc/wave-checkpoints.yaml` record closes a wave without pretending
+that delivery sequence beside the work tree. `.sdlc/wip.md` identifies the active
+wave; a `.sdlc/wave-checkpoints.yaml` record matching the current plan closes a wave without pretending
 the enclosing plan is fully assessed or the next wave is automatically approved.
 
 ## Human Gates And YOLO Mode
@@ -353,19 +354,19 @@ the enclosing plan is fully assessed or the next wave is automatically approved.
 Default behavior is human-gated:
 
 - If important input is missing, the agent asks one focused question at a time.
-- After an artifact is generated, materially revised, reviewed, or assessed, the agent stops
+- After a document or code slice is generated, materially revised, reviewed, or assessed, the agent stops
   for human review.
 - For UI-facing products, `/spec-create` asks whether a mock UI is required. If the spec
-  records `UI Mock Preference: Required`, the mock UI artifact is a hard human gate:
-  downstream planning, code, and production UI work must wait for explicit user approval of
+  records `UI Mock Preference: Required`, the mock UI file is a hard human gate:
+  later planning, code, and production UI work must wait for explicit user approval of
   the mock.
-- Downstream reviews stop when they discover upstream spec, design, or plan issues.
+- Reviews stop when they discover issues in an earlier spec, design, or plan.
 
 The human review pause is a hard gate. A completed spec does not automatically flow into
 design; a completed design does not automatically flow into planning; a completed plan does
 not automatically flow into code; and an assessed code slice does not automatically flow
 into the next learning-dependent slice or release/deployment work until its feedback status
-and ancestor-impact scan are visible. The agent should end its turn with artifact paths,
+and parent-document check are visible. The agent should end its turn with document paths,
 readiness/status, verification/review/assessment results, open questions, and the recommended
 next command.
 
@@ -383,21 +384,21 @@ assumptions, risks, and trade-offs. YOLO does not bypass readiness gates, planne
 quality gates, safety constraints, or the default review pause unless you explicitly ask for
 end-to-end unattended continuation.
 
-## Approval Attestation Gates
+## Approval Records
 
-Projects can make gate attestations mechanically checkable with local YAML files:
+Projects can make approvals automatically checkable with local YAML files:
 
-- `.sdlc/approvals.yaml` records local approval attestations, approvers, UTC timestamps, and
+- `.sdlc/approvals.yaml` records local approvals, approvers, UTC timestamps, and
   SHA-256 hashes.
 - `.sdlc/gates.yaml` optionally enables bounded auto-approval for low-risk modes such as
   internal prototypes.
 
-Checkers support `--require-approvals` for downstream gate runs. The approval is valid only
-when the ledger entry matches the gate, artifact path, status, UTC `approved_at`, and current
-artifact hash. Stale hashes fail. No ticketing system is required. This proves structure and
+Checkers support `--require-approvals` for later gate runs. The approval is valid only when
+the entry matches the gate, document path, status, UTC `approved_at`, and current file hash.
+Stale hashes fail. No ticketing system is required. This proves structure and
 freshness of a local record, not human identity, intent, or external consent; reports must
 show whether a gate was approved by a named user or by local auto-approval policy.
-Approval is permission for the next learning step, not proof that an artifact is final,
+Approval is permission for the next learning step, not proof that a document is final,
 correct, or informed by end-user feedback. Feedback source and status are recorded
 separately.
 
@@ -405,7 +406,7 @@ See [docs/approval-gates.md](docs/approval-gates.md).
 
 ## Tests And Verification
 
-Test responsibility is split by artifact:
+Test responsibility is split by document and code stage:
 
 - Specs define `AT-` acceptance criteria at product/system, feature/component, and
   slice/change scope; the criteria become narrower as the scope narrows. Specs also define
@@ -418,7 +419,7 @@ Test responsibility is split by artifact:
   monitoring when context warrants them.
 - External systems should be tested against the real dependency or its official conformance
   surface whenever feasible. If a mock, fake, stub, local mirror, or locally re-declared
-  interface replaces the real system, the artifacts must flag that as verification risk and
+  interface replaces the real system, the documents must flag that as a risk and
   name the mitigation: real-boundary smoke/integration test, official conformance harness,
   type-conformance check, generated schema/client, vendor sandbox/emulator, captured real
   fixture, or explicit user-approved limitation. A primary integration seam should not be
@@ -426,11 +427,11 @@ Test responsibility is split by artifact:
 - Plans assign `AT-` acceptance coverage, `JT-` journey coverage, and `TEST-` obligations
   to PRs.
 - Code writes the executable tests and implementation, and records executable-test
-  traceability in `.sdlc/test-traceability.yaml` rather than cluttering test code with
-  artifact IDs. This is where unit, component, contract, integration, UI, journey/e2e,
+  requirement-to-test links in `.sdlc/test-traceability.yaml` rather than cluttering test
+  code with process IDs. This is where unit, component, contract, integration, UI, journey/e2e,
   quality, migration, build/deploy, docs, and operational test implementations are created
-  when planned. The traceability file is a structured project claim; reviewers still
-  spot-check mapped tests and oracles.
+  when planned. The test-link file is a structured project claim; reviewers still inspect
+  linked tests and their pass/fail checks.
 - Red/Green TDD is mandatory for behavior-changing code. Narrow exceptions are allowed only
   when planned or explicitly accepted: generated code only, docs-only, formatting-only,
   build/deploy config validation, and characterization before legacy refactor. Each
@@ -440,17 +441,17 @@ Test responsibility is split by artifact:
   characterization, table/property, adapter, or edge-case tests. These supplement, never
   replace, planned `AT-`/`JT-`/`TEST-` coverage; they stay within the current `PR-` and
   Planned Touch Set, map to the nearest trace IDs in `.sdlc/test-traceability.yaml` when
-  applicable, and use a concrete oracle.
+  applicable, and use a clear pass/fail check.
   If they imply new externally visible behavior, contract, UX/NFR, or scope, revise the
-  upstream artifact first.
+  controlling document first.
 - Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
   fixtures, helpers, mocks, data, selectors, determinism, readability, maintainability, and
   false-positive/false-negative risk are judged, not just whether the tests pass.
-- Every executable test needs a concrete verification oracle: return value, state, persisted
+- Every executable test needs a clear pass/fail result: return value, state, persisted
   record, event, API response, DOM/accessibility output, screenshot/visual baseline,
-  artifact, structured log, metric, trace, deployment signal, or captured external call as
+  generated file, structured log, metric, trace, deployment signal, or captured external call as
   appropriate.
-- Defect remediation updates upstream artifacts first when the defect reveals missing UX
+- Defect remediation updates earlier documents first when the defect reveals missing UX
   quality, unclear boundary contracts, missing logging/telemetry/error-handling intent,
   unrealistic mocks, or other latent spec/design/plan gaps.
 - Documentation, logging/telemetry, error-handling, build, and deployment checks are
@@ -465,10 +466,10 @@ Test responsibility is split by artifact:
 Use `/code-verify` when you simply want a confidence run after a change: test suite,
 coverage, pre-commit/equivalent gates, logging/error-handling checks, build checks,
 documentation checks, deployment dry-runs or smoke checks where planned, and `check_code.py`.
-Use `/code-review` when you want qualitative judgment. Use `/code-assess` when you want both
+Use `/code-review` when you want independent judgment. Use `/code-assess` when you want both
 in one gate.
 
-The checkers provide deterministic structural evidence:
+The checkers provide repeatable evidence about required structure and links:
 
 ```powershell
 python checkers/check_spec.py spec.md --json
@@ -484,11 +485,11 @@ floor.
 
 If `python` is unavailable, try `python3`, then `uv run python`.
 
-`check_code.py` reads executable-test traceability from `.sdlc/test-traceability.yaml` by
+`check_code.py` reads executable-test links from `.sdlc/test-traceability.yaml` by
 default. Use `--traceability <file>` for a project-specific map location. Use
 `--allow-inline-test-traceability` only as a temporary migration flag for older repos that
 still carry artifact IDs in test comments or docstrings.
-Traceability entries may also include `boundary`, `level`, `uses_double`, `real_boundary`,
+Test-link entries may also include `boundary`, `level`, `uses_double`, `real_boundary`,
 and `type_conformance`. If tests for a boundary use a double, at least one test for that
 same boundary must be marked as a real-boundary or type-conformance check. Those fields are
 declarations, not proof; `/code-review` and `/code-assess` must identify the concrete
@@ -496,15 +497,15 @@ command/test evidence behind them.
 Reviewability is judged by cohesive purpose, conceptual complexity, touch scope, evidence,
 and rollback. Sarathi does not impose source-file, module, diff, or PR line-count targets.
 TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not
-add SDLC-specific annotations to app code. If markers remain, downstream progress requires
-explicit approval attestation through `code.markers.approved`, keyed to the marker inventory
+add SDLC-specific annotations to app code. If markers remain, later progress requires
+explicit approval through `code.markers.approved`, keyed to the marker inventory
 hash.
 
-The checkers do not prove semantic correctness. Assessment commands pair verification
-evidence with qualitative review of requirements, design, plan quality, test implementation
-quality, verification-oracle rigor, implementation fitness, logging/error-handling,
+The checkers do not prove that the work is correct. Assessment commands pair check results
+with independent review of requirements, design, plan quality, test implementation quality,
+pass/fail rigor, implementation fitness, logging/error-handling,
 documentation/build/deployment
-completeness, and upstream/downstream consistency.
+completeness, and consistency across stages.
 
 ## Repository Layout
 
@@ -512,7 +513,7 @@ completeness, and upstream/downstream consistency.
 docs/      user-facing documentation and review notes
 prompts/   source stage prompt definitions
 skills/    native skill bundles
-checkers/  structural verification scripts
+checkers/  repeatable structure and link checks
 scripts/   installers for Windows, macOS, Linux, and WSL
 tests/     checker tests
 ```

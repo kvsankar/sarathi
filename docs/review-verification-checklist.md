@@ -1,48 +1,48 @@
-# Verification And Review Checklist
+# Checks And Review Checklist
 
-Every assessment pairs mechanical evidence with qualitative judgment. Checker JSON is
+Every assessment pairs repeatable check results with independent judgment. Checker JSON is
 never the whole assessment.
 
 ## Independent Passes
 
 When the host supports sub-agents, use two fresh contexts:
 
-1. **Mechanical Verifier**: runs deterministic checkers/commands and returns raw evidence,
-   IDs, metrics, and failures without a qualitative verdict.
-2. **Qualitative Reviewer**: receives the artifact/code plus mechanical evidence and makes
-   an adversarial judgment.
+1. **Check pass**: runs repeatable checkers/commands and returns raw results, IDs, metrics,
+   and failures without judging overall quality.
+2. **Review pass**: receives the document/code plus check results and independently judges
+   it while looking for counterexamples.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
-passes separate. A failed/unfit upstream artifact blocks the downstream verdict.
+passes separate. A failed or unfit earlier document blocks the later verdict.
 
-## Mechanical Pass
+## Check Pass
 
 | Assessment | Required evidence |
 | --- | --- |
 | `/spec-assess` | `check_spec.py`, ID/section/coverage structure, approval evidence when required. |
-| `/design-assess` | Upstream spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
-| `/plan-assess` | Upstream checks, `check_plan.py`, allocation/coverage, labeled Red/Green or TDD-exception contracts, exact wave membership, structured complexity budget/count, and targeted exception approval. |
-| `/code-assess` | Upstream checks, `check_code.py`, tests, coverage, traceability, TDD evidence, repository quality gate, planned module commands. |
+| `/design-assess` | Spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
+| `/plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, labeled Red/Green or TDD-exception contracts, exact wave membership, structured complexity budget/count, and targeted exception approval. |
+| `/code-assess` | Earlier checks, `check_code.py`, tests, coverage, requirement-to-test links, TDD evidence, repository quality gate, planned extra-risk commands. |
 
-Mechanical evidence proves only what the command observes. It does not prove semantic
+Check results prove only what the command observes. They do not prove
 correctness, meaningful tests, stakeholder feedback, real-boundary execution, merge state,
-or human intent beyond a valid local attestation.
+or human intent beyond a valid local approval record.
 
-## Qualitative Pass
+## Review Pass
 
 Every reviewer judges:
 
-- accepted intent, scope/readiness, and upstream fitness;
-- selected delivery profile and only the assurance modules triggered by context;
-- concrete oracles, real-boundary confidence, risks, and residual uncertainty;
-- feedback/learning dependencies and ancestor impact where applicable;
+- accepted intent, scope/readiness, and fitness of earlier documents;
+- selected review depth and only the extra risk checks triggered by context;
+- clear pass/fail checks, real-boundary confidence, risks, and remaining uncertainty;
+- feedback/learning dependencies and changes to parent documents where applicable;
 - simplicity using `docs/simplicity-first.md`.
 - TDD-exception eligibility and replacement evidence when a plan does not use Red/Green.
 
-Start deletion-first: what can be deleted, deferred, collapsed, implemented directly, or
-proven by existing evidence? A structurally complete artifact fails when it is overbuilt,
+Start with simplification: what can be deleted, deferred, collapsed, implemented directly,
+or proved by existing evidence? A document with every required section still fails when it is overbuilt,
 turns process requirements into product architecture, generalizes for hypothetical
-consumers, ignores brownfield compatibility evidence, or materially exceeds the user's
+consumers, ignores existing compatibility evidence, or materially exceeds the user's
 mental model without approval.
 
 Stage-specific review prompts provide the remaining rubric. Do not load unrelated module
@@ -52,12 +52,12 @@ criteria merely because they exist.
 
 Every non-blocked assessment reports:
 
-1. Mechanical scorecard with exact commands and evidence limits.
-2. Qualitative scorecard, including profile/module and simplicity fitness.
+1. Check results with exact commands and evidence limits.
+2. Review scorecard, including review-depth, extra-risk, and simplicity fitness.
 3. Deletion, deferral, collapse, and existing-evidence opportunities.
 4. Top fixes ranked by impact.
 5. Verdict: `Pass | Pass-with-fixes | Needs rework`.
 
-Use `Blocked-upstream` when the governing ancestor must be corrected before downstream
-judgment. Code assessment additionally reports feedback and ancestor impact, and writes
+Use `Blocked-upstream` when a controlling parent document must be corrected before later
+judgment. Code assessment also reports feedback and parent-document changes, and writes
 assessment/wave ledgers only under the evidence rules in `docs/workflow-status.md`.

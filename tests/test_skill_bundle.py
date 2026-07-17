@@ -62,13 +62,13 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     assert bundled.read_bytes() == source.read_bytes()
     guide = source.read_text(encoding="utf-8")
     assert "1. PR-sized leaf" in guide
-    assert "2. Decomposable product" in guide
+    assert "2. Product that needs breakdown" in guide
     assert "WORK-FEATURE-ONE" in guide
     assert "WORK-SLICE-A" in guide
     assert "WORK-SYSTEM-INTEGRATION" in guide
     assert "Product plan allocation" in guide
     assert "Integration slice child" in guide
-    assert "Background = artifact type" in guide
+    assert "Background = document type" in guide
     assert "Level tag = work scope" in guide
     assert "artifact-spec" in guide
     assert "level-product" in guide
@@ -103,8 +103,8 @@ def test_feedback_and_learning_policy_is_wired_into_stage_prompts() -> None:
 
 def test_simplicity_policy_is_wired_into_creation_review_and_assessment() -> None:
     policy = (ROOT / "docs" / "simplicity-first.md").read_text(encoding="utf-8")
-    assert "Process/Product Firewall" in policy
-    assert "Brownfield Oracle Precedence" in policy
+    assert "Keep Process Machinery Out Of Product Code" in policy
+    assert "Reuse Proof From The Existing System" in policy
     assert "default to at most three" in policy
     assert "Neutral package and current contracts" in policy
 

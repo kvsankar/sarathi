@@ -1,35 +1,35 @@
-# Project Entry And Adoption Modes
+# Starting In A New Or Existing Project
 
 Sarathi can start with a new project or be adopted in the middle of an
-existing one. Keep the entry decision separate from artifact discovery so the adoption
-choice stays mutually exclusive and collectively exhaustive.
+existing one. First choose how much of the existing system Sarathi should cover. Then look
+for documents and tests that can be reused.
 
-## MECE Adoption Modes
+## Choose One Starting Mode
 
-Choose exactly one project entry mode before creating or reviewing downstream artifacts
+Choose exactly one project entry mode before creating or reviewing later documents
 when the repo is not already operating under an SDLC decision record:
 
-- **Greenfield Adoption**: the project starts under Sarathi now. Use the normal
+- **New project** (`greenfield` / `Greenfield Adoption`): the project starts under Sarathi
+  now. Use the normal
   sequence: spec, design, plan, code. Existing external references may inform the first
-  artifacts, but there is no legacy implementation baseline to accept.
-- **Brownfield Baseline Adoption**: the project already exists and the user wants the SDLC
-  to reconstruct and review the current system. Create retrospective spec and design
-  artifacts from the existing product, docs, tests, and code, then perform a baseline
+  documents, but there is no existing implementation baseline to accept.
+- **Document and review the existing system** (`brownfield_baseline` / `Brownfield Baseline
+  Adoption`): create a retrospective spec and design from the existing product, docs,
+  tests, and code, then perform a baseline
   `/code-review` when requested. A retrospective baseline code review may skip
   `/plan-create` and `/plan-review` because it judges already-written code against
   reconstructed intent, not against a pre-approved implementation plan.
-- **Brownfield Delta-Only Adoption**: the project already exists and the user wants SDLC
-  control only for new changes from this point forward. Discover enough baseline context to
-  avoid breaking existing behavior, then create or revise slice/change artifacts for the
-  requested delta. Existing behavior outside the delta is accepted as baseline unless the
-  delta touches it or the user asks for a baseline review.
+- **Govern only new changes** (`brownfield_delta_only` / `Brownfield Delta-Only Adoption`):
+  learn enough about the existing system to avoid breaking it, then create or revise
+  slice/change documents for the requested change. Existing behavior outside the change is
+  accepted unless the change touches it or the user asks for a baseline review.
 
 Existing specs, designs, plans, ADRs, tickets, roadmaps, tests, docs, CI, and deployment
 files are not a fourth mode. They are discovered inputs that can appear in any mode.
 
-## Artifact Discovery
+## Find Existing Material
 
-For every adoption mode, scan for existing artifacts before choosing the next stage:
+For every mode, scan for useful existing material before choosing the next stage:
 
 - requirements, specs, issue epics, product briefs, or acceptance criteria;
 - design docs, ADRs, architecture diagrams, API contracts, schemas, or interface docs;
@@ -37,19 +37,19 @@ For every adoption mode, scan for existing artifacts before choosing the next st
 - tests, fixtures, captured examples, CI config, build/deployment files, runbooks, and
   user/developer documentation.
 
-Classify each discovered artifact set as one of:
+Classify each discovered set as one of:
 
-- `adopt`: use as a current upstream artifact without material rewriting;
+- `adopt`: use as a current source document without material rewriting;
 - `adapt`: convert or revise into the SDLC format while preserving stable intent and IDs
   where possible;
-- `supersede`: replace with a new artifact and record why the old one is no longer
-  governing;
+- `supersede`: replace with a new document and record why the old one no longer controls
+  the work;
 - `background`: use only as context or historical evidence;
-- `none_found`: no relevant artifact was found.
+- `none_found`: no relevant material was found.
 
-## Brownfield Baseline Semantics
+## Rules For Documenting An Existing System
 
-Brownfield baseline adoption reconstructs accepted intent; it is not a blind transcript of
+Baseline adoption reconstructs accepted intent; it is not a blind transcript of
 whatever the current code happens to do.
 
 - The retrospective SRS expresses reconstructed accepted product/system intent from
@@ -63,7 +63,7 @@ whatever the current code happens to do.
   candidates, but adoption itself must not silently convert those into redesign work.
   Redesign requires an explicit user-approved delta.
 - SRS `AT-`/`JT-` items and design `TEST-` obligations are normative verification
-  obligations once the artifacts are accepted. Existing tests are evidence of current
+  obligations once the documents are accepted. Existing tests are evidence of current
   coverage, not the source of truth.
 - If existing tests differ from or fall short of the SRS/design obligations, surface the
   gap rather than rewriting the obligations down to current tests.
@@ -74,7 +74,8 @@ review. It must report two primary gap sets:
 - **Code gaps against SRS**: behavior missing, different, ambiguous, or accidentally
   implemented relative to reconstructed accepted intent.
 - **Test gaps against SRS/design**: `AT-`, `JT-`, or `TEST-` obligations missing, weakly
-  asserted, indirectly covered without a clear oracle, or only covered by risky doubles.
+  asserted, indirectly covered without a clear pass/fail check, or only covered by risky
+  doubles.
 
 Classify each finding as exactly one of:
 
@@ -89,8 +90,8 @@ Classify each finding as exactly one of:
 ## Decision Record
 
 Record the user's adoption decision in `.sdlc/process-decisions.yaml` when the user chooses
-an adoption mode, approves an inferred mode, or explicitly accepts a plan-skipping
-retrospective baseline review. This file records process scope and rationale; it is not an
+one of these modes, approves an inferred mode, or explicitly accepts a plan-skipping
+retrospective baseline review. This file records process scope and the reason; it is not an
 approval ledger and does not replace `.sdlc/approvals.yaml`.
 
 Use this shape, adding fields only when useful:
@@ -132,24 +133,24 @@ If the agent infers a low-risk mode in YOLO mode, record `decided_by: "agent-inf
 list the assumption and risk. If the user later corrects the mode, update the record rather
 than silently relying on the stale decision.
 
-Select the delivery profile separately from adoption mode using
-[assurance-profiles.md](assurance-profiles.md). Adoption says how Sarathi enters the repo;
-the profile says how much evidence the current production work needs.
+Choose review depth separately using [assurance-profiles.md](assurance-profiles.md). The
+starting mode says how Sarathi enters the repository; the profile says how much evidence
+the current production work needs.
 
 ## Stage Rules
 
 - Greenfield work follows the normal spec-first sequence.
-- Brownfield baseline work may create retrospective specs and designs from observed
+- Existing-system baseline work may create retrospective specs and designs from observed
   behavior, docs, tests, and code. Mark reconstructed intent clearly and flag gaps where the
   current system's intended behavior cannot be inferred.
-- A planless brownfield baseline `/code-review` must say that it is a retrospective baseline
+- A planless baseline `/code-review` must say that it is a retrospective baseline
   review, name the decision record that permits skipping plan review, and avoid claiming
   conformance to a pre-approved implementation plan.
-- New implementation deltas in any mode require the normal downstream artifacts: a
+- New implementation changes in any mode require the normal later documents: a
   code-ready spec/design/implementation plan, unless the user explicitly chooses a
   documented lightweight exploratory track.
-- Existing artifacts can satisfy a gate only when they are classified as `adopt` or have
-  been `adapt`ed into a fit upstream artifact. `background` evidence can inform judgment
+- Existing documents can satisfy a gate only when they are classified as `adopt` or have
+  been `adapt`ed into a fit earlier document. `background` evidence can inform judgment
   but cannot silently stand in for a missing gate.
-- If artifact discovery shows that the selected mode is wrong, stop and ask the user to
+- If the discovery step shows that the selected mode is wrong, stop and ask the user to
   revise the process decision before proceeding.

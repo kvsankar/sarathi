@@ -24,18 +24,31 @@ must improve judgment without turning every prompt into a checklist wall.
 - Prefer a lean core plus triggered modules from
   [assurance-profiles.md](assurance-profiles.md) over universal concern lists.
 - Apply [simplicity-first.md](simplicity-first.md): process requirements stay outside
-  product architecture, and new generic machinery requires concrete evidence.
+product architecture, and new generic machinery requires concrete evidence.
+
+## Plain Language
+
+- Write for a capable software practitioner who has not learned Sarathi's vocabulary.
+- Prefer `document`, `check`, `review`, `parent`, `child`, `existing system`, and
+  `pass/fail result` over `artifact`, `mechanical verification`, `qualitative judgment`,
+  `ancestor`, `descendant`, `brownfield`, and `oracle` in explanatory prose.
+- Keep exact machine-readable field names and values when checkers depend on them. Explain
+  an unfamiliar field in ordinary words where it first appears.
+- Use one term for one idea. Do not create a synonym merely to sound formal.
+- Never soften `must`, `block`, `stop`, approval boundaries, evidence limits, or safety
+  rules while simplifying the wording.
 
 ## Adding A Cross-Cutting Concern
 
 Before adding a new concern, decide:
 
 - Which scope owns it first: product/system, feature/component, or slice/change.
-- Which artifact owns each decision: spec, design/ADR, plan, code/tests, deployment, or docs.
-- Which checks are deterministic structure checks and which are qualitative judgment.
+- Which document or code owns each decision: spec, design/ADR, plan, code/tests,
+  deployment, or docs.
+- Which checks are repeatable program checks and which require independent judgment.
 - Which evidence is an agent-authored claim, and which evidence comes from an independent
-  command, real system, artifact hash, or observed output.
-- Whether the concern needs a hard human gate, an approval attestation, or just a review
+  command, real system, file hash, or observed output.
+- Whether the concern needs a hard human gate, an approval record, or just a review
   finding.
 
 ## Sub-Agent Independence
@@ -53,13 +66,13 @@ Before adding a new concern, decide:
 
 Use precise language:
 
-- "Structural check passed" means shape, references, hashes, and declared evidence are
+- "Automatic checks passed" means shape, references, hashes, and declared evidence are
   internally consistent.
 - "Claim" means an agent/project-authored file or field such as
   `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, `.sdlc/test-traceability.yaml`,
   `.sdlc/approvals.yaml`, or `real_boundary: true`.
 - "Verified" should be reserved for evidence backed by a command, observed output, real
-  dependency, generated artifact, hash-current attestation, or qualitative review.
+  dependency, generated file, matching approval record, or independent review.
 
 Do not let a green checker result imply semantic correctness, human consent, true TDD
 history, or real-boundary execution unless the evidence actually proves that.

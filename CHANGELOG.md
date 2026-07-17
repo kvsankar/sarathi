@@ -62,6 +62,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Rewrite the routing skill, stage prompts, core process docs, static guide, and workflow
+  status copy in plain language while preserving checker fields, approval boundaries,
+  independent assessment, TDD, feedback, and safety rules.
 - Consolidate shared policy into triggered references and reduce the canonical stage prompt
   surface from roughly 5,000 lines to about 1,000 lines.
 - Make simplify passes capable of requiring upstream spec/design/plan revision when an

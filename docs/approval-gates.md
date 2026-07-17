@@ -1,26 +1,26 @@
-# Approval Gates
+# Approval Records
 
-Sarathi supports local approval attestation gates through YAML files under
+Sarathi stores local approvals in YAML files under
 `.sdlc/`. These files are project-local and do not depend on Jira, GitHub Issues, Azure
 Boards, or any other ticketing system.
 
 The checker verifies that an approval record is well-formed, UTC timestamped, and current
-for the artifact bytes it names. It does **not** prove human intent, identity, or external
-consent. Treat the ledger as a structured local attestation that must be visible in reports,
+for the exact file bytes it names. It does **not** prove human intent, identity, or external
+consent. Treat the file as a local claim that must be visible in reports,
 not as an authority system.
 
-Approval means the artifact is sufficient and safe for the next learning step. It does not
-mean the artifact is final, complete, frozen, or presumed correct. Approval should consider
+Approval means the document is sufficient and safe for the next learning step. It does not
+mean the document is final, complete, frozen, or presumed correct. Approval should consider
 available feedback from appropriate stakeholders, record feedback not yet obtained, and
 expect revision when implementation, integration, deployment, or use produces new evidence.
 See [feedback-and-learning.md](feedback-and-learning.md).
 
 ## Files
 
-- `.sdlc/approvals.yaml` records local human or auto approval attestations.
+- `.sdlc/approvals.yaml` records local human or automatic approvals.
 - `.sdlc/gates.yaml` optionally enables bounded auto-approval policy.
 
-Approval records attest to exact artifact bytes. If an approved artifact changes, its hash
+Approval records refer to exact file bytes. If an approved document changes, its hash
 no longer matches and the approval is stale.
 
 ## Approval Ledger
@@ -44,15 +44,15 @@ approvals:
 
 ## Gate Names
 
-- `spec.approved`: required before downstream design gate checks.
-- `design.approved`: required before downstream plan gate checks.
-- `plan.approved`: required before downstream code gate checks.
+- `spec.approved`: required before design gate checks.
+- `design.approved`: required before plan gate checks.
+- `plan.approved`: required before code gate checks.
 - `plan.complexity-approved`: dedicated approval for a bounded Slice/change plan whose
   concise `Complexity Budget Exception:` justifies more than three implementation PRs.
   Record it before plan assessment; it does not approve the whole plan or authorize code.
 - `ux.mock.approved`: required before planning or production UI work when the spec says
   `UI Mock Preference: Required`.
-- `code.markers.approved`: required before downstream progress when code/tests contain
+- `code.markers.approved`: required before later progress when code/tests contain
   TODO/FIXME/XXX/skip/xfail markers that the user explicitly accepts for the current code
   slice. The checker reports the marker locations; do not add SDLC-specific annotations to
   app code.
@@ -67,7 +67,7 @@ approvals:
 Do not claim that an approval proves end-user or stakeholder feedback. Record feedback
 source and status separately in the slice handoff and `.sdlc/wip.md`.
 
-When a user explicitly approves an artifact, update `.sdlc/approvals.yaml` immediately.
+When a user explicitly approves a document, update `.sdlc/approvals.yaml` immediately.
 Compute the SHA-256 from the current file bytes. On Windows:
 
 ```pwsh

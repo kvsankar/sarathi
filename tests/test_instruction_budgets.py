@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,3 +59,74 @@ def test_removed_loc_policy_has_no_active_remnants() -> None:
         text = path.read_text(encoding="utf-8").casefold()
         for token in forbidden:
             assert token not in text, f"removed LOC option remains in {path}: {token}"
+
+
+def test_core_instructions_use_plain_language_without_weakening_gates() -> None:
+    active = [ROOT / "AGENTS.md", ROOT / "skills" / "sarathi" / "SKILL.md"]
+    active.extend(PROMPTS.glob("*.prompt.md"))
+    forbidden_phrases = (
+        "governing artifact",
+        "mechanical verifier",
+        "qualitative reviewer",
+        "verification oracle",
+        "ancestor-impact review",
+        "hash-current attestation",
+        "qualitative judgment",
+        "mechanical verification",
+    )
+
+    for path in active:
+        text = path.read_text(encoding="utf-8").casefold()
+        for phrase in forbidden_phrases:
+            assert phrase not in text, f"avoidable jargon remains in {path}: {phrase}"
+
+    skill = (ROOT / "skills" / "sarathi" / "SKILL.md").read_text(encoding="utf-8")
+    code_create = (PROMPTS / "code-create.prompt.md").read_text(encoding="utf-8")
+    approval_rules = (ROOT / "docs" / "approval-gates.md").read_text(encoding="utf-8")
+    feedback_rules = (ROOT / "docs" / "feedback-and-learning.md").read_text(
+        encoding="utf-8"
+    )
+    maintenance = (ROOT / "docs" / "process-maintenance.md").read_text(encoding="utf-8")
+
+    assert "Implementation Readiness: Exploratory | Decomposable | Code-ready" in skill
+    assert re.search(
+        r"More than three needs.*plan\.complexity-approved.*matches the current plan",
+        skill,
+        re.DOTALL,
+    )
+    assert re.search(
+        r"A primary external boundary cannot rely only.*"
+        r"explicitly accepts the remaining risk",
+        skill,
+        re.DOTALL,
+    )
+    assert "End the turn before starting the next stage" in skill
+    assert "Block unless the plan is Code-ready" in code_create
+    assert all(term in code_create for term in ("**Red**", "**Green**", "**Refactor**"))
+    assert all(
+        category in code_create
+        for category in (
+            "generated-only",
+            "docs-only",
+            "formatting-only",
+            "build/deploy config",
+            "characterization before legacy refactor",
+        )
+    )
+    assert "Record and run the replacement evidence" in code_create
+    assert "Exceptions never cover new/changed product" in code_create
+    assert "explicit user approval" in code_create
+    assert "revision-required" in code_create
+    assert "changes needed in the spec, design, remaining plan" in code_create
+    assert re.search(
+        r"hash\s+no longer matches and the approval is stale", approval_rules
+    )
+    assert "revision-required" in feedback_rules
+    assert "before affected work" in feedback_rules
+    assert "## Plain Language" in maintenance
+
+    for stage in ("spec", "design", "plan", "code"):
+        assess = (PROMPTS / f"{stage}-assess.prompt.md").read_text(encoding="utf-8")
+        assert "**Check pass**" in assess
+        assert "**Review pass**" in assess
+        assert "different fresh sub-agent" in assess
