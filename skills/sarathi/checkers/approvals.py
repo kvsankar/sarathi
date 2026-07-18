@@ -258,6 +258,69 @@ def validate_approval_record(
     return issues
 
 
+def _approval_identity(
+    record: dict[str, Any], project_root: Path
+) -> tuple[Any, Any, Any, Any]:
+    artifact = record.get("artifact")
+    if not isinstance(artifact, dict):
+        return record.get("gate"), record.get("scope"), None, None
+    return (
+        record.get("gate"),
+        record.get("scope"),
+        artifact.get("kind"),
+        _norm_project_path(project_root, str(artifact.get("path", ""))),
+    )
+
+
+def _only_stale_hash_issues(issues: list[str]) -> bool:
+    return all(issue.startswith("artifact hash is stale: ") for issue in issues)
+
+
+def _resolve_supersession(
+    record: dict[str, Any],
+    project_root: Path,
+    records_by_id: dict[str, list[dict[str, Any]]],
+    issues_by_id: dict[str, list[str]],
+) -> tuple[str | None, list[str]]:
+    original_id = record.get("id")
+    if not isinstance(original_id, str) or not original_id:
+        return None, ["superseded approval must have a valid id"]
+
+    expected_identity = _approval_identity(record, project_root)
+    current = record
+    seen = {original_id}
+    while "superseded_by" in current:
+        successor_id = current.get("superseded_by")
+        if not isinstance(successor_id, str) or not successor_id:
+            return None, ["superseded_by must name a non-empty approval id"]
+        if successor_id in seen:
+            return None, [f"supersession cycle includes {successor_id}"]
+        seen.add(successor_id)
+
+        candidates = records_by_id.get(successor_id, [])
+        if len(candidates) != 1:
+            detail = "missing" if not candidates else "duplicated"
+            return None, [f"superseding approval {successor_id} is {detail}"]
+        successor = candidates[0]
+        if _approval_identity(successor, project_root) != expected_identity:
+            return None, [
+                "superseding approval must match gate, scope, artifact kind, and path: "
+                f"{successor_id}"
+            ]
+
+        successor_issues = issues_by_id.get(successor_id, [])
+        if "superseded_by" in successor:
+            if not _only_stale_hash_issues(successor_issues):
+                return None, [f"superseding approval is invalid: {successor_id}"]
+            current = successor
+            continue
+        if successor_issues:
+            return None, [f"terminal superseding approval is invalid: {successor_id}"]
+        return successor_id, []
+
+    return None, ["superseded approval does not name a successor"]
+
+
 def load_approval_context(
     project_root: Path,
     approvals_path: str = ".sdlc/approvals.yaml",
@@ -270,6 +333,7 @@ def load_approval_context(
         "gates_path": gates_path,
         "exists": approvals_file.exists(),
         "records": [],
+        "historical_records": [],
         "invalid_records": [],
         "load_error": None,
     }
@@ -288,9 +352,46 @@ def load_approval_context(
             context["load_error"] = "approvals must be a list"
             return context
         context["records"] = records
-        invalid = []
+        records_by_id: dict[str, list[dict[str, Any]]] = {}
+        validated: list[tuple[Any, list[str]]] = []
         for record in records:
             issues = validate_approval_record(record, project_root, gates_policy)
+            validated.append((record, issues))
+            if isinstance(record, dict) and isinstance(record.get("id"), str):
+                records_by_id.setdefault(record["id"], []).append(record)
+
+        for record, issues in validated:
+            if not isinstance(record, dict) or not isinstance(record.get("id"), str):
+                continue
+            if len(records_by_id.get(record["id"], [])) > 1:
+                issues.append(f"approval id is duplicated: {record['id']}")
+
+        issues_by_id = {
+            record["id"]: issues
+            for record, issues in validated
+            if isinstance(record, dict)
+            and isinstance(record.get("id"), str)
+            and len(records_by_id.get(record["id"], [])) == 1
+        }
+        historical = []
+        invalid = []
+        for record, base_issues in validated:
+            issues = list(base_issues)
+            if isinstance(record, dict) and "superseded_by" in record:
+                terminal_id, supersession_issues = _resolve_supersession(
+                    record, project_root, records_by_id, issues_by_id
+                )
+                if terminal_id and _only_stale_hash_issues(issues):
+                    historical.append(
+                        {
+                            "id": record.get("id"),
+                            "superseded_by": record.get("superseded_by"),
+                            "current_approval_id": terminal_id,
+                            "issues": issues,
+                        }
+                    )
+                    continue
+                issues.extend(supersession_issues)
             if issues:
                 invalid.append(
                     {
@@ -298,6 +399,7 @@ def load_approval_context(
                         "issues": issues,
                     }
                 )
+        context["historical_records"] = historical
         context["invalid_records"] = invalid
     except Exception as exc:  # noqa: BLE001 - checker reports deterministic load errors.
         context["load_error"] = str(exc)
@@ -336,9 +438,12 @@ def approval_requirement(
     invalid_by_id = {
         item["id"]: item["issues"] for item in context.get("invalid_records", [])
     }
+    historical_ids = {item["id"] for item in context.get("historical_records", [])}
     candidate_issues: list[str] = []
     for record in context.get("records", []):
         if not isinstance(record, dict):
+            continue
+        if record.get("id") in historical_ids:
             continue
         artifact = record.get("artifact")
         if not isinstance(artifact, dict):

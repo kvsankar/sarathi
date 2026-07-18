@@ -23,6 +23,12 @@ See [feedback-and-learning.md](feedback-and-learning.md).
 Approval records refer to exact file bytes. If an approved document changes, its hash
 no longer matches and the approval is stale.
 
+Preserve an older approval with `superseded_by: APR-...` when a later approval replaces it.
+The checker reports it as historical only when the chain keeps the same gate, scope,
+artifact kind, and path and ends at one valid hash-current approval. Historical records do
+not satisfy gates. Missing targets, duplicate IDs, cycles, mismatched artifacts, stale
+terminal approvals, and non-hash validation failures remain invalid.
+
 ## Approval Ledger
 
 ```yaml

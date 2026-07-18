@@ -55,6 +55,8 @@ def write_approval_ledger(
             lines.append(f"    policy: {entry['policy']}")
         if "reason" in entry:
             lines.append(f"    reason: {entry['reason']}")
+        if "superseded_by" in entry:
+            lines.append(f"    superseded_by: {entry['superseded_by']}")
     (sdlc / "approvals.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
     if gates_yaml:
         (sdlc / "gates.yaml").write_text(gates_yaml, encoding="utf-8")
@@ -450,6 +452,198 @@ def test_approval_requirement_uses_later_valid_reapproval(
 
     assert rc == 0
     assert report["approval_requirements"][0]["approval_id"] == "APR-CURRENT-SPEC"
+
+
+def test_superseded_stale_approval_is_reported_as_historical(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-OLD-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": "a" * 64,
+                "superseded_by": "APR-CURRENT-SPEC",
+            },
+            {
+                "id": "APR-CURRENT-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+            },
+        ],
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["approval_ledger"]["invalid_records"] == []
+    assert report["approval_ledger"]["historical_records"] == [
+        {
+            "id": "APR-OLD-SPEC",
+            "superseded_by": "APR-CURRENT-SPEC",
+            "current_approval_id": "APR-CURRENT-SPEC",
+            "issues": ["artifact hash is stale: spec.md"],
+        }
+    ]
+    assert report["approval_requirements"][0]["approval_id"] == "APR-CURRENT-SPEC"
+
+
+def test_broken_supersession_link_remains_invalid(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-OLD-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": "a" * 64,
+                "superseded_by": "APR-MISSING-SPEC",
+            },
+            {
+                "id": "APR-CURRENT-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+            },
+        ],
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["approval_ledger"]["historical_records"] == []
+    assert report["approval_ledger"]["invalid_records"] == [
+        {
+            "id": "APR-OLD-SPEC",
+            "issues": [
+                "artifact hash is stale: spec.md",
+                "superseding approval APR-MISSING-SPEC is missing",
+            ],
+        }
+    ]
+
+
+def test_superseded_record_with_non_hash_error_remains_invalid(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-OLD-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": "a" * 64,
+                "approved_at": "2026-07-01T17:30:00+05:30",
+                "superseded_by": "APR-CURRENT-SPEC",
+            },
+            {
+                "id": "APR-CURRENT-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+            },
+        ],
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["approval_ledger"]["historical_records"] == []
+    issues = report["approval_ledger"]["invalid_records"][0]["issues"]
+    assert "artifact hash is stale: spec.md" in issues
+    assert "approved_at must be UTC ISO-8601 like 2026-07-01T14:32:18Z" in issues
+
+
+def test_duplicate_superseding_approval_ids_remain_invalid(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    current = {
+        "id": "APR-CURRENT-SPEC",
+        "gate": "spec.approved",
+        "scope": "product/system",
+        "kind": "spec",
+        "path": "spec.md",
+        "sha256": file_hash(spec_path),
+    }
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-OLD-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": "a" * 64,
+                "superseded_by": "APR-CURRENT-SPEC",
+            },
+            current,
+            current,
+        ],
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["approval_ledger"]["historical_records"] == []
+    invalid = report["approval_ledger"]["invalid_records"]
+    assert invalid[0]["issues"][-1] == (
+        "superseding approval APR-CURRENT-SPEC is duplicated"
+    )
+    assert invalid[1]["issues"] == ["approval id is duplicated: APR-CURRENT-SPEC"]
+    assert invalid[2]["issues"] == ["approval id is duplicated: APR-CURRENT-SPEC"]
 
 
 def test_check_spec_rejects_nfr_without_units(tmp_path, monkeypatch, capsys):

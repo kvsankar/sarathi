@@ -45,6 +45,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Fixed
 
+- Classify stale approvals with a valid `superseded_by` chain as historical evidence while
+  keeping broken chains, active stale approvals, and malformed records invalid.
 - Keep live stage, gate, and next-action state exclusively in `.sdlc/wip.md` instead of
   duplicating `next_recommended_stage` in the durable process-decision ledger.
 - Resolve transitive verify/review prompts from the sibling Sarathi bundle in direct stage

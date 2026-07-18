@@ -233,6 +233,9 @@ def main() -> int:
             "invalid_records": (
                 approval_context.get("invalid_records") if approval_context else []
             ),
+            "historical_records": (
+                approval_context.get("historical_records") if approval_context else []
+            ),
         },
         "code_markers": code_markers,
         "marker_inventory_sha256": marker_inventory_sha,

@@ -607,6 +607,9 @@ def main() -> int:
             "invalid_records": (
                 approval_context.get("invalid_records") if approval_context else []
             ),
+            "historical_records": (
+                approval_context.get("historical_records") if approval_context else []
+            ),
         },
         "orphan_refs": orphans,
         "duplicates": dupes,
