@@ -29,6 +29,11 @@ def _bundle_root() -> Path:
 
 def _install_command(args: argparse.Namespace) -> list[str]:
     root = _bundle_root()
+    skip_checkers = (
+        not args.checkers
+        if args.checkers is not None
+        else args.scope == "user" and args.target is None
+    )
     if os.name == "nt":
         command = [
             "powershell.exe",
@@ -43,7 +48,7 @@ def _install_command(args: argparse.Namespace) -> list[str]:
         command.extend(["-Scope", args.scope])
         if args.tools:
             command.extend(["-Tool", args.tools])
-        if args.no_checkers:
+        if skip_checkers:
             command.append("-NoCheckers")
         if args.no_cross_install:
             command.append("-NoCrossInstall")
@@ -56,7 +61,7 @@ def _install_command(args: argparse.Namespace) -> list[str]:
         command.extend(["--target", args.target])
     if args.tools:
         command.extend(["--tools", args.tools])
-    if args.no_checkers:
+    if skip_checkers:
         command.append("--no-checkers")
     if args.no_cross_install:
         command.append("--no-cross-install")
@@ -90,10 +95,22 @@ def build_parser() -> argparse.ArgumentParser:
     install.add_argument("--target")
     install.add_argument("--scope", choices=("user", "project"), default="user")
     install.add_argument("--tools", help="comma-separated installer targets")
-    install.add_argument("--no-checkers", action="store_true")
+    checker_mode = install.add_mutually_exclusive_group()
+    checker_mode.add_argument(
+        "--with-checkers",
+        dest="checkers",
+        action="store_true",
+        help="copy project-local checkers during an implicit user install",
+    )
+    checker_mode.add_argument(
+        "--no-checkers",
+        dest="checkers",
+        action="store_false",
+        help="skip the separate project-local checker copy",
+    )
     install.add_argument("--no-cross-install", action="store_true")
     install.add_argument("--dry-run", action="store_true")
-    install.set_defaults(handler=_run_install)
+    install.set_defaults(checkers=None, handler=_run_install)
 
     update = subparsers.add_parser(
         "check-update", help="check PyPI for a newer Sarathi release"

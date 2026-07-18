@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from sarathi_sdlc.cli import _install_command, build_parser
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "skills" / "sarathi" / "manifest.json"
 UPDATE_SCRIPT = ROOT / "skills" / "sarathi" / "scripts" / "check_update.py"
@@ -53,7 +55,7 @@ def test_fresh_update_cache_avoids_network(tmp_path: Path, monkeypatch) -> None:
     update = load_update_module()
     cache = tmp_path / "update.json"
     cache.write_text(
-        json.dumps({"checked_at": 1000, "latest_version": "0.1.0"}),
+        json.dumps({"checked_at": 1000, "latest_version": "0.1.1"}),
         encoding="utf-8",
     )
     monkeypatch.setenv("SARATHI_UPDATE_CACHE", str(cache))
@@ -61,24 +63,39 @@ def test_fresh_update_cache_avoids_network(tmp_path: Path, monkeypatch) -> None:
         update, "_fetch_latest", lambda _: pytest.fail("unexpected network request")
     )
 
-    assert update.check_update(now=1001) == ("0.1.0", "0.1.0")
+    assert update.check_update(now=1001) == ("0.1.1", "0.1.1")
 
 
 def test_stale_update_cache_is_refreshed(tmp_path: Path, monkeypatch) -> None:
     update = load_update_module()
     cache = tmp_path / "update.json"
     cache.write_text(
-        json.dumps({"checked_at": 1, "latest_version": "0.1.0"}),
+        json.dumps({"checked_at": 1, "latest_version": "0.1.1"}),
         encoding="utf-8",
     )
     monkeypatch.setenv("SARATHI_UPDATE_CACHE", str(cache))
     monkeypatch.setattr(update, "_fetch_latest", lambda _: "0.2.0")
 
-    assert update.check_update(now=100000) == ("0.1.0", "0.2.0")
+    assert update.check_update(now=100000) == ("0.1.1", "0.2.0")
     assert json.loads(cache.read_text(encoding="utf-8")) == {
         "checked_at": 100000,
         "latest_version": "0.2.0",
     }
+
+
+def test_update_notice_requires_approval_and_pins_version(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    update = load_update_module()
+    monkeypatch.setenv("SARATHI_UPDATE_CACHE", str(tmp_path / "update.json"))
+    monkeypatch.setattr(update, "_fetch_latest", lambda _: "0.2.0")
+    monkeypatch.setattr(sys, "argv", [str(UPDATE_SCRIPT)])
+
+    assert update.main() == 0
+    notice = capsys.readouterr().out
+    assert "installed version is 0.1.1" in notice
+    assert "explicit user approval" in notice
+    assert "sarathi-sdlc==0.2.0" in notice
 
 
 def test_failed_update_check_is_cached_and_does_not_block(
@@ -95,8 +112,8 @@ def test_failed_update_check_is_cached_and_does_not_block(
         raise OSError("offline")
 
     monkeypatch.setattr(update, "_fetch_latest", fail)
-    assert update.check_update(now=1000) == ("0.1.0", None)
-    assert update.check_update(now=1001) == ("0.1.0", None)
+    assert update.check_update(now=1000) == ("0.1.1", None)
+    assert update.check_update(now=1001) == ("0.1.1", None)
     assert requests == 1
 
 
@@ -108,7 +125,29 @@ def test_update_check_can_be_disabled(tmp_path: Path, monkeypatch) -> None:
         update, "_fetch_latest", lambda _: pytest.fail("unexpected network request")
     )
 
-    assert update.check_update(now=1000) == ("0.1.0", None)
+    assert update.check_update(now=1000) == ("0.1.1", None)
+
+
+def command_skips_checkers(arguments: list[str]) -> bool:
+    args = build_parser().parse_args(["install", *arguments])
+    command = _install_command(args)
+    return "--no-checkers" in command or "-NoCheckers" in command
+
+
+def test_implicit_user_install_skips_separate_project_checkers() -> None:
+    assert command_skips_checkers([]) is True
+
+
+def test_project_install_includes_project_checkers_by_default(tmp_path: Path) -> None:
+    assert (
+        command_skips_checkers(["--target", str(tmp_path), "--scope", "project"])
+        is False
+    )
+
+
+def test_user_can_explicitly_request_or_skip_project_checkers() -> None:
+    assert command_skips_checkers(["--with-checkers"]) is False
+    assert command_skips_checkers(["--no-checkers"]) is True
 
 
 @pytest.mark.skipif(os.name == "nt", reason="asserts the Unix installer wrapper")
