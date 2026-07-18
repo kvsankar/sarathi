@@ -1,16 +1,52 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
 [project]
-name = "sarathi"
+name = "sarathi-sdlc"
 version = "0.1.0"
-requires-python = ">=3.13"
+description = "Resumable, reviewable software delivery skills and prompts"
+readme = "README.md"
+requires-python = ">=3.10"
 dependencies = []
+
+[project.scripts]
+sarathi-sdlc = "sarathi_sdlc.cli:main"
+
+[tool.hatch.build.targets.wheel.force-include]
+"CHANGELOG.md" = "src/sarathi_sdlc/_bundle/CHANGELOG.md"
+"checkers" = "src/sarathi_sdlc/_bundle/checkers"
+"docs" = "src/sarathi_sdlc/_bundle/docs"
+"prompts" = "src/sarathi_sdlc/_bundle/prompts"
+"scripts" = "src/sarathi_sdlc/_bundle/scripts"
+"skills" = "src/sarathi_sdlc/_bundle/skills"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sarathi_sdlc"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/CHANGELOG.md",
+    "/README.md",
+    "/checkers",
+    "/docs",
+    "/prompts",
+    "/scripts",
+    "/skills",
+    "/src",
+    "/tests",
+    "/pyproject.toml",
+]
 
 [dependency-groups]
 dev = [
+    "build>=1.3.0",
     "pre-commit>=4.6.0",
     "pymarkdownlnt>=0.9.38",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.15.20",
+    "twine>=6.2.0",
 ]
 
 [tool.ruff]

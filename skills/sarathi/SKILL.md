@@ -5,6 +5,10 @@ description: Sarathi guides resumable, reviewable, feedback-driven software deli
 
 # Sarathi
 
+At the start of each invocation, run the bundled `scripts/check_update.py` with an
+available Python interpreter. Surface any update notice, but never block delivery when the
+check is silent, unavailable, or offline. Respect `SARATHI_UPDATE_CHECK=0`.
+
 Choose the right stage, load its instructions, and load only the guidance needed for the
 current scope and risks. Do not preload every stage or every possible concern.
 

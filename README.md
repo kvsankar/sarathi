@@ -35,9 +35,50 @@ Shared lifecycle policy lives in [docs/cross-cutting-concerns.md](docs/cross-cut
 Prompt authors should use [docs/process-maintenance.md](docs/process-maintenance.md) to keep
 new concerns from bloating every stage prompt.
 
-## Install
+## Install From PyPI
 
-Run from the cloned repository root.
+Install the command in an isolated environment with `uv`:
+
+```sh
+uv tool install sarathi-sdlc
+sarathi-sdlc install
+```
+
+Alternatively, use `pipx`:
+
+```sh
+pipx install sarathi-sdlc
+sarathi-sdlc install
+```
+
+Preview the destinations without writing files:
+
+```sh
+sarathi-sdlc install --dry-run
+```
+
+Install into a specific project or selected tools:
+
+```sh
+sarathi-sdlc install --target /path/to/product --scope project
+sarathi-sdlc install --tools codex,claude-code
+```
+
+Check the installed command version or look for an available release:
+
+```sh
+sarathi-sdlc --version
+sarathi-sdlc check-update
+```
+
+After upgrading the package, rerun `sarathi-sdlc install` to refresh copied skills and
+prompts. Installed skills check PyPI at most once per 24 hours and report newer releases
+without blocking work or updating automatically. Set `SARATHI_UPDATE_CHECK=0` to disable
+that check.
+
+## Install From A Source Checkout
+
+Clone the repository and run from its root when developing or testing an unreleased change.
 
 Preview the install without writing files:
 
@@ -59,7 +100,7 @@ Install for the current user:
 scripts/install.sh
 ```
 
-Install into a specific project workspace instead:
+Install into a specific project workspace from the checkout instead:
 
 ```powershell
 .\scripts\install.ps1 -TargetRoot D:\path\to\product -Scope project
