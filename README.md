@@ -35,46 +35,59 @@ Shared lifecycle policy lives in [docs/cross-cutting-concerns.md](docs/cross-cut
 Prompt authors should use [docs/process-maintenance.md](docs/process-maintenance.md) to keep
 new concerns from bloating every stage prompt.
 
-## Install From PyPI
+## Quick Install
 
-Install the command in an isolated environment with `uv`:
-
-```sh
-uv tool install sarathi-sdlc
-sarathi-sdlc install
-```
-
-Alternatively, use `pipx`:
+Install Sarathi for the current user with one command:
 
 ```sh
-pipx install sarathi-sdlc
-sarathi-sdlc install
+uvx --from sarathi-sdlc sarathi-sdlc install
 ```
+
+`uvx` runs the installer temporarily; the installed skills and prompts remain available.
+Restart or reload your agent tools after installation. A user install skips the separate
+project-local `checkers/` copy by default because every installed Sarathi skill already
+contains its checkers.
+
+When an update notice appears, review and explicitly approve the reported version before
+installing it. Replace `X.Y.Z` with that exact approved version:
+
+```sh
+uvx --from sarathi-sdlc==X.Y.Z sarathi-sdlc install
+```
+
+Verify `manifest.json` reports the approved version, then restart or reload the agent tools.
+Agents must never update Sarathi automatically.
 
 Preview the destinations without writing files:
 
 ```sh
-sarathi-sdlc install --dry-run
+uvx --from sarathi-sdlc sarathi-sdlc install --dry-run
 ```
 
-Install into a specific project or selected tools:
+Install project-local assets, including a top-level `checkers/` copy, or select tools:
 
 ```sh
-sarathi-sdlc install --target /path/to/product --scope project
-sarathi-sdlc install --tools codex,claude-code
+uvx --from sarathi-sdlc sarathi-sdlc install \
+  --target /path/to/product --scope project
+uvx --from sarathi-sdlc sarathi-sdlc install --tools codex,claude-code
 ```
 
-Check the installed command version or look for an available release:
+## Keep The Installer CLI
+
+Install `sarathi-sdlc` permanently only when you want its installer, version, and update
+commands to remain on your `PATH`:
 
 ```sh
+uv tool install sarathi-sdlc
+sarathi-sdlc install
 sarathi-sdlc --version
 sarathi-sdlc check-update
 ```
 
-After upgrading the package, rerun `sarathi-sdlc install` to refresh copied skills and
-prompts. Installed skills check PyPI at most once per 24 hours and report newer releases
-without blocking work or updating automatically. Set `SARATHI_UPDATE_CHECK=0` to disable
-that check.
+Alternatively, use `pipx install sarathi-sdlc`. After upgrading the package, rerun
+`sarathi-sdlc install` to refresh copied skills and prompts. Installed skills check PyPI at
+most once per 24 hours and report newer releases without blocking work or updating
+automatically. Set `SARATHI_UPDATE_CHECK=0` to disable that check.
 
 ## Install From A Source Checkout
 
@@ -140,8 +153,10 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 - **Claude Code**: installs slash commands and the skill.
 - **Gemini CLI**: installs command TOML files.
 - **Claude and Pi**: exports prompt packs under `.ai-prompts/` for manual import or use.
-- **Checkers**: installs `checkers/` into the target workspace unless skipped with
-  `-NoCheckers` or `--no-checkers`.
+- **Checkers**: project-scoped package installs copy `checkers/` into the target workspace.
+  Implicit user-scoped package installs skip that separate copy unless `--with-checkers` is
+  provided; every installed skill still contains its self-contained checker bundle. Source
+  installers retain `-NoCheckers` and `--no-checkers` for explicitly skipping the copy.
 
 Installed skill bundles are self-contained: each `sarathi` skill copy includes
 `SKILL.md`, agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. Prompt

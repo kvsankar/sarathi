@@ -8,6 +8,15 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.1.1 - 2026-07-18
+
+### Changed
+
+- Lead installation guidance with a one-command `uvx` path and make implicit user-scoped
+  package installs skip the redundant project-local checker copy unless requested.
+- Require an available Sarathi update to be reported and explicitly approved before an
+  agent installs the exact version, verifies its manifest, and asks for an agent reload.
+
 ### Fixed
 
 - Give post-PyPI GitHub Release commands an explicit repository so finalization works in a
