@@ -8,8 +8,16 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.1.0 - 2026-07-18
+
 ### Added
 
+- Distribute Sarathi as the `sarathi-sdlc` Python package with a CLI that installs the
+  existing cross-platform skill, prompt, and checker targets from a wheel.
+- Give installed skills explicit version metadata and a cached, fail-open PyPI update check
+  with an environment-variable opt-out.
+- Publish tagged releases through a gated GitHub Actions Trusted Publisher workflow, then
+  create a GitHub Release with the verified wheel and source distribution attached.
 - Show ordered `Wave N` labels beside scheduled child work in the workflow tree, show each
   slice's PR state directly beneath its document chain, and let the compact parent-approval
   status open a dialog with each approval record, stale hash prefixes, and the exact next

@@ -7,7 +7,8 @@ prepared deliberately.
 ## Versioning
 
 - Use `vMAJOR.MINOR.PATCH` Git tags, for example `v0.1.0`.
-- Keep the tag version aligned with `pyproject.toml`.
+- Keep the tag version aligned with `pyproject.toml` and
+  `skills/sarathi/manifest.json`.
 - Use patch releases for fixes that do not change the intended SDLC behavior.
 - Use minor releases for new prompts, checker rules, skill guidance, installer
   targets, or meaningful process behavior changes.
@@ -34,7 +35,8 @@ prepared deliberately.
    git status --short --branch
    ```
 
-2. Choose the next version and update `pyproject.toml`.
+2. Choose the next version and update both `pyproject.toml` and
+   `skills/sarathi/manifest.json`.
 
 3. Update `CHANGELOG.md`:
 
@@ -48,7 +50,15 @@ prepared deliberately.
    uv run python -m pre_commit run --all-files
    ```
 
-5. Run installer dry runs for the platforms available on the release machine:
+5. Build and inspect the PyPI distributions:
+
+   ```sh
+   uv build
+   uv run twine check dist/*
+   ```
+
+6. Run installer dry runs for the platforms available on the release machine, including
+   the packaged command:
 
    ```powershell
    .\scripts\install.ps1 -DryRun
@@ -56,37 +66,50 @@ prepared deliberately.
 
    ```sh
    bash scripts/install.sh --dry-run
-   sh scripts/install.sh --dry-run
+   uv run sarathi-sdlc install --dry-run
    ```
 
    On Windows, the PowerShell dry run may also exercise the WSL companion path
    when WSL is available. On WSL, the Bash dry run may exercise the Windows
    companion path when `powershell.exe` is available.
 
-6. Commit the release prep:
+7. Commit the release prep:
 
    ```sh
-   git add pyproject.toml CHANGELOG.md
+   git add pyproject.toml skills/sarathi/manifest.json CHANGELOG.md
    git commit -m "Release vX.Y.Z"
    ```
 
-7. Create an annotated tag:
+8. Merge the release preparation through a reviewed PR. Create an annotated tag from the
+   merged `master` commit:
 
    ```sh
    git tag -a vX.Y.Z -m "Sarathi vX.Y.Z"
    ```
 
-8. Push the branch and tag:
+9. Push the tag:
 
    ```sh
-   git push origin master
    git push origin vX.Y.Z
    ```
 
-9. Optionally deploy locally from the tagged commit:
+   `.github/workflows/release.yml` verifies the tag and metadata, reruns the full gates,
+   builds the wheel and source distribution, and publishes them through the `pypi`
+   environment and PyPI Trusted Publishing. After PyPI succeeds, it creates the GitHub
+   Release and attaches both distributions. The final step is safe to rerun: an existing
+   release receives refreshed attachments instead of a duplicate release. Do not publish
+   the files or create the GitHub Release manually.
+
+10. Confirm the release on both PyPI and GitHub, then optionally deploy locally from the
+    tagged commit:
 
    ```powershell
    .\scripts\install.ps1
+   ```
+
+   ```sh
+   uv tool upgrade sarathi-sdlc
+   sarathi-sdlc install
    ```
 
 ## Tag Corrections

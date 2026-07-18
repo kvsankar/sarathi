@@ -50,6 +50,15 @@ def test_sarathi_skill_bundles_all_checkers() -> None:
     assert_bundled_files_match("checkers", "*.py")
 
 
+def test_sarathi_skill_contains_version_and_update_checker() -> None:
+    manifest = SKILL / "manifest.json"
+    checker = SKILL / "scripts" / "check_update.py"
+
+    assert manifest.is_file()
+    assert checker.is_file()
+    assert "SARATHI_UPDATE_CHECK=0" in (SKILL / "SKILL.md").read_text(encoding="utf-8")
+
+
 def test_sarathi_skill_bundles_shared_docs() -> None:
     assert sorted(path.name for path in (SKILL / "docs").glob("*.md")) == SKILL_DOCS
     for name in SKILL_DOCS:

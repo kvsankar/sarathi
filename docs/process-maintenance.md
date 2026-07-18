@@ -86,5 +86,6 @@ real-boundary execution unless the evidence actually proves that.
 - Keep release notes focused on behavior, compatibility, install impact, checker policy,
   and maintainer workflow. Avoid burying important process changes in generic refactor
   wording.
-- Do not tag a release until `pyproject.toml`, `CHANGELOG.md`, bundled skill docs, and
-  installer dry runs are consistent.
+- Do not tag a release until `pyproject.toml`, `skills/sarathi/manifest.json`,
+  `CHANGELOG.md`, built distributions, bundled skill docs, and installer dry runs are
+  consistent.
