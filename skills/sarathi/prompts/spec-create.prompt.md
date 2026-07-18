@@ -46,12 +46,17 @@ Research current external facts when requirements depend on changing standards,
 regulation, vendor contracts, or specialized domain facts. Cite authoritative sources in
 the spec when they control intent.
 
+Before creating a child spec, apply the direct-to-code decision in
+`docs/simplicity-first.md`. If accepted parent intent plus a bounded Implementation plan is
+sufficient, do not create the spec. If not, record the ceremony budget and write only the
+smallest delta that resolves the named uncertainty.
+
 ## Author
 
 Follow the Spec contract in `docs/artifact-contracts.md` exactly for product/system work.
-Feature and slice specs may stay compact and reference parent IDs, but must retain common
-metadata, changed intent, acceptance criteria, links to parent requirements, and
-assumptions.
+Feature and slice specs contain only changed/refined behavior, unresolved local decisions,
+slice-specific acceptance, new risks/boundaries, and exceptions to parent intent. Never
+reproduce the complete parent requirement inventory.
 
 Apply these requirements rules:
 
@@ -70,9 +75,8 @@ Apply these requirements rules:
   Do not specify hypothetical future consumers.
 
 Write `spec.md` unless another path is named. Child specs include
-`Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec for an eligible
-code-ready Lean Change Record; its compact plan records the changed behavior and acceptance
-basis from approved parent intent.
+`Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec when an
+Inherited-Intent Implementation Record can safely authorize code.
 
 ## Verify And Handoff
 

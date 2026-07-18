@@ -10,9 +10,9 @@ is usually a slice/change, but a sufficiently small feature/component may itself
 leaf. A leaf PR may implement production code and executable tests whose accepted intent
 lives in any parent scope.
 
-Test code is code. Product and feature documents therefore do not directly authorize
-implementation, but their `AT-`, `JT-`, and design `TEST-` obligations must survive
-the breakdown and become executable in child PRs or explicitly justified non-code
+Test code is code. Accepted parent intent plus a bounded Implementation plan authorizes
+implementation. Parent `AT-`, `JT-`, and design `TEST-` obligations must survive
+allocation and become executable in PRs or explicitly justified non-code
 verification.
 
 ## Ownership Chain
@@ -40,13 +40,11 @@ narrowest level that can prove the behavior:
 3. Product composition leaves verify cross-feature journeys, system acceptance, deployment
    behavior, and system quality attributes once their dependencies exist.
 
-A Breakdown plan must create an explicit integration/acceptance `WORK-` item when an
+A Breakdown plan creates an explicit integration/acceptance `WORK-` item only when an
 obligation spans multiple children and cannot be honestly owned by one existing child. That
-work item must follow [work-decomposition.md](work-decomposition.md): name its child scope
-and required child documents, then reach a code-ready child Implementation plan before
-`/code-create`. Standard child documents should reference clear parent requirements and design
-rather than duplicate them. An eligible Lean slice may instead use its one Lean Change Record
-at the scope that authorizes implementation.
+work item follows [work-decomposition.md](work-decomposition.md): name its child scope and
+minimum required artifact, normally a bounded Implementation plan. Do not create a child
+spec or design unless a named uncertainty requires one.
 
 ## Planning And Evidence
 

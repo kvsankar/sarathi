@@ -64,22 +64,21 @@ Record the profile, extra risk checks, reason, and conditions that would require
 review in `.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the source
 document.
 
-## Scope And Readiness
+## Scope And Execution Readiness
 
-- **Product/system**: broad boundary and capabilities; usually needs breakdown.
-- **Feature/component**: coherent capability or subsystem; may need breakdown.
+- **Product/system**: broad boundary and capabilities.
+- **Feature/component**: coherent capability or subsystem; may be directly code-ready.
 - **Slice/change**: smallest implementable unit; normally code-ready.
 
 Documents declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
-`/code-create` blocks without a code-ready implementation plan for a slice or sufficiently
-small feature.
+`/code-create` blocks without accepted intent and a bounded code-ready Implementation plan.
 
-A `WORK-*` item assigns child work in a parent Breakdown plan; it is not a document or code
-level.
-Product plans normally allocate feature children; feature plans normally allocate slice
-children. Integration work may allocate directly to the smallest coherent executable
-scope. Standard children follow their own Spec/Design/Plan chain; an eligible code-ready Lean
-slice uses one Lean Change Record. See
+At every planning boundary, first ask whether accepted parent artifacts plus one bounded
+Implementation plan safely authorize the next reviewable increment. If yes, plan and code;
+do not create another spec, design, breakdown, wave, or document layer. This applies to
+feature/component work and all assurance profiles. Decompose only for a concrete unresolved
+decision, contract, material risk, independently valuable feedback outcome, touch/integration
+conflict, or missing observable acceptance. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
 Breakdown plans use a `WAVE-*` only for near-term `WORK-*` children that share a real

@@ -12,6 +12,8 @@ when the spec is unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
+For corrected findings, focus on those findings and affected boundaries; restart the full
+review only when scope or controlling intent changed materially.
 
 ## Judge
 

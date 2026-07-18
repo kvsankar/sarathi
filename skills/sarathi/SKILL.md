@@ -84,16 +84,20 @@ When invoked generally, choose and run only the next appropriate stage.
 Maintain `.sdlc/wip.md` using `docs/work-in-progress.md`. It is a resume note, not product
 truth or approval evidence.
 
-## Readiness And Breakdown
+## Execution-First Readiness
 
 Documents declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
-`/code-create` blocks without a code-ready implementation plan for a slice or sufficiently
-small feature.
+`/code-create` blocks without accepted intent and a bounded code-ready Implementation plan.
+Before creating a child artifact, decide in this order: can accepted parent artifacts
+authorize the work; can one bounded Implementation plan make it safe; and can it ship as
+one reviewable increment or sequential UI slices? If yes, plan and implement. A feature or
+component may be code-ready directly, in any delivery profile.
 
-A `WORK-*` is a parent-plan allocation. Product plans normally allocate feature children;
-feature plans normally allocate slice children. Standard children follow their own
-Spec/Design/Plan chain. An eligible code-ready Lean slice uses one compact Lean Change Record
-instead. Use `docs/work-decomposition.md`.
+Decompose only for a concrete unresolved product decision, new or unclear external
+contract, unaccepted material risk, independently valuable feedback outcome, touch or
+integration conflict, or missing observable behavior/acceptance. Many screens, feature
+size, assurance level, easier traceability, or customary document chains are not reasons.
+Use `docs/work-decomposition.md` and its ceremony budget before adding process artifacts.
 
 Breakdown plans use a `WAVE-*` only for near-term `WORK-*` children that share a feedback or
 integration check; unscheduled children have no wave. Implementation plans list the PRs that
@@ -130,8 +134,10 @@ sets, blockers in earlier documents, evidence, safety, approval, or human-review
 
 ## Verification Independence
 
-When sub-agents are available, use one fresh agent to run repeatable checks and another to
-independently judge the work and look for counterexamples. Assessments require both. If
+Run repeatable checks once per artifact revision. After local findings are fixed, recheck
+the affected boundary and focus independent review on those findings; restart full review
+only when scope or controlling intent changed materially. When sub-agents are available,
+use one fresh agent to run checks and another to independently judge the work. If
 sub-agents are unavailable, say that the review is not independent and keep the two passes
 separate. Stop when an earlier required document is not fit. Use
 `docs/review-verification-checklist.md`.

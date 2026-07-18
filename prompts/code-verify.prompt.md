@@ -9,13 +9,15 @@ Collect repeatable check results for implemented code. Do not edit code or judge
 quality. Use `/code-review` for judgment and `/code-assess` for the full gate.
 
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
-selected review depth and extra checks. For a Lean Change Record, use approved parent intent
-in place of missing child spec/design files. Use a fresh checker sub-agent when available;
+selected review depth and extra checks. For an Inherited-Intent Implementation Record (or
+legacy Lean Change Record), use approved parent intent in place of missing child spec/design
+files. Use a fresh checker sub-agent when available;
 otherwise disclose that sub-agents are unavailable and run the same checks directly.
 
 ## Earlier Documents
 
-When the documents exist, run:
+Run only the earlier documents that control the plan. Do not fail an inherited-intent plan
+because unnecessary child spec/design files do not exist. When documents exist, run:
 
 ```pwsh
 python checkers/check_spec.py spec.md --json

@@ -34,6 +34,11 @@ Ask one focused question per turn only for a decision that materially changes ar
 contracts, risk, or readiness. In YOLO mode, record assumptions and trade-offs; do not
 invent external contracts or user approval.
 
+Before creating a child design, apply the direct-to-code decision in
+`docs/simplicity-first.md`. Reuse accepted architecture. If no boundary decision is
+unresolved, do not create the design. Otherwise state the ceremony budget and design only
+the changed boundary.
+
 ## Design
 
 Follow the Design contract in `docs/artifact-contracts.md`. Keep labels readable. Put
@@ -63,12 +68,14 @@ references.
 Write `design.md` and, for Product/system scope, its reviewable `design.html` unless other
 paths are named. For Feature/component or Slice/change scope, create `design.html` only
 when visual review materially helps the decision. Child designs include
-`Parent Work Item: WORK-AREA-NAME`. Do not create a separate design for an eligible Lean
-Change Record; `/plan-create` owns its compact combined record.
+`Parent Work Item: WORK-AREA-NAME`. Do not repeat parent architecture or create a separate
+design when an Inherited-Intent Implementation Record is sufficient.
 
-If `UI Mock Preference: Required`, create or update `mock-ui.html` with required screens,
+If `UI Mock Preference: Required` and no approved prototype exists, create or update `mock-ui.html` with required screens,
 states, flows, responsiveness, and accessibility intent. Record approval status; production
 UI implementation remains blocked until explicit user approval.
+When a prototype already exists, reference it as `Approved Prototype Artifact: path` and
+reuse its existing `ux.mock.approved` record instead of creating another mock.
 
 ## Verify And Handoff
 

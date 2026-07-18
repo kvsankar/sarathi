@@ -60,7 +60,9 @@ GENERIC_MACHINERY = re.compile(
     re.I,
 )
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
-UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
+UI_INTENT_ARTIFACT = re.compile(
+    r"^\s*(?:UI Mock|Approved Prototype) Artifact\s*:\s*(\S+)\s*$", re.I | re.M
+)
 EXTERNAL_DOUBLE = re.compile(
     r"\b(?:external|vendor|sdk|api|cli|host|service|broker|driver|"
     r"database|file format)"
@@ -332,6 +334,10 @@ def main() -> int:
     orphans = sorted(r for r in refs if r not in known)
     vague = len(VAGUE.findall(text))
     complexity_budget = parse_complexity_budget(text)
+    complexity_budget_attempted = (
+        re.search(r"(?im)^\s*(?:#{1,6}\s+)?Complexity Budget(?! Exception)\b", text)
+        is not None
+    )
     complexity_signals = sorted(
         {
             re.sub(r"\s+", " ", line).strip()
@@ -401,7 +407,7 @@ def main() -> int:
                 )
             )
         if "--spec" in sys.argv and UI_MOCK_REQUIRED.search(spec_text):
-            mock_match = UI_MOCK_ARTIFACT.search(text)
+            mock_match = UI_INTENT_ARTIFACT.search(spec_text + "\n" + text)
             if mock_match:
                 approval_requirements.append(
                     approval_requirement(
@@ -420,7 +426,9 @@ def main() -> int:
                         "approved": False,
                         "approval_id": None,
                         "status": None,
-                        "issues": ["UI Mock Artifact is required by the spec"],
+                        "issues": [
+                            "Approved UI intent artifact is required by the spec"
+                        ],
                     }
                 )
 
@@ -445,7 +453,11 @@ def main() -> int:
         "iface_single_owner": not iface_dupes and not iface_owner_issues,
         "no_dependency_cycles": not cycles,
         "complexity_budget_complete": bool(
-            complexity_budget["declared"] and not complexity_budget["missing_fields"]
+            (not complexity_budget_attempted and not complexity_signals)
+            or (
+                complexity_budget["declared"]
+                and not complexity_budget["missing_fields"]
+            )
         ),
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
@@ -471,6 +483,7 @@ def main() -> int:
         "dependency_cycles": cycles,
         "complexity_budget": {
             **complexity_budget,
+            "attempted": complexity_budget_attempted,
             "generic_machinery_signals": complexity_signals,
             "evidence_limit": (
                 "Signals require qualitative simplicity review; presence does not "

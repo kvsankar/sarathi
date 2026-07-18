@@ -21,8 +21,9 @@ A child document also states `Parent Work Item: WORK-AREA-NAME`. Preserve stable
 revision. Use descriptive uppercase slug IDs with exactly the grammar documented in
 `docs/slug-id-migration.md`.
 
-Broad work is normally Decomposable. Code-ready means the next implementation step is
-bounded and does not require unresolved product or architecture decisions.
+Code-ready means the next reviewable increment is bounded and has no unresolved product or
+architecture decision. Scope size alone does not determine readiness; a feature/component
+may inherit accepted intent and architecture and become code-ready directly.
 
 ## Spec Contract
 
@@ -72,9 +73,8 @@ Product/system designs use this checker-visible order:
 12. **Risks & Trade-offs**: `RISK-*`, mitigations, remaining risk, and when to strengthen review.
 13. **Traceability Matrix**: links from requirements to components, interfaces, tests, and decisions.
 
-Include the exact `## Complexity Budget` section from `docs/simplicity-first.md`, using its
-five design fields. A prose mention, differently named section, or fenced example is not
-the contract.
+Include the `## Complexity Budget` section from `docs/simplicity-first.md` only when the
+design proposes new machinery. Do not create a design merely to record a budget.
 
 Feature designs and slice LLDs may reference parent architecture and include only changed
 boundaries. Human-facing headings remain readable; machine IDs live in annotations,
@@ -88,13 +88,19 @@ or explicit acceptance of the remaining risk.
 Write `design.md` plus a reviewable `design.html` for Product/system designs. For a
 Feature/component or Slice/change design, create `design.html` only when diagrams or another
 visual review surface materially help the decision. `design.md` remains the source of truth;
-the HTML view must stay aligned with it. A Lean Change Record does not create a separate
-design document. When the spec says a UI mock is Required, produce/update `mock-ui.html` and
+the HTML view must stay aligned with it. An inherited-intent plan does not create a separate
+design document. When the spec says a UI mock is Required and no approved prototype exists,
+produce/update `mock-ui.html` and
 stop for explicit approval before production UI implementation.
+An existing approved prototype may instead be referenced as
+`Approved Prototype Artifact: path`; the same `ux.mock.approved` gate applies.
 
 ## Plan Contract
 
-Plans declare `Plan Type: Breakdown | Implementation` and use this checker-visible order:
+Plans declare `Plan Type: Breakdown | Implementation`. Before the normal sections, record
+the direct-to-code decision from `docs/simplicity-first.md`: inherited sources, reviewable
+increment, unresolved blocker or `none`, and smallest additional artifact or `none`.
+Plans use this checker-visible order:
 
 1. **Overview**: goal, common metadata, plan type, branch/CI context.
 2. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
@@ -106,30 +112,30 @@ Plans declare `Plan Type: Breakdown | Implementation` and use this checker-visib
 7. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
    ownership for combining parallel work, and stop/replan conditions.
 
-Standard plans include the exact `## Complexity Budget` section from
-`docs/simplicity-first.md`, including `Implementation PR Count`. An eligible Lean Change
-Record uses its shorter required fields instead. Slice/change Implementation plans default to
+Plans that introduce machinery include the exact `## Complexity Budget` section from
+`docs/simplicity-first.md`, including `Implementation PR Count`. An inherited-intent record
+uses its shorter required fields instead. Slice/change Implementation plans default to
 at most three PRs. An exception requires a concise reason plus a
 `plan.complexity-approved` approval that matches the current plan before assessment; this is
 distinct from final `plan.approved`.
 
 A Breakdown plan defines `WORK-AREA-NAME` allocations. Each names parent/child scope,
-inherited IDs and test obligations, required child documents, dependencies, readiness target,
+inherited IDs and test obligations, minimum required artifacts, dependencies, readiness target,
 risks, and done signal. It never authorizes code directly.
 
-A Standard Implementation plan defines `PR-AREA-NAME` items. Each PR states:
+An Implementation plan defines `PR-AREA-NAME` items. Each PR states:
 
 - bounded scope and Planned Touch Set;
 - assigned FR/AT/JT/COMP/TEST IDs, focused verification, and clear pass/fail checks;
 - test levels and real-boundary/fixture strategy;
 - extra risk work (build/release, docs, observability, errors, environments,
-  security/privacy/UI/migration/etc.) or a concise applicable rationale;
+  security/privacy/UI/migration/etc.) when applicable;
 - learning target, feedback target/method, and what result would change the plan;
 - execution, learning, and integration dependencies;
-- learning wave, checkpoint, and stop/replan trigger;
+- UI stakeholder review point when the PR completes an approved-prototype UI slice;
 - a concise reason the PR is cohesive and independently reviewable.
 
-In a Lean Change Record, each `PR-*` states the Planned Touch Set, focused verification,
+In an Inherited-Intent Implementation Record, each `PR-*` states the Planned Touch Set, focused verification,
 inherited IDs and pass/fail checks, and any risk evidence that actually applies. The record
 as a whole owns the concise Lean rationale, acceptance/verification, and escalation fields.
 
@@ -159,31 +165,31 @@ Write `plan.md`. Markdown remains the source of truth. The generated workflow-st
 the shared HTML view for delivery progress, allocated work, waves, and PRs; do not create a
 separate `plan.html` by default.
 
-## Lean Change Record
+## Inherited-Intent Implementation Record
 
-A code-ready Slice/change child with `Delivery Profile: Lean` may use one compact
-Implementation plan in place of separate child spec, design, and plan documents. Mark that
-plan with `Lean Change Record: Yes`. It remains a plan for approval, code assessment, and
-status purposes; "record" describes its compact combined content, not a
-new artifact kind.
+A code-ready Feature/component or Slice/change in any delivery profile may use one compact
+Implementation plan when accepted parent intent and architecture are sufficient. Mark it
+`Inherited Intent Record: Yes`. The legacy `Lean Change Record: Yes` marker remains valid.
+It remains a plan for approval, code assessment, and status; "record" is not a new artifact
+kind.
 
-The record states its `Parent Work Item` and these concise fields:
+The record uses the Direct-To-Code Decision fields and adds only:
 
-- `Why Lean`: why the change is small, reversible, and already understood;
-- `Changed Behavior`: the accepted behavior and explicit non-goal;
-- `Parent IDs / inherited obligations`: the parent intent and tests it owns;
+- `Why Direct`: why inherited intent and architecture are sufficient;
 - `Acceptance & Verification`: pass/fail checks, including real-boundary evidence when
   applicable;
-- `Escalate If`: facts that require a Standard child Spec/Design/Plan chain instead.
+
+`Inherited Sources` names parent intent and obligations; `Reviewable Increment` names the
+changed behavior; `Unresolved Blocker` and `Smallest Additional Artifact` carry escalation.
 
 It still has a bounded `PR-*` list with focused verification, a Planned Touch Set, and clear
-pass/fail checks. Use the Standard child chain when the work introduces an external contract, data
-migration, material security/privacy risk, or unresolved design decision.
+pass/fail checks. Escalate only an unresolved boundary or risk and leave unrelated work on
+the direct path.
 
 ## Code And Evidence Contract
 
-`/code-create` implements only an explicitly selected code-ready child plan, including a Lean
-Change Record, respects the Planned Touch Set, and keeps the suite green at each PR
+`/code-create` implements only an explicitly selected bounded code-ready plan, including an
+Inherited-Intent Implementation Record, respects the Planned Touch Set, and keeps the suite green at each PR
 boundary. It records the exact test and verification commands run, their observed results,
 and any unavailable evidence. Test names remain behavior-focused.
 

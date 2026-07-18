@@ -63,7 +63,7 @@ def test_fresh_update_cache_avoids_network(tmp_path: Path, monkeypatch) -> None:
         update, "_fetch_latest", lambda _: pytest.fail("unexpected network request")
     )
 
-    assert update.check_update(now=1001) == ("0.1.1", "0.1.1")
+    assert update.check_update(now=1001) == ("0.2.0", "0.1.1")
 
 
 def test_stale_update_cache_is_refreshed(tmp_path: Path, monkeypatch) -> None:
@@ -76,7 +76,7 @@ def test_stale_update_cache_is_refreshed(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("SARATHI_UPDATE_CACHE", str(cache))
     monkeypatch.setattr(update, "_fetch_latest", lambda _: "0.2.0")
 
-    assert update.check_update(now=100000) == ("0.1.1", "0.2.0")
+    assert update.check_update(now=100000) == ("0.2.0", "0.2.0")
     assert json.loads(cache.read_text(encoding="utf-8")) == {
         "checked_at": 100000,
         "latest_version": "0.2.0",
@@ -88,14 +88,14 @@ def test_update_notice_requires_approval_and_pins_version(
 ) -> None:
     update = load_update_module()
     monkeypatch.setenv("SARATHI_UPDATE_CACHE", str(tmp_path / "update.json"))
-    monkeypatch.setattr(update, "_fetch_latest", lambda _: "0.2.0")
+    monkeypatch.setattr(update, "_fetch_latest", lambda _: "0.2.1")
     monkeypatch.setattr(sys, "argv", [str(UPDATE_SCRIPT)])
 
     assert update.main() == 0
     notice = capsys.readouterr().out
-    assert "installed version is 0.1.1" in notice
+    assert "installed version is 0.2.0" in notice
     assert "explicit user approval" in notice
-    assert "sarathi-sdlc==0.2.0" in notice
+    assert "sarathi-sdlc==0.2.1" in notice
 
 
 def test_failed_update_check_is_cached_and_does_not_block(
@@ -112,8 +112,8 @@ def test_failed_update_check_is_cached_and_does_not_block(
         raise OSError("offline")
 
     monkeypatch.setattr(update, "_fetch_latest", fail)
-    assert update.check_update(now=1000) == ("0.1.1", None)
-    assert update.check_update(now=1001) == ("0.1.1", None)
+    assert update.check_update(now=1000) == ("0.2.0", None)
+    assert update.check_update(now=1001) == ("0.2.0", None)
     assert requests == 1
 
 
@@ -125,7 +125,7 @@ def test_update_check_can_be_disabled(tmp_path: Path, monkeypatch) -> None:
         update, "_fetch_latest", lambda _: pytest.fail("unexpected network request")
     )
 
-    assert update.check_update(now=1000) == ("0.1.1", None)
+    assert update.check_update(now=1000) == ("0.2.0", None)
 
 
 def command_skips_checkers(arguments: list[str]) -> bool:

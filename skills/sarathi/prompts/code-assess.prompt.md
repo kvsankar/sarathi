@@ -13,6 +13,10 @@ Assess the implemented slice using a separate check pass and review pass. Load
 
 ## Run
 
+Run full passes once for the current revision. After local finding corrections, rerun only
+affected checks and focus review on those findings and changed boundaries unless scope or
+controlling intent changed materially.
+
 1. **Check pass**: in a fresh sub-agent when available, run `/code-verify`, including
    earlier checkers, planned tests, repository quality gates, and extra risk checks. Return
    commands and evidence only.

@@ -11,6 +11,9 @@ profile/modules from `docs/assurance-profiles.md`. Apply `docs/simplicity-first.
 
 ## Run
 
+Run full passes once per revision. After local finding corrections, rerun affected checks
+and focus review on those findings unless scope or controlling intent changed materially.
+
 1. **Check pass**: in a fresh sub-agent when available, run `/spec-verify` and return the
    command, IDs, metrics, failures, and approval evidence without judging overall quality.
 2. **Review pass**: in a different fresh sub-agent when available, run `/spec-review` using

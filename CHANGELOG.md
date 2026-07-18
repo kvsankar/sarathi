@@ -6,7 +6,18 @@ This project follows a Keep-a-Changelog style format with `Added`, `Changed`,
 `Fixed`, `Deprecated`, `Removed`, `Security`, and `Docs` headings as needed.
 Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
-## Unreleased
+## 0.2.0 - 2026-07-18
+
+### Changed
+
+- Make direct-to-code readiness the default when accepted parent intent and architecture
+  plus a bounded Implementation plan safely authorize the next reviewable increment.
+- Replace recursive child-document defaults with inherited-intent delta records, a ceremony
+  budget for exceptional decomposition, prototype-driven UI slices, and focused re-review.
+- Plan schema migration: existing plans must add the compact `Direct-To-Code Decision`
+  before their first 0.2 plan check. Breakdown plans also add an allowed decomposition
+  reason and Ceremony Budget. Legacy Lean markers remain recognized but do not bypass this
+  decision.
 
 ## 0.1.1 - 2026-07-18
 

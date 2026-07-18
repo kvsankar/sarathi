@@ -514,7 +514,35 @@ Escalate If: The public contract or stored data must change.
     assert alpha["child_spec"] is None
     assert alpha["child_design"] is None
     assert alpha["child_plan"]["metadata"]["Lean Change Record"] == "Yes"
-    assert "Lean change record" in rendered
+    assert "Inherited-intent plan" in rendered
+    assert "Slice spec" not in rendered
+
+
+def test_inherited_intent_record_replaces_child_spec_and_design_nodes(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child = project / "docs" / "plans" / "work_alpha.md"
+    child.write_text(
+        child.read_text(encoding="utf-8")
+        + "\nInherited Intent Record: Yes\nWhy Direct: accepted parent intent.\n",
+        encoding="utf-8",
+    )
+    (project / "docs" / "work" / "alpha" / "spec.md").unlink()
+    (project / "docs" / "work" / "alpha" / "design.md").unlink()
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert (
+        model["work_items"][0]["child_plan"]["metadata"]["Inherited Intent Record"]
+        == "Yes"
+    )
+    assert "Inherited-intent plan" in rendered
     assert "Slice spec" not in rendered
 
 

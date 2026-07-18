@@ -16,6 +16,9 @@ Use a fresh reviewer sub-agent when available. Otherwise say that the review is 
 independent and seek counterexamples. Do not rerun commands unless needed to
 resolve missing or contradictory evidence.
 
+For corrected findings, focus re-review on those findings and affected boundaries. Restart
+a full review only if scope or controlling intent changed materially.
+
 ## Judge
 
 Lead with actionable findings ordered by severity and grounded in file/line references.

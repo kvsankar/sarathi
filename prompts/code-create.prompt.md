@@ -5,13 +5,13 @@ agent: agent
 
 # Code Create
 
-Implement only the explicitly selected code-ready child and keep every PR boundary shippable.
+Implement the explicitly selected bounded code-ready plan and keep every PR boundary shippable.
 
 ## Load And Gate
 
-Read `.sdlc/wip.md`, process decisions, the accepted parent intent and code-ready child plan,
-current code/tests, and repository quality commands. A Lean Change Record is that child plan
-and replaces separate child spec/design documents. Load `docs/artifact-contracts.md` for the
+Read `.sdlc/wip.md`, process decisions, accepted parent intent and the code-ready plan,
+current code/tests, and repository quality commands. An Inherited-Intent Implementation
+Record uses parent intent in place of separate child spec/design documents. Load `docs/artifact-contracts.md` for the
 Code and Evidence contract and `docs/feedback-and-learning.md` for active-wave eligibility.
 
 ## Triggered References
@@ -26,8 +26,9 @@ Load only when the trigger applies:
 - `docs/cleanup-pass.md`, `docs/simplify-pass.md`, and `docs/artifact-formatting.md`:
   immediately before handoff.
 
-Block unless the plan is Code-ready, required approvals/mock approvals exist, earlier intent
-is fit, and `.sdlc/wip.md` explicitly selects the owning `WORK-*` child. If that child belongs
+Block unless the plan is Code-ready, required approvals/mock approvals exist, and earlier
+intent is fit. A feature/component plan may authorize code directly without a `WORK-*`
+allocation. When one exists, `.sdlc/wip.md` selects it. If that child belongs
 to a declared wave, also enforce the wave WIP limit and checkpoint rules. Confirm the Planned
 Touch Set, Red tests, Green scope, IDs/obligations, pass/fail checks, review depth and extra
 checks, feedback target, what result would change the plan, dependencies, and conditions for
@@ -83,3 +84,5 @@ Update `.sdlc/wip.md` and report:
 Stop for human review after the code slice. Do not start the next learning-dependent PR,
 release, or deployment without explicit approval or a latest-message unattended
 instruction; `revision-required` and `feedback-required` still block affected work.
+For approved-prototype UI work, this stop is a mandatory stakeholder UI review after every
+completed UI slice.

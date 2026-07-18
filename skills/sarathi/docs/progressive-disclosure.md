@@ -34,8 +34,8 @@ Load references only when their trigger applies:
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `/spec-create` or `/code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
-| `docs/test-ownership.md` | Work that needs breakdown and must carry product/feature acceptance or integration tests into code-ready children. |
-| `docs/work-decomposition.md` | Creating, reviewing, visualizing, or implementing a Breakdown plan whose parent `WORK-*` items must lead to correctly leveled child document chains. |
+| `docs/test-ownership.md` | A bounded plan must allocate inherited acceptance, journey, or integration evidence. |
+| `docs/work-decomposition.md` | Applying direct-to-code readiness or justifying exceptional decomposition with the minimum delta artifact. |
 | `docs/feedback-and-learning.md` | Planning or completing code-ready slices; handling stakeholder feedback, parent revisions, parallel agents, learning dependencies, or learning waves. |
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs repeatable checks with independent review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |

@@ -73,7 +73,9 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     assert bundled.read_bytes() == source.read_bytes()
     guide = source.read_text(encoding="utf-8")
     assert "1. PR-sized leaf" in guide
-    assert "2. Product that needs breakdown" in guide
+    assert "2. Decompose only for unresolved uncertainty" in guide
+    assert "Direct-to-code decision:" in guide
+    assert "Neuring before / after:" in guide
     assert "WORK-FEATURE-ONE" in guide
     assert "WORK-SLICE-A" in guide
     assert "WORK-SYSTEM-INTEGRATION" in guide

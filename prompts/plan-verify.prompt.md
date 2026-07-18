@@ -61,9 +61,11 @@ the exact complexity budget and exception rationale without requiring approval. 
 `plan.complexity-approved` approval whose saved hash matches the current plan. It remains
 separate from final `plan.approved`.
 
-For a Lean Change Record, verify the approved parent spec/design first, then run the plan
+For an Inherited-Intent Implementation Record, verify the approved parent spec/design first, then run the plan
 checker against the compact record with `--feature` and the parent document options needed to
-check its inherited IDs. Do not require missing child spec/design files. For focused
+check its inherited IDs. Use `--inherited-subset --spec <parent-spec> --design
+<parent-design>` so cited IDs are validated without requiring allocation of the complete
+parent inventory. Do not require missing child spec/design files. For focused
 feature/component or slice/change plans, add `--feature` and `--parent` when applicable.
 
 If `python` is unavailable or fails because the launcher is missing, retry with `python3`;

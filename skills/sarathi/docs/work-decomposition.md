@@ -1,104 +1,75 @@
-# Breaking Work Into Child Documents
+# Execution-First Work Boundaries
 
-Use this policy whenever a Breakdown plan divides parent scope into `WORK-*` items.
+Use this policy at every planning boundary and whenever a Breakdown plan is considered.
 
-## Core Model
+## Default Path
 
-A `WORK-*` item assigns part of a parent Breakdown plan to a child. It is not itself a
-Spec, Design, Plan, Code document, approval, or implementation level. The child normally
-takes that work through its own Spec/Design/Plan chain. A code-ready Lean slice may instead
-use the compact Lean Change Record defined in `docs/artifact-contracts.md`.
+Accepted parent requirements, acceptance tests, design decisions, risks, interfaces, and
+approved prototypes are inherited by reference. Ask whether those artifacts plus one
+bounded Implementation plan safely authorize the next reviewable increment. If they do,
+make the feature/component or slice/change code-ready and proceed to code.
 
-The normal recursive mapping is:
+One cohesive Implementation plan may contain several sequential UI slices when they share
+accepted behavior and architecture. Each completed UI slice still stops for stakeholder
+review. Many screens, a large feature, High-assurance delivery, easier traceability, or the
+habit of creating child documents do not justify decomposition.
 
-```text
-Product/system Breakdown plan
-  -> WORK-FEATURE-*
-  -> Feature/component spec
-  -> Feature/component design
-  -> Feature Breakdown or Implementation plan
+## Permitted Decomposition
 
-Feature/component Breakdown plan
-  -> WORK-SLICE-*
-  -> Slice/change spec
-  -> Slice/change design / LLD
-  -> Slice/change Implementation plan
-  -> Code + executable tests
+Create a Breakdown plan or child artifact only when at least one concrete condition exists:
 
-Lean code-ready Slice/change child
-  -> WORK-SLICE-*
-  -> Lean Change Record (compact Implementation plan)
-  -> Code + executable tests
-```
+1. A material product decision is unresolved.
+2. A new or unclear external contract is introduced.
+3. A material security, privacy, safety, migration, or irreversible-data risk lacks an
+   accepted design.
+4. Independently valuable outcomes require separate feedback.
+5. Touch ownership or integration conflicts make one implementation increment unsafe.
+6. Accepted artifacts do not define observable behavior or acceptance.
 
-A sufficiently small feature/component may become code-ready without another slice level.
-Product-level integration, acceptance, migration, release, or other cross-feature work may
-also allocate directly to a slice/change child when that is the smallest coherent executable
-scope. The assignment remains owned by the product plan, but every resulting document and
-all code are labeled with the child scope.
+Use the matching checker value:
+`unresolved-product-decision`, `new-or-unclear-external-contract`,
+`unaccepted-material-risk`, `independent-feedback-outcomes`,
+`touch-or-integration-conflict`, or
+`missing-observable-behavior-or-acceptance`.
 
-## Required Allocation Fields
+Apply the Ceremony Budget from `docs/simplicity-first.md`. Create only the smallest delta
+artifact that resolves the named uncertainty, then return immediately to an Implementation
+plan and code. Do not expand an isolated external-contract question into new UI, storage,
+or unrelated component documentation.
 
-Every `WORK-*` item in a Breakdown plan must state:
+## Inherited Intent And Delta Documents
 
-- **Parent scope**: the plan that owns the allocation.
-- **Child scope**: `Feature/component` or `Slice/change`.
-- **Scope**: the bounded outcome assigned to the child.
-- **Parent IDs / inherited obligations**: requirements, design entities, and test intent the
-  child must preserve.
-- **Required child artifacts**: the checker field listing either the standard child spec,
-  design/HLD/LLD, and Breakdown or Implementation plan, or a Lean Change Record when the
-  child is an eligible code-ready Lean slice.
-- **Dependencies**, **readiness target**, **risks**, and **done signal**.
+Child documents never rebuild the parent inventory. They contain only changed or refined
+behavior, unresolved local decisions, slice-specific acceptance, new risks or boundaries,
+and explicit exceptions to parent intent. A child design describes only a changed boundary;
+a child plan uses concise allocation/reference instead of copying inherited IDs into prose.
 
-Breakdown plans record execution, learning, and integration dependencies for their
-`WORK-*` children. They group child work into waves when work can proceed before the next
-review point. A child Implementation plan lists the PRs needed for that one child; PRs do
-not create or belong to waves.
+When no child spec or design is needed, use an Inherited-Intent Implementation Record in the
+bounded plan. It states the inherited sources, reviewable outcome, acceptance/verification,
+planned touch set, UI review point where applicable, and escalation conditions. The legacy
+`Lean Change Record: Yes` marker remains accepted for existing records.
 
-The identifier itself must use exactly `WORK-AREA-NAME`. Malformed one-token,
-extra-token, lowercase, or numeric-placeholder forms fail plan verification. Status views
-retain malformed allocation bullets in an explicit warning for repair, but exclude them
-from valid allocation counts and child workflow branches.
+## Breakdown Allocations
 
-`check_plan.py` automatically rejects assignments missing parent scope, child scope, scope,
-parent IDs/inherited obligations, or required child artifacts. Review still judges whether
-the declared mapping and document chain make sense.
+A `WORK-*` item assigns work; it is not a document, approval, implementation level, or
+instruction to create a document chain. Every allocation states:
 
-Child documents should reference and refine parent intent rather than copy it. Referencing
-the parent keeps them concise. Standard work still needs a child spec, design, and plan; an
-eligible Lean slice uses its compact Lean Change Record instead.
+- **Parent scope**, **Child scope**, and bounded **Scope**;
+- **Parent IDs / inherited obligations** by concise reference;
+- **Required child artifacts**, normally `bounded Implementation plan`; name an additional
+  delta artifact only with its concrete decomposition reason;
+- dependencies, readiness target, risks, and done signal.
 
-## Scope And Linking Rules
+Breakdown plans may use `WAVE-*` only when near-term children share a real feedback or
+integration checkpoint. Unscheduled children have no wave. Do not create a wave merely to
+record sequential PRs or UI slices inside one Implementation plan.
 
-- The parent plan owns the `WORK-*` identifier and allocation status.
-- The child spec begins a Standard child chain and records its parent plan plus a plain
-  `Parent Work Item: WORK-<AREA>-<NAME>` metadata line.
-- Child design and plan preserve the same plain `Parent Work Item:` line. A Lean Change
-  Record also carries that line. This gives status renderers a reliable link without guessing
-  the parent from prose or directories.
-- Parent `AT-`, `JT-`, and `TEST-` obligations remain owned by their source documents
-  but are allocated to child implementation PRs through the Coverage Map.
-- `/code-create` runs only from a code-ready child Implementation plan, including a Lean
-  Change Record. It never runs from a parent Breakdown plan or directly from a `WORK-*` item.
-- After each assessed code-ready leaf, run the inspect-and-adapt loop in
-  [feedback-and-learning.md](feedback-and-learning.md) before starting learning-dependent
-  siblings. Revise affected parent documents or the remaining breakdown when new evidence
-  requires it; a breakdown is not a promise to execute every originally listed item.
-- Diagrams and status views show `WORK-*` as a parent-to-child assignment. Background color
-  shows Spec/Design/Plan/Code; level labels show the document's own scope.
+## Code Boundary
 
-## Integration Example
+`/code-create` runs from accepted intent plus a code-ready bounded Implementation plan. It
+may implement a feature/component directly. Parent `AT-*`, `JT-*`, and `TEST-*` obligations
+remain owned by their source artifacts and are allocated by reference to planned PRs.
 
-```text
-Product Breakdown plan
-  -> WORK-SYSTEM-INTEGRATION (parent allocation)
-  -> Integration slice spec
-  -> Integration slice design / LLD
-  -> Integration slice Implementation plan
-  -> System integration test code
-```
-
-The slice may implement product-owned acceptance, journey, integration, deployment, and
-quality obligations. Requirement-to-test links preserve that ownership; calling the code
-"product-level code" would confuse parent intent with implementation scope.
+After each assessed slice, inspect new evidence before learning-dependent work. Approved
+prototype work stops for stakeholder UI review after each completed UI slice. Revise parent
+artifacts only when evidence changes their intent or boundaries.

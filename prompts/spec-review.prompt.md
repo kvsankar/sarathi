@@ -13,6 +13,8 @@ over-bundled requirements.
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and actively seek counterexamples. Passing automatic checks is useful evidence,
 not proof that the requirements are good.
+For corrected findings, focus on those findings and affected boundaries; restart the full
+review only when scope or controlling intent changed materially.
 
 ## Judge
 
