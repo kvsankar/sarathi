@@ -11,6 +11,8 @@ Render a read-only Sarathi workflow-status page for the target project. Load
 and current wave checkpoints when present, and check important claims against the source
 documents. This command does not create or revise a spec, design, plan, approval,
 implementation, or review report, so it does not advance a human gate.
+Run it in the same automatic bookkeeping step as boundary checks, approval/assessment
+recording, and ledger updates; do not create another user-facing pause for status alone.
 
 Locate `render_workflow_status.py` in the target project's `checkers/` directory, this
 skill bundle's `checkers/` directory, or the source repository's `checkers/` directory. Run:

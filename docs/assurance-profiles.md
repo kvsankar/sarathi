@@ -30,12 +30,13 @@ uncertainty, and evidence. The profile may differ by feature or slice.
 
 | Profile | Use when | Expected depth |
 | --- | --- | --- |
-| Lean | The change is small, reversible, well understood, and affects little. | Compact documents, one or few PRs, targeted tests, one small wave, and direct feedback. A code-ready slice may use one Lean Change Record instead of a child spec/design/plan chain. |
-| Standard | Ordinary product or feature delivery with meaningful integration or operational concerns. This is the default when risk is unclear. | Normal document depth, explicit integration and deployment evidence, incremental waves, and independent assessment when available. |
+| Lean | The change is small, reversible, well understood, and affects little. | A compact inherited-intent record or bounded plan, one or few PRs, targeted tests, and direct feedback. |
+| Standard | Ordinary product or feature delivery with meaningful integration or operational concerns. This is the default when risk is unclear. | A bounded plan, explicit integration/deployment evidence where applicable, and independent assessment when useful. |
 | High-assurance | Failure could cause material security, privacy, safety, regulatory, financial, availability, migration, or irreversible data harm. | Stronger independent review, realistic-boundary evidence, rehearsals where applicable, auditable decisions, and tighter approval gates. |
 
-High-assurance means stronger evidence before each next delivery step. It must not become a
-large up-front specification phase or defer integration until the end.
+High-assurance means stronger evidence for actual risk. It does not mean more hierarchy,
+document depth, or recursive Spec/Design/Plan chains. An accepted high-assurance design may
+be inherited by one bounded Implementation plan and proceed directly to code.
 
 ## Selection
 
@@ -56,9 +57,11 @@ irreversibility, uncertainty, external-boundary risk, or legal/safety consequenc
 Reducing review depth requires evidence and must not remove obligations already accepted
 by a parent document.
 
-A Lean Change Record is allowed only for a code-ready Slice/change that has no new external
-contract, data migration, material security/privacy risk, or unresolved design decision.
-Any of those facts escalates the child to the Standard Spec/Design/Plan chain.
+A compact Inherited-Intent Implementation Record is allowed for feature/component or
+slice/change work in any profile when accepted parent intent and architecture make it
+code-ready. New screens, accepted encrypted storage/runtime ports/safety policy, or other
+accepted architecture do not disqualify it. Escalate only the unresolved boundary or risk;
+do not force unrelated work through the same additional hierarchy.
 
 ## Extra Risk Checks
 

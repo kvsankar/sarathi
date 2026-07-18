@@ -225,6 +225,12 @@ Work Scope: Slice/change
 Plan Type: Implementation
 Implementation Readiness: Code-ready
 
+## Direct-To-Code Decision
+- Inherited Sources: accepted authentication requirements and design.
+- Reviewable Increment: one login behavior change.
+- Unresolved Blocker: none.
+- Smallest Additional Artifact: none.
+
 # Strategy
 Use one small PR with focused verification.
 
@@ -666,6 +672,28 @@ def test_check_design_requires_budget_and_reports_generic_machinery_signals(
     ]
 
 
+def test_check_design_allows_no_complexity_budget_without_new_machinery(
+    tmp_path, monkeypatch, capsys
+):
+    design_path = tmp_path / "design.md"
+    write_valid_design(design_path)
+    text = design_path.read_text(encoding="utf-8")
+    start = text.index("## Complexity Budget")
+    end = text.index("# Layers")
+    design_path.write_text(text[:start] + text[end:], encoding="utf-8")
+    module = load_checker("check_design")
+    rc, report = run_main(
+        module,
+        [str(design_path), "--component", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+    assert rc == 0
+    assert report["complexity_budget"]["attempted"] is False
+    assert report["gates"]["complexity_budget_complete"] is True
+
+
 def test_check_design_flags_external_double_without_drift_control(
     tmp_path, monkeypatch, capsys
 ):
@@ -925,6 +953,29 @@ def test_check_plan_rejects_inline_or_incomplete_complexity_budget(
     assert rc == 1
     assert report["gates"]["complexity_budget_complete"] is False
     assert report["complexity_budget"]["declared"] is False
+
+
+def test_check_plan_exception_does_not_activate_optional_complexity_budget(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8")
+    start = text.index("## Complexity Budget")
+    end = text.index("# Milestones")
+    plan_path.write_text(
+        text[:start]
+        + "Complexity Budget Exception: four cohesive boundaries if later needed.\n\n"
+        + text[end:],
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+    rc, report = run_main(
+        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
+    )
+    assert rc == 0
+    assert report["complexity_budget"]["attempted"] is False
+    assert report["gates"]["complexity_budget_complete"] is True
 
 
 def test_check_plan_rejects_complexity_pr_count_mismatch(tmp_path, monkeypatch, capsys):
@@ -1219,6 +1270,19 @@ Work Scope: Feature/component
 Plan Type: Breakdown
 Implementation Readiness: Decomposable
 
+## Direct-To-Code Decision
+- Inherited Sources: accepted feature intent.
+- Reviewable Increment: two independently useful behavior outcomes.
+- Unresolved Blocker: separate feedback can change the later outcome.
+- Smallest Additional Artifact: this bounded Breakdown plan.
+
+## Ceremony Budget
+- Decomposition Reason: independent-feedback-outcomes.
+- Uncertainty Resolved: ownership of two independently reviewed outcomes.
+- Existing Artifacts Insufficient Because: feedback may change the later outcome.
+- Implementation Decision Changed: only the first outcome is scheduled initially.
+- Why Plan Note Is Insufficient: separate ownership and a checkpoint are required.
+
 ## Complexity Budget
 - Mental Model: identify two later slices without committing their schedule.
 - Current Consumers: the current feature boundary.
@@ -1287,6 +1351,20 @@ Stop/Replan Triggers: Stop if the first boundary changes the later scope.
     assert report["gates"]["learning_wave_members_complete"] is True
     assert report["unscheduled_work_items"] == ["WORK-AUTH-SECOND"]
 
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace(
+            "Decomposition Reason: independent-feedback-outcomes.",
+            "Decomposition Reason: many-screens.",
+        ),
+        encoding="utf-8",
+    )
+    rc, report = run_main(
+        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
+    )
+    assert rc == 1
+    assert report["gates"]["breakdown_ceremony_budget_complete"] is False
+    assert report["ceremony_budget"]["reason_allowed"] is False
+
 
 def test_check_plan_requires_complete_work_allocation_fields(
     tmp_path, monkeypatch, capsys
@@ -1297,6 +1375,19 @@ def test_check_plan_requires_complete_work_allocation_fields(
 Work Scope: Product/system
 Plan Type: Breakdown
 Implementation Readiness: Decomposable
+
+## Direct-To-Code Decision
+- Inherited Sources: accepted product intent.
+- Reviewable Increment: one independently owned feature outcome.
+- Unresolved Blocker: feature ownership and feedback are separate from the product.
+- Smallest Additional Artifact: this bounded Breakdown plan.
+
+## Ceremony Budget
+- Decomposition Reason: independent-feedback-outcomes.
+- Uncertainty Resolved: feature ownership and its review boundary.
+- Existing Artifacts Insufficient Because: the product plan cannot own feature feedback.
+- Implementation Decision Changed: the feature becomes a separately reviewed outcome.
+- Why Plan Note Is Insufficient: the feature needs an explicit owner and checkpoint.
 
 # Strategy
 Allocate one feature child.
@@ -1387,6 +1478,12 @@ Delivery Profile: Lean
 Plan Type: Implementation
 Parent Work Item: WORK-AUTH-CHANGE
 Lean Change Record: Yes
+
+## Direct-To-Code Decision
+- Inherited Sources: approved authentication requirements and design.
+- Reviewable Increment: one validation behavior change.
+- Unresolved Blocker: none.
+- Smallest Additional Artifact: none.
 Why Lean: The existing boundary and test fixture make this reversible and understood.
 Changed Behavior: Add one validation rule; do not change the public contract.
 Parent IDs / inherited obligations: FR-AUTH-SIGNIN and AT-AUTH-SIGNIN.
@@ -1421,6 +1518,182 @@ Escalate If: The public contract or stored data must change.
     }
     assert report["gates"]["complexity_budget_complete"] is True
     assert report["gates"]["lean_change_record_well_formed"] is True
+
+
+def test_check_plan_accepts_feature_inherited_intent_record(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    plan_path.write_text(
+        """# Mocked investor UI
+
+Work Scope: Feature/component
+Implementation Readiness: Code-ready
+Delivery Profile: High-assurance
+Plan Type: Implementation
+Inherited Intent Record: Yes
+
+## Direct-To-Code Decision
+- Inherited Sources: approved SRS, HLD, prototype, and runtime.
+- Reviewable Increment: first prototype-matching investor screen.
+- Unresolved Blocker: none.
+- Smallest Additional Artifact: none.
+
+Why Direct: Parent intent and architecture define the UI and runtime boundaries.
+Changed Behavior: Render the first investor screen; exclude backend and BLE integration.
+Parent IDs / inherited obligations: FR-UI-INVESTOR and AT-UI-INVESTOR.
+Acceptance & Verification: focused UI checks pass, then stakeholder UI review occurs.
+Escalate If: feedback changes behavior or a new external contract is introduced.
+
+## Pull Requests / Child Work Items
+- PR-UI-FIRST
+  Planned Touch Set: first screen and focused UI tests.
+  Verification: prototype comparison and accessibility checks pass.
+  FR-UI-INVESTOR and AT-UI-INVESTOR have focused pass/fail checks.
+""",
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [str(plan_path), "--feature", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["inherited_intent_record"] == {
+        "declared": True,
+        "legacy_lean_marker": False,
+        "issues": [],
+        "replaces": ["child spec", "child design"],
+    }
+    assert report["direct_to_code_decision"]["missing_fields"] == []
+    assert report["gates"]["complexity_budget_complete"] is True
+
+
+def test_check_plan_inherited_subset_validates_cited_parent_ids_only(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    spec_path.write_text(
+        spec_path.read_text(encoding="utf-8")
+        + "\n- FR-AUTH-RECOVERY The system shall support recovery.\n",
+        encoding="utf-8",
+    )
+    design_path.write_text(
+        design_path.read_text(encoding="utf-8")
+        + '\n<!-- sarathi:entity id="COMP-RECOVERY" refs="FR-AUTH-RECOVERY" -->\n',
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--feature",
+            "--inherited-subset",
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+    assert rc == 0
+    assert report["inherited_subset_mode"] is True
+    assert all(not refs for refs in report["unknown_inherited_refs"].values())
+
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace(
+            "FR-AUTH-SIGNIN", "FR-AUTH-INVENTED"
+        ),
+        encoding="utf-8",
+    )
+    rc, report = run_main(
+        module,
+        [
+            str(plan_path),
+            "--feature",
+            "--inherited-subset",
+            "--spec",
+            str(spec_path),
+            "--design",
+            str(design_path),
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+    assert rc == 1
+    assert report["unknown_inherited_refs"]["fr"] == ["FR-AUTH-INVENTED"]
+
+
+def test_check_plan_rejects_incomplete_inherited_intent_record(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8")
+        .replace(
+            "Implementation Readiness: Code-ready",
+            "Implementation Readiness: Decomposable\nInherited Intent Record: Yes",
+        )
+        .replace(
+            "# Strategy", "Why Direct: Parent intent is sufficient.\n\n# Strategy"
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+    rc, report = run_main(
+        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
+    )
+    assert rc == 1
+    assert report["gates"]["inherited_intent_record_well_formed"] is False
+    assert (
+        "implementation_readiness_must_be_code_ready"
+        in report["inherited_intent_record"]["issues"]
+    )
+    assert (
+        "missing_acceptance_and_verification"
+        in report["inherited_intent_record"]["issues"]
+    )
+
+
+def test_check_plan_rejects_readiness_decision_that_contradicts_plan_type(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8")
+        .replace("Unresolved Blocker: none.", "Unresolved Blocker: contract unclear.")
+        .replace(
+            "Smallest Additional Artifact: none.",
+            "Smallest Additional Artifact: identity boundary design.",
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+    rc, report = run_main(
+        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
+    )
+    assert rc == 1
+    assert report["decision_matches_plan_type"] is False
+    assert report["gates"]["direct_to_code_decision_complete"] is False
 
 
 def test_check_plan_rejects_malformed_work_ids_without_prefix_matches(
@@ -1710,6 +1983,115 @@ def test_check_plan_requires_upstream_and_mock_approvals(tmp_path, monkeypatch, 
         tmp_path,
     )
 
+    assert rc == 0
+    assert report["gates"]["required_approvals_present"] is True
+
+
+def test_approved_prototype_satisfies_ui_gate_across_checkers(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    prototype_path = tmp_path / "prototype.html"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    prototype_path.write_text("<main>Approved prototype</main>\n", encoding="utf-8")
+    spec_path.write_text(
+        spec_path.read_text(encoding="utf-8")
+        + "\nUI Mock Preference: Required\n"
+        + "Approved Prototype Artifact: prototype.html\n",
+        encoding="utf-8",
+    )
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8")
+        + "\nUI Work: Yes\nApproved Prototype Artifact: prototype.html\n",
+        encoding="utf-8",
+    )
+    records = [
+        {
+            "id": "APR-SPEC",
+            "gate": "spec.approved",
+            "scope": "slice/change",
+            "kind": "spec",
+            "path": "spec.md",
+            "sha256": file_hash(spec_path),
+        },
+        {
+            "id": "APR-PROTOTYPE",
+            "gate": "ux.mock.approved",
+            "scope": "feature/component",
+            "kind": "prototype",
+            "path": "prototype.html",
+            "sha256": file_hash(prototype_path),
+        },
+        {
+            "id": "APR-DESIGN",
+            "gate": "design.approved",
+            "scope": "slice/change",
+            "kind": "design",
+            "path": "design.md",
+            "sha256": file_hash(design_path),
+        },
+        {
+            "id": "APR-PLAN",
+            "gate": "plan.approved",
+            "scope": "slice/change",
+            "kind": "plan",
+            "path": "plan.md",
+            "sha256": file_hash(plan_path),
+        },
+    ]
+    write_approval_ledger(tmp_path, records)
+
+    design_checker = load_checker("check_design")
+    rc, report = run_main(
+        design_checker,
+        ["design.md", "--spec", "spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+    assert rc == 0
+    assert report["gates"]["required_approvals_present"] is True
+
+    plan_checker = load_checker("check_plan")
+    rc, report = run_main(
+        plan_checker,
+        [
+            "plan.md",
+            "--spec",
+            "spec.md",
+            "--design",
+            "design.md",
+            "--require-approvals",
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+    assert rc == 0
+    assert report["gates"]["required_approvals_present"] is True
+
+    code_checker = load_checker("check_code")
+    rc, report = run_main(
+        code_checker,
+        [
+            "--plan",
+            "plan.md",
+            "--design",
+            "design.md",
+            "--tests-argv",
+            '["/usr/bin/true"]',
+            "--require-approvals",
+            "--json",
+        ],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
     assert rc == 0
     assert report["gates"]["required_approvals_present"] is True
 

@@ -32,8 +32,9 @@ an approval record, completion percentage, or substitute for checks and review.
 
 The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
 designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
-the first heading. A Lean Change Record is discovered through the child plan path and shown
-as one compact record. It also reads Breakdown-plan `Waves` sections; `.sdlc/approvals.yaml`;
+the first heading. An Inherited-Intent Implementation Record is shown as one compact plan
+without false missing-spec/design nodes; legacy Lean markers remain readable. It also reads
+Breakdown-plan `Waves` sections; `.sdlc/approvals.yaml`;
 `.sdlc/code-assessments.yaml`; `.sdlc/wave-checkpoints.yaml`; `.sdlc/wip.md`; and
 `.sdlc/test-traceability.yaml` when a project voluntarily maintains one. It ignores common
 dependency, cache, and VCS directories.
@@ -47,7 +48,7 @@ dependency, cache, and VCS directories.
 | Approval stale | An approval exists for the path, but not for the current bytes. Select the parent-approval badge for the affected record, hash prefixes, and required fresh approval. |
 | Not yet done | No document was found for that stage. |
 | Documents started | A child spec or design exists, but no child plan was found. |
-| Lean record found | An eligible Lean child has one compact implementation plan instead of child spec/design files. |
+| Inherited-intent plan | Accepted parent intent plus one compact implementation plan replaces unnecessary child spec/design files. |
 | Child plan found | A parent `WORK-` item has a child implementation plan. |
 | PRs planned | A child plan declares PR slices without linked executable tests. |
 | Tests linked | At least one child `PR-` has entries in the test-link file. |
@@ -63,11 +64,9 @@ the current file, a code assessment passed, or a code slice was approved; an amb
 or evidence is present but not complete; and a gray circle means not started. A branch with
 linked tests remains amber until a code assessment establishes a stronger state.
 
-`WORK-*` is an assignment in the parent Breakdown plan, not a document type. Follow
-[work-decomposition.md](work-decomposition.md): the allocation names a child scope, and the
-child's Spec/Design/Plan/Code documents retain that child level even when they implement
-parent obligations. The status renderer shows that expected chain for every real
-assignment, linking found documents and leaving missing ones visibly blank.
+`WORK-*` is an exceptional Breakdown-plan assignment, not a document type. Follow
+[work-decomposition.md](work-decomposition.md). Missing child spec/design nodes are not
+expected when an inherited-intent plan safely proceeds directly to code.
 
 `Tests linked` does not mean complete, correct, merged, deployed, or independently
 verified. WIP statuses are shown only as project-authored claims. The renderer never infers

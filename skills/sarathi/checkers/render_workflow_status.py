@@ -65,6 +65,7 @@ METADATA_FIELDS = (
     "Delivery Profile",
     "Assurance Modules",
     "Plan Type",
+    "Inherited Intent Record",
     "Lean Change Record",
     "Design Depth",
 )
@@ -1599,7 +1600,12 @@ def render_tree_branch(
     plan_type = (
         child.get("metadata", {}).get("Plan Type", "").casefold() if child else ""
     )
-    lean_change_record = (
+    inherited_intent_record = (
+        child.get("metadata", {}).get("Inherited Intent Record", "").casefold() == "yes"
+        if child
+        else False
+    )
+    legacy_lean_record = (
         child.get("metadata", {}).get("Lean Change Record", "").casefold() == "yes"
         if child
         else False
@@ -1612,10 +1618,15 @@ def render_tree_branch(
         plan_title = "Feature plan"
     else:
         plan_title = "Child plan"
-    if lean_change_record:
+    if inherited_intent_record or legacy_lean_record:
         nodes = [
             render_artifact_node(
-                root, output, "plan", child_level_value, "Lean change record", child
+                root,
+                output,
+                "plan",
+                child_level_value,
+                "Inherited-intent plan",
+                child,
             ),
             render_code_node(item),
         ]

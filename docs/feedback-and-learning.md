@@ -40,6 +40,11 @@ Use one feedback status at a slice boundary:
 Never invent stakeholder feedback. Technical checks can support a decision, but they do not
 stand in for end-user or stakeholder judgment when the learning target requires it.
 
+For approved-prototype UI work, the prototype is inherited UI intent. Do not create another
+product-wide mock or respecify the complete feature before the first slice. Implement a
+prototype-matching UI slice, run its checks, and stop for stakeholder UI review. That review
+is mandatory after every completed UI slice before learning-dependent UI work continues.
+
 ## Inspect And Adapt
 
 After each assessed code slice, and before starting learning-dependent work, inspect the
@@ -117,6 +122,11 @@ plan SHA-256. It records `status: completed`, completion time, feedback evidence
 feedback changed, and parent-document impact. This records the end of one wave; it is not a
 full code assessment, human approval, merge claim, or authorization to begin the next wave.
 Changing the plan or wave membership makes the checkpoint stale.
+
+Batch checker execution, approval recording, status rendering, and ledger updates as one
+automatic bookkeeping step at the boundary. Do not introduce repeated user-facing pauses
+between them. Historical approvals remain history and must not be reported repeatedly as
+current invalid-record noise after an approved revision.
 
 Unattended or end-to-end mode may cross human collaboration pauses when explicitly requested,
 but it does not remove learning dependencies. The agent must still stop or replan work whose

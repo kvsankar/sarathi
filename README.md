@@ -227,8 +227,7 @@ Exact invocation syntax depends on the host tool:
 
 Work uses three levels:
 
-- **Product/system**: broad product or platform scope. Usually needs breakdown and is not directly
-  code-ready.
+- **Product/system**: broad product or platform scope.
 - **Feature/component**: one user-facing capability, subsystem, component, integration, or
   screen family.
 - **Slice/change**: the smallest implementable unit, usually PR-sized.
@@ -239,15 +238,19 @@ Documents declare one readiness value:
 - **Decomposable**: valid parent document, but needs child work before implementation.
 - **Code-ready**: precise enough for implementation.
 
-`/code-create` should only run from a code-ready implementation plan.
+`/code-create` runs from accepted intent and a bounded code-ready Implementation plan.
 
-Breakdown plans use `WORK-*` IDs to assign parent work to children; they are not another document
-type. A product plan normally maps each `WORK-*` allocation to a feature spec, design, and
-plan. A feature Breakdown plan normally maps each allocation to a slice spec, LLD, and
-Implementation plan. An eligible code-ready Lean slice instead uses one compact Lean Change
-Record. Product integration work may map directly to a slice child, but its test code remains
-slice-level code carrying product-owned test intent. See
+Before creating child documents, ask whether accepted parent artifacts plus one bounded plan
+safely authorize the next reviewable increment. If yes, proceed directly to implementation;
+a feature/component can be code-ready. Decompose only for a concrete unresolved decision,
+contract, material risk, independent feedback outcome, touch/integration conflict, or
+missing observable acceptance. Scope size, screen count, and assurance profile are not
+reasons. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
+
+Sarathi 0.2 plan checks require a `Direct-To-Code Decision`. Existing 0.1 plans must add
+that compact section before their first 0.2 plan check; Breakdown plans must also name an
+allowed decomposition reason and Ceremony Budget.
 
 ## ID Format
 

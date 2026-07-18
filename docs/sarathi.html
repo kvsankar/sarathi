@@ -628,9 +628,22 @@
 
     <section aria-labelledby="decomposed-tree">
       <div class="section-head">
-        <h2 id="decomposed-tree">2. Product that needs breakdown</h2>
-        <p>Each branch repeats until it reaches a code-ready leaf.</p>
+        <h2 id="decomposed-tree">2. Decompose only for unresolved uncertainty</h2>
+        <p>This exceptional tree applies only when accepted intent plus one bounded plan is
+          not enough. It is not the default route for a large feature or many screens.</p>
       </div>
+
+      <p class="rule"><strong>Direct-to-code decision:</strong> first try inherited parent
+        intent and one bounded Implementation plan for a reviewable increment or sequential
+        UI slices. Create only the minimum delta artifact for an unresolved product decision,
+        new contract, unaccepted material risk, independent feedback outcome,
+        touch/integration conflict, or missing observable acceptance.</p>
+
+      <p class="rule"><strong>Neuring before / after:</strong> before, approved SRS, HLD,
+        prototype, and runtime evidence still triggered a repeated feature Spec/Design chain.
+        After, one shallow plan implements the first prototype-matching investor UI slice,
+        excludes backend and BLE integration, and stops for stakeholder UI review. Later UI
+        slices reuse the same plan unless feedback changes a real boundary.</p>
 
       <div class="flow" aria-label="Product document chain">
         <div class="node artifact-spec">

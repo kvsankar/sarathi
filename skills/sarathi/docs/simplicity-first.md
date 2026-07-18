@@ -33,6 +33,32 @@ point, generic harness, or generalized lifecycle, require at least one of:
 Hypothetical future consumers are not evidence. Prefer a local direct implementation and
 generalize when a second concrete use case reveals the right boundary.
 
+## Direct-To-Code Readiness Decision
+
+At every planning boundary, use this order:
+
+1. Can work proceed from existing approved artifacts?
+2. Can one bounded Implementation plan safely authorize it?
+3. Can it be delivered as one reviewable increment or sequential UI slices?
+4. Only if not, what exact uncertainty requires decomposition?
+5. Create the minimum delta artifact that resolves that uncertainty.
+6. Return to implementation immediately after it is resolved.
+
+Record the result concisely in the plan. Approved parent requirements, acceptance tests,
+design decisions, risks, interfaces, and prototypes are inherited by reference. Do not
+restate them. A feature/component may become code-ready directly; multiple screens do not
+prevent one cohesive plan from scheduling sequential reviewable UI slices.
+
+## Ceremony Budget
+
+Before creating or substantially expanding a process artifact, state what uncertainty it
+resolves, why existing artifacts are insufficient, what implementation decision will
+change, and why a smaller delta record or plan note is insufficient. If any answer is not
+concrete, do not create the artifact.
+
+Stop and simplify when process work grows without new product knowledge, executable
+evidence, or a reviewable user outcome.
+
 ## Reuse Proof From The Existing System
 
 For refactors in an existing system, its functional, acceptance, schema, OpenAPI, CI,
@@ -46,7 +72,7 @@ before inventing a parallel harness.
 
 ## Complexity Budget
 
-Before accepting a Standard design or implementation plan, compare it with the user's stated
+When a design or implementation proposes new machinery, compare it with the user's stated
 mental model. Record one checker-visible `## Complexity Budget` section:
 
 ```markdown
@@ -61,7 +87,7 @@ mental model. Record one checker-visible `## Complexity Budget` section:
 
 Designs use the first five fields. Plans use all six; Breakdown plans record `0`. The
 checker verifies exact fields and, for plans, that the declared count matches actual
-`PR-*` items. An eligible Lean Change Record uses its shorter `Why Lean` and `Escalate If`
+`PR-*` items. A compact Inherited-Intent Implementation Record uses its shorter readiness
 fields instead. Independent review decides whether the content is honest and proportionate.
 
 The budget is qualitative. Sarathi has no source-file, module, diff, or PR line-count
@@ -73,6 +99,9 @@ than three requires a concise `Complexity Budget Exception:` in the plan and a d
 `plan.approved` remains a separate approval for code. Prefer one cohesive change over
 artificial setup, scaffold, routing, generated-output, parity, or cleanup PRs.
 Product/feature Breakdown-plan work-item counts are not subject to this slice PR limit.
+
+The complexity budget is not a reason to create a document. Omit it when the plan reuses
+accepted architecture and adds no product machinery; the direct-to-code record is enough.
 
 ## Deletion-First Review
 
@@ -117,3 +146,16 @@ A proportionate plan is approximately:
 
 Collapse these further when one cohesive PR is easier to review and rollback. Add a fourth
 PR or generalized system only after concrete evidence and explicit approval.
+
+## Dogfood: Neuring Consumer Android
+
+**Before:** accepted product SRS/HLD/prototype and proven runtime boundaries were followed by
+an exhaustive feature SRS, repeated architecture, a Breakdown plan, child specs/designs,
+and waves before the first screen could be implemented.
+
+**After:** inherit the accepted product SRS, HLD, prototype, walking skeleton, runtime,
+directive, mock-device, encrypted-storage, theme, localization, and Android evidence
+boundaries. Create one shallow bounded Implementation plan for the mocked investor
+experience, implement the first prototype-matching UI slice, run focused checks, and stop
+for stakeholder UI review. Keep backend and BLE integration out of scope. Continue one UI
+slice at a time under the same plan unless feedback or a genuinely new boundary changes it.

@@ -1,7 +1,7 @@
 # Checks And Review Checklist
 
 Every assessment pairs repeatable check results with independent judgment. Checker JSON is
-never the whole assessment.
+never the whole assessment. Run mechanical verification once per artifact revision.
 
 ## Independent Passes
 
@@ -14,6 +14,10 @@ When the host supports sub-agents, use two fresh contexts:
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
 passes separate. A failed or unfit earlier document blocks the later verdict.
+
+After review findings are corrected locally, rerun affected checks and perform a focused
+re-review of those findings and changed boundaries. Do not restart a full independent review
+unless scope or controlling intent changed materially. Record which mode was used.
 
 ## Check Pass
 
@@ -38,6 +42,8 @@ Every reviewer judges:
 - feedback/learning dependencies and changes to parent documents where applicable;
 - simplicity using `docs/simplicity-first.md`.
 - whether the chosen verification is focused, meaningful, and proportionate to risk.
+- whether another artifact is justified by a concrete ceremony budget; recommending a new
+  document layer is never the default fix.
 
 Start with simplification: what can be deleted, deferred, collapsed, implemented directly,
 or proved by existing evidence? A document with every required section still fails when it is overbuilt,

@@ -11,12 +11,16 @@ Exits 0 only when every structural gate passes. No semantic judgment, reproducib
 Usage:
     python check_plan.py [plan.md] [--json] [--feature] [--parent product.md]
                          [--spec spec.md] [--design design.md]
+                         [--inherited-subset]
                          [--require-complexity-approval]
 
 --feature  Treat as a feature-level plan (subset of a product).
 --parent   A product plan whose IDs may be referenced.
 --spec     Spec file: every FR-/AT-/JT- must be covered by a WORK item or PR.
 --design   Design file: every COMP-/TEST- must be covered by a WORK item or PR.
+--inherited-subset
+           Validate cited parent spec/design IDs without requiring the plan to allocate
+           every obligation in those parent artifacts.
 --require-complexity-approval
            Require a hash-current plan.complexity-approved attestation when a bounded
            Slice/change plan contains more than three implementation PRs.
@@ -71,9 +75,14 @@ NON_PLAN_ID_CANDIDATE = re.compile(
 )
 VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.", re.I)
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
-UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
+UI_INTENT_ARTIFACT = re.compile(
+    r"^\s*(?:UI Mock|Approved Prototype) Artifact\s*:\s*(\S+)\s*$", re.I | re.M
+)
 SLICE_SCOPE = re.compile(r"^\s*Work Scope\s*:\s*Slice/change\s*$", re.I | re.M)
 LEAN_CHANGE_RECORD = re.compile(r"^\s*Lean Change Record\s*:\s*Yes\s*$", re.I | re.M)
+INHERITED_INTENT_RECORD = re.compile(
+    r"^\s*Inherited Intent Record\s*:\s*Yes\s*$", re.I | re.M
+)
 DELIVERY_PROFILE = re.compile(r"^\s*Delivery Profile\s*:\s*(.+?)\s*$", re.I | re.M)
 IMPLEMENTATION_READINESS = re.compile(
     r"^\s*Implementation Readiness\s*:\s*(.+?)\s*$", re.I | re.M
@@ -124,6 +133,31 @@ LEAN_CHANGE_FIELDS = (
     "Acceptance & Verification",
     "Escalate If",
 )
+INHERITED_INTENT_FIELDS = (
+    "Why Direct",
+    "Acceptance & Verification",
+)
+DIRECT_DECISION_FIELDS = (
+    "Inherited Sources",
+    "Reviewable Increment",
+    "Unresolved Blocker",
+    "Smallest Additional Artifact",
+)
+CEREMONY_BUDGET_FIELDS = (
+    "Decomposition Reason",
+    "Uncertainty Resolved",
+    "Existing Artifacts Insufficient Because",
+    "Implementation Decision Changed",
+    "Why Plan Note Is Insufficient",
+)
+ALLOWED_DECOMPOSITION_REASONS = {
+    "unresolved-product-decision",
+    "new-or-unclear-external-contract",
+    "unaccepted-material-risk",
+    "independent-feedback-outcomes",
+    "touch-or-integration-conflict",
+    "missing-observable-behavior-or-acceptance",
+}
 
 
 def _defline(line: str):
@@ -230,24 +264,27 @@ def missing_work_allocation_fields(block: str) -> list[str]:
     return missing
 
 
-def lean_change_record_issues(text: str, implementation_plan: bool) -> list[str]:
-    """Check the compact record needed when Lean replaces child spec/design files."""
-    if not LEAN_CHANGE_RECORD.search(text):
+def inherited_intent_record_issues(text: str, implementation_plan: bool) -> list[str]:
+    """Check a compact plan that inherits accepted parent intent and architecture."""
+    legacy_lean = LEAN_CHANGE_RECORD.search(text) is not None
+    inherited_intent = INHERITED_INTENT_RECORD.search(text) is not None
+    if not (legacy_lean or inherited_intent):
         return []
     issues = []
-    profile = DELIVERY_PROFILE.search(text)
-    if not profile or profile.group(1).strip().casefold() != "lean":
-        issues.append("delivery_profile_must_be_lean")
-    if not SLICE_SCOPE.search(text):
-        issues.append("work_scope_must_be_slice_change")
+    if legacy_lean:
+        profile = DELIVERY_PROFILE.search(text)
+        if not profile or profile.group(1).strip().casefold() != "lean":
+            issues.append("delivery_profile_must_be_lean")
+        if not SLICE_SCOPE.search(text):
+            issues.append("work_scope_must_be_slice_change")
     readiness = IMPLEMENTATION_READINESS.search(text)
     if not readiness or readiness.group(1).strip().casefold() != "code-ready":
         issues.append("implementation_readiness_must_be_code_ready")
     if not implementation_plan:
         issues.append("plan_type_must_be_implementation")
-    if not PARENT_WORK_ITEM.search(text):
+    if legacy_lean and not PARENT_WORK_ITEM.search(text):
         issues.append("parent_work_item_missing_or_invalid")
-    for label in LEAN_CHANGE_FIELDS:
+    for label in LEAN_CHANGE_FIELDS if legacy_lean else INHERITED_INTENT_FIELDS:
         pattern = re.compile(
             rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
             rf"(?:\*\*)?\s*:\s*\S"
@@ -255,13 +292,58 @@ def lean_change_record_issues(text: str, implementation_plan: bool) -> list[str]
         if not pattern.search(text):
             field_key = label.casefold().replace(" ", "_").replace("/", "_")
             issues.append(f"missing_{field_key.replace('&', 'and')}")
+    if inherited_intent:
+        decision = direct_to_code_decision(text)
+        issues.extend(
+            f"missing_direct_to_code_{label.casefold().replace(' ', '_')}"
+            for label in decision["missing_fields"]
+        )
     return issues
+
+
+def direct_to_code_decision(text: str) -> dict:
+    body = section_text(text, "Direct-To-Code Decision")
+    values = {}
+    for label in DIRECT_DECISION_FIELDS:
+        match = re.search(
+            rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
+            rf"(?:\*\*)?\s*:\s*(\S.*?)\s*$",
+            body,
+        )
+        values[label] = match.group(1).strip() if match else None
+    return {
+        "declared": bool(body),
+        "fields": values,
+        "missing_fields": [label for label, value in values.items() if not value],
+    }
+
+
+def ceremony_budget(text: str) -> dict:
+    body = section_text(text, "Ceremony Budget")
+    values = {}
+    for label in CEREMONY_BUDGET_FIELDS:
+        match = re.search(
+            rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
+            rf"(?:\*\*)?\s*:\s*(\S.*?)\s*$",
+            body,
+        )
+        values[label] = match.group(1).strip() if match else None
+    return {
+        "declared": bool(body),
+        "fields": values,
+        "missing_fields": [label for label, value in values.items() if not value],
+        "reason_allowed": (values.get("Decomposition Reason") or "")
+        .casefold()
+        .rstrip(".")
+        in ALLOWED_DECOMPOSITION_REASONS,
+    }
 
 
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
     feature = "--feature" in sys.argv
+    inherited_subset = "--inherited-subset" in sys.argv
     require_approvals = "--require-approvals" in sys.argv
     require_complexity_approval = "--require-complexity-approval" in sys.argv
     approvals_path = (
@@ -300,6 +382,15 @@ def main() -> int:
     design_tests = ids_from(design_path, TEST) if design_path else set()
     path = Path(args[0] if args else "plan.md")
     text = path.read_text(encoding="utf-8")
+    cited = {
+        "fr": {m.group(0) for m in FR.finditer(text)},
+        "uc": {m.group(0) for m in UC.finditer(text)},
+        "nfr": {m.group(0) for m in NFR.finditer(text)},
+        "at": {m.group(0) for m in AT.finditer(text)},
+        "jt": {m.group(0) for m in JT.finditer(text)},
+        "comp": {m.group(0) for m in COMP.finditer(text)},
+        "test": {m.group(0) for m in TEST.finditer(text)},
+    }
     defined, refs = defs_and_refs(text)
     all_ids = set().union(*defined.values()) | parent_ids
     wave_result = parse_learning_waves(text, str(path))
@@ -347,7 +438,33 @@ def main() -> int:
         and plan_type_match.group(1).strip().casefold() == "implementation"
     )
     lean_change_record = LEAN_CHANGE_RECORD.search(text) is not None
-    lean_change_issues = lean_change_record_issues(text, implementation_plan)
+    inherited_intent_record = INHERITED_INTENT_RECORD.search(text) is not None
+    compact_record = lean_change_record or inherited_intent_record
+    lean_change_issues = inherited_intent_record_issues(text, implementation_plan)
+    readiness_decision = direct_to_code_decision(text)
+    process_budget = ceremony_budget(text)
+    blocker_value = (
+        (readiness_decision["fields"].get("Unresolved Blocker") or "")
+        .casefold()
+        .rstrip(".")
+    )
+    additional_artifact_value = (
+        (readiness_decision["fields"].get("Smallest Additional Artifact") or "")
+        .casefold()
+        .rstrip(".")
+    )
+    decision_matches_plan_type = bool(
+        (
+            implementation_plan
+            and blocker_value == "none"
+            and additional_artifact_value == "none"
+        )
+        or (
+            breakdown_plan
+            and blocker_value not in {"", "none"}
+            and additional_artifact_value not in {"", "none"}
+        )
+    )
     work_ids = set(work_blocks) if breakdown_plan else set()
     wave_member_counts = Counter(
         member for wave in wave_result["waves"] for member in wave["members"]
@@ -399,6 +516,10 @@ def main() -> int:
     exception_match = COMPLEXITY_EXCEPTION.search(text)
     complexity_exception = exception_match.group(1).strip() if exception_match else None
     complexity_budget = parse_complexity_budget(text, plan=True)
+    complexity_budget_attempted = (
+        re.search(r"(?im)^\s*(?:#{1,6}\s+)?Complexity Budget(?! Exception)\b", text)
+        is not None
+    )
     complexity_pr_count_matches = complexity_budget["implementation_pr_count"] == len(
         pr_blocks
     )
@@ -424,7 +545,13 @@ def main() -> int:
                 )
             )
             if UI_MOCK_REQUIRED.search(Path(spec_path).read_text(encoding="utf-8")):
-                mock_match = UI_MOCK_ARTIFACT.search(design_text)
+                mock_match = UI_INTENT_ARTIFACT.search(
+                    Path(spec_path).read_text(encoding="utf-8")
+                    + "\n"
+                    + design_text
+                    + "\n"
+                    + text
+                )
                 if mock_match:
                     approval_requirements.append(
                         approval_requirement(
@@ -443,7 +570,9 @@ def main() -> int:
                             "approved": False,
                             "approval_id": None,
                             "status": None,
-                            "issues": ["UI Mock Artifact is required by the spec"],
+                            "issues": [
+                                "Approved UI intent artifact is required by the spec"
+                            ],
                         }
                     )
         if design_path:
@@ -466,6 +595,24 @@ def main() -> int:
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
 
+    available = {
+        "fr": spec_frs,
+        "uc": spec_ucs,
+        "nfr": spec_nfrs,
+        "at": spec_ats,
+        "jt": spec_jts,
+        "comp": design_comps,
+        "test": design_tests,
+    }
+    unknown_inherited = {
+        key: sorted(values - available[key]) for key, values in cited.items()
+    }
+
+    def coverage_gate(covered: set, required: set, key: str) -> bool:
+        if inherited_subset:
+            return not unknown_inherited[key]
+        return covered == required
+
     wave_declaration_valid = bool(
         wave_result["declared"] and wave_result["waves"]
     ) and not (
@@ -485,13 +632,13 @@ def main() -> int:
         "id_format_slug_only": not bad,
         "no_duplicates": not dupes,
         "no_orphan_refs": not orphans,
-        "fr_coverage_100": fr_c == spec_frs,
-        "uc_coverage_100": uc_c == spec_ucs,
-        "nfr_coverage_100": nfr_c == spec_nfrs,
-        "at_coverage_100": at_c == spec_ats,
-        "jt_coverage_100": jt_c == spec_jts,
-        "comp_coverage_100": comp_c == design_comps,
-        "test_obligation_coverage_100": test_c == design_tests,
+        "fr_coverage_100": coverage_gate(fr_c, spec_frs, "fr"),
+        "uc_coverage_100": coverage_gate(uc_c, spec_ucs, "uc"),
+        "nfr_coverage_100": coverage_gate(nfr_c, spec_nfrs, "nfr"),
+        "at_coverage_100": coverage_gate(at_c, spec_ats, "at"),
+        "jt_coverage_100": coverage_gate(jt_c, spec_jts, "jt"),
+        "comp_coverage_100": coverage_gate(comp_c, design_comps, "comp"),
+        "test_obligation_coverage_100": coverage_gate(test_c, design_tests, "test"),
         "external_double_mitigation_present": external_double_mitigation_present,
         "work_allocations_well_formed": not incomplete_work_allocations,
         "learning_waves_well_formed": (
@@ -505,16 +652,33 @@ def main() -> int:
             else not (unknown_wave_members or duplicate_wave_members)
         ),
         "bounded_slice_pr_budget": not pr_budget_exceeded or bool(complexity_exception),
+        "direct_to_code_decision_complete": bool(
+            readiness_decision["declared"]
+            and not readiness_decision["missing_fields"]
+            and decision_matches_plan_type
+        ),
+        "breakdown_ceremony_budget_complete": bool(
+            not breakdown_plan
+            or (
+                process_budget["declared"]
+                and not process_budget["missing_fields"]
+                and process_budget["reason_allowed"]
+            )
+        ),
         "complexity_budget_complete": bool(
-            not lean_change_record
-            and complexity_budget["declared"]
-            and not complexity_budget["missing_fields"]
-            and not complexity_budget["invalid_implementation_pr_count"]
-            and complexity_pr_count_matches
-        )
-        or (lean_change_record and not lean_change_issues),
+            (not complexity_budget_attempted and not complexity_signals)
+            or (
+                complexity_budget["declared"]
+                and not complexity_budget["missing_fields"]
+                and not complexity_budget["invalid_implementation_pr_count"]
+                and complexity_pr_count_matches
+            )
+        ),
         "lean_change_record_well_formed": (
             not lean_change_record or not lean_change_issues
+        ),
+        "inherited_intent_record_well_formed": (
+            not inherited_intent_record or not lean_change_issues
         ),
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
@@ -542,6 +706,17 @@ def main() -> int:
             if lean_change_record
             else [],
         },
+        "inherited_intent_record": {
+            "declared": inherited_intent_record,
+            "legacy_lean_marker": lean_change_record,
+            "issues": lean_change_issues,
+            "replaces": ["child spec", "child design"] if compact_record else [],
+        },
+        "direct_to_code_decision": readiness_decision,
+        "decision_matches_plan_type": decision_matches_plan_type,
+        "ceremony_budget": process_budget,
+        "inherited_subset_mode": inherited_subset,
+        "unknown_inherited_refs": unknown_inherited,
         "work_items": sorted(work_blocks),
         "incomplete_work_allocations": incomplete_work_allocations,
         "learning_waves": wave_result["waves"],
@@ -566,6 +741,7 @@ def main() -> int:
         "duplicate_wave_members": duplicate_wave_members,
         "complexity_budget": {
             **complexity_budget,
+            "attempted": complexity_budget_attempted,
             "implementation_pr_count_matches": complexity_pr_count_matches,
             "applies": bounded_slice,
             "implementation_prs": len(pr_blocks),

@@ -12,6 +12,9 @@ Assess the target design using two separate passes. Load
 
 ## Run
 
+Run full passes once per revision. After local finding corrections, rerun affected checks
+and focus review on those findings unless scope or controlling intent changed materially.
+
 1. **Check pass**: in a fresh sub-agent when available, run `/design-verify`, including the
    spec checker, and return commands, IDs, metrics, failures, and approval evidence only.
 2. **Review pass**: in a different fresh sub-agent when available, run `/design-review`

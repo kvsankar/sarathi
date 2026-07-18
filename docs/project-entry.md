@@ -10,9 +10,8 @@ Choose exactly one project entry mode before creating or reviewing later documen
 when the repo is not already operating under an SDLC decision record:
 
 - **New project** (`greenfield` / `Greenfield Adoption`): the project starts under Sarathi
-  now. Use the normal
-  sequence: spec, design, plan, code. Existing external references may inform the first
-  documents, but there is no existing implementation baseline to accept.
+  now. Establish product intent and architecture, then apply direct-to-code readiness at
+  each boundary. Existing external references may satisfy part of that intent.
 - **Document and review the existing system** (`brownfield_baseline` / `Brownfield Baseline
   Adoption`): create a retrospective spec and design from the existing product, docs,
   tests, and code, then perform a baseline
@@ -146,9 +145,9 @@ the current production work needs.
 - A planless baseline `/code-review` must say that it is a retrospective baseline
   review, name the decision record that permits skipping plan review, and avoid claiming
   conformance to a pre-approved implementation plan.
-- New implementation changes in any mode require the normal later documents: a
-  code-ready spec/design/implementation plan, unless the user explicitly chooses a
-  documented lightweight exploratory track.
+- New implementation changes in any mode require accepted intent and a bounded code-ready
+  Implementation plan. Existing approved specs/designs are inherited; create only a delta
+  artifact needed for a concrete unresolved decision or risk.
 - Existing documents can satisfy a gate only when they are classified as `adopt` or have
   been `adapt`ed into a fit earlier document. `background` evidence can inform judgment
   but cannot silently stand in for a missing gate.

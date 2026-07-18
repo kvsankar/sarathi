@@ -12,6 +12,10 @@ Assess the target plan using two separate passes. Load `prompts/plan-verify.prom
 
 ## Run
 
+Run full passes once for the current revision. After local finding corrections, rerun only
+affected checks and focus review on those findings and changed boundaries unless scope or
+controlling intent changed materially.
+
 1. **Check pass**: in a fresh sub-agent when available, run `/plan-verify`, including the
    earlier checkers, exact delivery IDs, coverage, and ordered wave membership. Return
    commands, metrics, IDs, failures, and approval evidence only.
@@ -20,9 +24,9 @@ Assess the target plan using two separate passes. Load `prompts/plan-verify.prom
    waves, review-depth allocation, and readiness.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
-passes separate. Failed or unfit earlier documents block the plan verdict. For a Lean Change
-Record, assess the approved parent intent plus the compact record; do not require separate
-child spec/design files.
+passes separate. Failed or unfit earlier documents block the plan verdict. For an
+Inherited-Intent Implementation Record, assess approved parent intent plus the compact
+record; do not require separate child spec/design files.
 
 For a bounded Slice/change plan with more than three implementation PRs, block assessment
 until the concise exception has a `plan.complexity-approved` approval that matches the

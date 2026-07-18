@@ -15,11 +15,15 @@ unfit.
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
 
+For corrected findings, focus re-review on those findings and affected boundaries. Restart
+the full review only if scope or controlling intent changed materially.
+
 ## Judge
 
 Score 1–5 and give a concrete fix below 5:
 
-- plan type/readiness, complete intent/test assignment, touch sets, and pass/fail checks;
+- plan type/readiness, direct-to-code decision, complete intent/test assignment, touch
+  sets, and pass/fail checks;
 - cohesive independently testable/rollback-capable delivery items;
 - optional wave scheduling only where near-term work shares a real checkpoint, plus feedback,
   dependency types, WIP, ownership for combining work, and stop/replan rules;
@@ -35,6 +39,8 @@ Start with simplification. Identify PRs/work items, new machinery, tests, genera
 or handoffs that can be deleted, deferred, collapsed, or proven by existing evidence.
 `Needs rework` must not default to more PRs or machinery. A plan with every required
 section still fails when it is overbuilt.
+Never recommend another document layer as the default fix. Require a concrete permitted
+decomposition reason and ceremony budget; otherwise inherit intent and simplify.
 
 Report blockers, evidence considered, scorecard, what can be deleted, deferred, or reused,
 top fixes,

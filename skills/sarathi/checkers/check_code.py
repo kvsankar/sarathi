@@ -45,7 +45,9 @@ MARKER_PATTERNS = (
 )
 UI_WORK = re.compile(r"^\s*UI Work\s*:\s*Yes\s*$", re.I | re.M)
 MOCK_DEP = re.compile(r"^\s*Mock UI Dependency\s*:\s*(?!None\b)(.+)$", re.I | re.M)
-UI_MOCK_ARTIFACT = re.compile(r"^\s*UI Mock Artifact\s*:\s*(\S+)\s*$", re.I | re.M)
+UI_INTENT_ARTIFACT = re.compile(
+    r"^\s*(?:UI Mock|Approved Prototype) Artifact\s*:\s*(\S+)\s*$", re.I | re.M
+)
 
 
 def arg(flag: str, default: str | None = None) -> str | None:
@@ -170,7 +172,7 @@ def main() -> int:
             approval_requirement(approval_context, Path.cwd(), "plan.approved", plan)
         )
         design_text = design.read_text(encoding="utf-8") if design.exists() else ""
-        mock_match = UI_MOCK_ARTIFACT.search(design_text)
+        mock_match = UI_INTENT_ARTIFACT.search(design_text + "\n" + plan_text)
         if (UI_WORK.search(plan_text) or MOCK_DEP.search(plan_text)) and mock_match:
             approval_requirements.append(
                 approval_requirement(
@@ -190,8 +192,8 @@ def main() -> int:
                     "approval_id": None,
                     "status": None,
                     "issues": [
-                        "UI work declares a mock dependency, but no design mock "
-                        "artifact was found"
+                        "UI work requires an approved mock or prototype artifact, "
+                        "but none was found"
                     ],
                 }
             )
