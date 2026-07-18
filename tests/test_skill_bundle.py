@@ -58,6 +58,17 @@ def test_sarathi_skill_bundles_shared_docs() -> None:
         ).read_bytes()
 
 
+def test_live_workflow_state_stays_out_of_process_decision_example() -> None:
+    project_entry = (ROOT / "docs" / "project-entry.md").read_text(encoding="utf-8")
+    wip = (ROOT / "docs" / "work-in-progress.md").read_text(encoding="utf-8")
+
+    assert "next_recommended_stage:" not in project_entry
+    assert "Keep the current stage, current gate, and next" in project_entry
+    assert "decision ledger creates stale resume instructions" in project_entry
+    assert "`next_recommended_stage`" in wip
+    assert "## Next Recommended Action" in wip
+
+
 def test_sarathi_skill_bundles_static_process_guide() -> None:
     source = ROOT / "docs" / "sarathi.html"
     bundled = SKILL / "docs" / "sarathi.html"

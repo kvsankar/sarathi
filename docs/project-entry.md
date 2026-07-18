@@ -94,6 +94,10 @@ one of these modes, approves an inferred mode, or explicitly accepts a plan-skip
 retrospective baseline review. This file records process scope and the reason; it is not an
 approval ledger and does not replace `.sdlc/approvals.yaml`.
 
+Record only durable process choices here. Keep the current stage, current gate, and next
+recommended action exclusively in `.sdlc/wip.md`; duplicating live workflow state in the
+decision ledger creates stale resume instructions.
+
 Use this shape, adding fields only when useful:
 
 ```yaml
@@ -119,7 +123,6 @@ project_entry:
     - "Existing behavior outside the requested delta is accepted as baseline."
   risks:
     - "Legacy requirements may remain incomplete until touched by a future delta."
-  next_recommended_stage: "/spec-create"
 delivery:
   profile: "lean | standard | high-assurance"
   assurance_modules:

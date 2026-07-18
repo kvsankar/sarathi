@@ -15,12 +15,17 @@ At the start of any SDLC stage or general SDLC request:
 
 - read `.sdlc/wip.md` if it exists;
 - read `.sdlc/process-decisions.yaml` if it exists;
-- use both only to choose the next stage and find relevant documents;
+- use the decision ledger for durable process choices and WIP for the current stage and
+  next action;
 - check important claims against the named files before acting.
 
 If `.sdlc/wip.md` conflicts with a source document or the user's latest instruction, the
 source document or latest instruction wins. Update the WIP file to remove the stale
 claim before continuing.
+
+If a legacy decision ledger contains live workflow fields such as
+`next_recommended_stage`, follow the WIP file and remove the duplicate field during the
+next process-maintenance update.
 
 ## When To Create Or Update
 

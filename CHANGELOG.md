@@ -45,6 +45,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Fixed
 
+- Keep live stage, gate, and next-action state exclusively in `.sdlc/wip.md` instead of
+  duplicating `next_recommended_stage` in the durable process-decision ledger.
 - Resolve transitive verify/review prompts from the sibling Sarathi bundle in direct stage
   aliases, with project-install regression coverage.
 - Install complete executable checker bundles, including shared parser/support modules.
