@@ -8,6 +8,13 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Fixed
+
+- Give post-PyPI GitHub Release commands an explicit repository so finalization works in a
+  job that intentionally does not check out the source tree.
+- Scope duplicate-heading linting to sibling sections so Keep-a-Changelog categories can
+  repeat across version sections.
+
 ## 0.1.0 - 2026-07-18
 
 ### Added

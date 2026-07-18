@@ -31,6 +31,7 @@ jobs:
       - name: Markdown check
         run: >
           uv run pymarkdown --enable-extensions front-matter,markdown-tables
+          --set 'plugins.md024.siblings_only=$!true'
           -d md013 scan AGENTS.md prompts skills docs
 
       - name: Checker tests

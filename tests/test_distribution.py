@@ -45,10 +45,8 @@ def test_github_release_is_created_only_after_pypi_publish() -> None:
     assert "needs: publish" in workflow[github_release:]
     assert "contents: write" in workflow[github_release:]
     assert 'gh release create "$GITHUB_REF_NAME" dist/*' in workflow[github_release:]
-    assert (
-        'gh release upload "$GITHUB_REF_NAME" dist/* --clobber'
-        in workflow[github_release:]
-    )
+    assert 'gh release upload "$GITHUB_REF_NAME" dist/*' in workflow[github_release:]
+    assert workflow[github_release:].count('--repo "$GITHUB_REPOSITORY"') == 3
 
 
 def test_fresh_update_cache_avoids_network(tmp_path: Path, monkeypatch) -> None:
