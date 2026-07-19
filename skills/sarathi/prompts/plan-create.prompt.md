@@ -12,7 +12,7 @@ exception that must resolve a named uncertainty.
 
 Read `.sdlc/wip.md`, accepted parent specs/designs/ADRs/prototypes, the existing plan, and
 repository delivery conventions. Load `docs/artifact-contracts.md` and
-`docs/simplicity-first.md`.
+`docs/simplicity-first.md`, plus `docs/human-first-artifacts.md`.
 
 ## Triggered References
 
@@ -53,6 +53,11 @@ Use `Decomposition Reason` with one exact allowed slug from
 `## Ceremony Budget`.
 
 ## Plan The Increment
+
+Start new or materially revised plans with the version marker and `## Implementation Crux`.
+Explain the outcome, exact change/non-change boundary, sequence, safety, and proof without
+process IDs. Use descriptive delivery headings; keep allocations in comments and the final
+`## Traceability` appendix.
 
 For an Implementation plan:
 

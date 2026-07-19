@@ -1,5 +1,9 @@
 # Simplify Pass
 
+For specs, designs, and plans, move machine metadata that interrupts technical meaning to
+the final traceability appendix or structured comments. Do not create a second document or
+source-code annotation mechanism to do so.
+
 A simplify pass is a deliberate pass to remove over-engineered pieces after the work is
 otherwise coherent. It normally runs after cleanup when both apply and before a human
 handoff for specs, designs, plans, and code slices. Apply `docs/simplicity-first.md`;

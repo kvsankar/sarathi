@@ -2,9 +2,11 @@
 """Run a planned verification command and surface explicit code blockers.
 
 This checker records whether the supplied command passed. It can also require
-hash-current approvals and surface TODO/FIXME/skip-style markers for explicit
-acknowledgement. It deliberately does not infer test quality from coverage,
-test names, requirement IDs, or Git history. Those are review concerns.
+hash-current approvals, surface TODO/FIXME/skip-style markers, and reject Sarathi
+process IDs embedded in the supplied source/test trees. Explicit generated external
+traceability paths may be excluded with repeated
+``--generated-traceability-path`` flags. It does not infer test quality from coverage or
+Git history.
 """
 
 from __future__ import annotations
@@ -48,10 +50,31 @@ MOCK_DEP = re.compile(r"^\s*Mock UI Dependency\s*:\s*(?!None\b)(.+)$", re.I | re
 UI_INTENT_ARTIFACT = re.compile(
     r"^\s*(?:UI Mock|Approved Prototype) Artifact\s*:\s*(\S+)\s*$", re.I | re.M
 )
+PROCESS_ID = re.compile(
+    r"(?<![A-Za-z0-9])(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
+    r"-[A-Za-z][A-Za-z0-9]*-[A-Za-z][A-Za-z0-9]*|"
+    r"(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Za-z][A-Za-z0-9]*|"
+    r"(?:UN|FEAT|UC|FR|NFR|AT|JT|MILE|WORK|PR|WAVE)"
+    r"_[A-Za-z][A-Za-z0-9]*_[A-Za-z][A-Za-z0-9]*|"
+    r"(?:LAYER|COMP|IFACE|DEC|RISK)_[A-Za-z][A-Za-z0-9]*)",
+    re.I,
+)
+TEST_OBLIGATION_NAME = re.compile(
+    r"\btest_(?P<identifier>test_[A-Za-z][A-Za-z0-9]*_[A-Za-z][A-Za-z0-9]*)",
+    re.I,
+)
 
 
 def arg(flag: str, default: str | None = None) -> str | None:
     return sys.argv[sys.argv.index(flag) + 1] if flag in sys.argv else default
+
+
+def args(flag: str) -> list[str]:
+    return [
+        sys.argv[index + 1]
+        for index, value in enumerate(sys.argv[:-1])
+        if value == flag
+    ]
 
 
 def rel_path(path: Path, root: Path) -> str:
@@ -98,6 +121,31 @@ def marker_hits(files: list[Path], root: Path) -> list[dict]:
     return hits
 
 
+def process_id_hits(files: list[Path], root: Path) -> list[dict]:
+    """Inventory process IDs embedded in production or test source."""
+    hits: list[dict] = []
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for line_no, line in enumerate(text.splitlines(), 1):
+            matches = [
+                (match.group(0), match.start()) for match in PROCESS_ID.finditer(line)
+            ]
+            matches.extend(
+                (match.group("identifier"), match.start("identifier"))
+                for match in TEST_OBLIGATION_NAME.finditer(line)
+            )
+            for identifier, _ in sorted(matches, key=lambda item: item[1]):
+                hits.append(
+                    {
+                        "path": rel_path(path, root),
+                        "line": line_no,
+                        "identifier": identifier.replace("_", "-").upper(),
+                        "text": line.strip(),
+                    }
+                )
+    return hits
+
+
 def marker_inventory_hash(markers: list[dict]) -> str:
     payload = json.dumps(markers, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -135,7 +183,14 @@ def main() -> int:
     src = Path(arg("--src", ".") or ".")
     src_ext = {
         extension.strip()
-        for extension in (arg("--src-ext", ".py,.ts,.tsx,.js,.jsx") or "").split(",")
+        for extension in (
+            arg(
+                "--src-ext",
+                ".py,.ts,.tsx,.js,.jsx,.java,.kt,.kts,.go,.rs,.cs,.c,.h,.cc,.cpp,"
+                ".hpp,.rb,.php,.swift,.scala,.sh,.ps1",
+            )
+            or ""
+        ).split(",")
         if extension.strip()
     }
     require_approvals = "--require-approvals" in sys.argv
@@ -145,13 +200,26 @@ def main() -> int:
     gates_path = arg("--gates-policy", ".sdlc/gates.yaml") or ".sdlc/gates.yaml"
     command, use_shell = test_command()
 
-    test_files = (
-        list(source_files(tests_dir, {".py", ".ts", ".tsx", ".js", ".jsx"}))
-        if tests_dir.exists()
-        else []
-    )
+    test_files = list(source_files(tests_dir, src_ext)) if tests_dir.exists() else []
     source_file_list = list(source_files(src, src_ext))
-    code_markers = marker_hits(sorted({*test_files, *source_file_list}), Path.cwd())
+    generated_traceability_paths = [
+        Path(value).resolve() for value in args("--generated-traceability-path")
+    ]
+
+    def is_generated_traceability(path: Path) -> bool:
+        resolved = path.resolve()
+        return any(
+            resolved == allowed or allowed in resolved.parents
+            for allowed in generated_traceability_paths
+        )
+
+    scanned_files = sorted(
+        path
+        for path in {*test_files, *source_file_list}
+        if not is_generated_traceability(path)
+    )
+    code_markers = marker_hits(scanned_files, Path.cwd())
+    source_process_ids = process_id_hits(scanned_files, Path.cwd())
 
     tests_pass: bool | None = None
     tests_exit: int | None = None
@@ -215,6 +283,7 @@ def main() -> int:
     gates = {
         "verification_command_passed": tests_pass is True,
         "markers_approved": approval_gate_passed(marker_approval_requirements),
+        "source_process_ids_absent": not source_process_ids,
     }
     if require_approvals:
         gates["required_approvals_present"] = approval_gate_passed(
@@ -239,6 +308,10 @@ def main() -> int:
         "code_markers": code_markers,
         "marker_inventory_sha256": marker_inventory_sha,
         "marker_hits": len(code_markers),
+        "process_id_hits": source_process_ids,
+        "generated_traceability_paths": [
+            rel_path(path, Path.cwd()) for path in generated_traceability_paths
+        ],
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),

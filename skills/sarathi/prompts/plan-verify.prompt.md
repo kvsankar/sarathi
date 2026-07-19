@@ -74,6 +74,9 @@ if that is unavailable, retry with `uv run python`.
 Report:
 
 - Exact commands executed.
+- Artifact format and human-first structure issues: Implementation Crux placement,
+  machine-only visible headings, final traceability, annotation/table resolution, and
+  descriptive hidden-ID wave/delivery parsing. Unmarked legacy files stay legacy.
 - Raw checker JSON.
 - Exit codes.
 - `passed/total`.

@@ -12,7 +12,8 @@ Translate accepted requirements into a testable design at HLD, feature, or LLD d
 Read `.sdlc/wip.md`, process decisions, the accepted spec, existing design/code evidence,
 and relevant ADRs. Block when requirements are materially ambiguous or unfit.
 
-Load `docs/artifact-contracts.md` for the Design contract and IDs.
+Load `docs/artifact-contracts.md` and `docs/human-first-artifacts.md` for the Design
+contract, narrative, and traceability layers.
 
 ## Triggered References
 
@@ -41,9 +42,11 @@ the changed boundary.
 
 ## Design
 
-Follow the Design contract in `docs/artifact-contracts.md`. Keep labels readable. Put
-machine IDs in compact link records, glossaries, tables, test obligations, and exact
-references.
+Start new or materially revised designs with the version marker and `## Technical Crux`.
+Explain current/target state, essential model, ownership, changes/non-changes, hard parts,
+and migration order without process IDs. Use descriptive visible headings; keep IDs in
+comments and the final `## Traceability` appendix. Follow the remaining Design contract in
+`docs/artifact-contracts.md`.
 
 - Trace requirements and quality attributes into components, interfaces, decisions, and
   executable `TEST-*` obligations.

@@ -7,8 +7,9 @@ agent: agent
 
 Review the target spec without editing it unless asked. Read `.sdlc/wip.md`, available
 verification evidence, `docs/artifact-contracts.md`, `docs/assurance-profiles.md`, and
-`docs/simplicity-first.md`. Load `docs/srs-authoring.md` for broad, reconstructed, terse, or
-over-bundled requirements.
+`docs/simplicity-first.md`. Load `docs/human-first-artifacts.md` and answer its five
+first-page comprehension questions. Load `docs/srs-authoring.md` for broad, reconstructed,
+terse, or over-bundled requirements.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and actively seek counterexamples. Passing automatic checks is useful evidence,
@@ -34,6 +35,10 @@ Score 1–5 and give a concrete fix below 5:
 Start with simplification: identify requirements, roles, qualities, documents, or future
 behaviors that can be deleted, deferred, or proven by existing evidence. A spec with every
 required section still needs rework when it is overbuilt.
+
+If identifiers interrupt the Product Crux, move them to traceability and return
+`Needs rework`. If an engineer must decode IDs to understand the product, rewrite it in
+plain technical language even when automatic checks pass.
 
 Report evidence considered, scorecard, what can be deleted, deferred, or proved by existing
 evidence, top fixes, and

@@ -8,6 +8,12 @@ Begin with the smallest direct implementation that satisfies current accepted be
 Apply `docs/simplicity-first.md`; do not design product machinery to satisfy process
 requirement links, evidence, approval, or status needs.
 
+New and materially revised specs, designs, and plans follow
+`docs/human-first-artifacts.md`: mark format version 2, put the plain-language crux first,
+use descriptive visible headings, and keep machine mappings in structured comments and a
+final `## Traceability` section. Unmarked legacy documents retain the contracts below for
+backward compatibility.
+
 ## Common Metadata
 
 Every controlling document states these exact machine-readable fields:
@@ -27,23 +33,23 @@ may inherit accepted intent and architecture and become code-ready directly.
 
 ## Spec Contract
 
-Product/system specs use this checker-visible order:
+Version 2 Product/system specs use **Product Crux** instead of the legacy Mission Statement,
+then use this checker-visible order:
 
-1. **Mission Statement**: problem, stakeholders, value, boundary, common metadata.
-2. **User Needs**: atomic `UN-AREA-NAME` stakeholder outcomes.
-3. **Non-Goals**: explicit scope boundaries.
-4. **Features**: `FEAT-AREA-NAME`, each linked to needs.
-5. **Use Cases**: `UC-AREA-NAME` actor/goal flows, alternatives, failures, postconditions.
-6. **Functional Requirements**: atomic, testable `FR-AREA-NAME` obligations.
-7. **Non-Functional Requirements**: measurable `NFR-AREA-NAME` qualities/constraints.
-8. **External Interfaces & Contracts**: exact boundaries, versions, success/errors,
+1. **User Needs**: atomic `UN-AREA-NAME` stakeholder outcomes.
+2. **Non-Goals**: explicit scope boundaries.
+3. **Features**: `FEAT-AREA-NAME`, each linked to needs.
+4. **Use Cases**: `UC-AREA-NAME` actor/goal flows, alternatives, failures, postconditions.
+5. **Functional Requirements**: atomic, testable `FR-AREA-NAME` obligations.
+6. **Non-Functional Requirements**: measurable `NFR-AREA-NAME` qualities/constraints.
+7. **External Interfaces & Contracts**: exact boundaries, versions, success/errors,
    lifecycle, auth, and real-boundary testability; state `None` when applicable.
-9. **Acceptance Tests**: black-box `AT-AREA-NAME` criteria mapped to requirements.
-10. **Journey Tests**: ordered `JT-AREA-NAME` compositions of acceptance scenarios, or an
+8. **Acceptance Tests**: black-box `AT-AREA-NAME` criteria mapped to requirements.
+9. **Journey Tests**: ordered `JT-AREA-NAME` compositions of acceptance scenarios, or an
     explicit reason none are needed.
-11. **Traceability Matrix**: links from needs through tests, including priority/risk where useful.
-12. **Assumptions & Open Questions**: unresolved facts, deferrals, reason for review depth,
+10. **Assumptions & Open Questions**: unresolved facts, deferrals, reason for review depth,
     extra risk checks, conditions for stronger review, and UI mock preference.
+11. **Traceability**: final links from needs through tests, including priority/risk where useful.
 
 Feature and slice specs may omit irrelevant empty sections but retain common metadata,
 changed intent, acceptance basis, links to parent IDs, and open assumptions. A
@@ -55,7 +61,7 @@ Specs own externally observable intent. They do not prescribe unit/component arc
 
 ## Design Contract
 
-Product/system designs use this checker-visible order:
+Product/system designs begin with **Technical Crux**, then use this checker-visible order:
 
 1. **Overview**: context, scope, depth (`HLD | Feature | LLD`), readiness, review depth, and extra risk checks.
 2. **Tech Stack**: accepted choices and versions/constraints where material.
@@ -71,14 +77,14 @@ Product/system designs use this checker-visible order:
 11. **Test Strategy**: executable `TEST-AREA-NAME` obligations, environment, pass/fail check,
     real-boundary strategy, and responsible scope.
 12. **Risks & Trade-offs**: `RISK-*`, mitigations, remaining risk, and when to strengthen review.
-13. **Traceability Matrix**: links from requirements to components, interfaces, tests, and decisions.
+13. **Traceability**: final links from requirements to components, interfaces, tests, and decisions.
 
 Include the `## Complexity Budget` section from `docs/simplicity-first.md` only when the
 design proposes new machinery. Do not create a design merely to record a budget.
 
 Feature designs and slice LLDs may reference parent architecture and include only changed
-boundaries. Human-facing headings remain readable; machine IDs live in annotations,
-glossaries, matrices, obligations, and exact references. Diagrams use readable labels.
+boundaries. Human-facing headings remain readable; machine IDs live in annotations and the
+final traceability appendix. Diagrams use readable labels.
 
 The design defines test architecture, build/release shape, environments, docs architecture,
 observability/error behavior, and other extra risk checks only when triggered by accepted
@@ -97,10 +103,10 @@ An existing approved prototype may instead be referenced as
 
 ## Plan Contract
 
-Plans declare `Plan Type: Breakdown | Implementation`. Before the normal sections, record
-the direct-to-code decision from `docs/simplicity-first.md`: inherited sources, reviewable
-increment, unresolved blocker or `none`, and smallest additional artifact or `none`.
-Plans use this checker-visible order:
+Plans declare `Plan Type: Breakdown | Implementation`. They begin with **Implementation
+Crux**. Then record the direct-to-code decision from `docs/simplicity-first.md`: inherited
+sources, reviewable increment, unresolved blocker or `none`, and smallest additional
+artifact or `none`. Plans use this checker-visible order:
 
 1. **Overview**: goal, common metadata, plan type, branch/CI context.
 2. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
@@ -111,6 +117,8 @@ Plans use this checker-visible order:
 6. **Waves**: optional near-term child-work coordination for Breakdown plans.
 7. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
    ownership for combining parallel work, and stop/replan conditions.
+8. **Traceability**: final compact allocations for milestones, work items, PRs, inherited
+   intent, and test obligations.
 
 Plans that introduce machinery include the exact `## Complexity Budget` section from
 `docs/simplicity-first.md`, including `Implementation PR Count`. An inherited-intent record
@@ -192,6 +200,10 @@ the direct path.
 Inherited-Intent Implementation Record, respects the Planned Touch Set, and keeps the suite green at each PR
 boundary. It records the exact test and verification commands run, their observed results,
 and any unavailable evidence. Test names remain behavior-focused.
+
+Sarathi process IDs never go into production or test names, comments, docstrings,
+decorators, annotations, runtime values, logs, or generated source merely for traceability.
+Keep accepted-intent-to-code mappings in the plan, assessment, or an external ledger.
 
 Before handoff, run planned tests, repository quality gates, applicable extra-risk checks,
 cleanup, and simplify. Coverage or detailed test-link inventories are used only when the

@@ -28,8 +28,9 @@ Stop as `Blocked-upstream` when the spec cannot be judged responsibly. Otherwise
 
 1. Check results with command and totals.
 2. Review scorecard with review-depth and extra-check fitness.
-3. Top fixes ranked by impact.
-4. Verdict: `Pass | Pass-with-fixes | Needs rework`.
+3. Human-first comprehensibility result from `docs/human-first-artifacts.md`.
+4. Top fixes ranked by impact.
+5. Verdict: `Pass | Pass-with-fixes | Needs rework`.
 
 Update `.sdlc/wip.md` and stop for human review. Do not start design in the same turn unless
 the latest request explicitly asks for end-to-end continuation.

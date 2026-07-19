@@ -6,6 +6,20 @@ This project follows a Keep-a-Changelog style format with `Added`, `Changed`,
 `Fixed`, `Deprecated`, `Removed`, `Security`, and `Docs` headings as needed.
 Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
+## Unreleased
+
+## 0.3.0 - 2026-07-19
+
+### Changed
+
+- Make new and materially revised specifications, designs, and plans human-first: a plain
+  language crux leads each document, descriptive headings remain visible, and process IDs
+  move to structured comments and a final traceability appendix.
+- Preserve unmarked legacy artifact parsing while adding narrow versioned structure checks,
+  hidden-ID delivery/wave rendering, and external source-ID cleanliness checks.
+- Require independent reviews to reject documents whose product, architecture, or
+  implementation cannot be understood without decoding Sarathi identifiers.
+
 ## 0.2.0 - 2026-07-18
 
 ### Changed

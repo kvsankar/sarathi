@@ -12,6 +12,7 @@ SKILL_DOCS = [
     "cleanup-pass.md",
     "cross-cutting-concerns.md",
     "feedback-and-learning.md",
+    "human-first-artifacts.md",
     "process-maintenance.md",
     "progressive-disclosure.md",
     "project-entry.md",
@@ -127,3 +128,17 @@ def test_simplicity_policy_is_wired_into_creation_review_and_assessment() -> Non
                 encoding="utf-8"
             )
             assert "docs/simplicity-first.md" in prompt
+
+
+def test_human_first_policy_is_wired_into_artifact_stages() -> None:
+    policy = (ROOT / "docs" / "human-first-artifacts.md").read_text(encoding="utf-8")
+    assert "## Two layers in one file" in policy
+    assert "## Authentication dogfood" in policy
+    assert "must decode Sarathi identifiers" in policy
+
+    for stage in ("spec", "design", "plan"):
+        for suffix in ("create", "review", "assess"):
+            prompt = (ROOT / "prompts" / f"{stage}-{suffix}.prompt.md").read_text(
+                encoding="utf-8"
+            )
+            assert "docs/human-first-artifacts.md" in prompt

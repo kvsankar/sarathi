@@ -32,7 +32,13 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
-from schemas import SPEC_SECTIONS  # noqa: E402
+from markdown_structure import (  # noqa: E402
+    artifact_format,
+    definition_id,
+    human_first_issues,
+    primary_definition_ids,
+)
+from schemas import HUMAN_FIRST_SPEC_SECTIONS, SPEC_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT|JT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
@@ -113,9 +119,8 @@ DEF_MARKER = re.compile(r"^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[\.)]\s+)")
 
 def _defline(line: str):
     """Match an ID at the start of a line after stripping list/heading markers."""
-    if not DEF_MARKER.match(line):
-        return None
-    return ID.match(LEAD.sub("", line.strip()))
+    identifier = definition_id(line, ID, LEAD, DEF_MARKER)
+    return ID.match(identifier) if identifier else None
 
 
 def _norm_heading(title: str) -> str:
@@ -142,13 +147,18 @@ def sections_present_in_order(text: str, required: list[str]) -> bool:
 def item_blocks(text: str, kinds: set[str]) -> dict[str, str]:
     """Map defining ID to its markdown block, up to the next definition or heading."""
     blocks: dict[str, str] = {}
+    primary_ids = primary_definition_ids(text, _defline)
     cur, buf = None, []
     in_fence = False
     for line in text.splitlines():
         fence = line.strip().startswith("```")
         m = None if in_fence else _defline(line)
+        if m and line.lstrip().startswith("|") and m.group(0) in primary_ids:
+            m = None
         is_heading = HEADING.match(line.strip()) is not None
         if m and m.group(1) in kinds:
+            if m.group(0) in blocks or m.group(0) == cur:
+                continue
             if cur:
                 blocks[cur] = "\n".join(buf)
             cur, buf = m.group(0), [line]
@@ -250,7 +260,19 @@ def jts_missing_sequence(blocks: dict[str, str]) -> list[str]:
 
 
 def _definition_text(block: str, item_id: str) -> str:
-    first = block.splitlines()[0] if block.splitlines() else ""
+    lines = block.splitlines()
+    first = lines[0] if lines else ""
+    if "<!--" in first:
+        first = next(
+            (
+                line
+                for line in lines[1:]
+                if line.strip()
+                and "<!--" not in line
+                and not line.lstrip().startswith("|")
+            ),
+            "",
+        )
     first = LEAD.sub("", first.strip())
     return first.replace(item_id, "", 1).strip(" :-")
 
@@ -361,13 +383,17 @@ def main() -> int:
     fr_blocks = item_blocks(text, {"FR"})
 
     def_ids = []
+    primary_ids = primary_definition_ids(text, _defline)
     in_fence = False
     for line in text.splitlines():
         if line.strip().startswith("```"):
             in_fence = not in_fence
             continue
         if not in_fence and (m := _defline(line)):
-            def_ids.append(m.group(0))
+            identifier = m.group(0)
+            if line.lstrip().startswith("|") and identifier in primary_ids:
+                continue
+            def_ids.append(identifier)
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
     bad_fmt = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
@@ -384,6 +410,8 @@ def main() -> int:
     bundled_frs = bundled_item_candidates(fr_blocks, require_shall=True)
     overloaded_ats = overloaded_acceptance_refs(ats)
     source_reconciliation_issues = brownfield_source_reconciliation_issues(text)
+    format_name = artifact_format(text)
+    format_issues = human_first_issues(text, "Product Crux")
     approval_requirements = []
     approval_context = {}
     if require_approvals:
@@ -422,11 +450,17 @@ def main() -> int:
         "brownfield_sources_reconciled": not source_reconciliation_issues,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
+        "human_first_structure": not format_issues,
     }
     if not require_approvals:
         gates.pop("required_approvals_present")
     if not feature:
-        gates["sections_present"] = sections_present_in_order(text, SPEC_SECTIONS)
+        required_sections = (
+            HUMAN_FIRST_SPEC_SECTIONS
+            if format_name == "human-first-v2"
+            else SPEC_SECTIONS
+        )
+        gates["sections_present"] = sections_present_in_order(text, required_sections)
     report = {
         "mode": "feature" if feature else "product",
         "counts": {k: len(v) for k, v in defined.items()},
@@ -458,6 +492,8 @@ def main() -> int:
             ),
         },
         "vague_hits": vague,
+        "artifact_format": format_name,
+        "human_first_issues": format_issues,
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),

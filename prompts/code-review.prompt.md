@@ -35,6 +35,8 @@ Then score:
 - complexity versus the user's mental model and current consumers;
 - separation of process records from product code and whether generic machinery has
   concrete justification;
+- absence of process IDs in production/test names, comments, docstrings, annotations,
+  runtime values, and logs merely for traceability;
 - reuse of existing compatibility tests before new harnesses or generated contract systems.
 
 Start deletion-first. Identify code, abstractions, commands, generators, manifests,

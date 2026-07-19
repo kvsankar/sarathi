@@ -8,7 +8,8 @@ agent: agent
 Review the target plan without editing it unless asked. Read earlier required documents,
 `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
-`docs/feedback-and-learning.md`. Load `docs/work-decomposition.md` and
+`docs/feedback-and-learning.md`, plus `docs/human-first-artifacts.md` and its five
+first-page comprehension questions. Load `docs/work-decomposition.md` and
 `docs/test-ownership.md` when applicable. Stop as `Blocked-upstream` when spec/design is
 unfit.
 
@@ -41,6 +42,10 @@ or handoffs that can be deleted, deferred, collapsed, or proven by existing evid
 section still fails when it is overbuilt.
 Never recommend another document layer as the default fix. Require a concrete permitted
 decomposition reason and ceremony budget; otherwise inherit intent and simplify.
+
+If an engineer must decode IDs to understand the outcome, change boundary, sequence,
+safety, or verification, move metadata to traceability and return `Needs rework`, even when
+automatic checks pass.
 
 Report blockers, evidence considered, scorecard, what can be deleted, deferred, or reused,
 top fixes,

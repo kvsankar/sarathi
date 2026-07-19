@@ -34,7 +34,8 @@ User needs:
 
 Functional requirements:
 
-- Write one externally observable obligation per `FR-`.
+- Write one externally observable obligation per requirement. Attach its `FR-*` identifier
+  in a structured comment or the final traceability appendix.
 - Use "shall"; avoid "and" when it joins separate obligations.
 - Split separate create/read/update/delete behavior, separate user-visible states, separate
   validation rules, and separate integration outcomes unless the combined behavior is one
@@ -43,7 +44,8 @@ Functional requirements:
 
 Acceptance tests:
 
-- Write one scenario, rule example, or measurable quality check per `AT-`.
+- Write one scenario, rule example, or measurable quality check per acceptance item. Attach
+  its `AT-*` identifier outside the visible heading.
 - Prefer Given/When/Then or an equivalent setup/action/expected-result shape.
 - Map each `AT-` to one `UC-` and a small set of `FR-`/`NFR-` IDs. If one `AT-` needs many
   requirements, split it or make it a `JT-` journey.

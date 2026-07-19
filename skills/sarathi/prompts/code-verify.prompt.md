@@ -38,13 +38,21 @@ python checkers/check_code.py \
   --json
 ```
 
+Pass the real production and test roots with `--src` and `--tests-dir`. Defaults cover
+common Python, JavaScript/TypeScript, JVM, Go, Rust, .NET, C/C++, Ruby, PHP, Swift, Scala,
+shell, and PowerShell source. Use `--src-ext` for repository-specific languages rather than
+silently omitting them.
+
 Prefer `--tests-argv`; use `--tests-shell` only for trusted commands requiring shell
 behavior. Add `--require-approvals` when the code gate depends on approved plan or mock
 artifacts. Retry with `python3` or `uv run python` when needed.
 
 Report exact commands, raw JSON, exits, passed/total, code markers, approval requirements,
-and the concrete test or command behind each claimed risk check. The checker records command
-outcomes; review judges whether the tests and evidence are meaningful.
+process-ID source hits, and the concrete test or command behind each claimed risk check.
+The checker records command outcomes; review judges whether the tests and evidence are
+meaningful. Do not require IDs inside source to establish coverage. Use an exact repeated
+`--generated-traceability-path` only for explicit generated external ledger files, never to
+hide ordinary source pollution.
 
 ## Repository And Extra Risk Checks
 

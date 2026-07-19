@@ -38,6 +38,69 @@ Implementation Readiness: Decomposable
 """
 
 
+def test_renderer_parses_hidden_work_and_pr_ids_with_descriptive_names():
+    module = load_renderer()
+    plan = """# Human-first plan
+
+## Pull Requests / Child Work Items
+
+### First runnable slice
+<!-- sarathi:delivery id="WORK-DEMO-ALPHA" -->
+Scope: establish the first runnable slice.
+
+### Compatibility adapter
+<!-- sarathi:delivery id="PR-AUTH-COMPAT" -->
+Scope: route password operations through the adapter.
+"""
+
+    items, malformed = module.work_items(plan)
+    prs = module.plan_prs(plan, {"PR-AUTH-COMPAT": 2})
+
+    assert malformed == []
+    assert items[0]["id"] == "WORK-DEMO-ALPHA"
+    assert items[0]["name"] == "First runnable slice"
+    assert items[0]["scope"] == "establish the first runnable slice."
+    assert prs == [
+        {
+            "id": "PR-AUTH-COMPAT",
+            "name": "Compatibility adapter",
+            "evidence_count": 2,
+        }
+    ]
+
+
+def test_renderer_parses_table_only_delivery_definitions():
+    module = load_renderer()
+    plan = """# Human-first plan
+
+## Pull Requests / Child Work Items
+
+The delivery details use descriptive headings.
+
+## Traceability
+
+| Machine ID | Human delivery item | Evidence |
+| --- | --- | --- |
+| WORK-DEMO-ALPHA | First runnable slice | acceptance evidence |
+| PR-AUTH-COMPAT | Compatibility adapter | compatibility tests |
+"""
+
+    items, malformed = module.work_items(plan)
+    prs = module.plan_prs(plan, {"PR-AUTH-COMPAT": 1})
+
+    assert malformed == []
+    assert [(item["id"], item["name"]) for item in items] == [
+        ("WORK-DEMO-ALPHA", "First runnable slice")
+    ]
+    assert prs == [
+        {
+            "id": "PR-AUTH-COMPAT",
+            "name": "Compatibility adapter",
+            "evidence_count": 1,
+        }
+    ]
+
+
 def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
     module = load_renderer()
     project = tmp_path / "example"

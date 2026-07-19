@@ -29,6 +29,7 @@ Load references only when their trigger applies:
 | `docs/work-in-progress.md` | Starting, resuming, pausing, handing off, or blocking SDLC work in a project; reading or updating `.sdlc/wip.md`. |
 | `docs/project-entry.md` | Starting in a new or existing codebase, or deciding how much existing work to document. |
 | `docs/artifact-contracts.md` | Writing or revising a spec, design, plan, or code evidence record. |
+| `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; reviewing first-page comprehensibility; checking process IDs in source. |
 | `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, existing compatibility proof, or PR breakdown. |
 | `docs/assurance-profiles.md` | Choosing or changing review depth and extra checks for specific risks. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |

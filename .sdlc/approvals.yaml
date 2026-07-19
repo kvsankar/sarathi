@@ -1,0 +1,22 @@
+version: 1
+approvals:
+  - id: APR-PLAN-HUMANFIRST
+    gate: plan.approved
+    scope: slice/change
+    artifact:
+      kind: plan
+      path: .sdlc/plan.md
+      sha256: 9342e6da4ebbeabcf5126759302e31f06ae028cbb634d3a9e3c450b3dc951420
+    status: approved
+    approved_by: "User via explicit end-to-end implementation request"
+    approved_at: "2026-07-19T05:45:52Z"
+  - id: APR-RELEASE-HUMANFIRST-030
+    gate: release.approved
+    scope: slice/change
+    artifact:
+      kind: release
+      path: CHANGELOG.md
+      sha256: 048645dba2df6d08af5325f8908fa555a427d2dfba1b8aa4512615f2e7dc5458
+    status: approved
+    approved_by: "User via explicit request to release 0.3.0"
+    approved_at: "2026-07-19T06:35:01Z"

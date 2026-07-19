@@ -1,5 +1,9 @@
 # General Cleanup Pass
 
+For Sarathi-managed code, remove process IDs introduced into production or test names,
+comments, docstrings, annotations, runtime values, and logs. Preserve traceability in the
+plan, assessment, or external ledger instead.
+
 A general cleanup pass is a deliberate final engineering pass for odd issues that are easy
 to miss while chasing the primary behavior. It is required before ending a code slice and is
 appropriate after substantial document edits, after refactors, after resolving review

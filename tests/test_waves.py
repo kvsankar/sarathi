@@ -144,3 +144,27 @@ Stop/Replan Triggers: Stop on contract change.
     assert breakdown["invalid_member_kinds"] == {
         "WAVE-AUTH-BOUNDARY": ["PR-AUTH-SIGNIN"]
     }
+
+
+def test_wave_parser_accepts_descriptive_heading_with_hidden_id():
+    module = load_parser()
+    result = module.parse_learning_waves(
+        """# Plan
+Plan Type: Breakdown
+
+## Waves
+
+### Validate the identity boundary
+<!-- sarathi:wave id="WAVE-AUTH-BOUNDARY" -->
+Order: 1
+Learning Target: Validate the identity boundary.
+Members: WORK-AUTH-CONTRACT
+WIP Limit: 1
+Feedback/Integration Checkpoint: Review contract evidence.
+Stop/Replan Triggers: Stop if the contract changes.
+"""
+    )
+
+    assert result["malformed_ids"] == []
+    assert result["waves"][0]["id"] == "WAVE-AUTH-BOUNDARY"
+    assert result["waves"][0]["name"] == "Validate the identity boundary"

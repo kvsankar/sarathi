@@ -14,8 +14,10 @@ behavior independently requires the same capability.
 - Do not add runtime registries, manifests, generators, schema systems, evidence stores,
   resource frameworks, extension points, or generic harnesses merely to make Sarathi easier
   to verify.
-- Product code should not know Sarathi IDs or evidence formats unless accepted requirements
-  exposes that behavior.
+- Production and test source must not carry Sarathi IDs in names, comments, docstrings,
+  decorators, annotations, runtime values, logs, or generated blocks merely for
+  traceability. Keep mappings in plans, assessments, or external ledgers unless accepted
+  product behavior independently exposes them.
 
 ## Smallest Implementation First
 

@@ -32,10 +32,11 @@ Report:
 
 1. Earlier-document blocker, or automatic and local-quality check results.
 2. Review scorecard with review-depth and extra-check fitness.
-3. Top fixes ranked by impact.
-4. Feedback status/evidence, what it changed, and decisions for the spec,
+3. Source-ID cleanliness and external traceability-mapping result.
+4. Top fixes ranked by impact.
+5. Feedback status/evidence, what it changed, and decisions for the spec,
    design, remaining plan, code/integration, and process.
-5. Verdict: `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`.
+6. Verdict: `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`.
 
 ## Evidence Ledgers
 
