@@ -30,3 +30,13 @@ approvals:
     status: approved
     approved_by: "User via explicit request to release 0.3.1"
     approved_at: "2026-07-19T12:45:00Z"
+  - id: APR-RELEASE-PRODUCTSTATUS-032
+    gate: release.approved
+    scope: slice/change
+    artifact:
+      kind: release
+      path: CHANGELOG.md
+      sha256: 27a3b1f21692dd054d070e2a420cc689fddede52e480ed0139a2b531819c8454
+    status: approved
+    approved_by: "User via explicit request to commit, push, release, and deploy 0.3.2"
+    approved_at: "2026-07-19T18:17:26Z"

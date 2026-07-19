@@ -2,22 +2,22 @@
 
 ## Product Snapshot
 
-Goal: Prepare Sarathi 0.3.2 with accurate code checking and product-first status reporting.
-Working Today: Sarathi preserves decisions, reviews, and verification evidence; its corrected code checker passes the complete local suite.
+Goal: Run Sarathi 0.3.2 with accurate code checking and product-first status reporting.
+Working Today: Sarathi 0.3.2 is published and installed for all supported local agents.
 Reusable Today: Existing Markdown artifacts and version-2 human-first plans remain accepted, and installed stage skills continue to use the shared Sarathi bundle.
-Current Increment: Sarathi 0.3.2 checker and product-first status correction: implemented and independently reviewed.
+Current Increment: Sarathi 0.3.2 release and local deployment: complete.
 Remaining Shared Work: None for this increment.
 Target-Owned Work: None; this change is entirely within Sarathi.
 Deferred: Rich capability inference from source code is deliberately excluded; projects state the compact engineering snapshot themselves.
 Before Coding: none
-Next Action: Commit the validated change, push it through the SSH remote, open and merge the release PR, then tag, publish, and install Sarathi 0.3.2.
+Next Action: Use Sarathi 0.3.2 in production projects and report concrete status or checker failures.
 
 ## Process Snapshot
 
-Last Updated: 2026-07-19T18:01:30Z
+Last Updated: 2026-07-19T18:17:26Z
 Updated By: agent
 Current Stage: release
-Current Gate: validated and ready to commit
+Current Gate: released and deployed
 Project Entry Mode: brownfield_delta_only
 Work Scope: slice/change
 Ready To Implement: Yes
@@ -32,7 +32,7 @@ Extra Checks: Python 3.9 compatibility, authentication dogfood, installer, distr
 | Checker | `checkers/check_code.py`, `checkers/check_plan.py` | full suite passes | Bundled copies match. |
 | Status renderer | `checkers/render_workflow_status.py` | full and layout suites pass | Engineering snapshot renders before process state. |
 | Shared guidance | `docs/work-in-progress.md`, `docs/work-decomposition.md` | revised | Compact product status and reuse classification are canonical here. |
-| Release metadata | `pyproject.toml`, `skills/sarathi/manifest.json`, `CHANGELOG.md` | 0.3.2 prepared | Not published. |
+| Release | `v0.3.2` | published and locally deployed | GitHub Release and PyPI contain the wheel and source archive. |
 
 ## Decisions And Assumptions
 
@@ -50,6 +50,9 @@ Extra Checks: Python 3.9 compatibility, authentication dogfood, installer, distr
 - Pre-commit, skill validation, bundle parity, release metadata, wheel/sdist build, Twine checks, source installer dry-runs, and packaged-wheel installer dry-run passed.
 - Independent focused review passed with 56 tests; independent deterministic verification passed with 12 focused tests and no failures.
 - Authentication dogfood: the generated page leads with working BPTrial capability, reusable shared mechanics, incomplete extraction, unstarted consumer-owned work, non-blocking migration, the exact prerequisite boundary, and one next action.
+- PR `#16` passed branch, pull-request, and merged-master CI and merged at `0d34afd`.
+- Release run `29698368540` built, validated, published to PyPI, and created the GitHub Release with both distributions.
+- Public `uvx` resolved 0.3.2; the pinned local tool was replaced with 0.3.2 and installed for codex, copilot, claude-code, gemini, claude, and pi.
 
 ## Results And Feedback
 
@@ -58,7 +61,7 @@ Feedback From: user-provided production example and executable checks
 Feedback Status: received
 Feedback Evidence: the old WIP obscured product state in accumulated gate history; the dogfood page makes the capability boundary visible before approvals or checker counts
 Current Work Group: none
-Current Work: Sarathi 0.3.2 focused corrections
+Current Work: none
 Parallel Limit: 1
 What Changed: code checking, product-first status, baseline-reuse planning, WIP replacement, and workflow rendering
 Documents To Update: none beyond the canonical and bundled files in this change
