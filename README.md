@@ -7,7 +7,7 @@ software delivery with AI coding agents. It helps developers move from a product
 requirements, design, planning, implementation, tests, and review without losing
 clear links between intent and tests, resumability, or human review.
 
-The workflow is driven by accepted documents and evidence:
+The workflow is driven by approved documents and observed results:
 
 ```text
 request -> spec -> design -> plan -> code/tests/logging/errors/docs/build/deploy -> assess
@@ -23,17 +23,17 @@ generating a document or code slice.
   assessment.
 - A native `sarathi` skill for agents that support skills.
 - Automatic checkers for specs, designs, plans, and links from requirements to tests.
-- Repeatable workflow-status HTML views for the work tree and each plan's ordered learning
-  waves, including linked tests, explicit feedback state, and current wave
-  checkpoints.
+- A repeatable HTML project-status view showing current work, linked tests, feedback, and
+  approvals.
 - Installers for Windows, macOS, Linux, and WSL.
 - User-scoped installs by default, with project-scoped installs when needed.
 - Change history in [CHANGELOG.md](CHANGELOG.md) and release/tagging guidance in
   [docs/release-process.md](docs/release-process.md).
 
-Shared lifecycle policy lives in [docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md).
-Prompt authors should use [docs/process-maintenance.md](docs/process-maintenance.md) to keep
-new concerns from bloating every stage prompt.
+Extra checks for specific risks are listed in
+[docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md). Prompt authors should use
+[docs/process-maintenance.md](docs/process-maintenance.md) to keep shared rules from bloating
+every stage prompt.
 
 ## Quick Install
 
@@ -63,6 +63,9 @@ Preview the destinations without writing files:
 ```sh
 uvx --from sarathi-sdlc sarathi-sdlc install --dry-run
 ```
+
+Add `-v` or `--verbose` to show destinations, per-tool actions, companion-install details,
+reload guidance, and informational notes.
 
 Install project-local assets, including a top-level `checkers/` copy, or select tools:
 
@@ -112,6 +115,10 @@ Install for the current user:
 ```sh
 scripts/install.sh
 ```
+
+Installers report only the target, selected tools, scope, and completion status by default.
+Use `-v` in PowerShell or `-v`/`--verbose` in a shell to show destination paths, per-tool
+actions, companion-install details, reload guidance, and informational notes.
 
 Install into a specific project workspace from the checkout instead:
 
@@ -179,7 +186,7 @@ The prompt set uses four verbs:
 - `create`: write or revise a document or code slice.
 - `verify`: run repeatable checks and report what they prove and do not prove.
 - `review`: independently judge quality and look for counterexamples.
-- `assess`: run `verify` first, then `review`; this is the full gate.
+- `assess`: run `verify` first, then `review`.
 
 The core stage names are:
 
@@ -191,17 +198,17 @@ The core stage names are:
 | `/spec-assess` | Run `/spec-verify` plus `/spec-review`. |
 | `/design-create` | Create or revise a Software Design Document and ADRs as needed. |
 | `/design-verify` | Run spec and design checks. |
-| `/design-review` | Independently review design quality and spec fitness. |
+| `/design-review` | Independently review design quality and whether the spec is sufficient. |
 | `/design-assess` | Run `/design-verify` plus `/design-review`. |
-| `/plan-create` | Create a breakdown or implementation plan with PR slices and touch sets. |
+| `/plan-create` | Create a breakdown or implementation plan with specific PRs and expected file changes. |
 | `/plan-verify` | Run checks for the spec, design, and plan. |
 | `/plan-review` | Independently review plan readiness, slicing, assignment, and sequencing. |
 | `/plan-assess` | Run `/plan-verify` plus `/plan-review`. |
-| `/code-create` | Implement a code-ready plan with focused verification, including planned logging/error-handling/docs/build/deploy work. |
-| `/code-verify` | Run planned tests, quality gates, and applicable logging/error-handling/build/docs/deployment checks. |
-| `/code-review` | Independently review code, tests, operational work, quality gates, and consistency with earlier documents. |
+| `/code-create` | Implement an approved plan with focused tests and any planned logging, error-handling, documentation, build, or deployment work. |
+| `/code-verify` | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks. |
+| `/code-review` | Independently review code, tests, operational work, required project checks, and consistency with earlier documents. |
 | `/code-assess` | Run `/code-verify` plus `/code-review`. |
-| `/workflow-status` | Render the work tree and ordered learning-wave status as read-only HTML. |
+| `/workflow-status` | Render project status as read-only HTML. |
 
 Generate the live status page and its linked static process guide directly with:
 
@@ -225,32 +232,25 @@ Exact invocation syntax depends on the host tool:
 
 ## Workflow Model
 
-Work uses three levels:
+Work uses three levels. The paired terms below are retained as machine-readable values for
+compatibility:
 
 - **Product/system**: broad product or platform scope.
 - **Feature/component**: one user-facing capability, subsystem, component, integration, or
   screen family.
 - **Slice/change**: the smallest implementable unit, usually PR-sized.
 
-Documents declare one readiness value:
+Documents say plainly whether the work is ready to implement and, when it is not, what
+specific question remains.
 
-- **Exploratory**: still being shaped.
-- **Decomposable**: valid parent document, but needs child work before implementation.
-- **Code-ready**: precise enough for implementation.
+`/code-create` runs from approved requirements and a specific implementation plan that is
+ready to implement.
 
-`/code-create` runs from accepted intent and a bounded code-ready Implementation plan.
-
-Before creating child documents, ask whether accepted parent artifacts plus one bounded plan
-safely authorize the next reviewable increment. If yes, proceed directly to implementation;
-a feature/component can be code-ready. Decompose only for a concrete unresolved decision,
-contract, material risk, independent feedback outcome, touch/integration conflict, or
-missing observable acceptance. Scope size, screen count, and assurance profile are not
-reasons. See
+Start implementation when the approved requirements, design, and one specific plan make the
+next change clear and safe. Add another document only when an unresolved decision, external
+contract, serious risk, ownership conflict, or missing acceptance criterion blocks the work.
+Project size and screen count are not reasons. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
-
-Sarathi 0.2 plan checks require a `Direct-To-Code Decision`. Existing 0.1 plans must add
-that compact section before their first 0.2 plan check; Breakdown plans must also name an
-allowed decomposition reason and Ceremony Budget.
 
 ## ID Format
 
@@ -356,19 +356,19 @@ Diagnostics and failure behavior are covered across the lifecycle:
 Reviews stop when logging, telemetry, or error-handling intent is missing from the earlier
 document that should own it.
 
-## Delivery Profiles
+## Review Depth
 
-Production work uses one feedback loop with review depth matched to risk: Lean for small,
+Production work uses review depth matched to risk: Lean for small,
 reversible changes; Standard as the ordinary default; and High-assurance for material
 security, privacy, safety, regulatory, financial, availability, migration, or irreversible
-data risk. Exploratory remains a separate non-production track. Profiles activate only
-extra checks for specific risks; they do not bypass readiness, tests, feedback, or
-human gates. See [docs/assurance-profiles.md](docs/assurance-profiles.md).
+data risk. Exploratory remains a separate non-production track. Add only checks relevant to
+the actual risk; the review level never bypasses tests, feedback, or required approvals. See
+[docs/assurance-profiles.md](docs/assurance-profiles.md).
 
 ## General Cleanup
 
-Agents run a bounded cleanup pass at suitable handoff points, and always before ending a code
-slice, to remove odd issues and theater such as tautological tests, mock-only confidence,
+Agents run a focused cleanup at suitable handoff points, and always before ending a code
+change, to remove odd issues such as tautological tests, mock-only confidence,
 stale requirement-to-test links, superficial security work, debug leftovers, and misleading docs.
 Cleanup stays inside the current scope; larger discoveries become follow-up findings or
 revisions to earlier documents.
@@ -376,64 +376,50 @@ revisions to earlier documents.
 ## Simplify Pass
 
 After cleanup when both apply, and before handoff for specs, designs, plans, and code
-slices, agents run a simplify pass. The pass removes over-engineered requirements, layers,
+changes, agents simplify the work. This removes over-engineered requirements, layers,
 abstractions, extension points, fixtures, checks, or code paths that are not justified by
 accepted scope, risk, constraints, or evidence. Necessary detail, reviewability,
 requirement links, and real boundaries stay intact; larger simplifications require changes
 to the controlling documents.
 
-Simplicity is a hard assessment constraint. Process links and evidence must not become
-product architecture; work in an existing system reuses its compatibility suites by default;
-generalization normally waits for a second concrete consumer; and bounded slices default
-to at most three implementation PRs. Reviewers begin with deletion, deferral, collapse, and
-existing-evidence reuse. See [docs/simplicity-first.md](docs/simplicity-first.md).
+Process links must not become product architecture. Work in an existing system reuses its
+compatibility suites by default, and generalization normally waits for a second concrete
+consumer. If the solution is larger than the problem requires, simplify it. See
+[docs/simplicity-first.md](docs/simplicity-first.md).
 
-## Feedback And Learning
+## Feedback
 
-Sarathi treats specs, designs, and plans as the current accepted understanding, not frozen handoffs.
-Approval means a document is sufficient and safe for the next learning step. Each
-code-ready slice names its learning target, appropriate stakeholder or observed-system
-feedback target, what result would change the plan, and a check for changes needed in
-parent documents. After assessment,
-the agent reports honest feedback status and checks whether the spec, design, remaining
-plan, code/integration, or process guidance must change.
+Specs, designs, and plans record the current agreed requirements and decisions; approval
+does not freeze them. After each change, record real feedback and update earlier documents
+when the result changes what should happen next.
 
-Agent parallelism is encouraged inside a slice. Independent slices may share a bounded
-learning wave when feedback from one cannot materially change another, dependencies and
-touch ownership are explicit, WIP is capped, and ownership for combining work plus
-stop/replan rules are planned. Speculative later work stays exceptional and reversible. See
+Parallel work is safe only when one result cannot invalidate another, file ownership is
+clear, and someone owns integration and review. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
-
-Breakdown plans use a `WAVE-*` only for near-term `WORK-*` children that share a feedback or
-integration checkpoint; unscheduled children have no wave. Implementation plans list the PRs
-for one child without assigning PRs to waves. The live status page shows that delivery sequence
-beside the work tree. `.sdlc/wip.md` identifies the active
-wave; a `.sdlc/wave-checkpoints.yaml` record matching the current plan closes a wave without pretending
-the enclosing plan is fully assessed or the next wave is automatically approved.
 
 ## Human-first documents
 
-New and materially revised specs, designs, and plans lead with a plain-language Product,
-Technical, or Implementation Crux. Visible headings describe the product and architecture;
+New and materially revised specs, designs, and plans lead with a plain-language Product
+Overview, Technical Approach, or Implementation Approach. Visible headings describe the product and architecture;
 stable process IDs live in structured comments and a final traceability appendix. Legacy
 documents remain parseable until materially revised. Production and test source stays free
 of Sarathi IDs added merely for traceability. See
-[Human-first artifacts](docs/human-first-artifacts.md).
+[Human-first documents](docs/human-first-artifacts.md).
 
-## Human Gates And YOLO Mode
+## Required Reviews And YOLO Mode
 
-Default behavior is human-gated:
+By default, important transitions require human review:
 
 - If important input is missing, the agent asks one focused question at a time.
 - After a document or code slice is generated, materially revised, reviewed, or assessed, the agent stops
   for human review.
 - For UI-facing products, `/spec-create` asks whether a mock UI is required. If the spec
-  records `UI Mock Preference: Required`, the mock UI file is a hard human gate:
+  records `UI Mock Preference: Required`, the mock UI requires explicit approval:
   later planning, code, and production UI work must wait for explicit user approval of
   the mock.
 - Reviews stop when they discover issues in an earlier spec, design, or plan.
 
-The human review pause is a hard gate. A completed spec does not automatically flow into
+The human review pause is required. A completed spec does not automatically flow into
 design; a completed design does not automatically flow into planning; a completed plan does
 not automatically flow into code; and an assessed code slice does not automatically flow
 into the next learning-dependent slice or release/deployment work until its feedback status
@@ -451,8 +437,8 @@ proceed without questions
 ```
 
 YOLO mode lets the agent make reasonable assumptions and continue, but it must record those
-assumptions, risks, and trade-offs. YOLO does not bypass readiness gates, planned touch sets,
-quality gates, safety constraints, or the default review pause unless you explicitly ask for
+assumptions, risks, and trade-offs. YOLO does not bypass readiness checks, expected file
+changes, required tests, safety constraints, or the default review pause unless you explicitly ask for
 end-to-end unattended continuation.
 
 ## Approval Records
@@ -461,7 +447,7 @@ Projects can make approvals automatically checkable with local YAML files:
 
 - `.sdlc/approvals.yaml` records local approvals, approvers, UTC timestamps, and
   SHA-256 hashes.
-- `.sdlc/gates.yaml` optionally enables bounded auto-approval for low-risk modes such as
+- `.sdlc/gates.yaml` optionally enables limited auto-approval for low-risk modes such as
   internal prototypes.
 
 Checkers support `--require-approvals` for later gate runs. The approval is valid only when
@@ -505,7 +491,7 @@ Test responsibility is split by document and code stage:
 - Code may also add implementation-local supplemental tests, such as helper, pure-core,
   parser, mapper, regression, characterization, table/property, adapter, or edge-case
   tests. These supplement, never replace, planned `AT-`/`JT-`/`TEST-` coverage; they stay
-  within the current `PR-` and Planned Touch Set and use a clear pass/fail check.
+  within the current `PR-` and expected files and use a clear pass/fail check.
   If they imply new externally visible behavior, contract, UX/NFR, or scope, revise the
   controlling document first.
 - Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
@@ -550,13 +536,13 @@ review the resulting evidence; neither a percentage nor a mapping proves meaning
 Reviewability is judged by cohesive purpose, conceptual complexity, touch scope, evidence,
 and rollback. Sarathi does not impose source-file, module, diff, or PR line-count targets.
 TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not
-add SDLC-specific annotations to app code. If markers remain, later progress requires
-explicit approval through `code.markers.approved`, keyed to the marker inventory
-hash.
+add SDLC-specific annotations to app code. TODO/FIXME/XXX entries are warnings. Skipped and
+expected-failure tests fail the code check until they run normally; Sarathi does not require
+a separate marker approval.
 
 The checkers do not prove that the work is correct. Assessment commands pair check results
 with independent review of requirements, design, plan quality, test implementation quality,
-pass/fail rigor, implementation fitness, logging/error-handling,
+pass/fail rigor, whether the implementation is suitable, logging/error-handling,
 documentation/build/deployment
 completeness, and consistency across stages.
 

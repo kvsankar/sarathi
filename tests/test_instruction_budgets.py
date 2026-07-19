@@ -80,6 +80,14 @@ def test_core_instructions_use_plain_language_without_weakening_gates() -> None:
         "hash-current attestation",
         "qualitative judgment",
         "mechanical verification",
+        "complexity budget",
+        "ceremony budget",
+        "direct-to-code",
+        "inherited intent record",
+        "assurance modules",
+        "learning target",
+        "ancestor impact",
+        "implementation readiness",
     )
 
     for path in active:
@@ -95,12 +103,8 @@ def test_core_instructions_use_plain_language_without_weakening_gates() -> None:
     )
     maintenance = (ROOT / "docs" / "process-maintenance.md").read_text(encoding="utf-8")
 
-    assert "Implementation Readiness: Exploratory | Decomposable | Code-ready" in skill
-    assert re.search(
-        r"More than three needs.*plan\.complexity-approved.*matches the current plan",
-        skill,
-        re.DOTALL,
-    )
+    assert "specific implementation plan that\nis ready to implement" in skill
+    assert "plan.complexity-approved" not in skill
     assert re.search(
         r"A primary external boundary cannot rely only.*"
         r"explicitly accepts the remaining risk",
@@ -108,7 +112,7 @@ def test_core_instructions_use_plain_language_without_weakening_gates() -> None:
         re.DOTALL,
     )
     assert "End the turn before starting the next stage" in skill
-    assert "Block unless the plan is Code-ready" in code_create
+    assert "Block unless the plan is specific enough to implement" in code_create
     assert "smallest meaningful test" in code_create
     assert "Sarathi does not require one" in code_create
     assert "explicit user approval" in code_create

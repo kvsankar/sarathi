@@ -5,14 +5,14 @@ agent: agent
 
 # Workflow Status
 
-Render a read-only Sarathi workflow-status page for the target project. Load
+Render a read-only Sarathi progress page for the target project. Load
 `docs/workflow-status.md`, `docs/work-decomposition.md`, `docs/assurance-profiles.md`, and
 `docs/feedback-and-learning.md`; read `.sdlc/wip.md`, hash-current code-assessment records,
-and current wave checkpoints when present, and check important claims against the source
+and current parallel-work checkpoints when present, and check important claims against the source
 documents. This command does not create or revise a spec, design, plan, approval,
-implementation, or review report, so it does not advance a human gate.
-Run it in the same automatic bookkeeping step as boundary checks, approval/assessment
-recording, and ledger updates; do not create another user-facing pause for status alone.
+implementation, or review report, so it does not approve or advance work.
+Run it together with related checks and status updates; do not create another user-facing
+pause for status alone.
 
 Locate `render_workflow_status.py` in the target project's `checkers/` directory, this
 skill bundle's `checkers/` directory, or the source repository's `checkers/` directory. Run:
@@ -35,9 +35,9 @@ Report:
 - the concise progress summary shown by the page;
 - any error, stale source, or missing input that prevents the page from being current or
   trustworthy;
-- the workflow tree as the place to inspect a selected feature, slice, wave, or PR.
+- the workflow tree as the place to inspect a selected feature, change, work group, or PR.
 
-Do not restate hidden or progressively disclosed details in the command response. Do not
-report snapshots, provenance, learning records, WIP limits, or exhaustive wave and PR counts
-unless they are the specific problem being reported. The page must not infer completion,
+Do not restate hidden details in the command response. Do not report internal records or
+exhaustive work and PR counts unless they are the specific problem being reported. The page
+must not infer completion,
 quality, or stakeholder feedback from Git, approvals, tests, or missing records.

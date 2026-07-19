@@ -112,7 +112,7 @@ def artifact_format(text: str) -> str:
     )
 
 
-def human_first_issues(text: str, crux_heading: str) -> list[str]:
+def human_first_issues(text: str, crux_heading: str | tuple[str, ...]) -> list[str]:
     """Check narrow versioned structure without attempting subjective prose scoring."""
     format_name = artifact_format(text)
     if format_name == "legacy":
@@ -127,10 +127,12 @@ def human_first_issues(text: str, crux_heading: str) -> list[str]:
     ]
     issues: list[str] = []
     level_two = [title for level, title in headings if level == 2]
-    if crux_heading not in level_two:
-        issues.append(f"missing_crux:{crux_heading}")
-    elif not level_two or level_two[0] != crux_heading:
-        issues.append(f"crux_not_first_section:{crux_heading}")
+    accepted = (crux_heading,) if isinstance(crux_heading, str) else crux_heading
+    label = accepted[0]
+    if not any(heading in accepted for heading in level_two):
+        issues.append(f"missing_crux:{label}")
+    elif not level_two or level_two[0] not in accepted:
+        issues.append(f"crux_not_first_section:{label}")
     trace_positions = [
         index
         for index, (level, title) in enumerate(headings)

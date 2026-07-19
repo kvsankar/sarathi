@@ -1,29 +1,28 @@
-# Human-first artifacts
+# Human-first documents
 
 Specifications, designs, and plans are technical communication for engineers. Traceability
 supports that communication; it must not interrupt it.
 
-## Two layers in one file
+## Explanation first, mappings last
 
-New documents and materially revised documents use two conceptual layers in the same
-Markdown file:
+Put the technical explanation first. Put IDs and mappings last in `## Traceability`, or use
+structured HTML comments to connect descriptive sections to stable identifiers.
 
-1. A human-readable technical narrative comes first and is the primary review surface.
-2. Machine-readable traceability comes last in `## Traceability`; structured HTML comments
-   may also connect descriptive sections to stable identifiers.
-
-Do not add a summary artifact, metadata sidecar, new approval stage, traceability service,
-document hierarchy, prose framework, or readability score. Use this invisible marker to opt
-the document into deterministic human-first checks:
+Do not add a separate summary or metadata file, another approval step, a traceability
+service, a new document hierarchy, a writing framework, or a readability score. This hidden
+marker enables the human-first checks:
 
 ```markdown
 <!-- sarathi:artifact-format version="2" -->
 ```
 
-Unmarked documents use the legacy checker contract. Checkers keep them parseable. When an
-agent materially revises one, it adds the marker and converts the affected document without
-changing accepted intent merely for formatting. A checker cannot infer edit history from
-current bytes, so create/review prompts enforce that transition.
+Unmarked documents use the legacy checker rules and remain parseable. When an agent
+substantially revises one, it adds the marker and converts the document without changing the
+approved requirements merely for formatting. A checker cannot infer edit history from file
+contents, so creation and review instructions enforce that transition.
+
+Existing documents that use `Product Crux`, `Technical Crux`, or `Implementation Crux`
+remain valid. New and substantially revised documents use the clearer headings below.
 
 Visible headings use descriptive language. A heading made only from a process identifier is
 invalid in a versioned document. IDs may appear in the final appendix or in comments such as:
@@ -43,7 +42,7 @@ Human-first placement does not change ID grammar: spec/plan/test IDs remain
 
 ## Specifications
 
-A specification starts with `## Product Crux`, before machine-oriented sections. Without
+A specification starts with `## Product Overview`, before machine-oriented sections. Without
 using Sarathi identifiers, it explains:
 
 - the problem and who experiences it;
@@ -59,7 +58,7 @@ failure and evidence detail its risk needs.
 
 ## Designs
 
-A design starts with `## Technical Crux`. Its opening page explains current state, target
+A design starts with `## Technical Approach`. Its opening page explains current state, target
 state, the essential model, shared versus service-owned responsibilities, changes and
 deliberate non-changes, difficult risks, and implementation or migration order. Use compact
 diagrams when relationships are clearer visually.
@@ -70,14 +69,14 @@ obligation IDs live in annotations or `## Traceability`.
 
 ## Plans
 
-A plan starts with `## Implementation Crux`. It explains the delivered outcome, exact
+A plan starts with `## Implementation Approach`. It explains the delivered outcome, exact
 technical change, non-change boundary, sequence, safety constraints, and how success will be
 demonstrated. Descriptive implementation-item headings remain understandable without
 decoding milestone, work, PR, requirement, component, or test-obligation IDs.
 
-The final appendix keeps compact allocation tables. Inherited intent uses concise source
-references and only the IDs actually assigned to the child or PR; do not copy a complete
-parent inventory into narrative prose.
+The final appendix keeps compact assignment tables. Refer to approved earlier documents and
+include only the IDs actually assigned to the change; do not copy a complete parent
+inventory into narrative prose.
 
 ## Production and test source
 
@@ -92,14 +91,14 @@ for traceability in:
 Tests use behavioral names. Accepted-intent-to-test mapping belongs in the plan, assessment,
 or an optional external test-traceability ledger, not source files. Code checks may inspect
 the production and test paths supplied to them and reject process IDs. Explicit generated
-external traceability artifacts are outside those source paths or must be named as generated
+external traceability files are outside those source paths or must be named as generated
 exclusions; this does not permit traceability blocks in ordinary source.
 
 ## Review stop condition
 
 Reviewers judge what automatic checks cannot:
 
-- Can I explain the product or technical crux after reading the first page?
+- Can I explain the problem and proposed approach after reading the first page?
 - Are current state, target state, change boundary, and non-change boundary clear?
 - Can I understand the implementation sequence without decoding identifiers?
 - Are identifiers supporting traceability rather than interrupting the explanation?
@@ -108,9 +107,9 @@ Reviewers judge what automatic checks cannot:
 If any answer is no, the verdict is `Needs rework` even when deterministic checks pass.
 
 > If an engineer must decode Sarathi identifiers before understanding the product,
-> architecture, or implementation, rewrite the artifact in plain technical language.
+> architecture, or implementation, rewrite the document in plain technical language.
 
-Deterministic checks stay narrow: versioned documents have the required crux first,
+Automatic checks stay narrow: versioned documents have the required overview or approach first,
 descriptive visible headings, a final traceability section, and mechanically resolvable
 IDs. They do not score prose quality.
 
@@ -134,7 +133,7 @@ The IDs are traceable, but the architecture is not apparent without decoding the
 ### Design after: technical model first
 
 ```markdown
-## Technical Crux
+## Technical Approach
 
 ### Current state
 
@@ -178,7 +177,7 @@ implements COMP-IDENTITY.
 ### Plan after: implementation first
 
 ```markdown
-## Implementation Crux
+## Implementation Approach
 
 Route BPTrial password operations through the compatibility adapter without changing its
 schema or public API. Verify existing sign-in, password-change, reset, and session behavior.
@@ -225,7 +224,7 @@ risk before showing any process ID. The final appendix retains detailed mappings
 
 ### Small behavior change
 
-Use a short Product or Implementation Crux, a compact plan, a minimal appendix, and
+Use a short Product Overview or Implementation Approach, a compact plan, a minimal appendix, and
 behavioral test names. Do not inflate the change with process vocabulary.
 
 ### High-assurance migration
@@ -234,9 +233,9 @@ Explain data ownership, migration order, rollback, failure behavior, and evidenc
 technical language. High assurance adds realistic proof and independent review, not
 identifier-heavy prose.
 
-### Existing legacy artifact
+### Existing legacy document
 
-Keep unmarked legacy documents parseable. On material revision, preserve accepted intent,
+Keep unmarked legacy documents parseable. On material revision, preserve approved requirements,
 add the version marker, move process mappings to `## Traceability`, and rewrite affected
 visible sections in plain language.
 

@@ -1,12 +1,12 @@
 ---
-description: Create the shortest safe path from accepted intent to a reviewable increment.
+description: Create the shortest safe implementation plan for the approved change.
 agent: agent
 ---
 
 # Plan Create
 
-Turn accepted intent into a bounded, code-ready Implementation plan. Decomposition is an
-exception that must resolve a named uncertainty.
+Turn approved requirements into a specific implementation plan. Split the work only when
+a specific unanswered question prevents safe implementation.
 
 ## Load And Gate
 
@@ -18,67 +18,62 @@ repository delivery conventions. Load `docs/artifact-contracts.md` and
 
 Load only when the trigger applies:
 
-- `docs/work-decomposition.md`: decomposition or a child artifact is being considered;
+- `docs/work-decomposition.md`: splitting the work or adding another document is being considered;
 - `docs/feedback-and-learning.md`: UI review, feedback dependencies, or parallel work;
 - `docs/test-ownership.md`: inherited or cross-boundary test intent;
-- `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: a concrete risk check;
+- `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an identified risk needs an additional check;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: before handoff.
 
 Block only on intent, architecture, approval, or risk gaps that make implementation unsafe.
 Do not treat scope size or document level as a blocker.
 
-## Direct-To-Code Decision
+## Can Implementation Start?
 
-Use this order and record the answer concisely:
+Use this order:
 
-1. Can work proceed from existing approved artifacts?
-2. Can one bounded Implementation plan safely authorize it?
-3. Can it ship as one reviewable increment or sequential UI slices?
-4. Only if not, what exact uncertainty requires decomposition?
-5. What minimum delta artifact resolves that uncertainty?
+1. Do the approved documents answer what must be built and tested?
+2. Can one short implementation plan make the change safe to start?
+3. Can the result be reviewed and tested as one change or a short sequence?
+4. If not, what exact unanswered question requires the work to be split?
+5. What is the smallest document or experiment that answers it?
 6. Return to implementation immediately after it is resolved.
 
-Choose `Plan Type: Implementation` whenever the first three answers are yes. A
-feature/component may be code-ready directly in Lean, Standard, or High-assurance. Approved
-requirements, tests, architecture, interfaces, risks, and prototypes are inherited by
-reference; do not reproduce them.
+Choose `Plan Type: Implementation` whenever the first three answers are yes. A feature or
+component may proceed directly at any review level. Link approved requirements,
+tests, architecture, interfaces, risks, and prototypes instead of reproducing them.
 
 Choose `Plan Type: Breakdown` only for a concrete reason allowed by
-`docs/work-decomposition.md`. State the ceremony budget: uncertainty resolved, insufficiency
-of existing artifacts, implementation decision changed, and why a plan note is insufficient.
-If those answers are not concrete, do not create the Breakdown plan.
-Use `Decomposition Reason` with one exact allowed slug from
-`docs/work-decomposition.md`, then the exact fields `Uncertainty Resolved`, `Existing Artifacts Insufficient Because`,
-`Implementation Decision Changed`, and `Why Plan Note Is Insufficient` under
-`## Ceremony Budget`.
+`docs/work-decomposition.md`. Say in one sentence which unanswered question prevents safe
+implementation. If there is no concrete question, do not create the Breakdown plan.
 
 ## Plan The Increment
 
-Start new or materially revised plans with the version marker and `## Implementation Crux`.
+Start new or materially revised plans with the version marker and
+`## Implementation Approach`. Accept `## Implementation Crux` in existing documents.
 Explain the outcome, exact change/non-change boundary, sequence, safety, and proof without
 process IDs. Use descriptive delivery headings; keep allocations in comments and the final
 `## Traceability` appendix.
 
 For an Implementation plan:
 
-- make each `PR-*` cohesive, testable, rollback-capable, and within a Planned Touch Set;
-- assign inherited acceptance/design-test obligations by concise reference;
-- use Red/Green/Refactor and clear pass/fail checks;
+- make each delivery item cohesive, testable, safe to undo, and clear about the files it
+  expects to change; keep `PR-*` IDs in traceability;
+- link required behavior and tests from approved documents;
+- name the first failing tests, the smallest implementation, and cleanup, with clear
+  pass/fail results;
 - reuse accepted architecture and existing compatibility evidence;
 - schedule several sequential prototype-matching UI slices in one plan when they share
   behavior and architecture, stopping for stakeholder UI review after each slice;
 - name realistic evidence for actual security, privacy, safety, persistence,
   accessibility, migration, or integration risks;
-- prefer one cohesive PR and default a bounded slice to at most three PRs.
+- prefer one cohesive PR when it remains easy to review and test.
 
-Use `Inherited Intent Record: Yes` for compact feature/component or slice/change work whose
-parent intent and architecture are sufficient. The Direct-To-Code section already records
-inherited sources, changed behavior/reviewable increment, blockers/escalation, and any
-additional artifact. Add only `Why Direct` and `Acceptance & Verification`; do not restate
-the decision fields. The legacy `Lean Change Record: Yes` marker remains valid.
+For a small change, link the approved parent documents and include only the changed
+behavior, implementation steps, and verification. Existing legacy compact-plan markers
+remain parseable, but do not add them to new plans.
 
-For a Breakdown plan, allocate only independently useful `WORK-*` outcomes, require only the
-minimum artifact for each, and use a `WAVE-*` only for a real shared feedback/integration
+For a Breakdown plan, list only independently useful `WORK-*` outcomes, require only the
+minimum document for each, and use a work group only for a real shared feedback/integration
 checkpoint. A reviewer must reject decomposition that merely restates parent intent.
 
 Write `plan.md` unless another path is named. Do not create `plan.html`.
@@ -88,9 +83,9 @@ Write `plan.md` unless another path is named. Do not create `plan.html`.
 Run the earlier applicable checkers and `check_plan.py`. Run each repeatable check once for
 this revision. Then assess with a fresh checker and independent reviewer when
 available. After local fixes, use focused re-verification/re-review; restart the full pass
-only if scope or controlling intent changed materially.
+only if requirements or scope changed.
 
-Batch checker results, approvals, workflow status, and ledger updates into one bookkeeping
-step. Update `.sdlc/wip.md`, run simplify, and stop for human review unless the latest request
+Record checker results, approvals, and workflow status together. Update `.sdlc/wip.md`, run
+simplify, and stop for human review unless the latest request
 explicitly authorizes end-to-end execution. Recommend `/code-create` for a passing
 Implementation plan.

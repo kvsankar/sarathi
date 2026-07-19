@@ -12,7 +12,6 @@ Usage:
     python check_plan.py [plan.md] [--json] [--feature] [--parent product.md]
                          [--spec spec.md] [--design design.md]
                          [--inherited-subset]
-                         [--require-complexity-approval]
 
 --feature  Treat as a feature-level plan (subset of a product).
 --parent   A product plan whose IDs may be referenced.
@@ -21,9 +20,6 @@ Usage:
 --inherited-subset
            Validate cited parent spec/design IDs without requiring the plan to allocate
            every obligation in those parent artifacts.
---require-complexity-approval
-           Require a hash-current plan.complexity-approved attestation when a bounded
-           Slice/change plan contains more than three implementation PRs.
 """
 
 from __future__ import annotations
@@ -43,7 +39,6 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
-from complexity import parse_complexity_budget  # noqa: E402
 from markdown_structure import (  # noqa: E402
     artifact_format,
     definition_id,
@@ -80,7 +75,6 @@ NON_PLAN_ID_CANDIDATE = re.compile(
     r"(?![A-Za-z0-9-])",
     re.I,
 )
-VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed|various)\b|etc\.", re.I)
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
 UI_INTENT_ARTIFACT = re.compile(
     r"^\s*(?:UI Mock|Approved Prototype) Artifact\s*:\s*(\S+)\s*$", re.I | re.M
@@ -97,14 +91,6 @@ IMPLEMENTATION_READINESS = re.compile(
 PARENT_WORK_ITEM = re.compile(
     r"^\s*Parent Work Item\s*:\s*(WORK-[A-Z][A-Z0-9]*-[A-Z][A-Z0-9]*)\s*$",
     re.I | re.M,
-)
-COMPLEXITY_EXCEPTION = re.compile(
-    r"^\s*Complexity Budget Exception\s*:\s*(\S.*)$", re.I | re.M
-)
-GENERIC_MACHINERY = re.compile(
-    r"\b(?:framework|generator|registry|manifest|schema system|extension point|"
-    r"generic harness|evidence platform|resource[- ]lease)\b",
-    re.I,
 )
 EXTERNAL_DOUBLE = re.compile(
     r"\b(?:external|vendor|sdk|api|cli|host|service|broker|driver|"
@@ -144,27 +130,6 @@ INHERITED_INTENT_FIELDS = (
     "Why Direct",
     "Acceptance & Verification",
 )
-DIRECT_DECISION_FIELDS = (
-    "Inherited Sources",
-    "Reviewable Increment",
-    "Unresolved Blocker",
-    "Smallest Additional Artifact",
-)
-CEREMONY_BUDGET_FIELDS = (
-    "Decomposition Reason",
-    "Uncertainty Resolved",
-    "Existing Artifacts Insufficient Because",
-    "Implementation Decision Changed",
-    "Why Plan Note Is Insufficient",
-)
-ALLOWED_DECOMPOSITION_REASONS = {
-    "unresolved-product-decision",
-    "new-or-unclear-external-contract",
-    "unaccepted-material-risk",
-    "independent-feedback-outcomes",
-    "touch-or-integration-conflict",
-    "missing-observable-behavior-or-acceptance",
-}
 
 
 def _defline(line: str):
@@ -298,51 +263,7 @@ def inherited_intent_record_issues(text: str, implementation_plan: bool) -> list
         if not pattern.search(text):
             field_key = label.casefold().replace(" ", "_").replace("/", "_")
             issues.append(f"missing_{field_key.replace('&', 'and')}")
-    if inherited_intent:
-        decision = direct_to_code_decision(text)
-        issues.extend(
-            f"missing_direct_to_code_{label.casefold().replace(' ', '_')}"
-            for label in decision["missing_fields"]
-        )
     return issues
-
-
-def direct_to_code_decision(text: str) -> dict:
-    body = section_text(text, "Direct-To-Code Decision")
-    values = {}
-    for label in DIRECT_DECISION_FIELDS:
-        match = re.search(
-            rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
-            rf"(?:\*\*)?\s*:\s*(\S.*?)\s*$",
-            body,
-        )
-        values[label] = match.group(1).strip() if match else None
-    return {
-        "declared": bool(body),
-        "fields": values,
-        "missing_fields": [label for label, value in values.items() if not value],
-    }
-
-
-def ceremony_budget(text: str) -> dict:
-    body = section_text(text, "Ceremony Budget")
-    values = {}
-    for label in CEREMONY_BUDGET_FIELDS:
-        match = re.search(
-            rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
-            rf"(?:\*\*)?\s*:\s*(\S.*?)\s*$",
-            body,
-        )
-        values[label] = match.group(1).strip() if match else None
-    return {
-        "declared": bool(body),
-        "fields": values,
-        "missing_fields": [label for label, value in values.items() if not value],
-        "reason_allowed": (values.get("Decomposition Reason") or "")
-        .casefold()
-        .rstrip(".")
-        in ALLOWED_DECOMPOSITION_REASONS,
-    }
 
 
 def main() -> int:
@@ -351,7 +272,6 @@ def main() -> int:
     feature = "--feature" in sys.argv
     inherited_subset = "--inherited-subset" in sys.argv
     require_approvals = "--require-approvals" in sys.argv
-    require_complexity_approval = "--require-complexity-approval" in sys.argv
     approvals_path = (
         sys.argv[sys.argv.index("--approvals") + 1]
         if "--approvals" in sys.argv
@@ -389,7 +309,7 @@ def main() -> int:
     path = Path(args[0] if args else "plan.md")
     text = path.read_text(encoding="utf-8")
     format_name = artifact_format(text)
-    format_issues = human_first_issues(text, "Implementation Crux")
+    format_issues = human_first_issues(text, "Implementation Approach")
     cited = {
         "fr": {m.group(0) for m in FR.finditer(text)},
         "uc": {m.group(0) for m in UC.finditer(text)},
@@ -455,30 +375,6 @@ def main() -> int:
     inherited_intent_record = INHERITED_INTENT_RECORD.search(text) is not None
     compact_record = lean_change_record or inherited_intent_record
     lean_change_issues = inherited_intent_record_issues(text, implementation_plan)
-    readiness_decision = direct_to_code_decision(text)
-    process_budget = ceremony_budget(text)
-    blocker_value = (
-        (readiness_decision["fields"].get("Unresolved Blocker") or "")
-        .casefold()
-        .rstrip(".")
-    )
-    additional_artifact_value = (
-        (readiness_decision["fields"].get("Smallest Additional Artifact") or "")
-        .casefold()
-        .rstrip(".")
-    )
-    decision_matches_plan_type = bool(
-        (
-            implementation_plan
-            and blocker_value == "none"
-            and additional_artifact_value == "none"
-        )
-        or (
-            breakdown_plan
-            and blocker_value not in {"", "none"}
-            and additional_artifact_value not in {"", "none"}
-        )
-    )
     work_ids = set(work_blocks) if breakdown_plan else set()
     wave_member_counts = Counter(
         member for wave in wave_result["waves"] for member in wave["members"]
@@ -523,35 +419,13 @@ def main() -> int:
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
     bad = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
-    vague = len(VAGUE.findall(text))
     ext_double_mentions = external_double_mentions(text)
     external_double_mitigation_present = (
         not ext_double_mentions or REAL_BOUNDARY.search(delivery_text) is not None
     )
-    bounded_slice = bool(SLICE_SCOPE.search(text) and pr_blocks and not work_blocks)
-    pr_budget_exceeded = bounded_slice and len(pr_blocks) > 3
-    exception_match = COMPLEXITY_EXCEPTION.search(text)
-    complexity_exception = exception_match.group(1).strip() if exception_match else None
-    complexity_budget = parse_complexity_budget(text, plan=True)
-    complexity_budget_attempted = (
-        re.search(r"(?im)^\s*(?:#{1,6}\s+)?Complexity Budget(?! Exception)\b", text)
-        is not None
-    )
-    complexity_pr_count_matches = complexity_budget["implementation_pr_count"] == len(
-        pr_blocks
-    )
-    complexity_signals = sorted(
-        {
-            re.sub(r"\s+", " ", line).strip()
-            for line in text.splitlines()
-            if GENERIC_MACHINERY.search(line)
-            and not line.casefold().lstrip(" -*+").startswith("complexity budget:")
-        }
-    )
     approval_requirements = []
-    complexity_approval = None
     approval_context = {}
-    if require_approvals or require_complexity_approval:
+    if require_approvals:
         approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
     if require_approvals:
         if "--spec" in sys.argv:
@@ -598,16 +472,6 @@ def main() -> int:
                     approval_context, Path.cwd(), "design.approved", design_path
                 )
             )
-    if require_complexity_approval and pr_budget_exceeded:
-        complexity_approval = approval_requirement(
-            approval_context,
-            Path.cwd(),
-            "plan.complexity-approved",
-            str(path),
-            scope="slice/change",
-            artifact_kind="plan",
-            allowed_statuses={"approved"},
-        )
 
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
@@ -668,29 +532,6 @@ def main() -> int:
             if implementation_plan or not wave_result["declared"]
             else not (unknown_wave_members or duplicate_wave_members)
         ),
-        "bounded_slice_pr_budget": not pr_budget_exceeded or bool(complexity_exception),
-        "direct_to_code_decision_complete": bool(
-            readiness_decision["declared"]
-            and not readiness_decision["missing_fields"]
-            and decision_matches_plan_type
-        ),
-        "breakdown_ceremony_budget_complete": bool(
-            not breakdown_plan
-            or (
-                process_budget["declared"]
-                and not process_budget["missing_fields"]
-                and process_budget["reason_allowed"]
-            )
-        ),
-        "complexity_budget_complete": bool(
-            (not complexity_budget_attempted and not complexity_signals)
-            or (
-                complexity_budget["declared"]
-                and not complexity_budget["missing_fields"]
-                and not complexity_budget["invalid_implementation_pr_count"]
-                and complexity_pr_count_matches
-            )
-        ),
         "lean_change_record_well_formed": (
             not lean_change_record or not lean_change_issues
         ),
@@ -699,15 +540,10 @@ def main() -> int:
         ),
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
-        "no_vagueness": vague == 0,
         "human_first_structure": not format_issues,
     }
     if not require_approvals:
         gates.pop("required_approvals_present")
-    if require_complexity_approval:
-        gates["complexity_exception_approved"] = not pr_budget_exceeded or bool(
-            complexity_approval and complexity_approval["approved"]
-        )
     if not feature:
         required_sections = (
             HUMAN_FIRST_PLAN_SECTIONS
@@ -735,9 +571,6 @@ def main() -> int:
             "issues": lean_change_issues,
             "replaces": ["child spec", "child design"] if compact_record else [],
         },
-        "direct_to_code_decision": readiness_decision,
-        "decision_matches_plan_type": decision_matches_plan_type,
-        "ceremony_budget": process_budget,
         "inherited_subset_mode": inherited_subset,
         "unknown_inherited_refs": unknown_inherited,
         "work_items": sorted(work_blocks),
@@ -762,23 +595,6 @@ def main() -> int:
         "unscheduled_work_items": unscheduled_work_items,
         "unassigned_wave_members": unscheduled_work_items,
         "duplicate_wave_members": duplicate_wave_members,
-        "complexity_budget": {
-            **complexity_budget,
-            "attempted": complexity_budget_attempted,
-            "implementation_pr_count_matches": complexity_pr_count_matches,
-            "applies": bounded_slice,
-            "implementation_prs": len(pr_blocks),
-            "default_max_prs": 3,
-            "exceeded": pr_budget_exceeded,
-            "exception": complexity_exception,
-            "approval": complexity_approval,
-            "generic_machinery_signals": complexity_signals,
-            "evidence_limit": (
-                "Signals require qualitative simplicity review; presence does not "
-                "prove "
-                "that machinery is justified or overbuilt."
-            ),
-        },
         "fr_coverage_pct": pct(fr_c, spec_frs),
         "uc_coverage_pct": pct(uc_c, spec_ucs),
         "nfr_coverage_pct": pct(nfr_c, spec_nfrs),
@@ -810,7 +626,6 @@ def main() -> int:
         "orphan_refs": orphans,
         "duplicates": dupes,
         "bad_id_format": bad,
-        "vague_hits": vague,
         "artifact_format": format_name,
         "human_first_issues": format_issues,
         "gates": gates,
@@ -820,15 +635,34 @@ def main() -> int:
     if as_json:
         print(json.dumps(report, indent=2))
     else:
+        labels = {
+            "has_delivery_items": "At least one change is planned",
+            "id_format_slug_only": "Identifiers use the supported format",
+            "no_duplicates": "No duplicate identifiers",
+            "no_orphan_refs": "All references resolve",
+            "external_double_mitigation_present": (
+                "External test substitutes have a real-dependency check"
+            ),
+            "work_allocations_well_formed": "Child work has the required links",
+            "learning_waves_well_formed": "Work groups are valid",
+            "learning_wave_members_complete": "Work group members resolve",
+            "no_forward_deps": "Planned changes are in dependency order",
+            "required_approvals_present": "Required approvals are current",
+            "human_first_structure": (
+                "Plain-language opening and traceability are present"
+            ),
+            "sections_present": "Required sections are present",
+        }
         for k, v in gates.items():
-            print(f"{'PASS' if v else 'FAIL'}  {k}")
+            print(f"{'PASS' if v else 'FAIL'}  {labels.get(k, k.replace('_', ' '))}")
         print(
-            f"\nFR {report['fr_coverage_pct']}%  UC {report['uc_coverage_pct']}%"
-            f"  NFR {report['nfr_coverage_pct']}%  AT {report['at_coverage_pct']}%"
-            f"  JT {report['jt_coverage_pct']}%  COMP {report['comp_coverage_pct']}%"
-            f"  TEST {report['test_obligation_coverage_pct']}%"
+            f"\nRequirements covered: {report['fr_coverage_pct']}%"
+            f"  User outcomes covered: {report['uc_coverage_pct']}%"
+            f"  Acceptance covered: {report['at_coverage_pct']}%"
+            f"  Components covered: {report['comp_coverage_pct']}%"
+            f"  Required tests covered: {report['test_obligation_coverage_pct']}%"
         )
-        print(f"{report['passed']}/{report['total']} gates passed")
+        print(f"{report['passed']}/{report['total']} checks passed")
     return 0 if all(gates.values()) else 1
 
 

@@ -18,7 +18,7 @@ See [feedback-and-learning.md](feedback-and-learning.md).
 ## Files
 
 - `.sdlc/approvals.yaml` records local human or automatic approvals.
-- `.sdlc/gates.yaml` optionally enables bounded auto-approval policy.
+- `.sdlc/gates.yaml` optionally enables limited auto-approval policy.
 
 Approval records refer to exact file bytes. If an approved document changes, its hash
 no longer matches and the approval is stale.
@@ -42,20 +42,13 @@ approvals:
 
 `approved_at` must be UTC ISO 8601 and must end in `Z`.
 
-## Gate Names
+## Approval Names
 
 - `spec.approved`: required before design gate checks.
 - `design.approved`: required before plan gate checks.
 - `plan.approved`: required before code gate checks.
-- `plan.complexity-approved`: dedicated approval for a bounded Slice/change plan whose
-  concise `Complexity Budget Exception:` justifies more than three implementation PRs.
-  Record it before plan assessment; it does not approve the whole plan or authorize code.
 - `ux.mock.approved`: required before planning or production UI work when the spec says
   `UI Mock Preference: Required`.
-- `code.markers.approved`: required before later progress when code/tests contain
-  TODO/FIXME/XXX/skip/xfail markers that the user explicitly accepts for the current code
-  slice. The checker reports the marker locations; do not add SDLC-specific annotations to
-  app code.
 - `code_slice.approved`: for teams that want a checked handoff between code slices. Bind
   the record to the current child implementation plan path and SHA-256 so workflow status
   can map the approval to its owning `WORK-*` branch and display `Completed`.
@@ -109,7 +102,6 @@ auto_approval:
     - design.approved
     - plan.approved
   forbidden_gates:
-    - plan.complexity-approved
     - release.approved
     - production-deployment.approved
     - security-risk.accepted
@@ -119,23 +111,16 @@ auto_approval:
 An auto-approved record uses `status: auto-approved`, `approved_by: AUTO`, a UTC
 `approved_at`, and a reason. Auto approval is a local policy shortcut, not human approval;
 reports must say when a gate passed through auto approval.
-`plan.complexity-approved` must use explicit `status: approved`; `auto-approved` cannot
-satisfy that targeted exception gate.
 
-## Checker Use
+## Checking Approvals
 
-Draft checks do not require approvals. Gate checks do:
+Draft checks do not require approvals. Checks before the next stage do:
 
 ```pwsh
 python checkers/check_design.py design.md --spec spec.md --require-approvals --json
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --require-approvals --json
-python checkers/check_plan.py plan.md --require-complexity-approval --json
 python checkers/check_code.py --plan plan.md --require-approvals --tests-argv '["pytest","-q"]' --json
 ```
 
 Use `--approvals <path>` or `--gates-policy <path>` when a project stores the YAML files
 somewhere other than `.sdlc/`.
-
-Marker approvals use the same ledger but bind to a marker inventory hash rather than a
-source file hash. This prevents an approval for one TODO/skip inventory from silently
-covering a different inventory later.

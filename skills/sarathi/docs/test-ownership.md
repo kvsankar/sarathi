@@ -1,17 +1,17 @@
-# Cross-Scope Test Ownership
+# Where Tests Belong
 
 Use this policy when requirements are broken down across product/system,
 feature/component, and slice/change documents.
 
 ## Core Rule
 
-Only a code-ready Implementation plan may invoke `/code-create`. The implementation leaf
-is usually a slice/change, but a sufficiently small feature/component may itself be the
-leaf. A leaf PR may implement production code and executable tests whose accepted intent
-lives in any parent scope.
+Only an Implementation plan that is ready to implement may invoke `/code-create`. The change being
+implemented is usually a slice/change, but a sufficiently small feature may be implemented
+directly. Its PR may implement production code and executable tests whose approved
+requirements live in an earlier document.
 
-Test code is code. Accepted parent intent plus a bounded Implementation plan authorizes
-implementation. Parent `AT-`, `JT-`, and design `TEST-` obligations must survive
+Test code is code. Approved requirements plus a specific Implementation plan authorize
+implementation. Earlier `AT-`, `JT-`, and design `TEST-` obligations must survive
 allocation and become executable in PRs or explicitly justified non-code
 verification.
 
@@ -20,13 +20,13 @@ verification.
 | Scope | Owns test intent | Typical executable evidence implemented by leaves |
 | --- | --- | --- |
 | Product/system | Representative product `AT-`, cross-feature `JT-`, system NFR and operational acceptance intent. | System acceptance, cross-feature journey/e2e/API workflow, deployment smoke, and system quality-attribute tests. |
-| Feature/component | Bounded feature `AT-`/`JT-` intent and design obligations for feature composition and boundaries. | Feature acceptance, component integration, contract, API workflow, and feature journey tests. |
+| Feature/component | Specific feature `AT-`/`JT-` requirements and design obligations for feature composition and boundaries. | Feature acceptance, component integration, contract, API workflow, and feature journey tests. |
 | Slice/change | Exact behavior-delta `AT-`/`JT-` intent and local design obligations. | Slice acceptance, unit, component, contract, adapter/infrastructure integration, and regression tests. |
 
 An `AT-` is an externally observable acceptance criterion, not automatically an integration
 test. Design chooses the executable level and records a `TEST-` obligation and pass/fail check when
 needed. Plan assigns that obligation to a child `WORK-` item or `PR-`; `/code-create`
-implements it in the assigned code-ready leaf.
+implements it in the assigned change.
 
 ## Integration Placement
 
@@ -43,7 +43,7 @@ narrowest level that can prove the behavior:
 A Breakdown plan creates an explicit integration/acceptance `WORK-` item only when an
 obligation spans multiple children and cannot be honestly owned by one existing child. That
 work item follows [work-decomposition.md](work-decomposition.md): name its child scope and
-minimum required artifact, normally a bounded Implementation plan. Do not create a child
+minimum required document, normally one specific Implementation plan. Do not create a child
 spec or design unless a named uncertainty requires one.
 
 ## Planning And Evidence

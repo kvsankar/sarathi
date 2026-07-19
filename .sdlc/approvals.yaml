@@ -1,15 +1,15 @@
 version: 1
 approvals:
-  - id: APR-PLAN-HUMANFIRST
+  - id: APR-PLAN-PLAINLANGUAGE
     gate: plan.approved
     scope: slice/change
     artifact:
       kind: plan
       path: .sdlc/plan.md
-      sha256: 9342e6da4ebbeabcf5126759302e31f06ae028cbb634d3a9e3c450b3dc951420
+      sha256: 6b37d226184a799fa42bb9bcc9c65432db3cfc351e51e14c5b2824d7cd8faa3a
     status: approved
-    approved_by: "User via explicit end-to-end implementation request"
-    approved_at: "2026-07-19T05:45:52Z"
+    approved_by: "User via explicit request to remove forced estimates and remaining jargon"
+    approved_at: "2026-07-19T12:00:00Z"
   - id: APR-RELEASE-HUMANFIRST-030
     gate: release.approved
     scope: slice/change
@@ -20,3 +20,13 @@ approvals:
     status: approved
     approved_by: "User via explicit request to release 0.3.0"
     approved_at: "2026-07-19T06:35:01Z"
+  - id: APR-RELEASE-PLAINLANGUAGE-031
+    gate: release.approved
+    scope: slice/change
+    artifact:
+      kind: release
+      path: CHANGELOG.md
+      sha256: 0443011382cc328797c475521c8ea2cc944a26d37225fc89c6f91251616a2506
+    status: approved
+    approved_by: "User via explicit request to release 0.3.1"
+    approved_at: "2026-07-19T12:45:00Z"

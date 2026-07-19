@@ -23,6 +23,7 @@ def run_check_code(
     capsys,
     *,
     test_body: str = "def test_auth():\n    assert True\n",
+    source_body: str | None = None,
     approvals_body: str | None = None,
     extra_args: list[str] | None = None,
 ):
@@ -35,6 +36,8 @@ def run_check_code(
     plan.write_text("- PR-AUTH-SIGNIN\n", encoding="utf-8")
     design.write_text("", encoding="utf-8")
     (tests / "test_auth.py").write_text(test_body, encoding="utf-8")
+    if source_body is not None:
+        (src / "app.py").write_text(source_body, encoding="utf-8")
     if approvals_body is not None:
         sdlc = tmp_path / ".sdlc"
         sdlc.mkdir(exist_ok=True)
@@ -75,8 +78,8 @@ def test_check_code_records_a_passing_verification_command(
     assert report["verification_command_exit"] == 0
     assert report["gates"] == {
         "verification_command_passed": True,
-        "markers_approved": True,
         "source_process_ids_absent": True,
+        "skipped_tests_absent": True,
     }
 
 
@@ -128,10 +131,25 @@ approvals:
     assert report["gates"]["required_approvals_present"] is True
 
 
-def test_check_code_surfaces_markers_for_explicit_approval(
+def test_check_code_reports_markers_without_blocking(tmp_path, monkeypatch, capsys):
+    test_body = "def test_auth():\n    assert True  # TODO remove fixture shortcut\n"
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "pass"],
+        monkeypatch,
+        capsys,
+        test_body=test_body,
+    )
+
+    assert rc == 0
+    assert report["code_markers"][0]["marker"] == "TODO"
+    assert report["marker_hits"] == 1
+
+
+def test_check_code_rejects_skipped_tests_without_a_special_approval(
     tmp_path, monkeypatch, capsys
 ):
-    test_body = "def test_auth():\n    assert True  # TODO remove fixture shortcut\n"
+    test_body = "import pytest\n\n@pytest.mark.skip\ndef test_auth():\n    pass\n"
     rc, report = run_check_code(
         tmp_path,
         [sys.executable, "-c", "pass"],
@@ -141,44 +159,23 @@ def test_check_code_surfaces_markers_for_explicit_approval(
     )
 
     assert rc == 1
-    assert report["code_markers"][0]["marker"] == "TODO"
-    assert report["gates"]["markers_approved"] is False
+    assert report["gates"]["skipped_tests_absent"] is False
+    assert report["code_markers"][0]["marker"] == "SKIP"
 
 
-def test_check_code_accepts_a_current_marker_approval(tmp_path, monkeypatch, capsys):
-    test_body = "def test_auth():\n    assert True  # TODO remove fixture shortcut\n"
-    marker_inventory = [
-        {
-            "path": "tests/test_auth.py",
-            "line": 2,
-            "marker": "TODO",
-            "text": "assert True  # TODO remove fixture shortcut",
-        }
-    ]
-    marker_hash = load_check_code().marker_inventory_hash(marker_inventory)
-    approvals = f"""version: 1
-approvals:
-  - id: APR-MARKERS
-    gate: code.markers.approved
-    scope: slice/change
-    artifact:
-      kind: marker-inventory
-      path: code-marker-inventory
-      sha256: {marker_hash}
-    status: approved
-    approved_by: Test User
-    approved_at: "2026-07-01T12:00:00Z"
-"""
+def test_check_code_allows_an_ordinary_production_skip_method(
+    tmp_path, monkeypatch, capsys
+):
     rc, report = run_check_code(
         tmp_path,
         [sys.executable, "-c", "pass"],
         monkeypatch,
         capsys,
-        test_body=test_body,
-        approvals_body=approvals,
+        source_body="def skip(item):\n    return item\n",
     )
+
     assert rc == 0
-    assert report["gates"]["markers_approved"] is True
+    assert report["gates"]["skipped_tests_absent"] is True
 
 
 def test_check_code_rejects_process_ids_in_source_and_tests(

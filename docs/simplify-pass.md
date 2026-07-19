@@ -16,7 +16,7 @@ and process-shaped weight that does not earn its keep.
 
 ## What To Challenge
 
-- Spec: requirements that are broader than accepted intent, duplicated needs, unnecessary
+- Spec: requirements that are broader than the approved requirements, duplicated needs, unnecessary
   user roles, speculative future behaviors, NFR thresholds without a real driver, and
   acceptance criteria that test imagined architecture instead of observable outcomes.
 - Design: unnecessary layers, components, interfaces, extension points, ADRs, patterns,

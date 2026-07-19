@@ -4,7 +4,7 @@ Sarathi should keep resumable workflow state in `.sdlc/wip.md`. The file is a
 human-readable handoff note for fresh agent contexts. It lets a new context load current
 state and continue without depending on chat history.
 
-`wip.md` is not an approval ledger, a source of product truth, or proof that checks passed.
+`wip.md` is not an approval record, a source of product truth, or proof that checks passed.
 Specs, designs, plans, code, tests, `.sdlc/process-decisions.yaml`, and
 `.sdlc/approvals.yaml` remain the source records. Treat `.sdlc/wip.md` as a current
 navigation note that can become stale.
@@ -27,7 +27,7 @@ claim before continuing.
 Create `.sdlc/wip.md` when SDLC work starts in a project and no WIP file exists. Update it:
 
 - after creating, materially revising, reviewing, checking, or assessing a document;
-- before every hard human gate stop;
+- before every required approval pause;
 - before ending a turn with unresolved blockers or open questions;
 - after the user approves a document, changes the starting mode, changes scope, or
   explicitly chooses YOLO/lightweight/degraded check behavior;
@@ -49,9 +49,9 @@ Current Stage: spec-create | spec-review | design-create | plan-create | code-cr
 Current Gate: none | human-review | blocked | approved-for-next-stage
 Project Entry Mode: greenfield | brownfield_baseline | brownfield_delta_only | unknown
 Work Scope: product/system | feature/component | slice/change | unknown
-Implementation Readiness: Exploratory | Decomposable | Code-ready | unknown
-Delivery Profile: Lean | Standard | High-assurance | Exploratory | unknown
-Assurance Modules: comma-separated module names or none
+Ready To Implement: Yes | No | unknown
+Review Level: Lean | Standard | High-assurance | Exploratory | unknown
+Extra Checks: comma-separated checks or none
 
 ## Resume Summary
 
@@ -73,19 +73,18 @@ One short paragraph describing what a fresh context must know first.
 
 - Command or review performed, date, result, and where details live.
 
-## Feedback And Learning
+## Results And Feedback
 
-Learning Target: assumption, behavior, boundary, or risk tested by the current slice
-Feedback Target: stakeholder, real system, environment, or objective evidence source
+Expected Result: what the current change should demonstrate
+Feedback From: person, real system, environment, or objective result that can judge it
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise remaining-risk note
-Active Learning Wave: exact WAVE-AREA-NAME from the plan, or none when the selected work is not wave-scheduled
-Active Work Item: exact selected WORK-AREA-NAME, or none
-WIP Limit: positive integer or not-recorded
-Active Slices: legacy optional detail; do not use it to invent a wave assignment
-Invalidation Result: concise evidence-backed result
-Ancestor Impact: spec/design/plan/code/process outcome and affected paths
-Stop Or Replan Triggers: conditions that pause or cancel active sibling work
+Current Work Group: exact WAVE-AREA-NAME, or none
+Current Work: exact selected WORK-AREA-NAME, or none
+Parallel Limit: positive integer or not-recorded
+What Changed: result that changed or confirmed the plan
+Documents To Update: earlier documents that need updating and their paths
+Stop Conditions: conditions that pause or cancel active parallel work
 
 ## Open Questions And Blockers
 
@@ -104,6 +103,9 @@ Notes: ...
 
 Add compact subsections only when they improve resumability. Keep the file short enough for
 a fresh context to read quickly; prefer links to documents over copied content.
+
+The renderer also accepts the field names used by older WIP files. New files use the plain
+labels above.
 
 ## Fresh Context Resume Procedure
 

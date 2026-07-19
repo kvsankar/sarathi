@@ -69,6 +69,38 @@ Scope: route password operations through the adapter.
     ]
 
 
+def test_renderer_accepts_plain_wip_field_names(tmp_path):
+    module = load_renderer()
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+Current Stage: code-create
+Review Level: Standard
+Extra Checks: documentation
+
+## Results And Feedback
+Expected Result: Confirm the public behavior.
+Feedback From: API consumer
+Feedback Status: requested
+Feedback Evidence: docs/review.md
+Current Work Group: WAVE-DEMO-NEXT
+Current Work: WORK-DEMO-ALPHA
+Parallel Limit: 1
+What Changed: Nothing yet.
+Documents To Update: none
+Stop Conditions: Stop if the API changes.
+""",
+    )
+
+    result = module.parse_wip(tmp_path)
+
+    assert result["Review Level"] == "Standard"
+    assert result["Extra Checks"] == "documentation"
+    assert result["learning"]["target"] == "Confirm the public behavior."
+    assert result["learning"]["active_work_item"] == "WORK-DEMO-ALPHA"
+    assert result["learning"]["stop_or_replan"] == "Stop if the API changes."
+
+
 def test_renderer_parses_table_only_delivery_definitions():
     module = load_renderer()
     plan = """# Human-first plan
@@ -131,7 +163,7 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
         "active_waves": 0,
     }
     assert "Not yet done" in rendered
-    assert "No valid decomposition discovered" in rendered
+    assert "No child work planned" in rendered
     assert "Not recorded" in rendered
     assert 'href="sarathi-process.html">Process guide</a>' in rendered
     parser = HTMLParser()
@@ -577,7 +609,7 @@ Escalate If: The public contract or stored data must change.
     assert alpha["child_spec"] is None
     assert alpha["child_design"] is None
     assert alpha["child_plan"]["metadata"]["Lean Change Record"] == "Yes"
-    assert "Inherited-intent plan" in rendered
+    assert "Compact plan" in rendered
     assert "Slice spec" not in rendered
 
 
@@ -605,7 +637,7 @@ def test_inherited_intent_record_replaces_child_spec_and_design_nodes(tmp_path):
         model["work_items"][0]["child_plan"]["metadata"]["Inherited Intent Record"]
         == "Yes"
     )
-    assert "Inherited-intent plan" in rendered
+    assert "Compact plan" in rendered
     assert "Slice spec" not in rendered
 
 
@@ -712,7 +744,7 @@ assessments:
     assert model["summary"]["assessed_items"] == 1
     assert "WORK-DEMO-ALPHA" in rendered
     assert "Assessed" in rendered
-    assert "Assessed learning" in rendered
+    assert "What we learned" in rendered
     assert "Feedback received" in rendered
     assert "revision-proposed: record observed retry timing" in rendered
 
@@ -849,7 +881,7 @@ assessments:
 
     assert model["work_items"][0]["state"] == "assessed"
     assert model["work_items"][0]["code_assessment"]["learning"] == {}
-    assert "Not recorded in assessment" in rendered
+    assert "Not recorded" in rendered
 
 
 def test_stale_code_assessment_remains_evidence(tmp_path):
@@ -933,10 +965,10 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert '<dialog id="approval-details"' in first
     assert 'id="approval-details-trigger"' in first
     assert "APR-SPEC covers an earlier version" in first
-    assert "record a fresh spec.approved approval" in first
+    assert "review the current document and approve this version" in first
     assert 'class="operational-details"' not in first
     assert "Workflow and learning details" not in first
-    assert "Workflow tree" in first
+    assert ">Work</h2>" in first
     assert "mapped test" in first
     assert "Evidence mapped" in first
     assert 'class="waves-view"' not in first
@@ -1006,7 +1038,7 @@ def test_malformed_work_allocation_is_visible_but_excluded(tmp_path):
     assert model["malformed_allocations"] == ["WORK-SHARING"]
     assert model["summary"]["work_items"] == 1
     assert model["summary"]["malformed_work_items"] == 1
-    assert "1 malformed WORK allocation excluded from valid counts" in rendered
+    assert "1 invalid work item excluded from the totals" in rendered
     assert "WORK-SHARING" in rendered
     assert "Use <code>WORK-AREA-NAME</code>" in rendered
 

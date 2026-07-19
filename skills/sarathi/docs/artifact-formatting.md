@@ -3,7 +3,7 @@
 Sarathi-generated Markdown documents and reports should be easy to review in terminals,
 diffs, and narrow editor panes.
 
-For specs, designs, and plans, apply `docs/human-first-artifacts.md`: the technical crux
+For specs, designs, and plans, apply `docs/human-first-artifacts.md`: the technical overview or approach
 comes first, visible headings are descriptive, and traceability metadata stays in comments
 or the final appendix rather than interrupting prose.
 

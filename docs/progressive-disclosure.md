@@ -1,21 +1,21 @@
-# Progressive Disclosure
+# Loading Only Relevant Instructions
 
 Sarathi should load the smallest instruction set that can safely decide the next
 action, then load deeper instructions only when the selected stage or risk requires them.
 This keeps broad process policy from crowding out stage-specific judgment.
 
-## Always-Loaded Kernel
+## Instructions Always Loaded
 
-`SKILL.md` is the routing kernel. It should contain only:
+`SKILL.md` chooses the next action. It should contain only:
 
 - how to locate the bundled stage prompts, docs, agents, and checkers;
 - command verb meanings: create, verify, review, assess;
 - project entry/adoption-mode routing;
 - resumable WIP state expectations;
 - consent-gated bootstrap-file instruction expectations;
-- stage selection and human-gate rules;
+- stage selection and required approval rules;
 - non-negotiable operating constraints that affect every stage;
-- checker availability expectations and degraded-mode stops.
+- what to do when a required checker is unavailable.
 
 Do not copy full stage procedures, long cross-cutting concern lists, checker schemas, or
 review rubrics into `SKILL.md` when a referenced prompt or doc can carry them.
@@ -35,9 +35,9 @@ Load references only when their trigger applies:
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `/spec-create` or `/code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
-| `docs/test-ownership.md` | A bounded plan must allocate inherited acceptance, journey, or integration evidence. |
-| `docs/work-decomposition.md` | Applying direct-to-code readiness or justifying exceptional decomposition with the minimum delta artifact. |
-| `docs/feedback-and-learning.md` | Planning or completing code-ready slices; handling stakeholder feedback, parent revisions, parallel agents, learning dependencies, or learning waves. |
+| `docs/test-ownership.md` | A plan must assign earlier acceptance, journey, or integration tests. |
+| `docs/work-decomposition.md` | Deciding whether a specific unanswered question requires another document before implementation. |
+| `docs/feedback-and-learning.md` | Planning or completing changes; handling stakeholder feedback, updates to earlier documents, or parallel work. |
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs repeatable checks with independent review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |
 | `docs/process-maintenance.md` | Modifying the SDLC process, prompts, skills, checker policy, or shared docs. |

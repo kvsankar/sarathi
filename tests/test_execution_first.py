@@ -10,20 +10,20 @@ def read(path: str) -> str:
 def test_planning_defaults_to_direct_implementation() -> None:
     prompt = read("prompts/plan-create.prompt.md")
     policy = read("docs/work-decomposition.md")
-    assert "## Direct-To-Code Decision" in prompt
-    assert "feature/component may be code-ready directly" in prompt
+    assert "Direct-To-Code Decision" not in prompt
+    assert "component may proceed directly" in prompt
     assert "Many screens" in policy
     assert "do not justify decomposition" in policy
-    assert "Ceremony Budget" in policy
+    assert "Ceremony Budget" not in policy
 
 
 def test_inherited_intent_is_delta_only() -> None:
     policy = read("docs/work-decomposition.md")
     spec = read("prompts/spec-create.prompt.md")
     design = read("prompts/design-create.prompt.md")
-    assert "never rebuild the parent inventory" in policy
+    assert "never rebuild the earlier inventory" in policy
     assert "Never\nreproduce the complete parent requirement inventory" in spec
-    assert "Do not repeat parent architecture" in design
+    assert "Do not repeat parent\narchitecture" in design
 
 
 def test_required_scenarios_and_neuring_dogfood_are_recorded() -> None:
@@ -39,6 +39,6 @@ def test_required_scenarios_and_neuring_dogfood_are_recorded() -> None:
 def test_local_fixes_use_focused_rereview() -> None:
     checklist = read("docs/review-verification-checklist.md")
     plan_assess = read("prompts/plan-assess.prompt.md")
-    assert "Run mechanical verification once per artifact revision" in checklist
+    assert "Run automatic checks once per document revision" in checklist
     assert "focused\nre-review" in checklist
-    assert "unless scope or\ncontrolling intent changed materially" in plan_assess
+    assert "unless\nrequirements or scope changed" in plan_assess

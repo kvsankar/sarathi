@@ -55,14 +55,8 @@ When checking a later gate that depends on approved earlier documents, add
 `design.approved`, and, when applicable, `ux.mock.approved` records with UTC `approved_at`
 timestamps. Do not require approvals while drafting a plan that still needs human review.
 
-For a bounded Slice/change plan with more than three `PR-*` items, draft verification checks
-the exact complexity budget and exception rationale without requiring approval. Before
-`/plan-assess`, rerun with `--require-complexity-approval`; this requires a
-`plan.complexity-approved` approval whose saved hash matches the current plan. It remains
-separate from final `plan.approved`.
-
-For an Inherited-Intent Implementation Record, verify the approved parent spec/design first, then run the plan
-checker against the compact record with `--feature` and the parent document options needed to
+For a compact plan that relies on approved parent documents, verify those documents first,
+then run the plan checker with `--feature` and the parent document options needed to
 check its inherited IDs. Use `--inherited-subset --spec <parent-spec> --design
 <parent-design>` so cited IDs are validated without requiring allocation of the complete
 parent inventory. Do not require missing child spec/design files. For focused
@@ -74,23 +68,22 @@ if that is unavailable, retry with `uv run python`.
 Report:
 
 - Exact commands executed.
-- Artifact format and human-first structure issues: Implementation Crux placement,
-  machine-only visible headings, final traceability, annotation/table resolution, and
-  descriptive hidden-ID wave/delivery parsing. Unmarked legacy files stay legacy.
+- Document format and human-first structure issues: Implementation Approach placement (or
+  legacy Implementation Crux), machine-only visible headings, final traceability,
+  annotation/table resolution, and descriptive hidden-ID work-group/delivery parsing. Unmarked
+  legacy files stay legacy.
 - Raw checker JSON.
 - Exit codes.
 - `passed/total`.
 - Any spec/design failures.
 - Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, forward
   dependencies, or vague hits.
-- Declared waves, malformed or duplicate `WAVE-*` IDs/orders, missing required wave fields,
-  invalid WIP limits, and unknown or duplicate members. Unscheduled `WORK-*` items are valid.
-- Exact complexity-budget fields/count, generic-machinery signals, and the bounded Slice/change
-  implementation PR gate, including exception rationale and hash-current approval evidence.
+- Declared work groups, malformed or duplicate `WAVE-*` IDs/orders, missing required group fields,
+  invalid parallel-work limits, and unknown or duplicate members. Unscheduled `WORK-*` items are valid.
 - `external_double_mentions` and `external_double_mitigation_present`. If a plan uses a
-  mock/fake/stub/test double for an external system, the checker requires a
-  real-boundary, official-conformance, type-conformance, generated-schema/client,
-  sandbox/emulator, captured-real-fixture, or user-approved mitigation allocation.
+  mock/fake/stub/test double for an external system, report what remains untested and the
+  command or accepted mitigation that ties it to the real dependency or official test
+  interface.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 
@@ -100,5 +93,5 @@ End with:
 
 - **Verification result**: Pass / Fail / Unable to run.
 - **Evidence limits**: format and link checks only; independent review is still required for
-  slicing, sequencing, touch-set fidelity, verification fitness, and risk.
+  scope, sequence, expected file changes, test quality, and risk.
 - **Recommended next command**: `/plan-review` or `/plan-assess`.

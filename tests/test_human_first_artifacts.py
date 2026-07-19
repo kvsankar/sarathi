@@ -29,7 +29,7 @@ def human_first_spec() -> str:
     return """# Enabled authentication methods
 <!-- sarathi:artifact-format version="2" -->
 
-## Product Crux
+## Product Overview
 
 Consumers need to sign in with any authentication method enabled for their deployment.
 Disabled methods must never create a session. Anonymous posting is outside scope. Success
@@ -123,7 +123,7 @@ def human_first_design() -> str:
     return """# Authentication identities
 <!-- sarathi:artifact-format version="2" -->
 
-## Technical Crux
+## Technical Approach
 
 BPTrial currently stores passwords on its user model. The target model gives a user one
 or more identities; each identity owns mechanisms and each mechanism owns its credential.
@@ -215,7 +215,7 @@ def human_first_plan() -> str:
     return """# Authentication compatibility increment
 <!-- sarathi:artifact-format version="2" -->
 
-## Implementation Crux
+## Implementation Approach
 
 Route BPTrial password operations through the compatibility adapter, keeping its schema
 and public API unchanged. Add the consumer identity persistence model separately. Verify
@@ -275,7 +275,7 @@ def small_change_plan() -> str:
 
 <!-- sarathi:artifact-format version="2" -->
 
-## Implementation Crux
+## Implementation Approach
 
 Reject a second use of a consumed password-reset token. Keep token issuance, password
 policy, persistence schema, and public responses unchanged. Add one behavioral regression
@@ -333,7 +333,7 @@ def high_assurance_migration_design() -> str:
 
 <!-- sarathi:artifact-format version="2" -->
 
-## Technical Crux
+## Technical Approach
 
 The legacy service owns account records today; the target service will own them after a
 staged migration. Copy and reconcile records before switching writes. During dual-read,
@@ -390,6 +390,20 @@ def test_human_first_spec_resolves_annotations_and_checks_structure(
     assert report["counts"]["FR"] == 1
     assert report["counts"]["AT"] == 1
     assert report["gates"]["human_first_structure"] is True
+
+
+def test_version_two_requires_the_plain_opening_heading(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    spec_path.write_text(
+        human_first_spec().replace("## Product Overview", "## Product Crux", 1),
+        encoding="utf-8",
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_checker(module, [str(spec_path)], monkeypatch, capsys, tmp_path)
+
+    assert rc == 1
+    assert "missing_crux:Product Overview" in report["human_first_issues"]
 
 
 def test_human_first_design_and_plan_accept_descriptive_headings(
@@ -579,7 +593,7 @@ def test_dogfood_covers_all_requested_scenarios():
         "compatibility adapter",
         "Small behavior change",
         "High-assurance migration",
-        "Existing legacy artifact",
+        "Existing legacy document",
         "test_replayed_reset_token_cannot_change_password",
         "test_at_auth_reset_replay",
     ):

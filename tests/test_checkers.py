@@ -135,13 +135,6 @@ Python.
 # Drivers & Constraints
 FR-AUTH-SIGNIN and UC-AUTH-SIGNIN drive the design.
 
-## Complexity Budget
-- Mental Model: authenticate through one existing boundary.
-- Current Consumers: the current application.
-- Proposed Additions: one authentication component; no generic machinery.
-- Existing Evidence Reused: current acceptance and contract tests.
-- Deleted or Deferred: future-consumer extension points.
-
 # Layers
 Application Layer handles request orchestration and dependency direction.
 
@@ -225,22 +218,8 @@ Work Scope: Slice/change
 Plan Type: Implementation
 Implementation Readiness: Code-ready
 
-## Direct-To-Code Decision
-- Inherited Sources: accepted authentication requirements and design.
-- Reviewable Increment: one login behavior change.
-- Unresolved Blocker: none.
-- Smallest Additional Artifact: none.
-
 # Strategy
 Use one small PR with focused verification.
-
-## Complexity Budget
-- Mental Model: implement sign-in through the existing authentication boundary.
-- Current Consumers: the current application.
-- Proposed Additions: one cohesive behavior change; no new machinery.
-- Existing Evidence Reused: current acceptance and contract tests.
-- Deleted or Deferred: future-consumer abstractions.
-- Implementation PR Count: 1
 
 # Milestones
 - MILE-AUTH-LOGIN Deliver login.
@@ -289,6 +268,32 @@ def test_check_spec_accepts_complete_structural_spec(tmp_path, monkeypatch, caps
     assert rc == 0
     assert report["uc_at_coverage_pct"] == 100.0
     assert report["fr_at_coverage_pct"] == 100.0
+
+
+def test_wave_parser_accepts_plain_field_names():
+    module = load_checker("waves")
+    result = module.parse_learning_waves(
+        """# Plan
+Plan Type: Breakdown
+
+## Waves
+
+### First coordinated change
+<!-- sarathi:wave id="WAVE-AUTH-BOUNDARY" -->
+Order: 1
+Expected Result: Confirm the authentication boundary.
+Members: WORK-AUTH-SIGNIN
+Parallel Limit: 1
+Review Point: Review the contract evidence.
+Stop Conditions: Stop if the request shape changes.
+"""
+    )
+
+    assert result["missing_fields"] == {}
+    assert result["waves"][0]["learning_target"] == (
+        "Confirm the authentication boundary."
+    )
+    assert result["waves"][0]["wip_limit"] == 1
 
 
 def test_check_spec_requires_hash_matched_approval_when_enabled(
@@ -458,7 +463,7 @@ def test_approval_requirement_uses_later_valid_reapproval(
     assert report["approval_requirements"][0]["approval_id"] == "APR-CURRENT-SPEC"
 
 
-def test_check_spec_rejects_nfr_without_units(tmp_path, monkeypatch, capsys):
+def test_check_spec_leaves_nfr_precision_to_review(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     write_valid_spec(spec_path)
     text = spec_path.read_text(encoding="utf-8").replace("200 ms", "soon")
@@ -469,8 +474,8 @@ def test_check_spec_rejects_nfr_without_units(tmp_path, monkeypatch, capsys):
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["nfr_missing_units"] == ["NFR-PERF-SIGNIN"]
+    assert rc == 0
+    assert "nfr_missing_units" not in report
 
 
 def test_check_spec_rejects_numbered_ids(tmp_path, monkeypatch, capsys):
@@ -520,7 +525,7 @@ def test_check_spec_rejects_design_test_obligation_ids(tmp_path, monkeypatch, ca
     assert "TEST-AUTH-POLICY" in report["bad_id_format"]
 
 
-def test_check_spec_rejects_latency_nfr_with_wrong_unit(tmp_path, monkeypatch, capsys):
+def test_check_spec_does_not_score_nfr_prose(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     write_valid_spec(spec_path)
     text = spec_path.read_text(encoding="utf-8").replace(
@@ -534,13 +539,11 @@ def test_check_spec_rejects_latency_nfr_with_wrong_unit(tmp_path, monkeypatch, c
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["nfr_unit_mismatches"] == ["NFR-PERF-SIGNIN"]
+    assert rc == 0
+    assert "nfr_unit_mismatches" not in report
 
 
-def test_check_spec_rejects_acceptance_test_that_only_namedrops_ids(
-    tmp_path, monkeypatch, capsys
-):
+def test_check_spec_leaves_acceptance_wording_to_review(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     write_valid_spec(spec_path)
     text = spec_path.read_text(encoding="utf-8").replace(
@@ -556,13 +559,11 @@ def test_check_spec_rejects_acceptance_test_that_only_namedrops_ids(
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["ats_missing_scenario_shape"] == ["AT-AUTH-SIGNIN"]
+    assert rc == 0
+    assert "ats_missing_scenario_shape" not in report
 
 
-def test_check_spec_rejects_journey_without_multiple_ordered_ats(
-    tmp_path, monkeypatch, capsys
-):
+def test_check_spec_allows_concise_journey_description(tmp_path, monkeypatch, capsys):
     spec_path = tmp_path / "spec.md"
     write_valid_spec(spec_path)
     text = spec_path.read_text(encoding="utf-8").replace(
@@ -578,8 +579,8 @@ def test_check_spec_rejects_journey_without_multiple_ordered_ats(
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["jts_missing_sequence"] == ["JT-AUTH-LOGIN"]
+    assert rc == 0
+    assert "jts_missing_sequence" not in report
 
 
 def test_check_spec_accepts_journey_composing_ordered_acceptance_tests(
@@ -611,7 +612,7 @@ def test_check_spec_accepts_journey_composing_ordered_acceptance_tests(
     )
 
     assert rc == 0
-    assert report["jts_missing_sequence"] == []
+    assert "jts_missing_sequence" not in report
 
 
 def test_check_design_accepts_complete_structural_design(tmp_path, monkeypatch, capsys):
@@ -632,66 +633,7 @@ def test_check_design_accepts_complete_structural_design(tmp_path, monkeypatch, 
     assert rc == 0
     assert report["comp_req_coverage_pct"] == 100.0
     assert report["comp_test_coverage_pct"] == 100.0
-    assert report["gates"]["complexity_budget_complete"] is True
-
-
-def test_check_design_requires_budget_and_reports_generic_machinery_signals(
-    tmp_path, monkeypatch, capsys
-):
-    spec_path = tmp_path / "spec.md"
-    design_path = tmp_path / "design.md"
-    write_valid_spec(spec_path)
-    write_valid_design(design_path)
-    design_path.write_text(
-        design_path.read_text(encoding="utf-8").replace(
-            "## Complexity Budget\n"
-            "- Mental Model: authenticate through one existing boundary.\n"
-            "- Current Consumers: the current application.\n"
-            "- Proposed Additions: one authentication component; "
-            "no generic machinery.\n"
-            "- Existing Evidence Reused: current acceptance and contract tests.\n"
-            "- Deleted or Deferred: future-consumer extension points.",
-            "Introduce a generic evidence platform and registry for future consumers.",
-        ),
-        encoding="utf-8",
-    )
-    module = load_checker("check_design")
-
-    rc, report = run_main(
-        module,
-        [str(design_path), "--spec", str(spec_path), "--json"],
-        monkeypatch,
-        capsys,
-        tmp_path,
-    )
-
-    assert rc == 1
-    assert report["gates"]["complexity_budget_complete"] is False
-    assert report["complexity_budget"]["generic_machinery_signals"] == [
-        "Introduce a generic evidence platform and registry for future consumers."
-    ]
-
-
-def test_check_design_allows_no_complexity_budget_without_new_machinery(
-    tmp_path, monkeypatch, capsys
-):
-    design_path = tmp_path / "design.md"
-    write_valid_design(design_path)
-    text = design_path.read_text(encoding="utf-8")
-    start = text.index("## Complexity Budget")
-    end = text.index("# Layers")
-    design_path.write_text(text[:start] + text[end:], encoding="utf-8")
-    module = load_checker("check_design")
-    rc, report = run_main(
-        module,
-        [str(design_path), "--component", "--json"],
-        monkeypatch,
-        capsys,
-        tmp_path,
-    )
-    assert rc == 0
-    assert report["complexity_budget"]["attempted"] is False
-    assert report["gates"]["complexity_budget_complete"] is True
+    assert "complexity_budget" not in report
 
 
 def test_check_design_flags_external_double_without_drift_control(
@@ -909,7 +851,6 @@ def test_check_plan_accepts_complete_implementation_plan(tmp_path, monkeypatch, 
     assert report["plan_kind"] == "implementation"
     assert report["at_coverage_pct"] == 100.0
     assert report["test_obligation_coverage_pct"] == 100.0
-    assert report["gates"]["complexity_budget_complete"] is True
 
 
 def test_check_plan_does_not_require_pr_waves_in_implementation_plans(
@@ -932,59 +873,18 @@ def test_check_plan_does_not_require_pr_waves_in_implementation_plans(
     assert report["gates"]["learning_wave_members_complete"] is True
 
 
-def test_check_plan_rejects_inline_or_incomplete_complexity_budget(
-    tmp_path, monkeypatch, capsys
-):
+def test_check_plan_ignores_removed_process_sections(tmp_path, monkeypatch, capsys):
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
     text = plan_path.read_text(encoding="utf-8")
-    budget_start = text.index("## Complexity Budget")
-    milestone_start = text.index("# Milestones")
     plan_path.write_text(
-        text[:budget_start] + "Complexity Budget: x\n\n" + text[milestone_start:],
-        encoding="utf-8",
-    )
-    module = load_checker("check_plan")
-
-    rc, report = run_main(
-        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
-    )
-
-    assert rc == 1
-    assert report["gates"]["complexity_budget_complete"] is False
-    assert report["complexity_budget"]["declared"] is False
-
-
-def test_check_plan_exception_does_not_activate_optional_complexity_budget(
-    tmp_path, monkeypatch, capsys
-):
-    plan_path = tmp_path / "plan.md"
-    write_valid_plan(plan_path)
-    text = plan_path.read_text(encoding="utf-8")
-    start = text.index("## Complexity Budget")
-    end = text.index("# Milestones")
-    plan_path.write_text(
-        text[:start]
-        + "Complexity Budget Exception: four cohesive boundaries if later needed.\n\n"
-        + text[end:],
-        encoding="utf-8",
-    )
-    module = load_checker("check_plan")
-    rc, report = run_main(
-        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
-    )
-    assert rc == 0
-    assert report["complexity_budget"]["attempted"] is False
-    assert report["gates"]["complexity_budget_complete"] is True
-
-
-def test_check_plan_rejects_complexity_pr_count_mismatch(tmp_path, monkeypatch, capsys):
-    plan_path = tmp_path / "plan.md"
-    write_valid_plan(plan_path)
-    plan_path.write_text(
-        plan_path.read_text(encoding="utf-8").replace(
-            "- Implementation PR Count: 1",
-            "- Implementation PR Count: 2",
+        text.replace(
+            "# Strategy",
+            "## Direct-To-Code Decision\n"
+            "Unresolved Blocker: none.\n\n"
+            "## Ceremony Budget\n"
+            "Decomposition Reason: old-project-value.\n\n"
+            "# Strategy",
         ),
         encoding="utf-8",
     )
@@ -994,17 +894,60 @@ def test_check_plan_rejects_complexity_pr_count_mismatch(tmp_path, monkeypatch, 
         module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["gates"]["complexity_budget_complete"] is False
-    assert report["complexity_budget"]["implementation_pr_count_matches"] is False
+    assert rc == 0
+    assert "direct_to_code_decision" not in report
+    assert "ceremony_budget" not in report
+
+
+def test_check_plan_allows_ordinary_technical_words_without_extra_sections(
+    tmp_path, monkeypatch, capsys
+):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    text = plan_path.read_text(encoding="utf-8")
+    plan_path.write_text(
+        text.replace(
+            "# Strategy",
+            "# Strategy\nUse the existing framework, registry, generator, "
+            "and manifest.",
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+    rc, report = run_main(
+        module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
+    )
+    assert rc == 0
+    assert "complexity_budget" not in report
+
+
+def test_check_plan_ignores_legacy_complexity_budget(tmp_path, monkeypatch, capsys):
+    plan_path = tmp_path / "plan.md"
+    write_valid_plan(plan_path)
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace(
+            "# Strategy",
+            "## Complexity Budget\n"
+            "- Mental Model: legacy content.\n"
+            "- Implementation PR Count: not checked.\n\n"
+            "# Strategy",
+        ),
+        encoding="utf-8",
+    )
+    module = load_checker("check_plan")
+
+    rc, report = run_main(
+        module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert "complexity_budget" not in report
 
 
 def test_check_plan_ignores_fenced_complexity_budget(tmp_path, monkeypatch, capsys):
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
     text = plan_path.read_text(encoding="utf-8")
-    budget_start = text.index("## Complexity Budget")
-    milestone_start = text.index("# Milestones")
     fenced = """```markdown
 ## Complexity Budget
 - Mental Model: example only.
@@ -1017,7 +960,7 @@ def test_check_plan_ignores_fenced_complexity_budget(tmp_path, monkeypatch, caps
 
 """
     plan_path.write_text(
-        text[:budget_start] + fenced + text[milestone_start:], encoding="utf-8"
+        text.replace("# Strategy", fenced + "# Strategy"), encoding="utf-8"
     )
     module = load_checker("check_plan")
 
@@ -1025,12 +968,11 @@ def test_check_plan_ignores_fenced_complexity_budget(tmp_path, monkeypatch, caps
         module, [str(plan_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["gates"]["complexity_budget_complete"] is False
-    assert report["complexity_budget"]["declared"] is False
+    assert rc == 0
+    assert "complexity_budget" not in report
 
 
-def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
+def test_check_plan_allows_bounded_slice_over_three_prs_without_special_approval(
     tmp_path, monkeypatch, capsys
 ):
     plan_path = tmp_path / "plan.md"
@@ -1051,9 +993,6 @@ def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
         "# Coverage Map", extra_prs + "# Coverage Map"
     )
     text = text.replace(
-        "- Implementation PR Count: 1",
-        "- Implementation PR Count: 4",
-    ).replace(
         "Members: PR-AUTH-SIGNIN",
         "Members: PR-AUTH-SIGNIN, PR-AUTH-SETUP, PR-AUTH-WIRING, PR-AUTH-PROOF",
     )
@@ -1062,110 +1001,9 @@ def test_check_plan_requires_approval_for_bounded_slice_over_three_prs(
 
     rc, report = run_main(module, ["plan.md", "--json"], monkeypatch, capsys, tmp_path)
 
-    assert rc == 1
-    assert report["gates"]["bounded_slice_pr_budget"] is False
-    assert report["complexity_budget"]["implementation_prs"] == 4
-    assert report["complexity_budget"]["exception"] is None
-
-    plan_path.write_text(
-        text.replace(
-            "# Strategy",
-            "# Strategy\nComplexity Budget Exception: Four cohesive boundaries "
-            "are required.",
-        ),
-        encoding="utf-8",
-    )
-    rc, report = run_main(module, ["plan.md", "--json"], monkeypatch, capsys, tmp_path)
-
     assert rc == 0
-    assert report["gates"]["bounded_slice_pr_budget"] is True
-    assert "complexity_exception_approved" not in report["gates"]
-
-    rc, report = run_main(
-        module,
-        ["plan.md", "--require-complexity-approval", "--json"],
-        monkeypatch,
-        capsys,
-        tmp_path,
-    )
-
-    assert rc == 1
-    assert report["gates"]["complexity_exception_approved"] is False
-
-    write_approval_ledger(
-        tmp_path,
-        [
-            {
-                "id": "WRONG-SCOPE-KIND",
-                "gate": "plan.complexity-approved",
-                "scope": "product/system",
-                "kind": "spec",
-                "path": "plan.md",
-                "sha256": file_hash(plan_path),
-            }
-        ],
-    )
-    rc, report = run_main(
-        module,
-        ["plan.md", "--require-complexity-approval", "--json"],
-        monkeypatch,
-        capsys,
-        tmp_path,
-    )
-
-    assert rc == 1
-    assert report["gates"]["complexity_exception_approved"] is False
-
-    write_approval_ledger(
-        tmp_path,
-        [
-            {
-                "id": "AUTO-PLAN-COMPLEXITY",
-                "gate": "plan.complexity-approved",
-                "scope": "slice/change",
-                "kind": "plan",
-                "path": "plan.md",
-                "sha256": file_hash(plan_path),
-                "status": "auto-approved",
-                "approved_by": "AUTO",
-                "policy": "internal-prototype",
-                "reason": "Local policy attempted to approve complexity.",
-            },
-            {
-                "id": "APPROVAL-PLAN-COMPLEXITY",
-                "gate": "plan.complexity-approved",
-                "scope": "slice/change",
-                "kind": "plan",
-                "path": "plan.md",
-                "sha256": file_hash(plan_path),
-            },
-        ],
-        gates_yaml="""version: 1
-auto_approval:
-  enabled: true
-  mode: internal-prototype
-  expires_at: "2999-01-01T00:00:00Z"
-  allowed_scopes:
-    - slice/change
-  allowed_gates:
-    - plan.complexity-approved
-""",
-    )
-    rc, report = run_main(
-        module,
-        ["plan.md", "--require-complexity-approval", "--json"],
-        monkeypatch,
-        capsys,
-        tmp_path,
-    )
-
-    assert rc == 0
-    assert report["gates"]["bounded_slice_pr_budget"] is True
-    assert report["gates"]["complexity_exception_approved"] is True
-    assert report["complexity_budget"]["approval"]["approved"] is True
-    assert report["complexity_budget"]["approval"]["approval_id"] == (
-        "APPROVAL-PLAN-COMPLEXITY"
-    )
+    assert "bounded_slice_pr_budget" not in report["gates"]
+    assert "complexity_budget" not in report
 
 
 def test_check_plan_accepts_ordered_learning_waves(tmp_path, monkeypatch, capsys):
@@ -1361,9 +1199,8 @@ Stop/Replan Triggers: Stop if the first boundary changes the later scope.
     rc, report = run_main(
         module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
     )
-    assert rc == 1
-    assert report["gates"]["breakdown_ceremony_budget_complete"] is False
-    assert report["ceremony_budget"]["reason_allowed"] is False
+    assert rc == 0
+    assert "ceremony_budget" not in report
 
 
 def test_check_plan_requires_complete_work_allocation_fields(
@@ -1516,7 +1353,6 @@ Escalate If: The public contract or stored data must change.
         "issues": [],
         "replaces": ["child spec", "child design", "child plan"],
     }
-    assert report["gates"]["complexity_budget_complete"] is True
     assert report["gates"]["lean_change_record_well_formed"] is True
 
 
@@ -1570,8 +1406,6 @@ Escalate If: feedback changes behavior or a new external contract is introduced.
         "issues": [],
         "replaces": ["child spec", "child design"],
     }
-    assert report["direct_to_code_decision"]["missing_fields"] == []
-    assert report["gates"]["complexity_budget_complete"] is True
 
 
 def test_check_plan_inherited_subset_validates_cited_parent_ids_only(
@@ -1673,9 +1507,7 @@ def test_check_plan_rejects_incomplete_inherited_intent_record(
     )
 
 
-def test_check_plan_rejects_readiness_decision_that_contradicts_plan_type(
-    tmp_path, monkeypatch, capsys
-):
+def test_check_plan_ignores_legacy_readiness_decision(tmp_path, monkeypatch, capsys):
     plan_path = tmp_path / "plan.md"
     write_valid_plan(plan_path)
     plan_path.write_text(
@@ -1691,9 +1523,8 @@ def test_check_plan_rejects_readiness_decision_that_contradicts_plan_type(
     rc, report = run_main(
         module, [str(plan_path), "--feature", "--json"], monkeypatch, capsys, tmp_path
     )
-    assert rc == 1
-    assert report["decision_matches_plan_type"] is False
-    assert report["gates"]["direct_to_code_decision_complete"] is False
+    assert rc == 0
+    assert "direct_to_code_decision" not in report
 
 
 def test_check_plan_rejects_malformed_work_ids_without_prefix_matches(
@@ -2212,7 +2043,7 @@ def test_check_plan_rejects_numbered_pr_ids(tmp_path, monkeypatch, capsys):
     assert "PR-AUTH-10" in report["bad_id_format"]
 
 
-def test_check_spec_rejects_terse_use_case_missing_full_template(
+def test_check_spec_allows_terse_use_case_without_forced_template(
     tmp_path, monkeypatch, capsys
 ):
     spec_path = tmp_path / "spec.md"
@@ -2232,12 +2063,11 @@ def test_check_spec_rejects_terse_use_case_missing_full_template(
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["gates"]["use_cases_have_full_template"] is False
-    assert "primary_actor" in report["use_case_template_issues"]["UC-AUTH-SIGNIN"]
+    assert rc == 0
+    assert "use_case_template_issues" not in report
 
 
-def test_check_spec_rejects_obviously_bundled_functional_requirement(
+def test_check_spec_does_not_reject_requirements_for_using_and(
     tmp_path, monkeypatch, capsys
 ):
     spec_path = tmp_path / "spec.md"
@@ -2253,11 +2083,11 @@ def test_check_spec_rejects_obviously_bundled_functional_requirement(
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["bundled_fr_candidates"] == ["FR-AUTH-SIGNIN"]
+    assert rc == 0
+    assert "bundled_fr_candidates" not in report
 
 
-def test_check_spec_rejects_acceptance_test_referencing_too_many_requirements(
+def test_check_spec_does_not_impose_arbitrary_acceptance_reference_limit(
     tmp_path, monkeypatch, capsys
 ):
     spec_path = tmp_path / "spec.md"
@@ -2291,11 +2121,11 @@ def test_check_spec_rejects_acceptance_test_referencing_too_many_requirements(
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["overloaded_acceptance_refs"] == ["AT-AUTH-SIGNIN"]
+    assert rc == 0
+    assert "overloaded_acceptance_refs" not in report
 
 
-def test_check_spec_requires_source_reconciliation_for_brownfield_baseline(
+def test_check_spec_does_not_force_brownfield_classification_vocabulary(
     tmp_path, monkeypatch, capsys
 ):
     spec_path = tmp_path / "spec.md"
@@ -2311,9 +2141,5 @@ def test_check_spec_requires_source_reconciliation_for_brownfield_baseline(
         module, [str(spec_path), "--json"], monkeypatch, capsys, tmp_path
     )
 
-    assert rc == 1
-    assert report["gates"]["brownfield_sources_reconciled"] is False
-    assert (
-        "missing_source_reconciliation_section"
-        in report["source_reconciliation_issues"]
-    )
+    assert rc == 0
+    assert "source_reconciliation_issues" not in report

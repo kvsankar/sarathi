@@ -1,22 +1,21 @@
-# Execution-First Work Boundaries
+# When Another Document Is Needed
 
-Use this policy at every planning boundary and whenever a Breakdown plan is considered.
+Use this policy whenever another requirements, design, or planning document is considered.
 
 ## Default Path
 
-Accepted parent requirements, acceptance tests, design decisions, risks, interfaces, and
-approved prototypes are inherited by reference. Ask whether those artifacts plus one
-bounded Implementation plan safely authorize the next reviewable increment. If they do,
-make the feature/component or slice/change code-ready and proceed to code.
+Refer to approved earlier requirements, acceptance tests, design decisions, risks,
+interfaces, and prototypes instead of copying them. If those documents plus one specific
+implementation plan make the next change clear and safe, proceed to code.
 
 One cohesive Implementation plan may contain several sequential UI slices when they share
 accepted behavior and architecture. Each completed UI slice still stops for stakeholder
 review. Many screens, a large feature, High-assurance delivery, easier traceability, or the
 habit of creating child documents do not justify decomposition.
 
-## Permitted Decomposition
+## Reasons To Split The Work
 
-Create a Breakdown plan or child artifact only when at least one concrete condition exists:
+Create a Breakdown plan or child document only when at least one concrete condition exists:
 
 1. A material product decision is unresolved.
 2. A new or unclear external contract is introduced.
@@ -24,52 +23,52 @@ Create a Breakdown plan or child artifact only when at least one concrete condit
    accepted design.
 4. Independently valuable outcomes require separate feedback.
 5. Touch ownership or integration conflicts make one implementation increment unsafe.
-6. Accepted artifacts do not define observable behavior or acceptance.
+6. Approved documents do not define observable behavior or acceptance.
 
-Use the matching checker value:
+For compatibility, use the matching checker value:
 `unresolved-product-decision`, `new-or-unclear-external-contract`,
 `unaccepted-material-risk`, `independent-feedback-outcomes`,
 `touch-or-integration-conflict`, or
 `missing-observable-behavior-or-acceptance`.
 
-Apply the Ceremony Budget from `docs/simplicity-first.md`. Create only the smallest delta
-artifact that resolves the named uncertainty, then return immediately to an Implementation
-plan and code. Do not expand an isolated external-contract question into new UI, storage,
-or unrelated component documentation.
+Create another document only when a specific unanswered question blocks implementation.
+Keep it focused on that question, then return to the implementation plan and code. Do not
+expand an isolated external-contract question into new UI, storage, or unrelated component
+documentation.
 
-## Inherited Intent And Delta Documents
+## Keep New Documents Focused
 
-Child documents never rebuild the parent inventory. They contain only changed or refined
+New documents never rebuild the earlier inventory. They contain only changed or refined
 behavior, unresolved local decisions, slice-specific acceptance, new risks or boundaries,
 and explicit exceptions to parent intent. A child design describes only a changed boundary;
 a child plan uses concise allocation/reference instead of copying inherited IDs into prose.
 
-When no child spec or design is needed, use an Inherited-Intent Implementation Record in the
-bounded plan. It states the inherited sources, reviewable outcome, acceptance/verification,
-planned touch set, UI review point where applicable, and escalation conditions. The legacy
-`Lean Change Record: Yes` marker remains accepted for existing records.
+When no child spec or design is needed, use a short implementation plan. It references the
+earlier documents and states the outcome, checks, files expected to change, UI review point
+where applicable, and conditions that require more design work. Older marker fields remain
+readable, but new plans do not need them.
 
-## Breakdown Allocations
+## Assigning Split Work
 
 A `WORK-*` item assigns work; it is not a document, approval, implementation level, or
 instruction to create a document chain. Every allocation states:
 
-- **Parent scope**, **Child scope**, and bounded **Scope**;
+- **Parent scope**, **Child scope**, and specific **Scope**;
 - **Parent IDs / inherited obligations** by concise reference;
-- **Required child artifacts**, normally `bounded Implementation plan`; name an additional
-  delta artifact only with its concrete decomposition reason;
+- **Required child documents**, normally one specific Implementation plan; name an
+  additional document only with its concrete reason;
 - dependencies, readiness target, risks, and done signal.
 
-Breakdown plans may use `WAVE-*` only when near-term children share a real feedback or
-integration checkpoint. Unscheduled children have no wave. Do not create a wave merely to
+Breakdown plans may use a work group only when near-term children share a real feedback or
+integration checkpoint. Unscheduled children have no group. Do not create a group merely to
 record sequential PRs or UI slices inside one Implementation plan.
 
-## Code Boundary
+## Starting Implementation
 
-`/code-create` runs from accepted intent plus a code-ready bounded Implementation plan. It
-may implement a feature/component directly. Parent `AT-*`, `JT-*`, and `TEST-*` obligations
-remain owned by their source artifacts and are allocated by reference to planned PRs.
+`/code-create` runs from approved requirements plus a specific plan that is ready to
+implement. It may implement a feature directly. Earlier `AT-*`, `JT-*`, and `TEST-*` obligations
+remain owned by their source documents and are allocated by reference to planned PRs.
 
 After each assessed slice, inspect new evidence before learning-dependent work. Approved
 prototype work stops for stakeholder UI review after each completed UI slice. Revise parent
-artifacts only when evidence changes their intent or boundaries.
+documents only when results change their requirements or boundaries.

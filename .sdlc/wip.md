@@ -1,98 +1,71 @@
 # SDLC Work In Progress
 
-Last Updated: 2026-07-19T07:54:15Z
+Last Updated: 2026-07-19T12:30:00Z
 Updated By: agent
 Current Stage: release
-Current Gate: complete
+Current Gate: release-preparation
 Project Entry Mode: brownfield_delta_only
 Work Scope: slice/change
-Implementation Readiness: Code-ready
-Delivery Profile: Standard
-Assurance Modules: Documentation, Build and release
+Ready To Implement: Yes
+Review Level: Standard
+Extra Checks: Documentation, Build and release
 
 ## Resume Summary
 
-The user requested an end-to-end human-first correction to Sarathi artifacts. Accepted
-intent is in the user prompt, and one direct implementation plan covers the bounded change.
+The plain-language process cleanup and quiet-installer change are merged locally. The user
+requested validation and release as version 0.3.1.
 
 ## Current Artifacts
 
 | Kind | Path | Status | Notes |
 | --- | --- | --- | --- |
-| Plan | `.sdlc/plan.md` | approved | Hash-current local approval records explicit end-to-end authorization. |
-| Code | repository diff | assessed | Independent focused re-review passed after all findings were fixed. |
-| Release | `CHANGELOG.md` | published | Version 0.3.0 is available from PyPI and GitHub. |
+| Plan | `.sdlc/plan.md` | approved | Covers the process-language cleanup. |
+| Process cleanup | commit `7e03248` | assessed | Independent check and review passed. |
+| Installer change | commit `06f87ac` | merged | Quiet summaries and verbose output are covered by tests. |
+| Release | `CHANGELOG.md` | approved | Version metadata and local release checks pass; push, PR, merge, and tag remain. |
 
 ## Decisions And Assumptions
 
-- Existing-system delta-only entry; unchanged behavior is accepted as baseline.
-- Preserve legacy parsing while requiring human-first shape for new or materially revised
-  documents.
-- Keep process IDs out of production and test source.
+- New author-facing instructions use plain labels; old project files remain readable.
+- TODO/FIXME/XXX entries are warnings; skipped and expected-failure tests fail directly.
+- Installers show compact summaries by default and retain details behind `-v`/`--verbose`.
+- Errors remain visible in quiet installer mode.
 
 ## Check And Review Evidence
 
-- `.venv/bin/python checkers/check_plan.py .sdlc/plan.md --feature
-  --inherited-subset --json`: 23/23 gates passed.
-- Fresh-context independent plan review: Pass-with-fixes; compatibility, source-scan,
-  exact command, scenario-mapping, and approval boundaries were tightened.
-- `.sdlc/approvals.yaml` contains a hash-current `plan.approved` local claim tied to the
-  user's explicit end-to-end request; it is not independent proof of identity or consent.
-- The controlling plan dogfoods the versioned human-first structure and its exact-byte
-  approval was refreshed after adding the invisible format marker.
-- `.venv/bin/python checkers/check_plan.py .sdlc/plan.md --feature
-  --inherited-subset --json`: human-first-v2, 24/24 gates passed.
-- `.venv/bin/python checkers/check_code.py ... --require-approvals --json`: 4/4 gates
-  passed; exact-byte plan approval current, no markers or source process-ID hits.
-- `UV_CACHE_DIR=/private/tmp/sarathi-uv-cache uv run pytest -q --cov=checkers
-  --cov-report=term-missing`: 129 passed, 84.94% total coverage.
-- `PYTHON=/Users/sankar/code/kvsankar/sarathi/.venv/bin/python npm run test:layout`:
-  5 passed in the authorized browser run.
-- `UV_CACHE_DIR=/private/tmp/sarathi-uv-cache .venv/bin/pre-commit run --all-files`:
-  Ruff, format, Markdown, and pytest hooks passed.
-- `quick_validate.py skills/sarathi`: skill valid.
-- Fresh code review found four issues; table-only rendering, scenario B/C evidence, source
-  language coverage, and Product Crux contract wording were fixed. Focused re-review: Pass.
-- `scripts/verify_release.py v0.3.0`: package and skill metadata match the release tag.
-- `uv run python -m pre_commit run --all-files`: all hooks passed; 129 tests passed with
-  84.94% checker coverage.
-- `uv build` and `uv run twine check dist/*`: 0.3.0 wheel and source distribution built and
-  passed metadata inspection.
-- `bash scripts/install.sh --dry-run` and `uv run sarathi-sdlc install --dry-run`: passed.
-  PowerShell is unavailable on this macOS host, so its dry run was not executed.
-- `npm run test:layout`: 5 browser/layout checks passed; `quick_validate.py`: skill valid.
-- GitHub PR `#12`: CI passed and the reviewed release preparation merged to `master` at
-  `85d716682b0b797c9cb9c67f99348370d9bbf0bb`.
-- GitHub Actions release run `29678847794`: build, trusted PyPI publication, and GitHub
-  Release jobs passed.
-- `uvx --refresh --from sarathi-sdlc==0.3.0 sarathi-sdlc --version`: reported `0.3.0`.
+- Process cleanup final coverage suite: 131 tests passed with 83.21% checker coverage.
+- Process cleanup pre-commit, five browser layouts, bundle parity, and skill validation passed.
+- Independent process check and focused re-review: Pass.
+- Installer branch reported cross-platform dry runs, focused tests, full suite, layout,
+  pre-commit, and skill validation passing before merge.
+- Combined full suite: 134 tests passed.
+- Combined pre-commit and five browser layout checks passed.
+- Release metadata verification and skill validation passed.
+- The 0.3.1 wheel and source archive built and passed `twine check`.
+- Quiet, verbose, and packaged installer dry runs passed; PowerShell is unavailable on this host.
 
-## Feedback And Learning
+## Results And Feedback
 
-Learning Target: human-first documents with isolated traceability
-Feedback Target: user, independent review, dogfood examples, and executable checks
+Expected Result: Release 0.3.1 with direct process language and quiet installer output.
+Feedback From: user, independent review, and executable checks
 Feedback Status: received
-Feedback Evidence: user reported poor production-project experience, supplied concrete
-acceptance scenarios, accepted the documented residual trade-offs, and requested release
-0.3.0.
-Active Learning Wave: none
-Active Work Item: PR-HUMANFIRST-ARTIFACTS
-WIP Limit: 1
-Invalidation Result: the human-first model remained valid; review findings required bounded
-checker, test, and contract corrections
-Ancestor Impact: accepted intent and plan need no further change; planned process-policy,
-prompt, checker, bundle, and test revisions are complete
-Stop Or Replan Triggers: legacy incompatibility or any need for process IDs in source code
+Feedback Evidence: user requested the cleanup, supplied the installer branch, and explicitly requested release 0.3.1
+Current Work Group: none
+Current Work: none
+Parallel Limit: 1
+What Changed: process paperwork and jargon were removed; installer output is quiet by default with verbose details on demand
+Documents To Update: none before publishing
+Stop Conditions: failing combined checks, unresolved merge conflicts, or failed release workflow
 
 ## Open Questions And Blockers
 
-- None for release 0.3.0. Production-project feedback on the human-first format should
-  inform the next bounded change rather than alter the published release.
+- GitHub CLI tokens are invalid, but Git-over-SSH access works. PR/release inspection may
+  require reauthentication if `gh` is needed.
 
 ## Next Recommended Action
 
-Use release 0.3.0 in production projects and gather concrete feedback before generalizing
-the document model or checker behavior further.
+Validate the merged tree, prepare 0.3.1, merge it through a reviewed PR, tag, and verify the
+release workflow.
 
 ## Bootstrap Status
 

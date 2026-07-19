@@ -93,7 +93,7 @@ prepared deliberately.
    git push origin vX.Y.Z
    ```
 
-   `.github/workflows/release.yml` verifies the tag and metadata, reruns the full gates,
+   `.github/workflows/release.yml` verifies the tag and metadata, reruns all checks,
    builds the wheel and source distribution, and publishes them through the `pypi`
    environment and PyPI Trusted Publishing. After PyPI succeeds, it creates the GitHub
    Release and attaches both distributions. The final step is safe to rerun: an existing

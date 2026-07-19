@@ -30,6 +30,7 @@ TOOLS=""
 NO_CHECKERS=0
 NO_CROSS_INSTALL=0
 DRY_RUN=0
+VERBOSE=0
 
 usage() {
   cat <<'EOF'
@@ -46,6 +47,7 @@ Options:
   --no-checkers         Do not copy checkers/ into the target workspace.
   --no-cross-install    Do not install companion targets across Windows/WSL.
   --dry-run             Show what would be installed without writing files.
+  -v, --verbose         Show destinations, per-tool actions, and install notes.
   -h, --help            Show this help.
 
 Notes:
@@ -92,6 +94,10 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN=1
       shift
       ;;
+    -v|--verbose)
+      VERBOSE=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -104,10 +110,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+exec 3>&1
+if [[ "$VERBOSE" -eq 0 ]]; then
+  exec 1>/dev/null
+fi
+
 TARGET_ROOT="$(cd "$TARGET_ROOT" && pwd)"
 
 if [[ "$TARGET_ROOT" == "$REPO_ROOT" ]]; then
-  echo "Warning: target is the commands repository itself."
+  echo "Note: target is the commands repository itself."
   echo "This is okay for dogfooding, but project-local artifacts such as GitHub Copilot"
   echo "prompts and checkers will be installed into the source checkout."
   echo "Use --target <product-workspace> for a product."
@@ -298,7 +309,7 @@ copy_checkers() {
   fi
   local dest="$TARGET_ROOT/checkers"
   if [[ "$SCOPE" == "user" ]]; then
-    echo "Warning: checkers are project-local; installing them to $dest even though scope is user."
+    echo "Note: checkers are project-local; installing them to $dest even though scope is user."
     echo "Use --no-checkers to skip them."
   fi
   if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -383,9 +394,8 @@ Resolve any transitive prompts referenced as prompts/*.prompt.md from
 ../sarathi/prompts/, and shared docs from ../sarathi/docs/. Load only the files triggered
 by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
-This stage is part of the broader Sarathi workflow. Preserve input gates, human
-review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
-limits.
+Keep required approvals, safety stops, declared file scope, test evidence, and independent
+review. Do not start later work when the prompt says to stop for the user.
 EOF
     mv -f "$stage_skill_temp" "$stage_dest/SKILL.md"
 
@@ -581,6 +591,9 @@ install_windows_companion() {
   if [[ "$NO_CHECKERS" -eq 1 ]]; then
     args+=(-NoCheckers)
   fi
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    args+=(-v)
+  fi
 
   echo "Installing Windows companion targets via $script_win"
   powershell.exe "${args[@]}"
@@ -611,7 +624,8 @@ done
 install_windows_companion
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
-  echo "Dry run complete for target: $TARGET_ROOT"
+  echo "Dry run complete for target: $TARGET_ROOT" >&3
 else
-  echo "Install complete for target: $TARGET_ROOT"
+  echo "Install complete for target: $TARGET_ROOT" >&3
 fi
+echo "Tools: $(IFS=', '; echo "${TOOL_LIST[*]}") ($SCOPE scope)" >&3

@@ -63,9 +63,9 @@ if that is unavailable, retry with `uv run python`.
 Report:
 
 - Exact commands executed.
-- Artifact format and human-first structure issues: Technical Crux placement, machine-only
-  visible headings, final traceability, and annotation/table resolution. Unmarked legacy
-  files stay on the legacy contract.
+- Document format and human-first structure issues: Technical Approach placement (or
+  legacy Technical Crux), machine-only visible headings, final traceability, and
+  annotation/table resolution. Unmarked legacy files stay on the legacy contract.
 - Raw checker JSON.
 - Exit codes.
 - `passed/total`.
@@ -74,12 +74,10 @@ Report:
   obligation gaps, missing/untraced `TEST-` obligations, missing `JT-`-to-`TEST` journey
   coverage visible in the design, ambiguous interface ownership, dependency cycles, or
   vague hits.
-- Exact complexity-budget fields and generic-machinery signals. These are prompts for
-  independent review, not proof that machinery is justified or overbuilt.
 - `external_double_mentions`, `external_double_drift_risks`, and
   `external_double_mitigation_tests`. If a design mentions mocked/faked/stubbed or locally
-  mirrored external interfaces, the checker requires a drift risk plus real-boundary
-  or type-conformance mitigation evidence.
+  mirrored external interfaces, report the remaining drift risk and how the contract is
+  checked against the real dependency or official types.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 
@@ -89,5 +87,5 @@ End with:
 
 - **Verification result**: Pass / Fail / Unable to run.
 - **Evidence limits**: format and link checks only; independent review is still required for
-  design fitness, trade-offs, cohesion/coupling, risks, ADRs, and testability.
+  whether the design is suitable, trade-offs, dependencies, risks, decisions, and testability.
 - **Recommended next command**: `/design-review` or `/design-assess`.
