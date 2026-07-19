@@ -46,8 +46,10 @@ and affected suite. Refactor only after behavior is protected by that verificati
 
 Implement assigned `AT-*`, `JT-*`, and `TEST-*` obligations at their planned levels. Add
 supplemental inner tests when discovered, but do not use them to replace accepted coverage.
-Keep test names and bodies behavior-focused. A project may keep a test-link inventory when
-its audit or assurance needs justify it, but Sarathi does not require one.
+Keep test names and bodies behavior-focused. Never put process IDs in production or test
+names, comments, docstrings, decorators, annotations, runtime values, logs, metrics, API
+responses, or generated source merely for traceability. A justified test-link inventory is
+external to source; Sarathi does not require one.
 
 Stay inside the Planned Touch Set. Stop to revise earlier documents when implementation reveals
 new user-visible behavior, changed contracts/UX/NFRs, material module risk, or invalidated

@@ -124,6 +124,8 @@ sets, blockers in earlier documents, evidence, safety, approval, or human-review
 - Designs own executable `TEST-*` obligations and test architecture.
 - Plans assign tests from parent and local documents to child work or PRs.
 - Code implements assigned tests and reports the commands and outcomes that exercised them.
+- Process IDs stay in artifact traceability and external ledgers, never in production/test
+  source merely to create a link. Test names describe behavior.
 - Format checks and optional requirement-to-test links do not prove correct meaning,
   stakeholder feedback, real-boundary execution, merge state, or human approval.
 - A primary external boundary cannot rely only on a self-authored test double unless the
@@ -151,6 +153,7 @@ separate. Stop when an earlier required document is not fit. Use
 | `docs/project-entry.md` | Starting in a new or existing codebase. |
 | `docs/work-in-progress.md` | Starting, resuming, blocking, or handing off. |
 | `docs/artifact-formatting.md` | Writing or materially revising Markdown documents. |
+| `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; reviewing comprehensibility or source-ID cleanliness. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document that owns them. |
 | `docs/test-ownership.md` | Parent tests or integration span several children. |
 | `docs/work-decomposition.md` | Breakdown plans or child document chains are involved. |

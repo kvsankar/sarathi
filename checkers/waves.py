@@ -12,7 +12,7 @@ CHECKER_DIR = Path(__file__).resolve().parent
 if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
-from markdown_structure import strip_fenced_code  # noqa: E402
+from markdown_structure import annotation_attrs, strip_fenced_code  # noqa: E402
 from schemas import (  # noqa: E402
     PLAN_ID_CANDIDATE,
     WAVE_ID_CANDIDATE,
@@ -111,6 +111,15 @@ def parse_learning_waves(text: str, plan_path: str | None = None) -> dict[str, A
         candidate = WAVE_ID_CANDIDATE.search(heading.group(2))
         if candidate:
             starts.append((index, candidate.group(), heading.group(2).strip()))
+            continue
+        for following in lines[index + 1 :]:
+            if not following.strip():
+                continue
+            attrs = annotation_attrs(following)
+            identifier = attrs.get("id")
+            if identifier and identifier.casefold().startswith("wave-"):
+                starts.append((index, identifier, heading.group(2).strip()))
+            break
 
     seen_ids: list[str] = []
     orders: list[int] = []
@@ -177,7 +186,11 @@ def parse_learning_waves(text: str, plan_path: str | None = None) -> dict[str, A
         result["waves"].append(
             {
                 "id": identifier,
-                "name": identifier.removeprefix("WAVE-").replace("-", " ").title(),
+                "name": (
+                    identifier.removeprefix("WAVE-").replace("-", " ").title()
+                    if WAVE_ID_CANDIDATE.search(heading)
+                    else heading.replace("*", "").replace("`", "").strip()
+                ),
                 "heading": heading,
                 "order": order,
                 "learning_target": fields["learning_target"],

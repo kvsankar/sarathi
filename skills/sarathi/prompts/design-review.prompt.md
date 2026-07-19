@@ -7,8 +7,9 @@ agent: agent
 
 Review the target design without editing it unless asked. Read the accepted requirements,
 `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
-`docs/assurance-profiles.md`, and `docs/simplicity-first.md`. Stop as `Blocked-upstream`
-when the spec is unfit.
+`docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
+`docs/human-first-artifacts.md`. Answer its five first-page comprehension questions. Stop
+as `Blocked-upstream` when the spec is unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
@@ -38,6 +39,10 @@ or diagrams that can be removed, deferred, collapsed, or proven by existing evid
 a design with every required section can still be `Needs rework` when it is overbuilt,
 often with
 `revision-required` changes to parent documents.
+
+If identifiers interrupt current/target state, ownership, change boundaries, hard parts,
+or implementation order, move them to traceability and return `Needs rework`. If an
+engineer must decode IDs to understand the architecture, rewrite it in plain language.
 
 Report blockers, evidence considered, scorecard, what can be deleted, deferred, or reused,
 top fixes,

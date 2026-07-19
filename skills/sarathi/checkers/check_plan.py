@@ -44,7 +44,14 @@ from approvals import (  # noqa: E402
     load_approval_context,
 )
 from complexity import parse_complexity_budget  # noqa: E402
+from markdown_structure import (  # noqa: E402
+    artifact_format,
+    definition_id,
+    human_first_issues,
+    primary_definition_ids,
+)
 from schemas import (  # noqa: E402
+    HUMAN_FIRST_PLAN_SECTIONS,
     PLAN_ID,
     PLAN_ID_BY_KIND,
     PLAN_ID_CANDIDATE,
@@ -161,9 +168,8 @@ ALLOWED_DECOMPOSITION_REASONS = {
 
 
 def _defline(line: str):
-    if not DEF_MARKER.match(line):
-        return None
-    return ID.match(LEAD.sub("", line.strip()))
+    identifier = definition_id(line, ID, LEAD, DEF_MARKER)
+    return ID.match(identifier) if identifier else None
 
 
 def _norm_heading(title: str) -> str:
@@ -382,6 +388,8 @@ def main() -> int:
     design_tests = ids_from(design_path, TEST) if design_path else set()
     path = Path(args[0] if args else "plan.md")
     text = path.read_text(encoding="utf-8")
+    format_name = artifact_format(text)
+    format_issues = human_first_issues(text, "Implementation Crux")
     cited = {
         "fr": {m.group(0) for m in FR.finditer(text)},
         "uc": {m.group(0) for m in UC.finditer(text)},
@@ -397,6 +405,7 @@ def main() -> int:
 
     # Per-delivery blocks: from one WORK/PR def line to the next def/heading.
     lines = text.splitlines()
+    primary_delivery_ids = primary_definition_ids(text, _defline)
     pr_blocks: dict[str, str] = {}
     work_blocks: dict[str, str] = {}
     cur, buf = None, []
@@ -404,7 +413,12 @@ def main() -> int:
     for line in lines:
         fence = line.strip().startswith("```")
         m = None if in_fence else _defline(line)
+        if m and line.lstrip().startswith("|") and m.group(0) in primary_delivery_ids:
+            m = None
         if m and m.group(1) in {"WORK", "PR"}:
+            existing = m.group(0) in pr_blocks or m.group(0) in work_blocks
+            if existing:
+                continue
             if cur:
                 (pr_blocks if cur.startswith("PR-") else work_blocks)[cur] = "\n".join(
                     buf
@@ -502,7 +516,10 @@ def main() -> int:
             in_fence = not in_fence
             continue
         if not in_fence and (m := _defline(line)):
-            def_ids.append(m.group(0))
+            identifier = m.group(0)
+            if line.lstrip().startswith("|") and identifier in primary_delivery_ids:
+                continue
+            def_ids.append(identifier)
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
     bad = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
@@ -683,6 +700,7 @@ def main() -> int:
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
+        "human_first_structure": not format_issues,
     }
     if not require_approvals:
         gates.pop("required_approvals_present")
@@ -691,7 +709,12 @@ def main() -> int:
             complexity_approval and complexity_approval["approved"]
         )
     if not feature:
-        gates["sections_present"] = sections_present_in_order(text, PLAN_SECTIONS)
+        required_sections = (
+            HUMAN_FIRST_PLAN_SECTIONS
+            if format_name == "human-first-v2"
+            else PLAN_SECTIONS
+        )
+        gates["sections_present"] = sections_present_in_order(text, required_sections)
     report = {
         "mode": "feature" if feature else "product",
         "counts": {k: len(v) for k, v in defined.items()},
@@ -788,6 +811,8 @@ def main() -> int:
         "duplicates": dupes,
         "bad_id_format": bad,
         "vague_hits": vague,
+        "artifact_format": format_name,
+        "human_first_issues": format_issues,
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),

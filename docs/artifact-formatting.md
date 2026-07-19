@@ -3,6 +3,10 @@
 Sarathi-generated Markdown documents and reports should be easy to review in terminals,
 diffs, and narrow editor panes.
 
+For specs, designs, and plans, apply `docs/human-first-artifacts.md`: the technical crux
+comes first, visible headings are descriptive, and traceability metadata stays in comments
+or the final appendix rather than interrupting prose.
+
 ## Column Width
 
 - Wrap normal prose and bullet/numbered-list continuation lines at 80 characters where

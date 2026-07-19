@@ -34,7 +34,13 @@ from approvals import (  # noqa: E402
     load_approval_context,
 )
 from complexity import parse_complexity_budget  # noqa: E402
-from schemas import DESIGN_SECTIONS  # noqa: E402
+from markdown_structure import (  # noqa: E402
+    artifact_format,
+    definition_id,
+    human_first_issues,
+    primary_definition_ids,
+)
+from schemas import DESIGN_SECTIONS, HUMAN_FIRST_DESIGN_SECTIONS  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(
@@ -90,26 +96,11 @@ DRIFT_MITIGATION = re.compile(
 LEAD = re.compile(r"^[\s#>\-\*\+\d\.\)]*")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 DEF_MARKER = re.compile(r"^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[\.)]\s+)")
-SARATHI_ENTITY = re.compile(r"<!--\s*sarathi:entity\b(?P<attrs>.*?)-->", re.I)
-ANNOTATION_ATTR = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)=\"([^\"]*)\"")
-
-
-def annotation_attrs(line: str) -> dict[str, str]:
-    match = SARATHI_ENTITY.search(line)
-    if not match:
-        return {}
-    return {k.casefold(): v for k, v in ANNOTATION_ATTR.findall(match.group("attrs"))}
 
 
 def _def_id(line: str) -> str | None:
     """Return a checker-visible design ID defined by a line, including annotations."""
-    attrs = annotation_attrs(line)
-    if attrs.get("id") and ID.fullmatch(attrs["id"]):
-        return attrs["id"]
-    if not DEF_MARKER.match(line):
-        return None
-    match = ID.match(LEAD.sub("", line.strip()))
-    return match.group(0) if match else None
+    return definition_id(line, ID, LEAD, DEF_MARKER)
 
 
 def _defline(line: str):
@@ -151,13 +142,18 @@ def sections_present_in_order(text: str, required: list[str | tuple[str, ...]]) 
 
 def item_blocks(text: str, kinds: set[str]) -> dict[str, str]:
     blocks: dict[str, str] = {}
+    primary_ids = primary_definition_ids(text, _def_id)
     cur, buf = None, []
     in_fence = False
     for line in text.splitlines():
         fence = line.strip().startswith("```")
         def_id = None if in_fence else _def_id(line)
+        if def_id and line.lstrip().startswith("|") and def_id in primary_ids:
+            def_id = None
         is_heading = HEADING.match(line.strip()) is not None
         if def_id and id_kind(def_id) in kinds:
+            if def_id in blocks or def_id == cur:
+                continue
             if cur:
                 blocks[cur] = "\n".join(buf)
             cur, buf = def_id, [line]
@@ -294,12 +290,18 @@ def main() -> int:
 
     # Each interface must declare exactly one real component owner.
     iface_def_ids = []
+    primary_ids = primary_definition_ids(text, _def_id)
     in_fence = False
     for line in text.splitlines():
         if line.strip().startswith("```"):
             in_fence = not in_fence
             continue
-        if not in_fence and (def_id := _def_id(line)) and id_kind(def_id) == "IFACE":
+        if (
+            not in_fence
+            and (def_id := _def_id(line))
+            and id_kind(def_id) == "IFACE"
+            and not (line.lstrip().startswith("|") and def_id in primary_ids)
+        ):
             iface_def_ids.append(def_id)
     iface_defs = Counter(iface_def_ids)
     iface_dupes = [i for i, n in iface_defs.items() if n > 1]
@@ -327,6 +329,8 @@ def main() -> int:
             in_fence = not in_fence
             continue
         if not in_fence and (def_id := _def_id(line)):
+            if line.lstrip().startswith("|") and def_id in primary_ids:
+                continue
             def_ids.append(def_id)
     dupes = [i for i, n in Counter(def_ids).items() if n > 1]
     bad_fmt = malformed_ids(text)
@@ -347,6 +351,8 @@ def main() -> int:
         }
     )
     ext_double_mentions = external_double_mentions(text)
+    format_name = artifact_format(text)
+    format_issues = human_first_issues(text, "Technical Crux")
     risk_text = section_text(text, "Risks & Trade-offs")
     drift_risks = [
         risk
@@ -461,11 +467,17 @@ def main() -> int:
         ),
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "no_vagueness": vague == 0,
+        "human_first_structure": not format_issues,
     }
     if not require_approvals:
         gates.pop("required_approvals_present")
     if not component:
-        gates["sections_present"] = sections_present_in_order(text, DESIGN_SECTIONS)
+        required_sections = (
+            HUMAN_FIRST_DESIGN_SECTIONS
+            if format_name == "human-first-v2"
+            else DESIGN_SECTIONS
+        )
+        gates["sections_present"] = sections_present_in_order(text, required_sections)
     report = {
         "mode": "component" if component else "product",
         "counts": {k: len(v) for k, v in defined.items()},
@@ -508,6 +520,8 @@ def main() -> int:
         "iface_duplicates": iface_dupes,
         "iface_owner_issues": sorted(iface_owner_issues),
         "vague_hits": vague,
+        "artifact_format": format_name,
+        "human_first_issues": format_issues,
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),

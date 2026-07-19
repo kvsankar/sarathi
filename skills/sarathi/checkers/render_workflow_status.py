@@ -20,6 +20,7 @@ if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
 from approvals import load_yaml_file  # noqa: E402
+from markdown_structure import annotation_attrs  # noqa: E402
 from schemas import PLAN_ID_CANDIDATE, is_plan_id, is_wave_id  # noqa: E402
 from waves import parse_learning_waves  # noqa: E402
 
@@ -415,24 +416,65 @@ def paragraph_field(block: str, label: str) -> str | None:
         rf"(?=\n\s{{2}}[A-Z][A-Za-z /-]+:\s|\Z)",
         block,
     )
-    if not match:
-        return None
-    return " ".join(line.strip() for line in match.group(1).splitlines()).strip()
+    if match:
+        return " ".join(line.strip() for line in match.group(1).splitlines()).strip()
+    single = re.search(rf"(?mi)^\s*(?:[-*+]\s+)?{re.escape(label)}:\s*(.+?)\s*$", block)
+    return single.group(1).strip() if single else None
+
+
+def annotated_delivery_starts(
+    lines: list[str], kind: str
+) -> list[tuple[int, str, str]]:
+    """Find legacy visible and human-first annotated delivery definitions."""
+    starts: dict[str, tuple[int, str, str, bool]] = {}
+    last_heading: tuple[int, str] | None = None
+    for index, line in enumerate(lines):
+        heading = re.match(r"^#{3,6}\s+(.+?)\s*$", line.strip())
+        if heading:
+            last_heading = (index, heading.group(1).strip())
+        legacy = re.match(r"-\s+(\S+)", line)
+        if legacy and legacy.group(1).casefold().startswith(f"{kind.casefold()}-"):
+            identifier = legacy.group(1)
+            starts[identifier] = (
+                index,
+                identifier,
+                identifier.removeprefix(f"{kind}-").replace("-", " ").title(),
+                True,
+            )
+            continue
+        attrs = annotation_attrs(line)
+        identifier = attrs.get("id")
+        if identifier and identifier.casefold().startswith(f"{kind.casefold()}-"):
+            name = (
+                last_heading[1]
+                if last_heading
+                else identifier.removeprefix(f"{kind}-").replace("-", " ").title()
+            )
+            starts[identifier] = (index, identifier, name, True)
+            continue
+        if line.lstrip().startswith("|"):
+            cells = [
+                cell.strip().replace("`", "")
+                for cell in line.strip().strip("|").split("|")
+            ]
+            if cells and is_plan_id(cells[0], kind):
+                identifier = cells[0]
+                name = cells[1] if len(cells) > 1 and cells[1] else identifier
+                starts.setdefault(identifier, (index, identifier, name, False))
+    return [
+        (index, identifier, name)
+        for index, identifier, name, _ in sorted(
+            starts.values(), key=lambda item: item[0]
+        )
+    ]
 
 
 def work_items(plan_text: str) -> tuple[list[dict[str, Any]], list[str]]:
-    body = section(plan_text, "Pull Requests / Child Work Items") or section(
-        plan_text, "Pull Requests"
-    )
     result: list[dict[str, Any]] = []
     malformed: list[str] = []
-    lines = body.splitlines()
-    starts: list[tuple[int, str]] = []
-    for index, line in enumerate(lines):
-        match = re.fullmatch(r"-\s+(\S+)\s*", line)
-        if match and match.group(1).casefold().startswith("work-"):
-            starts.append((index, match.group(1)))
-    for position, (start, identifier) in enumerate(starts):
+    lines = plan_text.splitlines()
+    starts = annotated_delivery_starts(lines, "WORK")
+    for position, (start, identifier, name) in enumerate(starts):
         end = starts[position + 1][0] if position + 1 < len(starts) else len(lines)
         block = "\n".join(lines[start + 1 : end])
         if not is_plan_id(identifier, "WORK"):
@@ -442,7 +484,7 @@ def work_items(plan_text: str) -> tuple[list[dict[str, Any]], list[str]]:
         result.append(
             {
                 "id": identifier,
-                "name": identifier.removeprefix("WORK-").replace("-", " ").title(),
+                "name": name,
                 "parent_scope": paragraph_field(block, "Parent scope"),
                 "child_scope": paragraph_field(block, "Child scope"),
                 "scope": scope,
@@ -637,13 +679,19 @@ def traceability_counts(root: Path) -> tuple[dict[str, int], str | None]:
 
 
 def plan_prs(plan_text: str, traces: dict[str, int]) -> list[dict[str, Any]]:
+    starts = annotated_delivery_starts(plan_text.splitlines(), "PR")
+    names: dict[str, str] = {}
     identifiers = []
-    for line in plan_text.splitlines():
-        match = re.match(r"^\s*(?:[-*+]\s+|#{1,6}\s+)(\S+)", line)
-        if match and is_plan_id(match.group(1), "PR"):
-            identifiers.append(match.group(1))
+    for _, identifier, name in starts:
+        if is_plan_id(identifier, "PR"):
+            identifiers.append(identifier)
+            names.setdefault(identifier, name)
     return [
-        {"id": identifier, "evidence_count": traces.get(identifier, 0)}
+        {
+            "id": identifier,
+            "name": names[identifier],
+            "evidence_count": traces.get(identifier, 0),
+        }
         for identifier in dict.fromkeys(identifiers)
     ]
 

@@ -59,9 +59,10 @@ character. Do not use trailing numbers or internal hyphens.
    TEST-AUTH-10 -> TEST-AUTH-POLICY
    ```
 
-2. Replace every occurrence in specs, designs, plans, requirement-link matrices, and any
-   project-owned test-link inventory. Remove process IDs from test names, source comments,
-   and docstrings unless the project has explicitly adopted inline metadata.
+2. Replace occurrences in document annotations, final traceability appendices, and any
+   external project-owned test-link inventory. Remove process IDs from production and test
+   names, comments, docstrings, decorators, annotations, runtime values, and logs; inline
+   source metadata is not a supported traceability mechanism.
 
 3. Keep the area token stable when possible and make the name token describe the behavior,
    requirement, acceptance scenario, or PR purpose.

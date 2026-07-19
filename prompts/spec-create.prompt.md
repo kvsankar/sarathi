@@ -11,7 +11,8 @@ intent, not implementation architecture.
 ## Load
 
 Read `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, existing documents, and relevant
-repository evidence. Load `docs/artifact-contracts.md` for the Spec contract and IDs.
+repository evidence. Load `docs/artifact-contracts.md` and
+`docs/human-first-artifacts.md` for the Spec contract, narrative, and traceability layers.
 
 ## Triggered References
 
@@ -60,6 +61,10 @@ reproduce the complete parent requirement inventory.
 
 Apply these requirements rules:
 
+- Start new or materially revised specs with the version marker and `## Product Crux`.
+  Keep its plain-language problem, users, outcomes, non-goals, success, failures, and
+  constraints free of process IDs. Use descriptive headings; put IDs in comments and the
+  final `## Traceability` appendix.
 - State stakeholder needs before features and behavior before solution mechanics.
 - Make non-goals explicit enough to prevent accidental scope.
 - Write atomic, necessary, feasible, unambiguous, testable `FR-*`/`NFR-*` obligations.

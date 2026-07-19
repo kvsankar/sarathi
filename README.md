@@ -411,6 +411,15 @@ beside the work tree. `.sdlc/wip.md` identifies the active
 wave; a `.sdlc/wave-checkpoints.yaml` record matching the current plan closes a wave without pretending
 the enclosing plan is fully assessed or the next wave is automatically approved.
 
+## Human-first documents
+
+New and materially revised specs, designs, and plans lead with a plain-language Product,
+Technical, or Implementation Crux. Visible headings describe the product and architecture;
+stable process IDs live in structured comments and a final traceability appendix. Legacy
+documents remain parseable until materially revised. Production and test source stays free
+of Sarathi IDs added merely for traceability. See
+[Human-first artifacts](docs/human-first-artifacts.md).
+
 ## Human Gates And YOLO Mode
 
 Default behavior is human-gated:

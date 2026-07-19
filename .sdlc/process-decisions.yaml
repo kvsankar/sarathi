@@ -1,0 +1,32 @@
+project_entry:
+  decided_at: "2026-07-19T00:00:00Z"
+  decided_by: "agent-inferred"
+  mode: "brownfield_delta_only"
+  scope: "slice/change"
+  baseline_sources:
+    - "existing codebase"
+    - "user-provided human-first artifact requirements"
+  existing_artifact_policy:
+    specs: "none_found"
+    designs: "none_found"
+    plans: "none_found"
+    docs: "adapt"
+    tests: "adapt"
+  stage_policy:
+    retrospective_plan_required: false
+    new_delta_plan_required: true
+    code_review_without_plan_allowed_for: "baseline_review_only"
+  assumptions:
+    - "Existing behavior outside the requested human-first document change is accepted."
+  risks:
+    - "Legacy identifier-heavy documents must remain parseable until materially revised."
+  next_recommended_stage: "/plan-create"
+delivery:
+  profile: "standard"
+  assurance_modules:
+    - "documentation"
+    - "build-and-release"
+  rationale: "A user-visible process change spans prompts, checkers, bundles, and tests."
+  escalation_triggers:
+    - "Backward compatibility requires a destructive artifact-schema change."
+    - "Traceability requires identifiers in production or test source."

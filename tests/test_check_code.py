@@ -76,6 +76,7 @@ def test_check_code_records_a_passing_verification_command(
     assert report["gates"] == {
         "verification_command_passed": True,
         "markers_approved": True,
+        "source_process_ids_absent": True,
     }
 
 
@@ -178,3 +179,87 @@ approvals:
     )
     assert rc == 0
     assert report["gates"]["markers_approved"] is True
+
+
+def test_check_code_rejects_process_ids_in_source_and_tests(
+    tmp_path, monkeypatch, capsys
+):
+    test_body = """def test_at_auth_reset_replay():
+    assert True  # Covers FR-AUTH-RESET
+"""
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "pass"],
+        monkeypatch,
+        capsys,
+        test_body=test_body,
+    )
+
+    assert rc == 1
+    assert report["gates"]["source_process_ids_absent"] is False
+    assert {hit["identifier"] for hit in report["process_id_hits"]} == {
+        "AT-AUTH-RESET",
+        "FR-AUTH-RESET",
+    }
+
+
+def test_check_code_accepts_behavioral_test_names_without_process_ids(
+    tmp_path, monkeypatch, capsys
+):
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "pass"],
+        monkeypatch,
+        capsys,
+        test_body=(
+            "def test_replayed_reset_token_cannot_change_password():\n    assert True\n"
+        ),
+    )
+
+    assert rc == 0
+    assert report["gates"]["source_process_ids_absent"] is True
+    assert report["process_id_hits"] == []
+
+
+def test_check_code_can_exclude_an_explicit_generated_traceability_artifact(
+    tmp_path, monkeypatch, capsys
+):
+    generated = tmp_path / "src" / "generated_traceability.py"
+    generated.parent.mkdir()
+    generated.write_text(
+        'mapping = {"FR-AUTH-RESET": "test_reset"}\n', encoding="utf-8"
+    )
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "pass"],
+        monkeypatch,
+        capsys,
+        extra_args=["--generated-traceability-path", str(generated)],
+    )
+
+    assert rc == 0
+    assert report["process_id_hits"] == []
+    assert report["generated_traceability_paths"] == ["src/generated_traceability.py"]
+
+
+def test_check_code_scans_common_non_python_source_by_default(
+    tmp_path, monkeypatch, capsys
+):
+    go_source = tmp_path / "src" / "service.go"
+    go_source.parent.mkdir()
+    go_source.write_text(
+        "package service\n\n// Covers FR-AUTH-RESET\n", encoding="utf-8"
+    )
+
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "pass"],
+        monkeypatch,
+        capsys,
+    )
+
+    assert rc == 1
+    assert report["process_id_hits"][0]["path"] == "src/service.go"
+    assert report["process_id_hits"][0]["identifier"] == "FR-AUTH-RESET"
