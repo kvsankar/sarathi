@@ -26,7 +26,7 @@ delivery:
   assurance_modules:
     - "documentation"
     - "build-and-release"
-  rationale: "A user-visible process change spans prompts, checkers, bundles, and tests."
+  rationale: "A user-visible installer output change spans Windows, shell, and packaged CLI entry points."
   escalation_triggers:
-    - "Backward compatibility requires a destructive artifact-schema change."
-    - "Traceability requires identifiers in production or test source."
+    - "Quiet mode would hide errors or omit completion status."
+    - "Platform-specific behavior cannot be covered by executable installer checks."

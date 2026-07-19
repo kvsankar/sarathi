@@ -5,7 +5,9 @@ param(
     [string]$Scope = "user",
     [switch]$NoCheckers,
     [switch]$NoCrossInstall,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [Alias("v")]
+    [switch]$Verbose
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,6 +17,13 @@ $PromptSource = Join-Path $RepoRoot "prompts"
 $CheckerSource = Join-Path $RepoRoot "checkers"
 $SkillSource = Join-Path $RepoRoot "skills/sarathi"
 $TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).Path
+
+function Write-Detail {
+    param([string]$Message)
+    if ($Verbose) {
+        Write-Host $Message
+    }
+}
 
 function Test-SamePath {
     param([string]$Left, [string]$Right)
@@ -67,14 +76,14 @@ if (-not (Test-Path -LiteralPath $SkillSource)) {
     throw "Skill source folder not found: $SkillSource"
 }
 if (Test-SamePath $TargetRoot $RepoRoot) {
-    Write-Warning (
-        "TargetRoot is the commands repository itself. This is okay for dogfooding, " +
+    Write-Detail (
+        "Note: TargetRoot is the commands repository itself. This is okay for dogfooding, " +
         "but project-local artifacts such as GitHub Copilot prompts and checkers will be " +
         "installed into the source checkout. Use -TargetRoot <product-workspace> for a product."
     )
 }
 if ($DryRun) {
-    Write-Host "Dry run: no files will be written and no companion install will be executed."
+    Write-Detail "Dry run: no files will be written and no companion install will be executed."
 }
 
 $InstallableTools = @("codex", "copilot", "claude-code", "gemini", "claude", "pi")
@@ -170,29 +179,29 @@ function Get-CopilotSkillDestinations {
 
 function Write-DestinationSummary {
     param([string[]]$Entries)
-    Write-Host "Destination folders:"
+    Write-Detail "Destination folders:"
     if (-not $NoCheckers) {
-        Write-Host "  Checkers -> $(Join-Path $TargetRoot 'checkers')"
+        Write-Detail "  Checkers -> $(Join-Path $TargetRoot 'checkers')"
     }
     foreach ($entry in $Entries) {
         switch ($entry) {
             "codex" {
                 $dest = Get-CodexDestinations
-                Write-Host "  Codex skill -> $($dest.Skill)"
-                Write-Host "  Codex direct prompts -> $($dest.Prompts)"
-                Write-Host "    Invoke as /prompts:spec-create, /prompts:design-create, etc. after restarting Codex."
+                Write-Detail "  Codex skill -> $($dest.Skill)"
+                Write-Detail "  Codex direct prompts -> $($dest.Prompts)"
+                Write-Detail "    Invoke as /prompts:spec-create, /prompts:design-create, etc. after restarting Codex."
             }
             "copilot" {
-                Write-Host "  GitHub Copilot prompts -> $(Get-CopilotPromptDestination)"
+                Write-Detail "  GitHub Copilot prompts -> $(Get-CopilotPromptDestination)"
                 foreach ($skillDest in Get-CopilotSkillDestinations) {
-                    Write-Host "  GitHub Copilot skill -> $skillDest"
-                    Write-Host "  GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+                    Write-Detail "  GitHub Copilot skill -> $skillDest"
+                    Write-Detail "  GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
                 }
                 if ($Scope -eq "user") {
-                    Write-Host "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
+                    Write-Detail "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
                 }
-                Write-Host "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
-                Write-Host "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
+                Write-Detail "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
+                Write-Detail "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
             }
             "claude-code" {
                 if ($Scope -eq "user") {
@@ -202,8 +211,8 @@ function Write-DestinationSummary {
                     $cmdDest = Join-Path $TargetRoot ".claude/commands"
                     $skillDest = Join-Path $TargetRoot ".claude/skills/sarathi"
                 }
-                Write-Host "  Claude Code commands -> $cmdDest"
-                Write-Host "  Claude Code skill -> $skillDest"
+                Write-Detail "  Claude Code commands -> $cmdDest"
+                Write-Detail "  Claude Code skill -> $skillDest"
             }
             "gemini" {
                 $dest = if ($Scope -eq "user") {
@@ -211,7 +220,7 @@ function Write-DestinationSummary {
                 } else {
                     Join-Path $TargetRoot ".gemini/commands"
                 }
-                Write-Host "  Gemini CLI commands -> $dest"
+                Write-Detail "  Gemini CLI commands -> $dest"
             }
             "claude" {
                 $dest = if ($Scope -eq "user") {
@@ -219,8 +228,8 @@ function Write-DestinationSummary {
                 } else {
                     Join-Path $TargetRoot ".ai-prompts/claude"
                 }
-                Write-Host "  Claude prompt export -> $dest"
-                Write-Host "  Claude skill export -> $(Join-Path $dest 'skills/sarathi')"
+                Write-Detail "  Claude prompt export -> $dest"
+                Write-Detail "  Claude skill export -> $(Join-Path $dest 'skills/sarathi')"
             }
             "pi" {
                 $dest = if ($Scope -eq "user") {
@@ -228,8 +237,8 @@ function Write-DestinationSummary {
                 } else {
                     Join-Path $TargetRoot ".ai-prompts/pi"
                 }
-                Write-Host "  Pi prompt export -> $dest"
-                Write-Host "  Pi skill export -> $(Join-Path $dest 'skills/sarathi')"
+                Write-Detail "  Pi prompt export -> $dest"
+                Write-Detail "  Pi skill export -> $(Join-Path $dest 'skills/sarathi')"
             }
         }
     }
@@ -241,27 +250,27 @@ function Copy-Checkers {
     }
     $dest = Join-Path $TargetRoot "checkers"
     if ($Scope -eq "user") {
-        Write-Warning (
-            "Checkers are project-local; installing them to " +
+        Write-Detail (
+            "Note: Checkers are project-local; installing them to " +
             "$TargetRoot\checkers even though Scope is user. Use -NoCheckers to skip them."
         )
     }
     if ($DryRun) {
-        Write-Host "Would install checkers -> $dest"
+        Write-Detail "Would install checkers -> $dest"
         return
     }
     $sourceResolved = (Resolve-Path -LiteralPath $CheckerSource).Path.TrimEnd("\", "/")
     if (Test-Path -LiteralPath $dest) {
         $destResolved = (Resolve-Path -LiteralPath $dest).Path.TrimEnd("\", "/")
         if ($sourceResolved -ieq $destResolved) {
-            Write-Host "Checker destination is source folder; skipping checker copy."
+            Write-Detail "Checker destination is source folder; skipping checker copy."
             return
         }
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
     Get-ChildItem -LiteralPath $CheckerSource -Filter "*.py" |
         Copy-Item -Destination $dest -Force
-    Write-Host "Installed checkers -> $dest"
+    Write-Detail "Installed checkers -> $dest"
 }
 
 function Copy-SkillFolder {
@@ -351,10 +360,10 @@ function Install-Copilot {
     $dest = Get-CopilotPromptDestination
     $skillDests = Get-CopilotSkillDestinations
     if ($DryRun) {
-        Write-Host "Would install GitHub Copilot prompts -> $dest"
+        Write-Detail "Would install GitHub Copilot prompts -> $dest"
         foreach ($skillDest in $skillDests) {
-            Write-Host "Would install GitHub Copilot skill -> $skillDest"
-            Write-Host "Would install GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+            Write-Detail "Would install GitHub Copilot skill -> $skillDest"
+            Write-Detail "Would install GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
         }
         return
     }
@@ -363,30 +372,30 @@ function Install-Copilot {
         $body = Get-CopilotPromptText $_.FullName
         Set-Content -LiteralPath (Join-Path $dest $_.Name) -Value $body -NoNewline
     }
-    Write-Host "Installed GitHub Copilot prompts -> $dest"
+    Write-Detail "Installed GitHub Copilot prompts -> $dest"
     foreach ($skillDest in $skillDests) {
         Copy-SkillFolder $skillDest
-        Write-Host "Installed GitHub Copilot skill -> $skillDest"
+        Write-Detail "Installed GitHub Copilot skill -> $skillDest"
         Copy-CopilotStageSkills $skillDest
-        Write-Host "Installed GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+        Write-Detail "Installed GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
     }
-    Write-Host "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
-    Write-Host "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
-    Write-Host "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
+    Write-Detail "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
+    Write-Detail "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
+    Write-Detail "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
 }
 
 function Install-Codex {
     $dest = Get-CodexDestinations
     if ($DryRun) {
-        Write-Host "Would install Codex skill -> $($dest.Skill)"
-        Write-Host "Would install Codex direct prompts -> $($dest.Prompts)"
+        Write-Detail "Would install Codex skill -> $($dest.Skill)"
+        Write-Detail "Would install Codex direct prompts -> $($dest.Prompts)"
         return
     }
     Copy-SkillFolder $dest.Skill
-    Write-Host "Installed Codex skill -> $($dest.Skill)"
+    Write-Detail "Installed Codex skill -> $($dest.Skill)"
     Copy-CodexPromptFiles $dest.Prompts
-    Write-Host "Installed Codex direct prompts -> $($dest.Prompts)"
-    Write-Host "Codex direct prompts are available as /prompts:spec-create, /prompts:design-create, etc. after restart."
+    Write-Detail "Installed Codex direct prompts -> $($dest.Prompts)"
+    Write-Detail "Codex direct prompts are available as /prompts:spec-create, /prompts:design-create, etc. after restart."
 }
 
 function Install-ClaudeCode {
@@ -398,8 +407,8 @@ function Install-ClaudeCode {
         $skillDest = Join-Path $TargetRoot ".claude/skills/sarathi"
     }
     if ($DryRun) {
-        Write-Host "Would install Claude Code slash commands -> $dest"
-        Write-Host "Would install Claude Code skill -> $skillDest"
+        Write-Detail "Would install Claude Code slash commands -> $dest"
+        Write-Detail "Would install Claude Code skill -> $skillDest"
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -408,9 +417,9 @@ function Install-ClaudeCode {
         $body = Get-PromptBody $_.FullName
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
-    Write-Host "Installed Claude Code slash commands -> $dest"
+    Write-Detail "Installed Claude Code slash commands -> $dest"
     Copy-SkillFolder $skillDest
-    Write-Host "Installed Claude Code skill -> $skillDest"
+    Write-Detail "Installed Claude Code skill -> $skillDest"
 }
 
 function Install-Gemini {
@@ -420,7 +429,7 @@ function Install-Gemini {
         $dest = Join-Path $TargetRoot ".gemini/commands"
     }
     if ($DryRun) {
-        Write-Host "Would install Gemini CLI commands -> $dest"
+        Write-Detail "Would install Gemini CLI commands -> $dest"
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -439,7 +448,7 @@ $body
 "@
         Set-Content -LiteralPath (Join-Path $dest "$name.toml") -Value $toml -NoNewline
     }
-    Write-Host "Installed Gemini CLI commands -> $dest"
+    Write-Detail "Installed Gemini CLI commands -> $dest"
 }
 
 function Install-ClaudeExport {
@@ -449,8 +458,8 @@ function Install-ClaudeExport {
         $dest = Join-Path $TargetRoot ".ai-prompts/claude"
     }
     if ($DryRun) {
-        Write-Host "Would export Claude prompt pack -> $dest"
-        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
+        Write-Detail "Would export Claude prompt pack -> $dest"
+        Write-Detail "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -460,8 +469,8 @@ function Install-ClaudeExport {
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
     Copy-SkillFolder (Join-Path $dest "skills/sarathi")
-    Write-Host "Exported Claude prompt pack -> $dest"
-    Write-Host "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
+    Write-Detail "Exported Claude prompt pack -> $dest"
+    Write-Detail "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
 }
 
 function Install-PiExport {
@@ -471,8 +480,8 @@ function Install-PiExport {
         $dest = Join-Path $TargetRoot ".ai-prompts/pi"
     }
     if ($DryRun) {
-        Write-Host "Would export Pi prompt pack -> $dest"
-        Write-Host "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
+        Write-Detail "Would export Pi prompt pack -> $dest"
+        Write-Detail "Would include skill bundle -> $(Join-Path $dest 'skills/sarathi')"
         return
     }
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -482,8 +491,8 @@ function Install-PiExport {
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
     Copy-SkillFolder (Join-Path $dest "skills/sarathi")
-    Write-Host "Exported Pi prompt pack -> $dest"
-    Write-Host "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
+    Write-Detail "Exported Pi prompt pack -> $dest"
+    Write-Detail "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }
 
 function Test-WslAvailable {
@@ -515,7 +524,8 @@ function Invoke-WslInstallScript {
         [string]$TargetPath,
         [string]$ScopeValue,
         [string]$ToolsValue,
-        [bool]$SkipCheckers
+        [bool]$SkipCheckers,
+        [bool]$Detailed
     )
 
     $skipCheckersFlag = if ($SkipCheckers) { "1" } else { "0" }
@@ -525,6 +535,7 @@ target_path=$2
 scope_value=$3
 tools_value=$4
 skip_checkers=$5
+detailed=$6
 repo_root=$(cd "$(dirname "$script_path")/.." && pwd -P)
 
 tmp_script=$(mktemp)
@@ -535,6 +546,9 @@ chmod +x "$tmp_script"
 args=(--target "$target_path" --scope "$scope_value" --tools "$tools_value" --no-cross-install)
 if [ "$skip_checkers" = "1" ]; then
   args=("${args[@]}" --no-checkers)
+fi
+if [ "$detailed" = "1" ]; then
+  args=("${args[@]}" --verbose)
 fi
 
 SARATHI_REPO_ROOT="$repo_root" bash "$tmp_script" "${args[@]}"
@@ -549,7 +563,8 @@ SARATHI_REPO_ROOT="$repo_root" bash "$tmp_script" "${args[@]}"
             $utf8NoBom
         )
         $runnerWsl = ConvertTo-WslPath $runnerPath
-        & wsl.exe -e bash $runnerWsl $ScriptPath $TargetPath $ScopeValue $ToolsValue $skipCheckersFlag
+        $detailedFlag = if ($Detailed) { "1" } else { "0" }
+        & wsl.exe -e bash $runnerWsl $ScriptPath $TargetPath $ScopeValue $ToolsValue $skipCheckersFlag $detailedFlag
     } finally {
         Remove-Item -LiteralPath $runnerPath -Force -ErrorAction SilentlyContinue
     }
@@ -560,11 +575,11 @@ function Install-WslCompanion {
         return
     }
     if ($DryRun) {
-        Write-Host "Would install WSL companion targets if WSL is available."
+        Write-Detail "Would install WSL companion targets if WSL is available."
         return
     }
     if (-not (Test-WslAvailable)) {
-        Write-Host "WSL not available; skipping WSL companion install."
+        Write-Detail "WSL not available; skipping WSL companion install."
         return
     }
 
@@ -573,13 +588,14 @@ function Install-WslCompanion {
     $scriptWsl = "$repoWsl/scripts/install.sh"
     $toolList = $expandedTools -join ","
 
-    Write-Host "Installing WSL companion targets via $scriptWsl"
+    Write-Detail "Installing WSL companion targets via $scriptWsl"
     Invoke-WslInstallScript `
         -ScriptPath $scriptWsl `
         -TargetPath $targetWsl `
         -ScopeValue $Scope `
         -ToolsValue $toolList `
-        -SkipCheckers $NoCheckers
+        -SkipCheckers $NoCheckers `
+        -Detailed $Verbose
     if ($LASTEXITCODE -ne 0) {
         throw "WSL companion install failed with exit code $LASTEXITCODE"
     }
@@ -612,3 +628,4 @@ if ($DryRun) {
 } else {
     Write-Host "Install complete for target: $TargetRoot"
 }
+Write-Host "Tools: $($expandedTools -join ', ') ($Scope scope)"

@@ -150,6 +150,13 @@ def test_user_can_explicitly_request_or_skip_project_checkers() -> None:
     assert command_skips_checkers(["--no-checkers"]) is True
 
 
+def test_cli_verbose_flag_is_forwarded_to_platform_installer() -> None:
+    args = build_parser().parse_args(["install", "--verbose"])
+
+    command = _install_command(args)
+    assert ("-v" if os.name == "nt" else "--verbose") in command
+
+
 @pytest.mark.skipif(os.name == "nt", reason="asserts the Unix installer wrapper")
 def test_cli_dry_run_uses_bundled_installer(tmp_path: Path) -> None:
     environment = os.environ.copy()
@@ -177,5 +184,7 @@ def test_cli_dry_run_uses_bundled_installer(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0, result.stderr
-    assert "Would install Codex skill" in result.stdout
+    assert "Dry run complete for target:" in result.stdout
+    assert "Tools: codex (project scope)" in result.stdout
+    assert "Would install Codex skill" not in result.stdout
     assert not (tmp_path / ".codex").exists()
