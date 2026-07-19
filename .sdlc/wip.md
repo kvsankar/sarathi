@@ -1,9 +1,9 @@
 # SDLC Work In Progress
 
-Last Updated: 2026-07-19T12:00:00Z
+Last Updated: 2026-07-19T12:30:00Z
 Updated By: agent
-Current Stage: code-assess
-Current Gate: complete
+Current Stage: release
+Current Gate: release-preparation
 Project Entry Mode: brownfield_delta_only
 Work Scope: slice/change
 Ready To Implement: Yes
@@ -12,54 +12,56 @@ Extra Checks: Documentation, Build and release
 
 ## Resume Summary
 
-Sarathi no longer forces projects to estimate process complexity or complete special forms
-before ordinary implementation work. The current change also replaces private process
-vocabulary with direct engineering language while keeping older project files readable.
+The plain-language process cleanup and quiet-installer change are merged locally. The user
+requested validation and release as version 0.3.1.
 
 ## Current Artifacts
 
 | Kind | Path | Status | Notes |
 | --- | --- | --- | --- |
-| Plan | `.sdlc/plan.md` | approved | Current hash matches the explicit user approval record. |
-| Code | repository diff | assessed | Checks and independent review passed. |
+| Plan | `.sdlc/plan.md` | approved | Covers the process-language cleanup. |
+| Process cleanup | commit `7e03248` | assessed | Independent check and review passed. |
+| Installer change | commit `06f87ac` | merged | Quiet summaries and verbose output are covered by tests. |
+| Release | `CHANGELOG.md` | preparing | Version metadata, final checks, PR, merge, and tag remain. |
 
 ## Decisions And Assumptions
 
-- Remove forced estimates and special approvals rather than merely renaming them.
-- New files use plain labels; parsers continue to accept old labels.
-- Keep real approval, safety, test, and production-deployment boundaries.
+- New author-facing instructions use plain labels; old project files remain readable.
+- TODO/FIXME/XXX entries are warnings; skipped and expected-failure tests fail directly.
+- Installers show compact summaries by default and retain details behind `-v`/`--verbose`.
+- Errors remain visible in quiet installer mode.
 
 ## Check And Review Evidence
 
-- Three independent agents audited docs, prompts, installed instructions, checkers, tests,
-  installer text, and the status renderer; their edits are integrated in the working tree.
-- Final coverage suite: 131 tests passed with 83.21% checker coverage.
-- Pre-commit passed Ruff, formatting, Markdown, and Python tests.
-- Browser layout suite: 5 passed at mobile and desktop sizes.
-- Skill validation passed; canonical and bundled files are byte-identical.
-- Fresh independent check: Pass. Fresh independent review found four issues; all were fixed
-  and its focused re-review verdict was Pass.
+- Process cleanup final coverage suite: 131 tests passed with 83.21% checker coverage.
+- Process cleanup pre-commit, five browser layouts, bundle parity, and skill validation passed.
+- Independent process check and focused re-review: Pass.
+- Installer branch reported cross-platform dry runs, focused tests, full suite, layout,
+  pre-commit, and skill validation passing before merge.
+- Combined-tree release checks are pending.
 
 ## Results And Feedback
 
-Expected Result: Projects receive short, direct instructions without forced process paperwork.
+Expected Result: Release 0.3.1 with direct process language and quiet installer output.
 Feedback From: user, independent review, and executable checks
 Feedback Status: received
-Feedback Evidence: the user identified the forced estimate as over-engineered; independent verification and review passed after corrections
+Feedback Evidence: user requested the cleanup, supplied the installer branch, and explicitly requested release 0.3.1
 Current Work Group: none
 Current Work: none
-Parallel Limit: 3
-What Changed: forced estimates, special forms, prose heuristics, and private visible labels were removed; skipped tests still fail directly without separate paperwork
-Documents To Update: none
-Stop Conditions: stop if compatibility requires process IDs in source code or a real safety approval would be weakened
+Parallel Limit: 1
+What Changed: process paperwork and jargon were removed; installer output is quiet by default with verbose details on demand
+Documents To Update: version metadata and changelog for 0.3.1
+Stop Conditions: failing combined checks, unresolved merge conflicts, or failed release workflow
 
 ## Open Questions And Blockers
 
-- None.
+- GitHub CLI tokens are invalid, but Git-over-SSH access works. PR/release inspection may
+  require reauthentication if `gh` is needed.
 
 ## Next Recommended Action
 
-Review the finished diff, then commit or prepare the next release when requested.
+Validate the merged tree, prepare 0.3.1, merge it through a reviewed PR, tag, and verify the
+release workflow.
 
 ## Bootstrap Status
 

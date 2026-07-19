@@ -64,6 +64,9 @@ Preview the destinations without writing files:
 uvx --from sarathi-sdlc sarathi-sdlc install --dry-run
 ```
 
+Add `-v` or `--verbose` to show destinations, per-tool actions, companion-install details,
+reload guidance, and informational notes.
+
 Install project-local assets, including a top-level `checkers/` copy, or select tools:
 
 ```sh
@@ -112,6 +115,10 @@ Install for the current user:
 ```sh
 scripts/install.sh
 ```
+
+Installers report only the target, selected tools, scope, and completion status by default.
+Use `-v` in PowerShell or `-v`/`--verbose` in a shell to show destination paths, per-tool
+actions, companion-install details, reload guidance, and informational notes.
 
 Install into a specific project workspace from the checkout instead:
 

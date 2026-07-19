@@ -41,6 +41,70 @@ def run_project_copilot_install(target: Path) -> None:
     subprocess.run(command, check=True, capture_output=True, text=True)
 
 
+def run_installer_dry_run(*, verbose: bool) -> subprocess.CompletedProcess[str]:
+    if os.name == "nt":
+        command = [
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(ROOT / "scripts" / "install.ps1"),
+            "-TargetRoot",
+            str(ROOT),
+            "-Scope",
+            "project",
+            "-Tool",
+            "codex",
+            "-NoCheckers",
+            "-NoCrossInstall",
+            "-DryRun",
+        ]
+        if verbose:
+            command.append("-v")
+    else:
+        command = [
+            "bash",
+            str(ROOT / "scripts" / "install.sh"),
+            "--target",
+            str(ROOT),
+            "--scope",
+            "project",
+            "--tools",
+            "codex",
+            "--no-checkers",
+            "--no-cross-install",
+            "--dry-run",
+        ]
+        if verbose:
+            command.append("--verbose")
+    return subprocess.run(command, check=True, capture_output=True, text=True)
+
+
+def test_installer_reports_only_summary_by_default() -> None:
+    result = run_installer_dry_run(verbose=False)
+
+    assert result.stderr == ""
+    assert result.stdout.splitlines() == [
+        f"Dry run complete for target: {ROOT}",
+        "Tools: codex (project scope)",
+    ]
+    assert "Warning:" not in result.stdout
+    assert "Destination folders:" not in result.stdout
+    assert "Would install Codex" not in result.stdout
+
+
+def test_verbose_installer_reports_details_without_expected_warnings() -> None:
+    result = run_installer_dry_run(verbose=True)
+
+    assert result.stderr == ""
+    assert "Note: " in result.stdout
+    assert "Warning:" not in result.stdout
+    assert "Destination folders:" in result.stdout
+    assert "Would install Codex skill" in result.stdout
+    assert f"Dry run complete for target: {ROOT}" in result.stdout
+
+
 def test_direct_assess_aliases_resolve_transitive_prompts(tmp_path: Path) -> None:
     run_project_copilot_install(tmp_path)
 

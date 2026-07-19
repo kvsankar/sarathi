@@ -22,6 +22,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   legacy template. Existing documents remain readable by the checkers.
 - Report TODO/FIXME/XXX entries as warnings, while skipped and expected-failure tests remain
   a failing code check without requiring a separate approval form.
+- Make installers report compact summaries by default, move expected dogfooding and
+  checker-scope messages to verbose notes, and add `-v`/`--verbose` detail output to both
+  source-checkout scripts and the packaged CLI.
 
 ## 0.3.0 - 2026-07-19
 

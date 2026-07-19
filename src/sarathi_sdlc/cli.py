@@ -54,6 +54,8 @@ def _install_command(args: argparse.Namespace) -> list[str]:
             command.append("-NoCrossInstall")
         if args.dry_run:
             command.append("-DryRun")
+        if args.verbose:
+            command.append("-v")
         return command
 
     command = ["bash", str(root / "scripts" / "install.sh"), "--scope", args.scope]
@@ -67,6 +69,8 @@ def _install_command(args: argparse.Namespace) -> list[str]:
         command.append("--no-cross-install")
     if args.dry_run:
         command.append("--dry-run")
+    if args.verbose:
+        command.append("--verbose")
     return command
 
 
@@ -110,6 +114,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     install.add_argument("--no-cross-install", action="store_true")
     install.add_argument("--dry-run", action="store_true")
+    install.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="show destinations, per-tool actions, and install notes",
+    )
     install.set_defaults(checkers=None, handler=_run_install)
 
     update = subparsers.add_parser(
