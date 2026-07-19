@@ -74,6 +74,18 @@ def test_renderer_accepts_plain_wip_field_names(tmp_path):
     write(
         tmp_path / ".sdlc" / "wip.md",
         """# SDLC Work In Progress
+## Product Snapshot
+Goal: Deliver report exports in the target service.
+Working Today: CSV and PDF exports run in the established service.
+Reusable Today: Shared renderers can be consumed directly.
+Current Increment: Shared renderer extraction: complete.
+Remaining Shared Work: Extract job-status coordination.
+Target-Owned Work: Add target-owned export jobs and API routes.
+Deferred: Legacy export-record migration is non-blocking.
+Before Coding: Complete the target persistence review.
+Next Action: Run the target persistence assessment.
+
+## Process Snapshot
 Current Stage: code-create
 Review Level: Standard
 Extra Checks: documentation
@@ -96,9 +108,60 @@ Stop Conditions: Stop if the API changes.
 
     assert result["Review Level"] == "Standard"
     assert result["Extra Checks"] == "documentation"
+    assert result["product_status"] == {
+        "goal": "Deliver report exports in the target service.",
+        "working_today": "CSV and PDF exports run in the established service.",
+        "reusable_today": "Shared renderers can be consumed directly.",
+        "current_increment": "Shared renderer extraction: complete.",
+        "remaining_shared_work": "Extract job-status coordination.",
+        "target_owned_work": "Add target-owned export jobs and API routes.",
+        "deferred": "Legacy export-record migration is non-blocking.",
+        "before_coding": "Complete the target persistence review.",
+        "next_action": "Run the target persistence assessment.",
+    }
     assert result["learning"]["target"] == "Confirm the public behavior."
     assert result["learning"]["active_work_item"] == "WORK-DEMO-ALPHA"
     assert result["learning"]["stop_or_replan"] == "Stop if the API changes."
+
+
+def test_product_snapshot_is_visually_primary_and_process_state_is_secondary(tmp_path):
+    module = load_renderer()
+    project = tmp_path / "example"
+    write(
+        project / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+## Product Snapshot
+Goal: Deliver report exports in the target service.
+Working Today: Exports work in the established service.
+Reusable Today: File renderers are shared now.
+Current Increment: Renderer extraction: complete.
+Remaining Shared Work: Job coordination is not extracted.
+Target-Owned Work: Target persistence and API work has not started.
+Deferred: Legacy record migration is non-blocking.
+Before Coding: Approve the target persistence design.
+Next Action: Review the target persistence design.
+
+## Process Snapshot
+Current Stage: plan-review
+Current Gate: human-review
+""",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert rendered.index("Product snapshot") < rendered.index(
+        "Documents and delivery evidence"
+    )
+    assert "Target persistence and API work has not started." in rendered
+    assert "Renderer extraction: complete." in rendered
+    assert "Process state below cannot establish product completion" not in rendered
+    assert "Requirements complete" not in rendered
 
 
 def test_renderer_parses_table_only_delivery_definitions():
@@ -157,7 +220,7 @@ def test_spec_only_leaves_downstream_stages_visibly_empty(tmp_path):
         "pr_slices": 0,
         "evidenced_prs": 0,
         "assessed_items": 0,
-        "completed_items": 0,
+        "handed_off_items": 0,
         "learning_waves": 0,
         "completed_waves": 0,
         "active_waves": 0,
@@ -491,7 +554,7 @@ Active Slices: PR-LEAF-BOUNDARY
     assert model["summary"]["pr_slices"] == 2
     assert waves[0]["member_states"][0]["state"] == "in-progress"
     assert waves[1]["member_states"][0]["state"] == "not-started"
-    assert "Product delivery plan" in rendered
+    assert "Documents and delivery evidence" in rendered
     assert "Slice workflow" in rendered
     assert "No valid decomposition discovered" not in rendered
     assert "WAVE-LEAF-BOUNDARY" in rendered
@@ -516,7 +579,7 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
         "pr_slices": 2,
         "evidenced_prs": 2,
         "assessed_items": 0,
-        "completed_items": 0,
+        "handed_off_items": 0,
         "learning_waves": 2,
         "completed_waves": 0,
         "active_waves": 2,
@@ -653,7 +716,7 @@ def test_stale_approval_is_distinct_from_missing_approval(tmp_path):
     assert model["stages"]["design"]["state"] == "approved"
 
 
-def test_hash_current_code_slice_approval_marks_work_completed(tmp_path):
+def test_hash_current_code_slice_approval_marks_only_the_slice_handed_off(tmp_path):
     module = load_renderer()
     project = make_decomposed_project(tmp_path)
     child = project / "docs" / "plans" / "work_alpha.md"
@@ -682,11 +745,80 @@ def test_hash_current_code_slice_approval_marks_work_completed(tmp_path):
         module.GUIDE_FILENAME,
     )
 
-    assert model["work_items"][0]["state"] == "completed"
+    assert model["work_items"][0]["state"] == "slice-handed-off"
     assert model["work_items"][0]["code_slice_approval"]["state"] == "approved"
-    assert model["summary"]["completed_items"] == 1
+    assert model["summary"]["handed_off_items"] == 1
     assert "WORK-DEMO-ALPHA" in rendered
-    assert "Completed" in rendered
+    assert "Slice handed off" in rendered
+    assert ">Completed<" not in rendered
+
+
+def test_handed_off_children_do_not_complete_the_parent_feature(tmp_path):
+    module = load_renderer()
+    project = make_decomposed_project(tmp_path)
+    child_plan = project / "docs" / "plans" / "work_alpha.md"
+    child_plan.write_text(
+        """# Alpha feature breakdown
+
+Parent Work Item: WORK-DEMO-ALPHA
+Work Scope: feature/component
+Plan Type: Breakdown
+Implementation Readiness: Decomposable
+
+## Pull Requests / Child Work Items
+
+- WORK-ALPHA-LEAF
+  Parent scope: feature/component.
+  Child scope: slice/change.
+  Scope: deliver one bounded leaf.
+""",
+        encoding="utf-8",
+    )
+    leaf = write(
+        project / "docs" / "plans" / "work_alpha_leaf.md",
+        """# Alpha leaf implementation
+
+Parent Work Item: WORK-ALPHA-LEAF
+Work Scope: slice/change
+Plan Type: Implementation
+Implementation Readiness: Code-ready
+
+## Pull Requests / Child Work Items
+
+- PR-ALPHA-LEAF
+""",
+    )
+    approvals = project / ".sdlc" / "approvals.yaml"
+    approvals.write_text(
+        approvals.read_text(encoding="utf-8")
+        + f"""  - id: APR-CODE-ALPHA-LEAF
+    gate: code_slice.approved
+    scope: slice/change
+    artifact:
+      kind: plan
+      path: demo/docs/plans/work_alpha_leaf.md
+      sha256: "{digest(leaf)}"
+    status: approved
+    approved_by: tester
+    approved_at: "2026-07-15T00:00:04Z"
+""",
+        encoding="utf-8",
+    )
+
+    model = module.build_model(project)
+    rendered = module.render_html(
+        model,
+        project,
+        project / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+    parent = model["work_items"][0]
+
+    assert parent["state"] == "children-assessed"
+    assert parent["children"][0]["state"] == "slice-handed-off"
+    assert "Children assessed" in rendered
+    assert "Slice handed off" in rendered
+    assert ">Completed<" not in rendered
 
 
 def test_hash_current_passing_code_assessment_marks_work_assessed(tmp_path):
@@ -951,8 +1083,9 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert first.encode() == second.encode()
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
-    assert "Delivery progress" in first
-    assert "Product delivery plan" in first
+    assert "Engineering state" in first
+    assert "Process state" in first
+    assert "Documents and delivery evidence" in first
     assert "WORK-DEMO-ALPHA" in first
     assert 'aria-label="Workflow details"' in first
     assert "validate the public API boundary" in first

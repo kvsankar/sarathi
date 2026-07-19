@@ -26,6 +26,9 @@ Check correctness, important edge cases, fit with the approved documents, meanin
 with clear pass/fail results, and whether external dependencies were tested credibly.
 Confirm that changed files match the plan, project checks passed, process IDs did not enter
 source, and the implementation is no more complicated than the requested behavior.
+Treat unexplained skips and expected failures as evidence gaps. An environment-specific
+skip is acceptable when another explicit command or CI job runs that boundary successfully;
+the marker inventory alone neither rejects the code nor proves the evidence sufficient.
 
 Start with simplification. Identify code, commands, tests, files, or PR boundaries that can
 be removed, collapsed, deferred, or proved by existing checks. A green, traceable implementation can still be

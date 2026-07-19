@@ -47,6 +47,17 @@ WIP_LEARNING_FIELDS = (
     ("Stop Conditions", "stop_or_replan"),
     ("Stop Or Replan Triggers", "stop_or_replan"),
 )
+WIP_PRODUCT_FIELDS = (
+    ("Goal", "goal"),
+    ("Working Today", "working_today"),
+    ("Reusable Today", "reusable_today"),
+    ("Current Increment", "current_increment"),
+    ("Remaining Shared Work", "remaining_shared_work"),
+    ("Target-Owned Work", "target_owned_work"),
+    ("Deferred", "deferred"),
+    ("Before Coding", "before_coding"),
+    ("Next Action", "next_action"),
+)
 ASSESSMENT_LEARNING_FIELDS = (
     ("target", "target"),
     ("feedback_target", "feedback_target"),
@@ -529,6 +540,7 @@ def parse_wip(root: Path) -> dict[str, Any]:
         "exists": path.is_file(),
         "artifacts": {},
         "learning": {},
+        "product_status": {},
     }
     if not path.is_file():
         return result
@@ -552,6 +564,10 @@ def parse_wip(root: Path) -> dict[str, Any]:
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match and key not in result["learning"]:
             result["learning"][key] = match.group(1).strip()
+    for field, key in WIP_PRODUCT_FIELDS:
+        match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
+        if match:
+            result["product_status"][key] = match.group(1).strip()
     current_artifacts = section(text, "Current Artifacts")
     for line in current_artifacts.splitlines():
         if not line.strip().startswith("|"):
@@ -738,7 +754,7 @@ def wave_member_state(
     if identifier in work_by_id:
         item = work_by_id[identifier]
         state = item["state"]
-        if state in {"assessed", "completed"}:
+        if state in {"assessed", "children-assessed", "slice-handed-off"}:
             return {"id": identifier, "state": "assessed", "detail": state_label(state)}
         if identifier in active_ids or state in {"started", "expanded"}:
             return {"id": identifier, "state": "in-progress", "detail": "In progress"}
@@ -751,7 +767,11 @@ def wave_member_state(
         return {"id": identifier, "state": "not-started", "detail": "Not started"}
     if identifier in pr_by_id:
         owner, pr = pr_by_id[identifier]
-        if owner and owner["state"] in {"assessed", "completed"}:
+        if owner and owner["state"] in {
+            "assessed",
+            "children-assessed",
+            "slice-handed-off",
+        }:
             return {"id": identifier, "state": "assessed", "detail": "Slice assessed"}
         if identifier in active_ids:
             return {"id": identifier, "state": "in-progress", "detail": "In progress"}
@@ -1052,7 +1072,7 @@ def build_model(root: Path) -> dict[str, Any]:
             root, item["id"], child_path, assessment_records
         )
         completion_state = (
-            "completed"
+            "slice-handed-off"
             if code_slice_approval["state"] == "approved"
             else "assessed"
             if assessment
@@ -1128,7 +1148,7 @@ def build_model(root: Path) -> dict[str, Any]:
             )
             child.update(
                 {
-                    "state": "completed"
+                    "state": "slice-handed-off"
                     if code_slice_approval["state"] == "approved"
                     else "assessed"
                     if assessment
@@ -1151,9 +1171,9 @@ def build_model(root: Path) -> dict[str, Any]:
             )
         item["children"] = child_items
         if child_items and all(
-            child["state"] in {"assessed", "completed"} for child in child_items
+            child["state"] in {"assessed", "slice-handed-off"} for child in child_items
         ):
-            item["state"] = "completed"
+            item["state"] = "children-assessed"
     learning_waves = build_learning_wave_model(
         root, paths["plan"], root_prs, items, checkpoint_records, wip
     )
@@ -1207,8 +1227,12 @@ def build_model(root: Path) -> dict[str, Any]:
             "expanded_items": expanded,
             "pr_slices": pr_count,
             "evidenced_prs": evidenced_prs,
-            "assessed_items": sum(item["state"] == "assessed" for item in items),
-            "completed_items": sum(item["state"] == "completed" for item in items),
+            "assessed_items": sum(
+                item["state"] in {"assessed", "children-assessed"} for item in items
+            ),
+            "handed_off_items": sum(
+                item["state"] == "slice-handed-off" for item in items
+            ),
             "learning_waves": learning_waves["summary"]["total"],
             "completed_waves": learning_waves["summary"]["completed"],
             "active_waves": learning_waves["summary"]["in_progress"],
@@ -1231,6 +1255,35 @@ def esc(value: Any) -> str:
     return html.escape(str(value or ""), quote=True)
 
 
+def render_product_snapshot(wip: dict[str, Any]) -> str:
+    """Render engineering state before any process or approval state."""
+    product_status = wip.get("product_status") or {}
+    cards = "".join(
+        f'<article class="product-status-card"><h3>{esc(label)}</h3>'
+        f"<p>{esc(product_status.get(key) or 'Not recorded')}</p></article>"
+        for label, key in WIP_PRODUCT_FIELDS
+    )
+    missing = [
+        label for label, key in WIP_PRODUCT_FIELDS if not product_status.get(key)
+    ]
+    note = (
+        '<p class="product-status-warning">This project has not recorded a complete '
+        "product snapshot. Process state below cannot establish product completion.</p>"
+        if missing
+        else ""
+    )
+    return f"""
+  <section class="product-status" aria-labelledby="product-status-title">
+    <div class="product-status-head">
+      <div class="product-status-kicker">Engineering state</div>
+      <h2 id="product-status-title">Product snapshot</h2>
+      <p>What works, what remains, what is deferred, and what happens next.</p>
+    </div>
+    <div class="product-status-grid">{cards}</div>
+    {note}
+  </section>"""
+
+
 def href_for(root: Path, output: Path, relative: str | None) -> str | None:
     if not relative:
         return None
@@ -1251,12 +1304,20 @@ def state_label(state: str) -> str:
         "evidence": "Evidence mapped",
         "planned": "PRs planned",
         "assessed": "Assessed",
-        "completed": "Completed",
+        "children-assessed": "Children assessed",
+        "slice-handed-off": "Slice handed off",
+        "completed": "Review point closed",
     }.get(state, state.replace("-", " ").title())
 
 
 def badge(state: str, label: str | None = None) -> str:
-    if state in {"approved", "assessed", "completed"}:
+    if state in {
+        "approved",
+        "assessed",
+        "children-assessed",
+        "slice-handed-off",
+        "completed",
+    }:
         visual, symbol = "success", "&#10003;"
     elif state in {
         "stale",
@@ -1415,7 +1476,7 @@ def render_prs(prs: list[dict[str, Any]], item_state: str) -> str:
         return '<span class="empty">Not yet known</span>'
     state = (
         item_state
-        if item_state in {"completed", "assessed"}
+        if item_state in {"slice-handed-off", "assessed"}
         else "evidence"
         if any(pr["evidence_count"] for pr in prs)
         else "planned"
@@ -1464,10 +1525,10 @@ def render_assessment_learning(item: dict[str, Any]) -> str:
 def render_code_node(item: dict[str, Any]) -> str:
     children = item.get("children") or []
     if children:
-        completed = sum(
-            child.get("state") in {"assessed", "completed"} for child in children
+        assessed = sum(
+            child.get("state") in {"assessed", "slice-handed-off"} for child in children
         )
-        state = "completed" if completed == len(children) else "started"
+        state = "children-assessed" if assessed == len(children) else "started"
         level = item.get("child_level")
         level_class = level if level in {"product", "feature", "slice"} else "unknown"
         return f"""
@@ -1477,12 +1538,12 @@ def render_code_node(item: dict[str, Any]) -> str:
     {badge(state)}
   </div>
   <strong>Delivered by child slices</strong>
-  <div class="node-detail">{completed} / {len(children)} child slice{"s" if len(children) != 1 else ""} complete</div>
+  <div class="node-detail">{assessed} / {len(children)} child slice{"s" if len(children) != 1 else ""} assessed or handed off</div>
 </div>"""
     prs = item["prs"]
     evidence_count = item["evidence_count"]
     state = item.get("state")
-    if state not in {"assessed", "completed"}:
+    if state not in {"assessed", "slice-handed-off"}:
         state = "evidence" if evidence_count else "planned" if prs else "missing"
     level = item.get("child_level")
     level_class = level if level in {"product", "feature", "slice"} else "unknown"
@@ -1582,7 +1643,7 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
                     "not-started": "Checkpoint not started",
                 }[wave["checkpoint_state"]]
                 status_label = {
-                    "completed": "Completed",
+                    "completed": "Group closed",
                     "in-progress": "In progress",
                     "not-started": "Not started",
                 }[wave["state"]]
@@ -1653,7 +1714,7 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
 <section class="waves-view" aria-labelledby="waves-title">
   <div class="waves-heading">
     <div><h2 id="waves-title">Work groups</h2><p>Work that shares a review or integration point.</p></div>
-    <div class="wave-totals"><strong>{summary["completed"]} / {summary["total"]}</strong><span>completed</span><strong>{summary["in_progress"]}</strong><span>in progress</span></div>
+    <div class="wave-totals"><strong>{summary["completed"]} / {summary["total"]}</strong><span>review points closed</span><strong>{summary["in_progress"]}</strong><span>in progress</span></div>
   </div>
   {issues}
   {body}
@@ -1813,7 +1874,8 @@ def render_tree_branch(
     branch_status = {
         "frontier": "Not started",
         "assessed": "Assessed",
-        "completed": "Completed",
+        "children-assessed": "Children assessed",
+        "slice-handed-off": "Slice handed off",
     }.get(item["state"], "In progress")
     open_attribute = " open" if is_focus else ""
     focus_label = '<span class="focus-label">Current focus</span>' if is_focus else ""
@@ -1847,7 +1909,10 @@ def delivery_rollup(items: list[dict[str, Any]], level: str) -> dict[str, int]:
         return flattened
 
     scoped = [item for item in flatten(items) if item.get("child_level") == level]
-    complete = sum(item.get("state") in {"assessed", "completed"} for item in scoped)
+    handed_off = sum(item.get("state") == "slice-handed-off" for item in scoped)
+    assessed = sum(
+        item.get("state") in {"assessed", "children-assessed"} for item in scoped
+    )
     in_progress = sum(
         item.get("state") == "started"
         or str((item.get("wip_claim") or {}).get("status") or "").casefold()
@@ -1856,7 +1921,8 @@ def delivery_rollup(items: list[dict[str, Any]], level: str) -> dict[str, int]:
     )
     planned = sum(
         item.get("child_plan") is not None
-        and item.get("state") not in {"assessed", "completed"}
+        and item.get("state")
+        not in {"assessed", "children-assessed", "slice-handed-off"}
         and item.get("state") != "started"
         and str((item.get("wip_claim") or {}).get("status") or "").casefold()
         not in {"active", "in-progress", "in progress"}
@@ -1864,10 +1930,11 @@ def delivery_rollup(items: list[dict[str, Any]], level: str) -> dict[str, int]:
     )
     return {
         "total": len(scoped),
-        "complete": complete,
+        "handed_off": handed_off,
+        "assessed": assessed,
         "in_progress": in_progress,
         "planned": planned,
-        "not_planned": len(scoped) - complete - in_progress - planned,
+        "not_planned": len(scoped) - handed_off - assessed - in_progress - planned,
     }
 
 
@@ -1961,7 +2028,7 @@ def render_html(
         "slice",
     )
     product_stages = " | ".join(
-        f"{label} {'complete' if stages[kind]['state'] == 'approved' else state_label(stages[kind]['state'])}"
+        f"{label} {'Approved' if stages[kind]['state'] == 'approved' else state_label(stages[kind]['state'])}"
         for kind, label in (
             ("spec", "Requirements"),
             ("design", "Design"),
@@ -2023,6 +2090,7 @@ def render_html(
         else ""
     )
     wave_issues = render_wave_issues(model["learning_waves"]["issues"])
+    product_snapshot = render_product_snapshot(wip)
     embedded_model = json.dumps(model, sort_keys=True).replace("</", "<\\/")
     return f"""<!doctype html>
 <html lang="en">
@@ -2072,7 +2140,18 @@ code {{ font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; ove
 h1 {{ margin: 0.25rem 0 0; font-size: 2.25rem; line-height: 1.15; }}
 main {{ max-width: 92rem; margin: 0 auto; padding: 1.25rem; }}
 h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
-.executive {{ border: 1px solid var(--line); border-left: 5px solid var(--stale); background: var(--surface); }}
+.product-status {{ border: 1px solid var(--line); border-left: 5px solid var(--product); background: var(--surface); }}
+.product-status-head {{ padding: 1rem 1.1rem 0.8rem; }}
+.product-status-kicker {{ color: var(--product); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }}
+.product-status h2 {{ margin: 0.2rem 0; font-size: 1.45rem; }}
+.product-status-head p {{ margin: 0.35rem 0 0; color: var(--muted); font-size: 0.86rem; }}
+.product-status-grid {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }}
+.product-status-card {{ min-width: 0; padding: 0.75rem 1rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }}
+.product-status-card:nth-child(3n) {{ border-right: 0; }}
+.product-status-card h3 {{ margin: 0; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; }}
+.product-status-card p {{ margin: 0.3rem 0 0; font-size: 0.88rem; font-weight: 650; overflow-wrap: anywhere; }}
+.product-status-warning {{ margin: 0; padding: 0.7rem 1rem; color: #6f4b00; background: #fff8df; font-size: 0.8rem; }}
+.executive {{ margin-top: 1rem; border: 1px solid var(--line); border-left: 5px solid var(--stale); background: var(--surface); }}
 .executive-head {{ padding: 1rem 1.1rem 0.5rem; }}
 .executive-kicker {{ color: var(--stale); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }}
 .executive h2 {{ margin: 0.2rem 0; font-size: 1.35rem; }}
@@ -2235,6 +2314,8 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 .technical-details .read-note {{ border-top: 0; }}
 .warning {{ color: #8a3b12; font-weight: 700; }}
 @media (max-width: 760px) {{
+  .product-status-grid {{ grid-template-columns: 1fr; }}
+  .product-status-card {{ border-right: 0; }}
   h1 {{ font-size: 1.5rem; }}
   .topbar-inner {{ align-items: start; flex-direction: column; }}
   .topbar-meta {{ align-items: start; flex-direction: column-reverse; gap: 0.4rem; }}
@@ -2280,33 +2361,34 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   </div>
 </header>
 <main>
+  {product_snapshot}
   <section class="executive" aria-labelledby="delivery-title">
     <div class="executive-head">
       <div>
-        <div class="executive-kicker">Delivery progress</div>
-        <h2 id="delivery-title">Product delivery plan</h2>
+        <div class="executive-kicker">Process state</div>
+        <h2 id="delivery-title">Documents and delivery evidence</h2>
       </div>
     </div>
-    <p class="delivery-intro">Select a scope to open its detailed tree below.</p>
+    <p class="delivery-intro">Approvals and recorded evidence support the engineering snapshot; they do not establish feature completion. Select a scope to open its detailed tree below.</p>
     <div class="delivery-rows">
       <div class="delivery-row">
-        <div class="delivery-scope"><a href="#product-workflow" data-level-filter="">Product</a></div>
+        <div class="delivery-scope"><a href="#product-workflow" data-level-filter="">Documents</a></div>
         <div class="delivery-states">{esc(product_stages)}</div>
         <div class="delivery-total">{summary["work_items"]} delivery areas identified</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="feature">Features</a></div>
-        <div class="delivery-states">{feature_rollup["complete"]} / {feature_rollup["total"]} complete | {feature_rollup["in_progress"]} in progress | {feature_rollup["planned"]} planned next | {feature_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-states">{feature_rollup["handed_off"]} / {feature_rollup["total"]} handed off | {feature_rollup["assessed"]} assessed | {feature_rollup["in_progress"]} in progress | {feature_rollup["planned"]} planned next | {feature_rollup["not_planned"]} not yet planned</div>
         <div class="delivery-total">Feature work is planned through child records and delivery evidence.</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Feature slices</a></div>
-        <div class="delivery-states">{feature_slice_rollup["complete"]} / {feature_slice_rollup["total"]} complete | {feature_slice_rollup["in_progress"]} in progress | {feature_slice_rollup["planned"]} planned next | {feature_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-states">{feature_slice_rollup["handed_off"]} / {feature_slice_rollup["total"]} handed off | {feature_slice_rollup["assessed"]} assessed | {feature_slice_rollup["in_progress"]} in progress | {feature_slice_rollup["planned"]} planned next | {feature_slice_rollup["not_planned"]} not yet planned</div>
         <div class="delivery-total">Feature-owned slices are shown with their feature prefix.</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Product-owned slices</a></div>
-        <div class="delivery-states">{product_slice_rollup["complete"]} / {product_slice_rollup["total"]} complete | {product_slice_rollup["in_progress"]} in progress | {product_slice_rollup["planned"]} planned next | {product_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-states">{product_slice_rollup["handed_off"]} / {product_slice_rollup["total"]} handed off | {product_slice_rollup["assessed"]} assessed | {product_slice_rollup["in_progress"]} in progress | {product_slice_rollup["planned"]} planned next | {product_slice_rollup["not_planned"]} not yet planned</div>
         <div class="delivery-total">Product-owned slices cover cross-feature integration and release work.</div>
       </div>
     </div>
@@ -2338,7 +2420,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   <section class="technical-details" aria-label="Workflow details">
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean completed and reviewed. Amber dots mean work or evidence exists but is not complete. Gray circles mean not started. Status is shown only when it is explicitly recorded; it is never guessed from Git or passing tests.</p>
+      <p>Green checks mean a document is approved, a slice is assessed or handed off, or a review point is closed. They do not mean the enclosing feature is complete. Amber dots mean work or evidence exists. Gray circles mean not started. Status is shown only when it is explicitly recorded; it is never guessed from Git or passing tests.</p>
       {approval_note}
       {traceability_note}
       {assessment_note}

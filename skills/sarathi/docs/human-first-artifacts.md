@@ -10,13 +10,18 @@ structured HTML comments to connect descriptive sections to stable identifiers.
 
 Do not add a separate summary or metadata file, another approval step, a traceability
 service, a new document hierarchy, a writing framework, or a readability score. This hidden
-marker enables the human-first checks:
+markers enable the human-first checks:
 
 ```markdown
+<!-- New specifications and designs -->
 <!-- sarathi:artifact-format version="2" -->
+
+<!-- New plans, including baseline-reuse classification -->
+<!-- sarathi:artifact-format version="3" -->
 ```
 
-Unmarked documents use the legacy checker rules and remain parseable. When an agent
+Existing version-2 plans remain valid without the newer baseline classification. Unmarked
+documents use the legacy checker rules and remain parseable. When an agent
 substantially revises one, it adds the marker and converts the document without changing the
 approved requirements merely for formatting. A checker cannot infer edit history from file
 contents, so creation and review instructions enforce that transition.
@@ -73,6 +78,11 @@ A plan starts with `## Implementation Approach`. It explains the delivered outco
 technical change, non-change boundary, sequence, safety constraints, and how success will be
 demonstrated. Descriptive implementation-item headings remain understandable without
 decoding milestone, work, PR, requirement, component, or test-obligation IDs.
+
+Follow with a short `## Baseline Reuse` section. Explain what already works in the current
+or sibling system, what is reusable now, what must be extracted, what remains target-owned,
+what is genuinely new, and what is deferred. Each delivery item has one compact `Work
+Classification:` line using the values defined in `docs/work-decomposition.md`.
 
 The final appendix keeps compact assignment tables. Refer to approved earlier documents and
 include only the IDs actually assigned to the change; do not copy a complete parent

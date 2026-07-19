@@ -105,19 +105,24 @@ def artifact_format(text: str) -> str:
     match = FORMAT_MARKER.search(strip_fenced_code(text))
     if not match:
         return "legacy"
+    version = match.group("version")
     return (
-        "human-first-v2"
-        if match.group("version") == "2"
-        else f"unsupported-v{match.group('version')}"
+        f"human-first-v{version}"
+        if version in {"2", "3"}
+        else f"unsupported-v{version}"
     )
 
 
-def human_first_issues(text: str, crux_heading: str | tuple[str, ...]) -> list[str]:
+def human_first_issues(
+    text: str,
+    crux_heading: str | tuple[str, ...],
+    supported_formats: tuple[str, ...] = ("human-first-v2",),
+) -> list[str]:
     """Check narrow versioned structure without attempting subjective prose scoring."""
     format_name = artifact_format(text)
     if format_name == "legacy":
         return []
-    if format_name != "human-first-v2":
+    if format_name not in supported_formats:
         return [f"unsupported_artifact_format:{format_name}"]
     visible = strip_fenced_code(text)
     headings = [

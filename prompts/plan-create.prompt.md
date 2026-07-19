@@ -12,13 +12,13 @@ a specific unanswered question prevents safe implementation.
 
 Read `.sdlc/wip.md`, accepted parent specs/designs/ADRs/prototypes, the existing plan, and
 repository delivery conventions. Load `docs/artifact-contracts.md` and
-`docs/simplicity-first.md`, plus `docs/human-first-artifacts.md`.
+`docs/simplicity-first.md`, `docs/human-first-artifacts.md`, and
+`docs/work-decomposition.md`.
 
 ## Triggered References
 
 Load only when the trigger applies:
 
-- `docs/work-decomposition.md`: splitting the work or adding another document is being considered;
 - `docs/feedback-and-learning.md`: UI review, feedback dependencies, or parallel work;
 - `docs/test-ownership.md`: inherited or cross-boundary test intent;
 - `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an identified risk needs an additional check;
@@ -48,11 +48,17 @@ implementation. If there is no concrete question, do not create the Breakdown pl
 
 ## Plan The Increment
 
-Start new or materially revised plans with the version marker and
+Start new or materially revised plans with `<!-- sarathi:artifact-format version="3" -->` and
 `## Implementation Approach`. Accept `## Implementation Crux` in existing documents.
 Explain the outcome, exact change/non-change boundary, sequence, safety, and proof without
 process IDs. Use descriptive delivery headings; keep allocations in comments and the final
 `## Traceability` appendix.
+
+Inspect the current system and sibling services before describing implementation. Add a
+short `## Baseline Reuse` section and classify every delivery item using the five compact
+choices in `docs/work-decomposition.md`. Say what works already, what can be reused, what
+must be extracted, what remains target-owned and why, what is genuinely new, and what is
+deferred. Do not present an existing capability as greenfield work.
 
 For an Implementation plan:
 
@@ -74,7 +80,8 @@ remain parseable, but do not add them to new plans.
 
 For a Breakdown plan, list only independently useful `WORK-*` outcomes, require only the
 minimum document for each, and use a work group only for a real shared feedback/integration
-checkpoint. A reviewer must reject decomposition that merely restates parent intent.
+checkpoint. Each item names its observable capability after the slice. A reviewer must
+reject decomposition that merely restates parent intent.
 
 Write `plan.md` unless another path is named. Do not create `plan.html`.
 

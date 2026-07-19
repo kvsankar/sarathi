@@ -90,3 +90,9 @@ HUMAN_FIRST_PLAN_SECTIONS = [
     "Implementation Approach",
     "Traceability",
 ]
+
+PRODUCT_FIRST_PLAN_SECTIONS = [
+    "Implementation Approach",
+    "Baseline Reuse",
+    "Traceability",
+]

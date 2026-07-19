@@ -332,7 +332,9 @@ Resolve any transitive prompts referenced as prompts/*.prompt.md from
 by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
 Keep required approvals, safety stops, declared file scope, test evidence, and independent
-review. Do not start later work when the prompt says to stop for the user.
+review. For status and handoff responses, follow ../sarathi/docs/work-in-progress.md and
+report engineering state before process state. Do not start later work when the prompt says
+to stop for the user.
 "@
         Set-AtomicUtf8File (Join-Path $stageDest "SKILL.md") $stageSkill
 

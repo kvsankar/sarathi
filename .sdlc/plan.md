@@ -1,88 +1,84 @@
-# Remove forced process language
+# Accurate checking and product-first status
 
-<!-- sarathi:artifact-format version="2" -->
+<!-- sarathi:artifact-format version="3" -->
 
 ## Implementation Approach
 
-Remove every rule, check, flag, approval, and test that forces projects to estimate or
-justify process overhead before ordinary implementation work can begin.
+Prepare Sarathi 0.3.2 as one compatible correction. Code checking must report environment-
+specific skips without failing solely on their presence, recognize real process IDs without
+matching ordinary test vocabulary, scan exact files or directories, and run with the macOS
+Python 3.9 checker environment. Status and planning must lead with engineering reality:
+what works, what is reusable, what remains shared or target-owned, what is deferred, what
+blocks coding, and the single next action.
 
-Three independent readers are auditing Sarathi's documentation, prompts, checks, and
-project-status page. Their findings will be applied in ordinary engineering language.
-Exact machine fields will remain only where existing project files still need them.
+Existing approvals, evidence rules, security review, migration review, implementation
+readiness, and legacy artifact parsing remain unchanged. No new artifact, gate, registry,
+history service, readability score, or source-code traceability mechanism is added.
 
-The result should let an engineer understand what to do without learning a Sarathi dialect.
+## Baseline Reuse
+
+Sarathi already has Markdown WIP files, plans, stage prompts, deterministic checkers, an HTML
+workflow renderer, installer-generated stage skills, and bundle-parity tests. Revise those
+paths directly. Reuse existing approval and assessment records as process evidence, but do
+not infer product completion from them. Existing format-2 and unmarked plans remain valid;
+only new or materially revised plans use the baseline-reuse contract.
 
 ## What Changes
 
-- Delete the complexity estimate, keyword detector, PR limit, and special approval.
-- Stop requiring forms that justify starting work or creating another document.
-- Replace `Crux` headings with `Overview` or `Approach`; continue reading the old headings.
-- Let new documents use the sections their subject needs instead of copying a fixed
-  template.
-- Remove subjective word checks that shape prose to satisfy the checker.
-- Show descriptive names before IDs on the project-status page.
-- Shorten prompts, reviews, handoffs, and installed stage instructions.
-- Report TODO and skipped-test markers without requiring a separate approval record.
+- WIP becomes a current product snapshot followed by process evidence, replacing stale
+  narrative instead of accumulating it.
+- Plans classify delivery items as direct reuse, extraction then reuse, target-owned work,
+  new behavior, or deferred cleanup.
+- Workflow status renders the engineering snapshot first and scope-qualifies assessed and
+  handed-off slices without promoting their parent feature to complete.
+- Code checking applies the four bounded 0.3.2 corrections described above.
+- Canonical prompts, docs, checkers, installer wrappers, bundled copies, regressions, and
+  release notes remain synchronized.
 
 ## What Does Not Change
 
-- Requirements and tests remain linked in the final Traceability section.
-- Existing documents and stored records remain readable.
-- Implementation still requires an approved plan and meaningful tests.
-- Independent checking and review remain separate.
-- Production deployment still requires explicit approval.
-- Tests against important external systems must still use the real system or its official
-  test interface when practical; otherwise the untested risk must be stated.
+- A product or feature is complete only when product evidence says so.
+- Required approvals and readiness checks still block implementation when applicable.
+- High-assurance work still adds evidence for its actual risks.
+- Production and test source remain free of Sarathi IDs used only for traceability.
+- Existing ledgers remain the historical record.
 
 ## Implementation Sequence
 
-1. Add regressions for simple documents, ordinary technical wording, old document
-   compatibility, and descriptive status labels.
-2. Delete the forced forms, their parsers, checker results, command options, and special
-   approvals.
-3. Apply the three language audits to the primary docs, prompts, installed instructions,
-   and generated status text.
-4. Copy canonical prompts, docs, and checks into the installable skill bundle.
-5. Run focused tests, the full suite, layout tests, pre-commit, and skill validation.
-6. Run a fresh check pass and a separate review; fix any remaining high-impact private
-   vocabulary or weakened safety rule.
+1. Add generalized status, planning, WIP, checker, and renderer regressions.
+2. Make the smallest canonical prompt, policy, checker, and renderer changes.
+3. Mirror canonical files into the installable skill and generated stage-skill behavior.
+4. Dogfood the status output against the authentication extraction case without placing
+   project-specific policy in Sarathi.
+5. Run focused tests, the full Python suite, browser layouts, formatting, skill validation,
+   package checks, and source and packaged installer dry-runs.
+6. Run separate verification and review passes and correct their findings.
 
 ## Verification
 
-The change passes when:
+The change passes when ordinary test data is not mistaken for process metadata; explicit
+lowercase or uppercase ID-shaped test names are still rejected; skip markers are reported
+without creating a false mechanical failure; exact scan inputs work; existing plan formats
+remain accepted; every new-format delivery classification belongs to a descriptive item;
+the workflow page never turns slice evidence into feature completion; generalized
+regressions pass; canonical and bundled bytes match; and all publication checks pass.
 
-- a design or plan can mention ordinary technical tools without requiring extra process
-  text;
-- a plan with more than three implementation steps needs no special exception;
-- old files containing removed sections are simply read and ignored;
-- new documents need only a clear opening explanation and final Traceability section;
-- primary user-facing instructions contain no unexplained Sarathi terms identified by the
-  audits;
-- canonical and bundled files are identical;
-- the complete Python, layout, pre-commit, and skill-validation commands pass.
+## Delivery
 
-If deleting a term would weaken a real approval, safety rule, test requirement, or legacy
-file contract, keep the behavior and rewrite only the explanation.
+### Correct checking and status reporting
+
+<!-- sarathi:delivery id="PR-SARATHI-STATUS" -->
+
+Work Classification: reuse directly
+Scope: Revise the existing checker, document, prompt, renderer, installer, and bundle paths.
+Verification: Run the complete validation sequence and independent check and review.
 
 ## Traceability
+
+| Delivery item | Machine ID | Evidence |
+| --- | --- | --- |
+| Correct checking and status reporting | PR-SARATHI-STATUS | focused regressions, full suite, dogfood output, independent assessment |
 
 Work Scope: Slice/change
 Ready To Implement: Yes
 Plan Type: Implementation
-
-| Delivery item | Outcome | Files expected to change | Proof |
-| --- | --- | --- | --- |
-| PR-PLAINLANGUAGE-CLEANUP | Direct instructions without forced complexity paperwork | Canonical docs, prompts, checks, status renderer, installer text, tests, bundle mirrors, release notes, and `.sdlc` records | Audit findings, focused regressions, full test suite, independent check and review |
-
-- PR-PLAINLANGUAGE-CLEANUP
-  Scope: remove the forced mechanisms and unnecessary private vocabulary.
-  Files Expected To Change: `docs/`, `prompts/`, `checkers/`, `tests/`, `scripts/`,
-  `skills/sarathi/`, `README.md`, `AGENTS.md`, `.sdlc/`, and `CHANGELOG.md`.
-  Focused Verification: simple current and legacy documents pass; removed flags, gates,
-  report fields, and approval names are absent; descriptive status names are visible;
-  canonical and bundled files match.
-  Pass/Fail Check: all focused and repository checks pass, and independent review finds no
-  remaining high-impact unexplained Sarathi vocabulary in the primary instructions.
-  Risk Evidence: legacy fixtures prove compatibility; approval and deployment tests prove
-  that required safety boundaries remain.

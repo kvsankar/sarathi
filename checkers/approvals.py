@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import re
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -153,7 +153,7 @@ def valid_utc_timestamp(value: Any) -> bool:
     if not isinstance(value, str) or not UTC_TS.fullmatch(value):
         return False
     try:
-        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     except ValueError:
         return False
     return True
@@ -204,9 +204,9 @@ def _policy_allows(
         issues.append("auto approval policy expires_at must be UTC ISO-8601")
     else:
         expiry = datetime.strptime(str(expires_at), "%Y-%m-%dT%H:%M:%SZ").replace(
-            tzinfo=UTC
+            tzinfo=timezone.utc
         )
-        if (now or datetime.now(UTC)) >= expiry:
+        if (now or datetime.now(timezone.utc)) >= expiry:
             issues.append("auto approval policy is expired")
     return issues
 

@@ -13,6 +13,29 @@ accepted behavior and architecture. Each completed UI slice still stops for stak
 review. Many screens, a large feature, High-assurance delivery, easier traceability, or the
 habit of creating child documents do not justify decomposition.
 
+## Classify existing and new work
+
+Before planning implementation, inspect the current system and relevant sibling services.
+Do not call a capability new merely because the target service does not contain it. Classify
+each substantial delivery item as exactly one of:
+
+- `reuse directly`: existing code or a contract can be consumed without extraction;
+- `extract then reuse`: working baseline behavior must first move behind a shared boundary;
+- `target-owned implementation`: the target needs its own adapter, persistence, API, or
+  domain behavior;
+- `new behavior`: the capability does not exist in the baseline or shared code; or
+- `deferred cleanup`: useful follow-up that does not block the stated goal.
+
+A new or materially revised plan starts with a short `## Baseline Reuse` section and gives
+each delivery item one `Work Classification:` line. Explain what exists today, what moves
+to shared code, what remains target-owned and why, what is newly written, and what is
+deferred. Use `none` where a category does not apply; a small change needs only a few
+sentences, not a matrix.
+
+For every Breakdown-plan slice, state the observable capability after that slice. Name
+delivery slices for the result and boundary: for example, `Reuse job status with target
+persistence`, not `Add job status` when another service already provides the behavior.
+
 ## Reasons To Split The Work
 
 Create a Breakdown plan or child document only when at least one concrete condition exists:
