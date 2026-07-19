@@ -22,7 +22,7 @@ requested validation and release as version 0.3.1.
 | Plan | `.sdlc/plan.md` | approved | Covers the process-language cleanup. |
 | Process cleanup | commit `7e03248` | assessed | Independent check and review passed. |
 | Installer change | commit `06f87ac` | merged | Quiet summaries and verbose output are covered by tests. |
-| Release | `CHANGELOG.md` | preparing | Version metadata, final checks, PR, merge, and tag remain. |
+| Release | `CHANGELOG.md` | approved | Version metadata and local release checks pass; push, PR, merge, and tag remain. |
 
 ## Decisions And Assumptions
 
@@ -38,7 +38,11 @@ requested validation and release as version 0.3.1.
 - Independent process check and focused re-review: Pass.
 - Installer branch reported cross-platform dry runs, focused tests, full suite, layout,
   pre-commit, and skill validation passing before merge.
-- Combined-tree release checks are pending.
+- Combined full suite: 134 tests passed.
+- Combined pre-commit and five browser layout checks passed.
+- Release metadata verification and skill validation passed.
+- The 0.3.1 wheel and source archive built and passed `twine check`.
+- Quiet, verbose, and packaged installer dry runs passed; PowerShell is unavailable on this host.
 
 ## Results And Feedback
 
@@ -50,7 +54,7 @@ Current Work Group: none
 Current Work: none
 Parallel Limit: 1
 What Changed: process paperwork and jargon were removed; installer output is quiet by default with verbose details on demand
-Documents To Update: version metadata and changelog for 0.3.1
+Documents To Update: none before publishing
 Stop Conditions: failing combined checks, unresolved merge conflicts, or failed release workflow
 
 ## Open Questions And Blockers

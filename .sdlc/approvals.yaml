@@ -20,3 +20,13 @@ approvals:
     status: approved
     approved_by: "User via explicit request to release 0.3.0"
     approved_at: "2026-07-19T06:35:01Z"
+  - id: APR-RELEASE-PLAINLANGUAGE-031
+    gate: release.approved
+    scope: slice/change
+    artifact:
+      kind: release
+      path: CHANGELOG.md
+      sha256: 0443011382cc328797c475521c8ea2cc944a26d37225fc89c6f91251616a2506
+    status: approved
+    approved_by: "User via explicit request to release 0.3.1"
+    approved_at: "2026-07-19T12:45:00Z"

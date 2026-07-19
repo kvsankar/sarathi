@@ -8,6 +8,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.3.1 - 2026-07-19
+
 ### Removed
 
 - Remove the required Complexity Budget, Ceremony Budget, Direct-To-Code form, special
