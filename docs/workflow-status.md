@@ -6,11 +6,14 @@ an approval record, completion percentage, or substitute for checks and review.
 
 ## What The View Shows
 
+- **Engineering snapshot first**: the goal, working and reusable capability, current
+  increment, remaining shared and target-owned work, deferred work, coding blockers, and
+  next action from `.sdlc/wip.md`. Every completion claim names its exact scope.
 - **Document tree trunk**: product spec, design, and plan presence, readiness, and whether
   each approval matches the current file.
-- **Executive summary**: the current allocation and product-to-child breadcrumb, current
-  stage, next gate, implementation evidence, and the most immediate document gap. This is
-  orientation, not a percentage-complete estimate.
+- **Process state second**: current document approvals, delivery evidence, and the most
+  immediate process gap. An approved plan with no implementation remains visibly
+  unimplemented in the engineering snapshot.
 - **Progressively disclosed workflow tree**: the product Spec/Design/Plan trunk remains
   visible, the current `WORK-` allocation opens by default, and other allocations stay
   collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
@@ -27,7 +30,7 @@ an approval record, completion percentage, or substitute for checks and review.
 - **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
   `WORK-AREA-NAME` remain visible in a repair warning but are excluded from valid
   allocation counts and workflow branches.
-- **Assessed learning evidence**: a completed branch can show the learning and next
+- **Assessed learning evidence**: an assessed branch can show the learning and next
   decisions recorded in a passing code assessment that matches the current plan.
 
 The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
@@ -53,16 +56,18 @@ dependency, cache, and VCS directories.
 | PRs planned | A child plan declares PR slices without linked executable tests. |
 | Tests linked | At least one child `PR-` has entries in the test-link file. |
 | Assessed | A `.sdlc/code-assessments.yaml` entry matching the current plan records `Pass` for the child plan and `WORK-*` item. |
-| Completed | A matching `code_slice.approved` record approves the child plan as a slice handoff. |
+| Slice handed off | A matching `code_slice.approved` record approves the child plan as a slice handoff. It does not complete its parent feature. |
+| Children assessed | Every discovered child slice is assessed or handed off; the parent feature has no inferred completion state. |
 | Not yet broken down | A parent `WORK-` item has no child implementation plan. |
-| Group completed | A checkpoint matches the current plan, group ID, and exact member list. |
+| Group closed | A checkpoint matches the current plan, group ID, and exact member list. |
 | Group in progress | The group is explicitly active or at least one member has implementation evidence. |
 | Group not started | No member has implementation evidence and the group is not active. |
 
 The visual status grammar is deliberately small: a green check means an approval matches
-the current file, a code assessment passed, or a code slice was approved; an amber dot means work
-or evidence is present but not complete; and a gray circle means not started. A branch with
-linked tests remains amber until a code assessment establishes a stronger state.
+the current file, a code assessment passed, a code slice was handed off, or a work-group
+review point was closed. It does not mean the enclosing feature is complete. An amber dot
+means work or evidence is present, and a gray circle means not started. A branch with linked
+tests remains amber until a code assessment establishes a stronger state.
 
 `WORK-*` is an exceptional Breakdown-plan assignment, not a document type. Follow
 [work-decomposition.md](work-decomposition.md). Missing child spec/design nodes are not
@@ -72,8 +77,23 @@ expected when a compact plan safely proceeds directly to code.
 verified. WIP statuses are shown only as project-authored claims. The renderer never infers
 completion from source-file counts or ordinary Git activity.
 
-Learning state follows the same evidence rule. The current loop comes only from these exact
-`.sdlc/wip.md` fields:
+Engineering state comes only from these exact `.sdlc/wip.md` fields. Missing fields display
+`Not recorded`; the renderer does not infer product state from approvals or Git:
+
+```text
+Goal: end capability and target system
+Working Today: capability and the system where it currently works
+Reusable Today: shared code usable without extraction
+Current Increment: exact bounded slice and state
+Remaining Shared Work: extraction or shared refactoring still required
+Target-Owned Work: target-specific implementation still required
+Deferred: non-blocking cleanup or migration
+Before Coding: exact blockers, or none
+Next Action: one executable action
+```
+
+Learning and process state follows the same evidence rule. The current loop comes only from
+these exact `.sdlc/wip.md` fields:
 
 ```text
 Expected Result: assumption, behavior, boundary, or risk under test
@@ -181,8 +201,9 @@ assessments:
 ```
 
 Only `Pass` is green. `Pass-with-fixes`, stale plan hashes, WIP prose, mapped tests, and Git
-or GitHub state do not imply assessment or completion. `Completed` additionally requires a
-hash-current `code_slice.approved` record whose artifact is the child implementation plan.
+or GitHub state do not imply assessment or completion. `Slice handed off` additionally
+requires a hash-current `code_slice.approved` record whose artifact is the child
+implementation plan; it does not complete its parent feature.
 Legacy passing assessment records without a `learning` mapping remain valid and display
 `Not recorded in assessment`; the renderer does not invent a story from unrelated state.
 

@@ -44,6 +44,7 @@ from markdown_structure import (  # noqa: E402
     definition_id,
     human_first_issues,
     primary_definition_ids,
+    strip_fenced_code,
 )
 from schemas import (  # noqa: E402
     HUMAN_FIRST_PLAN_SECTIONS,
@@ -51,6 +52,7 @@ from schemas import (  # noqa: E402
     PLAN_ID_BY_KIND,
     PLAN_ID_CANDIDATE,
     PLAN_SECTIONS,
+    PRODUCT_FIRST_PLAN_SECTIONS,
     SLUG_TOKEN,
 )
 from waves import parse_learning_waves  # noqa: E402
@@ -129,6 +131,16 @@ LEAN_CHANGE_FIELDS = (
 INHERITED_INTENT_FIELDS = (
     "Why Direct",
     "Acceptance & Verification",
+)
+WORK_CLASSIFICATIONS = {
+    "reuse directly",
+    "extract then reuse",
+    "target-owned implementation",
+    "new behavior",
+    "deferred cleanup",
+}
+WORK_CLASSIFICATION = re.compile(
+    r"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?Work Classification(?:\*\*)?\s*:\s*(.+?)\s*$"
 )
 
 
@@ -266,6 +278,31 @@ def inherited_intent_record_issues(text: str, implementation_plan: bool) -> list
     return issues
 
 
+def work_classification_issues(blocks: dict[str, str]) -> dict[str, dict]:
+    """Return missing, repeated, or unsupported per-delivery classifications."""
+    issues: dict[str, dict] = {}
+    for identifier, block in blocks.items():
+        if block.lstrip().startswith("|"):
+            issues[identifier] = {
+                "reason": "descriptive_delivery_block_required",
+                "values": [],
+            }
+            continue
+        values = [match.strip() for match in WORK_CLASSIFICATION.findall(block)]
+        normalized = [value.casefold() for value in values]
+        if len(values) != 1:
+            issues[identifier] = {
+                "reason": "exactly_one_classification_required",
+                "values": values,
+            }
+        elif normalized[0] not in WORK_CLASSIFICATIONS:
+            issues[identifier] = {
+                "reason": "unsupported_classification",
+                "values": values,
+            }
+    return issues
+
+
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     as_json = "--json" in sys.argv
@@ -309,7 +346,11 @@ def main() -> int:
     path = Path(args[0] if args else "plan.md")
     text = path.read_text(encoding="utf-8")
     format_name = artifact_format(text)
-    format_issues = human_first_issues(text, "Implementation Approach")
+    format_issues = human_first_issues(
+        text,
+        "Implementation Approach",
+        ("human-first-v2", "human-first-v3"),
+    )
     cited = {
         "fr": {m.group(0) for m in FR.finditer(text)},
         "uc": {m.group(0) for m in UC.finditer(text)},
@@ -363,6 +404,17 @@ def main() -> int:
         for identifier, block in work_blocks.items()
         if missing_work_allocation_fields(block)
     }
+    classification_issues = work_classification_issues({**work_blocks, **pr_blocks})
+    classification_values = [
+        value.strip() for value in WORK_CLASSIFICATION.findall(strip_fenced_code(text))
+    ]
+    expected_classifications = len(defined["WORK"] | defined["PR"])
+    classification_count_valid = len(
+        classification_values
+    ) == expected_classifications and all(
+        value.casefold() in WORK_CLASSIFICATIONS for value in classification_values
+    )
+    baseline_reuse_present = bool(section_text(text, "Baseline Reuse").strip())
     plan_type_match = re.search(r"(?mi)^Plan Type:\s*(.+?)\s*$", text)
     breakdown_plan = bool(
         plan_type_match and plan_type_match.group(1).strip().casefold() == "breakdown"
@@ -541,12 +593,22 @@ def main() -> int:
         "no_forward_deps": not fwd,
         "required_approvals_present": approval_gate_passed(approval_requirements),
         "human_first_structure": not format_issues,
+        "baseline_reuse_classified": (
+            format_name != "human-first-v3"
+            or (
+                baseline_reuse_present
+                and classification_count_valid
+                and not classification_issues
+            )
+        ),
     }
     if not require_approvals:
         gates.pop("required_approvals_present")
     if not feature:
         required_sections = (
-            HUMAN_FIRST_PLAN_SECTIONS
+            PRODUCT_FIRST_PLAN_SECTIONS
+            if format_name == "human-first-v3"
+            else HUMAN_FIRST_PLAN_SECTIONS
             if format_name == "human-first-v2"
             else PLAN_SECTIONS
         )
@@ -575,6 +637,13 @@ def main() -> int:
         "unknown_inherited_refs": unknown_inherited,
         "work_items": sorted(work_blocks),
         "incomplete_work_allocations": incomplete_work_allocations,
+        "baseline_reuse": {
+            "section_present": baseline_reuse_present,
+            "allowed_classifications": sorted(WORK_CLASSIFICATIONS),
+            "classifications": classification_values,
+            "expected_count": expected_classifications,
+            "issues": classification_issues,
+        },
         "learning_waves": wave_result["waves"],
         "learning_wave_issues": {
             key: wave_result[key]
@@ -650,6 +719,9 @@ def main() -> int:
             "required_approvals_present": "Required approvals are current",
             "human_first_structure": (
                 "Plain-language opening and traceability are present"
+            ),
+            "baseline_reuse_classified": (
+                "Existing, shared, target-owned, new, and deferred work is classified"
             ),
             "sections_present": "Required sections are present",
         }

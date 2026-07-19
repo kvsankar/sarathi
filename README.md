@@ -218,6 +218,9 @@ python checkers/render_workflow_status.py . --output docs/sdlc-status.html
 
 See [docs/workflow-status.md](docs/workflow-status.md) for discovery rules, evidence
 semantics, deterministic output, guide publication, and CI freshness checks.
+The page leads with engineering state—what works, what is reusable, what remains shared or
+target-owned, what is deferred, coding blockers, and one next action—before showing document,
+approval, and review state. Completion claims always name their exact scope.
 
 Exact invocation syntax depends on the host tool:
 
@@ -406,6 +409,10 @@ documents remain parseable until materially revised. Production and test source 
 of Sarathi IDs added merely for traceability. See
 [Human-first documents](docs/human-first-artifacts.md).
 
+Plans also inspect the existing system and sibling services before describing work. Each
+delivery item says whether it reuses existing code, extracts then reuses it, remains
+target-owned, adds genuinely new behavior, or defers non-blocking cleanup.
+
 ## Required Reviews And YOLO Mode
 
 By default, important transitions require human review:
@@ -536,9 +543,10 @@ review the resulting evidence; neither a percentage nor a mapping proves meaning
 Reviewability is judged by cohesive purpose, conceptual complexity, touch scope, evidence,
 and rollback. Sarathi does not impose source-file, module, diff, or PR line-count targets.
 TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not
-add SDLC-specific annotations to app code. TODO/FIXME/XXX entries are warnings. Skipped and
-expected-failure tests fail the code check until they run normally; Sarathi does not require
-a separate marker approval.
+add SDLC-specific annotations to app code. These markers are review warnings rather than
+automatic failures. Review treats unexplained skips and expected failures as evidence gaps,
+while an environment-specific skip may be supported by an explicit passing command or CI
+job for that boundary.
 
 The checkers do not prove that the work is correct. Assessment commands pair check results
 with independent review of requirements, design, plan quality, test implementation quality,

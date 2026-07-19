@@ -32,12 +32,16 @@ Use `--check` when the user asks for freshness verification or CI integration.
 Report:
 
 - generated status and process-guide paths;
-- the concise progress summary shown by the page;
+- the concise engineering snapshot shown first by the page: goal, working and reusable
+  capability, remaining shared and target-owned work, deferred work, coding blockers, and
+  next action;
+- process and approval state only after that product snapshot;
 - any error, stale source, or missing input that prevents the page from being current or
   trustworthy;
 - the workflow tree as the place to inspect a selected feature, change, work group, or PR.
 
-Do not restate hidden details in the command response. Do not report internal records or
+Scope-qualify every use of `complete`; a completed prerequisite or slice is not a completed
+feature. Do not restate hidden details in the command response. Do not report internal records or
 exhaustive work and PR counts unless they are the specific problem being reported. The page
 must not infer completion,
 quality, or stakeholder feedback from Git, approvals, tests, or missing records.

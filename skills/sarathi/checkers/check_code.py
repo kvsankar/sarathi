@@ -2,9 +2,9 @@
 """Run a planned verification command and surface explicit code blockers.
 
 This checker records whether the supplied command passed. It can also require
-hash-current approvals, surface TODO/FIXME/skip-style markers, and reject Sarathi
-process IDs embedded in the supplied source/test trees. Explicit generated external
-traceability paths may be excluded with repeated
+hash-current approvals, report TODO/FIXME/skip-style markers for review, and reject
+Sarathi process IDs embedded in the supplied source/test files or trees. Explicit
+generated external traceability paths may be excluded with repeated
 ``--generated-traceability-path`` flags. It does not infer test quality from coverage or
 Git history.
 """
@@ -50,17 +50,18 @@ UI_INTENT_ARTIFACT = re.compile(
     r"^\s*(?:UI Mock|Approved Prototype) Artifact\s*:\s*(\S+)\s*$", re.I | re.M
 )
 PROCESS_ID = re.compile(
-    r"(?<![A-Za-z0-9])(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
-    r"-[A-Za-z][A-Za-z0-9]*-[A-Za-z][A-Za-z0-9]*|"
-    r"(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Za-z][A-Za-z0-9]*|"
-    r"(?:UN|FEAT|UC|FR|NFR|AT|JT|MILE|WORK|PR|WAVE)"
-    r"_[A-Za-z][A-Za-z0-9]*_[A-Za-z][A-Za-z0-9]*|"
-    r"(?:LAYER|COMP|IFACE|DEC|RISK)_[A-Za-z][A-Za-z0-9]*)",
-    re.I,
+    r"(?<![A-Za-z0-9_-])(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
+    r"-[A-Z][A-Z0-9]*-[A-Z][A-Z0-9]*|"
+    r"(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Z][A-Z0-9]*|"
+    r"(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
+    r"_[A-Z][A-Z0-9]*_[A-Z][A-Z0-9]*|"
+    r"(?:LAYER|COMP|IFACE|DEC|RISK)_[A-Z][A-Z0-9]*)(?![A-Za-z0-9_-])"
 )
 TEST_OBLIGATION_NAME = re.compile(
-    r"\btest_(?P<identifier>test_[A-Za-z][A-Za-z0-9]*_[A-Za-z][A-Za-z0-9]*)",
-    re.I,
+    r"\btest_(?P<identifier>(?:"
+    r"(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
+    r"_[A-Z][A-Z0-9]*_[A-Z][A-Z0-9]*|"
+    r"(?:LAYER|COMP|IFACE|DEC|RISK)_[A-Z][A-Z0-9]*))"
 )
 
 
@@ -102,6 +103,45 @@ def source_files(root: Path, suffixes: set[str]):
             yield path
 
 
+def scan_inputs(
+    inputs: list[Path],
+    suffixes: set[str],
+    root: Path,
+    *,
+    report_missing: bool = True,
+) -> tuple[list[Path], list[dict]]:
+    """Resolve explicit files and recursive directories without hiding bad inputs."""
+    files: set[Path] = set()
+    issues: list[dict] = []
+    for supplied in inputs:
+        if not supplied.exists():
+            if report_missing:
+                issues.append(
+                    {"path": rel_path(supplied, root), "reason": "does not exist"}
+                )
+        elif supplied.is_file():
+            if supplied.suffix not in suffixes:
+                extension = supplied.suffix or "<none>"
+                issues.append(
+                    {
+                        "path": rel_path(supplied, root),
+                        "reason": f"unsupported source extension {extension}",
+                    }
+                )
+            else:
+                files.add(supplied)
+        elif supplied.is_dir():
+            files.update(source_files(supplied, suffixes))
+        else:
+            issues.append(
+                {
+                    "path": rel_path(supplied, root),
+                    "reason": "is not a regular file or directory",
+                }
+            )
+    return sorted(files), issues
+
+
 def marker_hits(files: list[Path], root: Path) -> list[dict]:
     hits: list[dict] = []
     for path in files:
@@ -120,9 +160,21 @@ def marker_hits(files: list[Path], root: Path) -> list[dict]:
     return hits
 
 
-def process_id_hits(files: list[Path], root: Path) -> list[dict]:
+def process_id_hits(
+    files: list[Path], root: Path, declared_ids: set[str] | None = None
+) -> list[dict]:
     """Inventory process IDs embedded in production or test source."""
     hits: list[dict] = []
+    declared_test_names = [
+        (
+            identifier,
+            re.compile(
+                rf"\btest_{re.escape(identifier.lower().replace('-', '_'))}(?=_|\W|$)",
+                re.I,
+            ),
+        )
+        for identifier in sorted(declared_ids or set())
+    ]
     for path in files:
         text = path.read_text(encoding="utf-8", errors="ignore")
         for line_no, line in enumerate(text.splitlines(), 1):
@@ -133,7 +185,12 @@ def process_id_hits(files: list[Path], root: Path) -> list[dict]:
                 (match.group("identifier"), match.start("identifier"))
                 for match in TEST_OBLIGATION_NAME.finditer(line)
             )
-            for identifier, _ in sorted(matches, key=lambda item: item[1]):
+            matches.extend(
+                (identifier, match.start() + len("test_"))
+                for identifier, pattern in declared_test_names
+                if (match := pattern.search(line))
+            )
+            for identifier, _ in sorted(set(matches), key=lambda item: item[1]):
                 hits.append(
                     {
                         "path": rel_path(path, root),
@@ -173,8 +230,10 @@ def main() -> int:
     as_json = "--json" in sys.argv
     plan = Path(arg("--plan", "plan.md") or "plan.md")
     design = Path(arg("--design", "design.md") or "design.md")
-    tests_dir = Path(arg("--tests-dir", "tests") or "tests")
-    src = Path(arg("--src", ".") or ".")
+    test_input_values = args("--tests-dir")
+    source_input_values = args("--src")
+    test_inputs = [Path(value) for value in test_input_values] or [Path("tests")]
+    source_inputs = [Path(value) for value in source_input_values] or [Path(".")]
     src_ext = {
         extension.strip()
         for extension in (
@@ -194,8 +253,16 @@ def main() -> int:
     gates_path = arg("--gates-policy", ".sdlc/gates.yaml") or ".sdlc/gates.yaml"
     command, use_shell = test_command()
 
-    test_files = list(source_files(tests_dir, src_ext)) if tests_dir.exists() else []
-    source_file_list = list(source_files(src, src_ext))
+    test_files, test_input_issues = scan_inputs(
+        test_inputs,
+        src_ext,
+        Path.cwd(),
+        report_missing=bool(test_input_values),
+    )
+    source_file_list, source_input_issues = scan_inputs(
+        source_inputs, src_ext, Path.cwd()
+    )
+    scan_input_issues = test_input_issues + source_input_issues
     generated_traceability_paths = [
         Path(value).resolve() for value in args("--generated-traceability-path")
     ]
@@ -217,7 +284,16 @@ def main() -> int:
         sorted(path for path in test_files if not is_generated_traceability(path)),
         Path.cwd(),
     )
-    source_process_ids = process_id_hits(scanned_files, Path.cwd())
+    test_skip_markers = [
+        hit for hit in test_markers if hit["marker"] in {"SKIP", "SKIPIF", "XFAIL"}
+    ]
+    plan_text = plan.read_text(encoding="utf-8") if plan.exists() else ""
+    design_text = design.read_text(encoding="utf-8") if design.exists() else ""
+    declared_ids = {
+        match.group(0).replace("_", "-").upper()
+        for match in PROCESS_ID.finditer(plan_text + "\n" + design_text)
+    }
+    source_process_ids = process_id_hits(scanned_files, Path.cwd(), declared_ids)
 
     tests_pass: bool | None = None
     tests_exit: int | None = None
@@ -228,7 +304,6 @@ def main() -> int:
         tests_exit = result.returncode
         tests_pass = result.returncode == 0
 
-    plan_text = plan.read_text(encoding="utf-8") if plan.exists() else ""
     approval_requirements: list[dict] = []
     approval_context: dict = {}
     if require_approvals:
@@ -237,7 +312,6 @@ def main() -> int:
         approval_requirements.append(
             approval_requirement(approval_context, Path.cwd(), "plan.approved", plan)
         )
-        design_text = design.read_text(encoding="utf-8") if design.exists() else ""
         mock_match = UI_INTENT_ARTIFACT.search(design_text + "\n" + plan_text)
         if (UI_WORK.search(plan_text) or MOCK_DEP.search(plan_text)) and mock_match:
             approval_requirements.append(
@@ -267,9 +341,7 @@ def main() -> int:
     gates = {
         "verification_command_passed": tests_pass is True,
         "source_process_ids_absent": not source_process_ids,
-        "skipped_tests_absent": not any(
-            hit["marker"] in {"SKIP", "SKIPIF", "XFAIL"} for hit in test_markers
-        ),
+        "scan_inputs_valid": not scan_input_issues,
     }
     if require_approvals:
         gates["required_approvals_present"] = approval_gate_passed(
@@ -292,6 +364,8 @@ def main() -> int:
         },
         "code_markers": code_markers,
         "marker_hits": len(code_markers),
+        "test_skip_markers": test_skip_markers,
+        "scan_input_issues": scan_input_issues,
         "process_id_hits": source_process_ids,
         "generated_traceability_paths": [
             rel_path(path, Path.cwd()) for path in generated_traceability_paths
@@ -308,7 +382,7 @@ def main() -> int:
             "source_process_ids_absent": (
                 "Source and tests contain no process identifiers"
             ),
-            "skipped_tests_absent": "Tests contain no skip or expected-failure markers",
+            "scan_inputs_valid": "Source and test inputs are valid",
             "required_approvals_present": "Required approvals are current",
         }
         for key, value in gates.items():
@@ -324,6 +398,14 @@ def main() -> int:
                 f"WARN  {len(todo_markers)} TODO, FIXME, or XXX marker"
                 f"{'s' if len(todo_markers) != 1 else ''} found; review before release"
             )
+        if test_skip_markers:
+            print(
+                f"WARN  {len(test_skip_markers)} skip or expected-failure marker"
+                f"{'s' if len(test_skip_markers) != 1 else ''} found; review the "
+                "available execution evidence"
+            )
+        for issue in scan_input_issues:
+            print(f"ERROR {issue['path']}: {issue['reason']}")
         command_text = report["verification_command"] or "not provided"
         print(f"\nVerification command: {command_text}")
         print(f"{report['passed']}/{report['total']} checks passed")

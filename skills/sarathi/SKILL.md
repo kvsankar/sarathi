@@ -45,6 +45,19 @@ with the smallest direct implementation, reuse tests from the existing system, a
 general solutions until a current need justifies them. If the solution is more complicated
 than the problem requires, simplify it. Do not use LOC or PR-count targets.
 
+## Report product state first
+
+For status, resume, handoff, remaining-work, readiness, and next-action questions, start
+with the product snapshot in `docs/work-in-progress.md`: goal, working capability and
+location, reusable capability, current increment, remaining shared work, target-owned work,
+deferred work, blockers before coding, and one next action. Check those claims against code
+and source documents. Put stages, approvals, IDs, hashes, and checker counts afterward.
+
+Never use `complete` without its exact scope. State prerequisite, slice, feature, and full
+product status separately when they differ. A completed prerequisite unlocks named work; it
+does not complete the feature. Use ordinary technical names unless traceability detail was
+requested.
+
 ## Route The Request
 
 Command verbs are distinct:
@@ -148,7 +161,7 @@ separate. Stop when an earlier required document is not fit. Use
 | `docs/assurance-profiles.md` | Choosing review depth or additional checks. |
 | `docs/simplicity-first.md` | Checking that a solution or PR breakdown is no larger than needed. |
 | `docs/project-entry.md` | Starting in a new or existing codebase. |
-| `docs/work-in-progress.md` | Starting, resuming, blocking, or handing off. |
+| `docs/work-in-progress.md` | Starting, resuming, blocking, handing off, or answering status and next-action questions. |
 | `docs/artifact-formatting.md` | Writing or materially revising Markdown documents. |
 | `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; checking readability or source-ID cleanliness. |
 | `docs/cross-cutting-concerns.md` | Choosing checks for security, privacy, reliability, or other identified risks. |

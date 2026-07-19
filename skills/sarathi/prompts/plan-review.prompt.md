@@ -9,7 +9,7 @@ Review the target plan without editing it unless asked. Read earlier required do
 `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
 `docs/feedback-and-learning.md`, plus `docs/human-first-artifacts.md` and its five
-first-page comprehension questions. Load `docs/work-decomposition.md` and
+first-page comprehension questions, plus `docs/work-decomposition.md`. Load
 `docs/test-ownership.md` when applicable. Stop as `Blocked-upstream` when spec/design is
 unfit.
 
@@ -26,6 +26,12 @@ change, non-changes, sequence, safety constraints, files likely to change, and p
 success without decoding IDs. Delivery items should be cohesive, testable, and safe to
 undo. Splits and parallel work must have a real dependency or feedback reason. The plan
 must reuse existing checks and be no more complicated than the requested change.
+
+Check the baseline before accepting claims of new implementation. Every substantial item
+must say whether it reuses, extracts, stays target-owned, adds new behavior, or defers
+cleanup. Reject plans that hide existing capability, omit the shared-versus-target boundary,
+or call a prerequisite a completed feature. Breakdown items must state the observable
+capability they leave working.
 
 Start with simplification. Identify PRs/work items, unnecessary machinery, tests, generated files,
 or handoffs that can be deleted, deferred, collapsed, or proven by existing evidence.

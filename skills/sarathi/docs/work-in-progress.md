@@ -36,12 +36,51 @@ Create `.sdlc/wip.md` when SDLC work starts in a project and no WIP file exists.
 Do not store secrets, credentials, private tokens, raw sensitive data, or long command logs.
 Summarize evidence and link to document paths instead.
 
+Replace stale narrative instead of appending a running history. Remove superseded or
+contradictory claims and link to approvals, assessments, and reviews rather than retelling
+them. A completed prerequisite must never be described as a completed feature. Every use of
+`complete` names the exact product, feature, service, or slice that is complete.
+
+## Product-first status
+
+For status, resume, handoff, remaining-work, readiness, and next-action requests, report
+engineering reality before process state. A reader should see, in order:
+
+- the end goal;
+- what works today and where;
+- what is reusable today;
+- the current increment;
+- shared work that remains;
+- target-owned implementation that remains;
+- deferred work that does not block the goal;
+- exact blockers before coding; and
+- one next executable action.
+
+Use ordinary technical names. Put document state, approvals, IDs, hashes, and checker
+counts afterward as supporting evidence. If `complete` could mean either a prerequisite or
+the broader feature, state both scopes explicitly.
+
 ## Required Shape
 
-Use this section order:
+New files use this section order. Older WIP files remain readable and should be converted
+when they are materially updated:
 
 ```markdown
 # SDLC Work In Progress
+
+## Product Snapshot
+
+Goal: end capability and target system
+Working Today: capability and the system where it currently works
+Reusable Today: shared code or contracts usable without further extraction
+Current Increment: exact bounded slice and its state
+Remaining Shared Work: extraction or shared refactoring still required
+Target-Owned Work: target-specific adapters, persistence, APIs, or domain behavior
+Deferred: non-blocking cleanup or migration
+Before Coding: exact unresolved decisions, approvals, reviews, or merges; `none` when clear
+Next Action: one executable action
+
+## Process Snapshot
 
 Last Updated: 2026-07-03T00:00:00Z
 Updated By: agent
@@ -52,10 +91,6 @@ Work Scope: product/system | feature/component | slice/change | unknown
 Ready To Implement: Yes | No | unknown
 Review Level: Lean | Standard | High-assurance | Exploratory | unknown
 Extra Checks: comma-separated checks or none
-
-## Resume Summary
-
-One short paragraph describing what a fresh context must know first.
 
 ## Current Artifacts
 
@@ -90,10 +125,6 @@ Stop Conditions: conditions that pause or cancel active parallel work
 
 - Question or blocker, owner, and why it matters.
 
-## Next Recommended Action
-
-Run `/design-create` after the user approves `spec.md`.
-
 ## Bootstrap Status
 
 Bootstrap File: AGENTS.md | CLAUDE.md | .github/copilot-instructions.md | none
@@ -101,8 +132,9 @@ Status: not-offered | offered | accepted | injected | declined | deferred
 Notes: ...
 ```
 
-Add compact subsections only when they improve resumability. Keep the file short enough for
-a fresh context to read quickly; prefer links to documents over copied content.
+Add compact subsections only when they improve resumability. Keep the product snapshot short
+enough to read in two minutes and the whole file short enough for a fresh context; prefer
+links to documents over copied content.
 
 The renderer also accepts the field names used by older WIP files. New files use the plain
 labels above.
@@ -112,15 +144,15 @@ labels above.
 A fresh agent context should:
 
 1. Read the repository bootstrap file, if present.
-2. Read `.sdlc/wip.md`.
+2. Read the product snapshot in `.sdlc/wip.md`, then its process evidence.
 3. Read `.sdlc/process-decisions.yaml`, `.sdlc/approvals.yaml`,
    `.sdlc/code-assessments.yaml`, and `.sdlc/wave-checkpoints.yaml` when present.
 4. Load the selected stage prompt and triggered docs using `docs/progressive-disclosure.md`.
 5. Re-open the source document paths named in WIP before editing or judging them.
 6. Check feedback status, active learning dependencies, and parent-document outcomes before
    starting another slice.
-7. Continue from `Next Recommended Action`, unless the user's latest instruction changes
-   the stage or scope.
+7. Continue from `Next Action`, unless the user's latest instruction changes the stage or
+   scope.
 
 If WIP is missing in a project that is already using the process, reconstruct the smallest
 accurate WIP from existing documents and ask the user to confirm when the reconstruction

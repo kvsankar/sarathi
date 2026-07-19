@@ -213,13 +213,19 @@ Exact identity binding and an atomic transaction mitigate the risk.
 
 def human_first_plan() -> str:
     return """# Authentication compatibility increment
-<!-- sarathi:artifact-format version="2" -->
+<!-- sarathi:artifact-format version="3" -->
 
 ## Implementation Approach
 
 Route BPTrial password operations through the compatibility adapter, keeping its schema
 and public API unchanged. Add the consumer identity persistence model separately. Verify
 current BPTrial behavior and atomic reset behavior using behavioral test names.
+
+## Baseline Reuse
+
+The established service already provides password behavior. This slice reuses the shared
+contract and adds only the established service's compatibility routing. Target persistence
+is separate work; no new authentication behavior or deferred cleanup is included.
 
 ## Overview
 
@@ -249,6 +255,7 @@ Deliver the compatibility boundary.
 ### Route password operations through the adapter
 <!-- sarathi:delivery id="PR-AUTH-COMPAT" -->
 
+Work Classification: target-owned implementation
 Scope: Add the adapter routing without schema or API changes.
 Planned Touch Set: authentication adapter and focused tests.
 Verification: behavioral compatibility and reset-replay tests pass.
@@ -273,13 +280,18 @@ routing if existing behavior changes.
 def small_change_plan() -> str:
     return """# Reject a replayed reset token
 
-<!-- sarathi:artifact-format version="2" -->
+<!-- sarathi:artifact-format version="3" -->
 
 ## Implementation Approach
 
 Reject a second use of a consumed password-reset token. Keep token issuance, password
 policy, persistence schema, and public responses unchanged. Add one behavioral regression
 test and pass the existing reset suite.
+
+## Baseline Reuse
+
+Replay handling already exists in the current reset path. Change that path directly; no
+shared extraction, target-owned integration, or deferred cleanup is needed.
 
 ## Overview
 
@@ -288,13 +300,6 @@ Plan Type: Implementation
 Implementation Readiness: Code-ready
 Delivery Profile: Lean
 Assurance Modules: Security
-
-## Direct-To-Code Decision
-
-- Inherited Sources: accepted reset behavior and current token design.
-- Reviewable Increment: reject token replay.
-- Unresolved Blocker: none.
-- Smallest Additional Artifact: none.
 
 ## Strategy
 
@@ -309,6 +314,7 @@ Deliver replay protection.
 ### Reject a consumed token
 <!-- sarathi:delivery id="PR-RESET-REPLAY" -->
 
+Work Classification: reuse directly
 Scope: Reject a second redemption without changing other reset behavior.
 Verification: the behavioral replay test and existing reset suite pass.
 
@@ -459,6 +465,74 @@ def test_full_human_first_artifacts_use_the_new_section_contract(
     assert plan_report["gates"]["sections_present"] is True
 
 
+def test_human_first_plan_requires_baseline_reuse_and_one_classification_per_item(
+    tmp_path, monkeypatch, capsys
+):
+    path = tmp_path / "plan.md"
+    path.write_text(
+        human_first_plan()
+        .replace("## Baseline Reuse", "## Existing Context")
+        .replace("Work Classification: target-owned implementation\n", ""),
+        encoding="utf-8",
+    )
+
+    rc, report = run_checker(
+        load_checker("check_plan"),
+        [str(path), "--feature"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["baseline_reuse_classified"] is False
+    assert report["baseline_reuse"] == {
+        "section_present": False,
+        "allowed_classifications": [
+            "deferred cleanup",
+            "extract then reuse",
+            "new behavior",
+            "reuse directly",
+            "target-owned implementation",
+        ],
+        "classifications": [],
+        "expected_count": 1,
+        "issues": {
+            "PR-AUTH-COMPAT": {
+                "reason": "exactly_one_classification_required",
+                "values": [],
+            }
+        },
+    }
+
+
+def test_human_first_plan_rejects_an_unsupported_work_classification(
+    tmp_path, monkeypatch, capsys
+):
+    path = tmp_path / "plan.md"
+    path.write_text(
+        human_first_plan().replace(
+            "Work Classification: target-owned implementation",
+            "Work Classification: build the whole capability",
+        ),
+        encoding="utf-8",
+    )
+
+    rc, report = run_checker(
+        load_checker("check_plan"),
+        [str(path), "--feature"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["gates"]["baseline_reuse_classified"] is False
+    assert report["baseline_reuse"]["issues"]["PR-AUTH-COMPAT"]["reason"] == (
+        "unsupported_classification"
+    )
+
+
 def test_new_format_rejects_machine_only_visible_headings(
     tmp_path, monkeypatch, capsys
 ):
@@ -484,11 +558,12 @@ def test_new_format_rejects_machine_only_visible_headings(
     assert "machine_only_heading:PR-AUTH-COMPAT" in report["human_first_issues"]
 
 
-def test_traceability_table_can_define_a_delivery_id_without_visible_id(
+def test_version_two_traceability_table_can_define_a_delivery_id_without_visible_id(
     tmp_path, monkeypatch, capsys
 ):
     text = (
         human_first_plan()
+        .replace('version="3"', 'version="2"')
         .replace('<!-- sarathi:delivery id="PR-AUTH-COMPAT" -->\n', "")
         .replace(
             "| Human delivery item | Machine ID | Evidence |\n"
@@ -508,6 +583,55 @@ def test_traceability_table_can_define_a_delivery_id_without_visible_id(
 
     assert rc == 0
     assert report["counts"]["PR"] == 1
+
+
+def test_version_three_requires_a_descriptive_block_for_each_delivery_id(
+    tmp_path, monkeypatch, capsys
+):
+    text = (
+        human_first_plan()
+        .replace('<!-- sarathi:delivery id="PR-AUTH-COMPAT" -->\n', "")
+        .replace(
+            "| Route password operations through the adapter | PR-AUTH-COMPAT | compatibility tests |",
+            "| PR-AUTH-COMPAT | Route password operations through the adapter | compatibility tests |",
+        )
+    )
+    path = tmp_path / "plan.md"
+    path.write_text(text, encoding="utf-8")
+
+    rc, report = run_checker(
+        load_checker("check_plan"), [str(path)], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["baseline_reuse_classified"] is False
+    assert report["baseline_reuse"]["issues"]["PR-AUTH-COMPAT"]["reason"] == (
+        "descriptive_delivery_block_required"
+    )
+
+
+def test_version_three_rejects_a_stray_global_classification(
+    tmp_path, monkeypatch, capsys
+):
+    text = human_first_plan().replace(
+        "Work Classification: target-owned implementation\n", ""
+    )
+    text = text.replace(
+        "## Traceability\n",
+        "Work Classification: target-owned implementation\n\n## Traceability\n",
+    )
+    path = tmp_path / "plan.md"
+    path.write_text(text, encoding="utf-8")
+
+    rc, report = run_checker(
+        load_checker("check_plan"), [str(path)], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 1
+    assert report["gates"]["baseline_reuse_classified"] is False
+    assert report["baseline_reuse"]["issues"]["PR-AUTH-COMPAT"]["reason"] == (
+        "exactly_one_classification_required"
+    )
 
 
 def test_unversioned_legacy_artifact_remains_accepted(tmp_path, monkeypatch, capsys):
@@ -557,12 +681,37 @@ PR-AUTH-COMPAT has no dependency.
     assert report["gates"]["human_first_structure"] is True
 
 
+def test_version_two_plan_remains_accepted_without_baseline_classification(
+    tmp_path, monkeypatch, capsys
+):
+    text = human_first_plan().replace('version="3"', 'version="2"')
+    baseline_start = text.index("## Baseline Reuse")
+    overview_start = text.index("## Overview")
+    text = (text[:baseline_start] + text[overview_start:]).replace(
+        "Work Classification: target-owned implementation\n", ""
+    )
+    path = tmp_path / "plan.md"
+    path.write_text(text, encoding="utf-8")
+
+    rc, report = run_checker(
+        load_checker("check_plan"),
+        [str(path), "--feature"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 0
+    assert report["artifact_format"] == "human-first-v2"
+    assert report["gates"]["baseline_reuse_classified"] is True
+
+
 def test_unknown_format_version_does_not_fall_back_to_legacy(
     tmp_path, monkeypatch, capsys
 ):
     path = tmp_path / "plan.md"
     path.write_text(
-        human_first_plan().replace('version="2"', 'version="3"'), encoding="utf-8"
+        human_first_plan().replace('version="3"', 'version="4"'), encoding="utf-8"
     )
 
     rc, report = run_checker(
@@ -574,9 +723,32 @@ def test_unknown_format_version_does_not_fall_back_to_legacy(
     )
 
     assert rc == 1
-    assert report["artifact_format"] == "unsupported-v3"
+    assert report["artifact_format"] == "unsupported-v4"
     assert report["human_first_issues"] == [
-        "unsupported_artifact_format:unsupported-v3"
+        "unsupported_artifact_format:unsupported-v4"
+    ]
+
+
+def test_plan_only_format_version_is_not_accepted_for_other_artifacts(
+    tmp_path, monkeypatch, capsys
+):
+    path = tmp_path / "spec.md"
+    path.write_text(
+        human_first_spec().replace('version="2"', 'version="3"'), encoding="utf-8"
+    )
+
+    rc, report = run_checker(
+        load_checker("check_spec"),
+        [str(path), "--feature"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["artifact_format"] == "human-first-v3"
+    assert report["human_first_issues"] == [
+        "unsupported_artifact_format:human-first-v3"
     ]
 
 

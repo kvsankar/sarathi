@@ -8,6 +8,32 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.3.2 - 2026-07-19
+
+### Changed
+
+- Lead WIP files, status answers, handoffs, and generated workflow pages with a short,
+  scope-qualified engineering snapshot; show document and approval state afterward, and
+  never promote assessed or handed-off child slices into parent-feature completion.
+- Require new plans to inspect existing and sibling systems, explain the shared-versus-target
+  boundary, and classify each delivery item as reuse, extraction, target-owned work, new
+  behavior, or deferred cleanup.
+- Replace stale WIP narrative on update and keep historical approvals, assessments, hashes,
+  and checker details as secondary linked evidence.
+
+### Fixed
+
+- Report TODO/FIXME/XXX and skip/skipif/xfail markers without failing solely because they
+  appear in source; review still treats unexplained skips and expected failures as evidence
+  gaps.
+- Restrict source process-ID detection to canonical uppercase IDs and declared IDs
+  normalized into test names, avoiding ordinary values such as `test-client-id` and
+  behavioral `test_*` names while still rejecting `test_at_auth_reset_replay` when that
+  obligation exists.
+- Let repeated `--src` and `--tests-dir` inputs name files or recursive directories, and
+  fail visibly for missing or unsupported inputs.
+- Use `timezone.utc` so standalone checkers remain usable with Python 3.9.
+
 ## 0.3.1 - 2026-07-19
 
 ### Removed

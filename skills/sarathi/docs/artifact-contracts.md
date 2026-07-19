@@ -8,12 +8,12 @@ Begin with the smallest direct implementation that satisfies the approved behavi
 Apply `docs/simplicity-first.md`; do not design product machinery to satisfy process
 requirement links, evidence, approval, or status needs.
 
-New and materially revised specs, designs, and plans follow
-`docs/human-first-artifacts.md`: mark format version 2, put the plain-language overview or
-approach first,
+New and materially revised specs and designs use format version 2; new and materially
+revised plans use format version 3 for baseline-reuse classification. All follow
+`docs/human-first-artifacts.md`: put the plain-language overview or approach first,
 use descriptive visible headings, and keep machine mappings in structured comments and a
-final `## Traceability` section. Unmarked legacy documents retain the contracts below for
-backward compatibility.
+final `## Traceability` section. Existing version-2 plans and unmarked legacy documents
+retain their earlier contracts for backward compatibility.
 
 ## Common Metadata
 
@@ -108,16 +108,20 @@ record whether the approved requirements and design are enough to begin, or name
 specific unanswered question that requires another document. Plans use this
 checker-visible order:
 
-1. **Overview**: goal, common metadata, plan type, branch/CI context.
-2. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
+1. **Baseline Reuse**: what works in the current or sibling system, what becomes shared,
+   what stays target-owned, what is new, and what is deferred.
+2. **Overview**: goal, common metadata, plan type, branch/CI context.
+3. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
    depth, cleanup/simplify, and feedback cadence.
-3. **Milestones**: `MILE-AREA-NAME` outcome groups.
-4. **Pull Requests / Child Work Items**.
-5. **Coverage Map**: parent/local intent and `TEST-*` obligations assigned completely.
-6. **Work Groups**: optional near-term child-work coordination for Breakdown plans.
-7. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
+4. **Milestones**: `MILE-AREA-NAME` outcome groups.
+5. **Pull Requests / Child Work Items**. Each item has one `Work Classification:` value:
+   `reuse directly`, `extract then reuse`, `target-owned implementation`, `new behavior`,
+   or `deferred cleanup`.
+6. **Coverage Map**: parent/local intent and `TEST-*` obligations assigned completely.
+7. **Work Groups**: optional near-term child-work coordination for Breakdown plans.
+8. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
    ownership for combining parallel work, and stop/replan conditions.
-8. **Traceability**: final compact allocations for milestones, work items, PRs, inherited
+9. **Traceability**: final compact allocations for milestones, work items, PRs, inherited
    intent, and test obligations.
 
 A Breakdown plan defines `WORK-AREA-NAME` allocations. Each names parent/child scope,

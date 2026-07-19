@@ -120,6 +120,7 @@ def test_direct_assess_aliases_resolve_transitive_prompts(tmp_path: Path) -> Non
             prompt_text = prompt.read_text(encoding="utf-8")
 
             assert "../sarathi/prompts/" in skill_text
+            assert "report engineering state before process state" in skill_text
             references = PROMPT_REF.findall(prompt_text)
             assert references
             for reference in references:
