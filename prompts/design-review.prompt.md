@@ -1,5 +1,5 @@
 ---
-description: Independently review a Software Design Document using checker results and look for counterexamples.
+description: Independently review a design using checker results and look for missed cases.
 agent: agent
 ---
 
@@ -14,37 +14,26 @@ as `Blocked-upstream` when the spec is unfit.
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
 For corrected findings, focus on those findings and affected boundaries; restart the full
-review only when scope or controlling intent changed materially.
+review only when requirements or scope changed.
 
 ## Judge
 
-Score 1–5 and give a concrete fix below 5:
+Lead with concrete problems. Check that the opening page makes the current state, target
+state, ownership, changes, non-changes, difficult parts, and implementation order clear.
+Then check that interfaces cover important success and failure behavior, decisions match
+the requirements, tests can prove the design, and the solution is no more complicated
+than current needs require.
 
-- fit with requirements, scope/depth/readiness, and requirement links;
-- cohesive responsibilities, minimal coupling, readable architecture, and core/shell or
-  equivalent separation;
-- interfaces, lifecycle/errors/data/side effects, compatibility, and real-boundary realism;
-- decisions, alternatives, risks, clear pass/fail checks, and `TEST-*` architecture;
-- review depth, extra risk checks, and environments proportional to accepted risk;
-- complexity budget versus the user's mental model;
-- reuse of existing functional, acceptance, schema/OpenAPI, CI, build, deployment, and
-  operational evidence;
-- separation of process records from product code, plus concrete evidence for each
-  framework, generator, registry,
-  manifest, schema system, extension point, or generic harness;
-- current-consumer need: generalization normally requires a second concrete use case.
+Start with simplification. Name parts, commands, generated files, tests, or diagrams that
+can be removed, deferred, collapsed, or proved by existing checks. A design with every
+required section can still be `Needs rework` when it is overbuilt.
 
-Start with simplification. Name components, abstractions, commands, generated files, tests,
-or diagrams that can be removed, deferred, collapsed, or proven by existing evidence. A
-a design with every required section can still be `Needs rework` when it is overbuilt,
-often with
-`revision-required` changes to parent documents.
-
-If identifiers interrupt current/target state, ownership, change boundaries, hard parts,
+If identifiers interrupt the Technical Approach (or legacy Technical Crux), current/target
+state, ownership, change boundaries, hard parts,
 or implementation order, move them to traceability and return `Needs rework`. If an
 engineer must decode IDs to understand the architecture, rewrite it in plain language.
 
-Report blockers, evidence considered, scorecard, what can be deleted, deferred, or reused,
+Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
 top fixes,
 and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
 stop; do not start planning without explicit approval.

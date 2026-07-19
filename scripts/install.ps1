@@ -322,9 +322,8 @@ Resolve any transitive prompts referenced as prompts/*.prompt.md from
 ../sarathi/prompts/, and shared docs from ../sarathi/docs/. Load only the files triggered
 by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
-This stage is part of the broader Sarathi workflow. Preserve input gates, human
-review gates, readiness gates, Planned Touch Sets, upstream-blocker stops, and YOLO-mode
-limits.
+Keep required approvals, safety stops, declared file scope, test evidence, and independent
+review. Do not start later work when the prompt says to stop for the user.
 "@
         Set-AtomicUtf8File (Join-Path $stageDest "SKILL.md") $stageSkill
 

@@ -199,7 +199,7 @@ test("parent approval details open on demand", async ({ page }) => {
   const dialog = page.locator("#approval-details");
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText("Parent approvals");
-  await expect(dialog).toContainText("No spec.approved record was found");
+  await expect(dialog).toContainText("No approval was found");
   await dialog.getByRole("button", { name: "Close approval details" }).click();
   await expect(dialog).not.toBeVisible();
 });

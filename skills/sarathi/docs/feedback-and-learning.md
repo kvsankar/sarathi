@@ -1,12 +1,11 @@
 # Feedback And Learning
 
-Sarathi is iterative. Specs, designs, and plans record the **current accepted
-understanding**: the best accepted basis for the next learning step. They are not a
-one-way handoff chain, and approval does not freeze them.
+Sarathi is iterative. Specs, designs, and plans record the current agreed requirements and
+decisions. They are not a one-way handoff chain, and approval does not freeze them.
 
 ## Approval Meaning
 
-Approval means a document is sufficient and safe for the next learning step. It does not
+Approval means a document is sufficient and safe for the next change. It does not
 mean the document is final, complete, or presumed correct. Approval should consider
 available feedback from appropriate stakeholders, record feedback not yet obtained, and
 expect revision when implementation, integration, deployment, or use produces new evidence.
@@ -15,21 +14,16 @@ An approval record proves only that the required fields are present and its save
 matches the current file. It does not prove that feedback occurred, that an approver
 represents end users, or that the document will remain correct after the next slice.
 
-## Feedback Ownership
+## Planning feedback
 
-Every code-ready slice identifies:
+For each change, answer three questions:
 
-- **Learning target**: the important assumption, behavior, boundary, or risk the slice will
-  test.
-- **Feedback target**: the people or evidence able to judge the result, such as end users,
-  a product owner, operators, support, security/privacy reviewers, integrators, a real
-  dependency, telemetry, or an executable acceptance environment.
-- **Feedback method**: demo, usability session, acceptance run, integration result,
-  operational observation, review, or another concrete signal.
-- **Invalidation question**: what result would change a parent spec/design/plan or make
-  planned sibling work unsafe to continue. In other words: what would change the plan?
+- What should this change demonstrate?
+- Who or what can judge the result? This may be an end user, product owner, operator,
+  reviewer, real dependency, telemetry, or acceptance environment.
+- What result would make us change the plan?
 
-Use one feedback status at a slice boundary:
+Record one feedback status when the change is complete:
 
 - `received`: concrete stakeholder or observed-system evidence was obtained.
 - `requested`: feedback has been requested and is still pending.
@@ -38,7 +32,7 @@ Use one feedback status at a slice boundary:
   evidence used instead.
 
 Never invent stakeholder feedback. Technical checks can support a decision, but they do not
-stand in for end-user or stakeholder judgment when the learning target requires it.
+stand in for end-user or stakeholder judgment when the change needs it.
 
 For approved-prototype UI work, the prototype is inherited UI intent. Do not create another
 product-wide mock or respecify the complete feature before the first slice. Implement a
@@ -47,8 +41,8 @@ is mandatory after every completed UI slice before learning-dependent UI work co
 
 ## Inspect And Adapt
 
-After each assessed code slice, and before starting learning-dependent work, inspect the
-new evidence against all affected parent documents and active sibling work:
+After each reviewed code change, inspect the result before starting work that depends on it.
+Check the affected earlier documents and other active work:
 
 | Area | Ask |
 | --- | --- |
@@ -66,7 +60,7 @@ Record one outcome per affected area:
   continues.
 - `feedback-required`: the next decision depends on feedback that has not arrived.
 
-Record the current loop in `.sdlc/wip.md` using the exact fields from
+Record the current state in `.sdlc/wip.md` using the fields from
 [work-in-progress.md](work-in-progress.md). When a slice receives a passing code assessment,
 preserve its completed learning evidence in an assessment record that matches the current
 plan so workflow status can show branch history without treating WIP or Git activity as
@@ -75,53 +69,40 @@ proof.
 The agent performs this scan and may draft evidence-backed revisions. It must not silently
 redefine accepted product behavior, contracts, safety posture, or scope. Material revisions
 go through the matching create/assess command and human review gate. Small factual updates
-that preserve accepted intent may be included in the current slice when its Planned Touch
-Set permits them.
+that preserve approved behavior may be included in the current change when they stay within
+the files expected to change.
 
-## Parallel Learning Waves
+## Parallel work
 
 Agent capacity is not, by itself, a reason to start more slices. Ask:
 
 > Could feedback from this slice materially invalidate another slice already underway?
 
-Classify dependencies explicitly:
+Check whether one change must finish before another can run, whether one result could change
+another change's requirements or priority, and where separately built changes will be
+combined and tested.
 
-- **Execution dependency**: one change or artifact must exist before another can run.
-- **Learning dependency**: evidence from one slice may materially change another slice's
-  requirement, design, or priority.
-- **Integration dependency**: slices can be built separately but need a planned convergence
-  point and shared checks.
+Prefer parallel work inside one defined change. Run separate changes concurrently only when
+the result of one cannot change the other, file ownership is clear, and someone owns
+integration and review. Keep speculative later work reversible, timeboxed, and easy to
+discard.
 
-Use three parallelism classes:
+For a group of parallel changes, record how many may run at once, when they will be combined
+and reviewed, and what would stop or change the work. Prefer detailed near-term plans over
+elaborating distant changes whose assumptions have not been tested.
 
-1. **Intra-slice parallelism** is preferred. Sub-agents may work concurrently on tests,
-   implementation, docs, threat review, or checks inside one defined slice when
-   touch ownership and integration are clear.
-2. **Independent-slice parallelism** is selective. Put slices in the same bounded learning
-   wave only when feedback from one cannot materially change another, shared touch sets are controlled,
-   integration ownership is explicit, and review/feedback capacity exists.
-3. **Speculative downstream parallelism** is exceptional. Keep it reversible, timeboxed,
-   and easy to discard; do not present it as completed production work before its learning
-   dependency resolves.
+Breakdown plans may schedule near-term child work in a `Work Groups` section. Each
+`WAVE-AREA-NAME` block declares `Order`, `Expected Result`, `Members`, `Parallel Limit`,
+`Review Point`, and `Stop Conditions`. Members are `WORK-*` items;
+a scheduled child belongs to exactly one group, while an unscheduled child has no group. An
+Implementation plan lists the PRs for one child; PRs do not belong to groups.
 
-Each parallel wave records its WIP limit, feedback/integration checkpoint, and conditions
-for stopping or replanning. Close the wave by assessing its slices, collecting available
-feedback, checking which parent documents need changes, and revising the next wave. Prefer
-progressively detailed near-term
-plans over elaborating distant slices whose assumptions have not yet been tested.
-
-Breakdown plans may schedule near-term child work in a `Waves` section. Each
-`WAVE-AREA-NAME` block declares `Order`, `Learning Target`, `Members`, `WIP Limit`,
-`Feedback/Integration Checkpoint`, and `Stop/Replan Triggers`. Members are `WORK-*` items;
-a scheduled child belongs to exactly one wave, while an unscheduled child has no wave. An
-Implementation plan lists the PRs for one child; PRs do not belong to waves.
-
-The current wave and active members live in `.sdlc/wip.md`. A completed checkpoint lives in
-`.sdlc/wave-checkpoints.yaml` and binds the wave ID and exact members to the current governing
+The current group and active members live in `.sdlc/wip.md`. A completed checkpoint lives in
+`.sdlc/wave-checkpoints.yaml` and binds the group ID and exact members to the current governing
 plan SHA-256. It records `status: completed`, completion time, feedback evidence, what the
-feedback changed, and parent-document impact. This records the end of one wave; it is not a
-full code assessment, human approval, merge claim, or authorization to begin the next wave.
-Changing the plan or wave membership makes the checkpoint stale.
+feedback changed, and earlier-document impact. This records the end of one group; it is not a
+full code assessment, human approval, merge claim, or authorization to begin the next group.
+Changing the plan or group membership makes the checkpoint stale.
 
 Batch checker execution, approval recording, status rendering, and ledger updates as one
 automatic bookkeeping step at the boundary. Do not introduce repeated user-facing pauses

@@ -22,12 +22,12 @@ from schemas import (  # noqa: E402
 
 HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 WAVE_FIELDS = (
-    ("Order", "order"),
-    ("Learning Target", "learning_target"),
-    ("Members", "members_raw"),
-    ("WIP Limit", "wip_limit"),
-    ("Feedback/Integration Checkpoint", "checkpoint"),
-    ("Stop/Replan Triggers", "stop_or_replan"),
+    (("Order",), "order"),
+    (("Expected Result", "Learning Target"), "learning_target"),
+    (("Members",), "members_raw"),
+    (("Parallel Limit", "WIP Limit"), "wip_limit"),
+    (("Review Point", "Feedback/Integration Checkpoint"), "checkpoint"),
+    (("Stop Conditions", "Stop/Replan Triggers"), "stop_or_replan"),
 )
 
 
@@ -71,7 +71,11 @@ def _field(block: str, label: str) -> str | None:
 def parse_learning_waves(text: str, plan_path: str | None = None) -> dict[str, Any]:
     """Parse an optional ``Learning Waves`` section without inventing status."""
     text = strip_fenced_code(text)
-    body = _section(text, "Waves") or _section(text, "Learning Waves")
+    body = (
+        _section(text, "Work Groups")
+        or _section(text, "Waves")
+        or _section(text, "Learning Waves")
+    )
     result: dict[str, Any] = {
         "declared": body is not None,
         "waves": [],
@@ -130,7 +134,13 @@ def parse_learning_waves(text: str, plan_path: str | None = None) -> dict[str, A
             result["malformed_ids"].append(identifier)
             continue
         seen_ids.append(identifier)
-        fields = {key: _field(block, label) for label, key in WAVE_FIELDS}
+        fields = {
+            key: next(
+                (value for label in labels if (value := _field(block, label))),
+                None,
+            )
+            for labels, key in WAVE_FIELDS
+        }
         missing = [key for _, key in WAVE_FIELDS if not fields[key]]
         if missing:
             result["missing_fields"][identifier] = missing

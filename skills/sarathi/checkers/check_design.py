@@ -33,7 +33,6 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
-from complexity import parse_complexity_budget  # noqa: E402
 from markdown_structure import (  # noqa: E402
     artifact_format,
     definition_id,
@@ -57,12 +56,6 @@ ID_CANDIDATE = re.compile(
     r"\b(?:(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Za-z0-9]+"
     r"(?:-[A-Za-z0-9]+)*|(?:FR|UC|NFR|AT|JT|TEST)-[A-Za-z0-9]+"
     r"-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)\b",
-    re.I,
-)
-VAGUE = re.compile(r"\b(?:and/or|tbd|as appropriate|as needed)\b|etc\.", re.I)
-GENERIC_MACHINERY = re.compile(
-    r"\b(?:framework|generator|registry|manifest|schema system|extension point|"
-    r"generic harness|evidence platform|resource[- ]lease)\b",
     re.I,
 )
 UI_MOCK_REQUIRED = re.compile(r"^\s*UI Mock Preference\s*:\s*Required\s*$", re.I | re.M)
@@ -336,23 +329,9 @@ def main() -> int:
     bad_fmt = malformed_ids(text)
     known = all_ids | req_ids
     orphans = sorted(r for r in refs if r not in known)
-    vague = len(VAGUE.findall(text))
-    complexity_budget = parse_complexity_budget(text)
-    complexity_budget_attempted = (
-        re.search(r"(?im)^\s*(?:#{1,6}\s+)?Complexity Budget(?! Exception)\b", text)
-        is not None
-    )
-    complexity_signals = sorted(
-        {
-            re.sub(r"\s+", " ", line).strip()
-            for line in text.splitlines()
-            if GENERIC_MACHINERY.search(line)
-            and not line.casefold().lstrip(" -*+").startswith("complexity budget:")
-        }
-    )
     ext_double_mentions = external_double_mentions(text)
     format_name = artifact_format(text)
-    format_issues = human_first_issues(text, "Technical Crux")
+    format_issues = human_first_issues(text, "Technical Approach")
     risk_text = section_text(text, "Risks & Trade-offs")
     drift_risks = [
         risk
@@ -458,15 +437,7 @@ def main() -> int:
         ),
         "iface_single_owner": not iface_dupes and not iface_owner_issues,
         "no_dependency_cycles": not cycles,
-        "complexity_budget_complete": bool(
-            (not complexity_budget_attempted and not complexity_signals)
-            or (
-                complexity_budget["declared"]
-                and not complexity_budget["missing_fields"]
-            )
-        ),
         "required_approvals_present": approval_gate_passed(approval_requirements),
-        "no_vagueness": vague == 0,
         "human_first_structure": not format_issues,
     }
     if not require_approvals:
@@ -493,16 +464,6 @@ def main() -> int:
         "external_double_mitigation_tests": sorted(drift_tests),
         "iface_owner_count": len(iface_owners),
         "dependency_cycles": cycles,
-        "complexity_budget": {
-            **complexity_budget,
-            "attempted": complexity_budget_attempted,
-            "generic_machinery_signals": complexity_signals,
-            "evidence_limit": (
-                "Signals require qualitative simplicity review; presence does not "
-                "prove "
-                "that machinery is justified or overbuilt."
-            ),
-        },
         "approval_requirements": approval_requirements,
         "approval_ledger": {
             "path": approvals_path,
@@ -519,7 +480,6 @@ def main() -> int:
         "bad_id_format": bad_fmt,
         "iface_duplicates": iface_dupes,
         "iface_owner_issues": sorted(iface_owner_issues),
-        "vague_hits": vague,
         "artifact_format": format_name,
         "human_first_issues": format_issues,
         "gates": gates,
@@ -529,13 +489,29 @@ def main() -> int:
     if as_json:
         print(json.dumps(report, indent=2))
     else:
+        labels = {
+            "id_format_slug_only": "Identifiers use the supported format",
+            "no_duplicates": "No duplicate identifiers",
+            "no_orphan_refs": "All references resolve",
+            "comp_req_coverage_100": "Components link to requirements",
+            "comp_test_coverage_100": "Components link to tests",
+            "test_obligations_declared": "Required tests are described",
+            "test_obligation_traceability_100": "Required tests are linked",
+            "iface_single_owner": "Each interface has one owner",
+            "no_dependency_cycles": "No dependency cycles",
+            "required_approvals_present": "Required approvals are current",
+            "human_first_structure": (
+                "Plain-language opening and traceability are present"
+            ),
+            "sections_present": "Required sections are present",
+        }
         for k, v in gates.items():
-            print(f"{'PASS' if v else 'FAIL'}  {k}")
+            print(f"{'PASS' if v else 'FAIL'}  {labels.get(k, k.replace('_', ' '))}")
         print(
-            f"\nCOMP->REQ {report['comp_req_coverage_pct']}%"
-            f"  COMP->TEST {report['comp_test_coverage_pct']}%"
+            f"\nComponents linked to requirements: {report['comp_req_coverage_pct']}%"
+            f"  Components linked to tests: {report['comp_test_coverage_pct']}%"
         )
-        print(f"{report['passed']}/{report['total']} gates passed")
+        print(f"{report['passed']}/{report['total']} checks passed")
     return 0 if all(gates.values()) else 1
 
 

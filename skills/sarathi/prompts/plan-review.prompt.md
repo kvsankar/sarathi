@@ -1,5 +1,5 @@
 ---
-description: Independently review a work plan's simplicity, readiness, evidence reuse, scheduling, slicing, and risk.
+description: Independently review whether an implementation plan is clear, simple, safe, and testable.
 agent: agent
 ---
 
@@ -17,37 +17,28 @@ Use a fresh reviewer sub-agent when available. Otherwise say that the review is 
 independent and seek counterexamples.
 
 For corrected findings, focus re-review on those findings and affected boundaries. Restart
-the full review only if scope or controlling intent changed materially.
+the full review only if requirements or scope changed.
 
 ## Judge
 
-Score 1–5 and give a concrete fix below 5:
+Lead with concrete problems. Check that an engineer can understand the outcome, exact
+change, non-changes, sequence, safety constraints, files likely to change, and proof of
+success without decoding IDs. Delivery items should be cohesive, testable, and safe to
+undo. Splits and parallel work must have a real dependency or feedback reason. The plan
+must reuse existing checks and be no more complicated than the requested change.
 
-- plan type/readiness, direct-to-code decision, complete intent/test assignment, touch
-  sets, and pass/fail checks;
-- cohesive independently testable/rollback-capable delivery items;
-- optional wave scheduling only where near-term work shares a real checkpoint, plus feedback,
-  dependency types, WIP, ownership for combining work, and stop/replan rules;
-- selected review depth and extra risk checks proportional to actual risk;
-- complexity budget versus the user's mental model and current consumers;
-- reuse of existing compatibility suites and focused changed-boundary tests;
-- at most three implementation PRs for a bounded slice, unless a concise exception has
-  `plan.complexity-approved` approval that matches the current plan;
-- absence of artificial setup, scaffold, routing, generated-output, parity, or cleanup PRs;
-- no process-shaped product architecture or speculative generalization.
-
-Start with simplification. Identify PRs/work items, new machinery, tests, generated files,
+Start with simplification. Identify PRs/work items, unnecessary machinery, tests, generated files,
 or handoffs that can be deleted, deferred, collapsed, or proven by existing evidence.
 `Needs rework` must not default to more PRs or machinery. A plan with every required
 section still fails when it is overbuilt.
-Never recommend another document layer as the default fix. Require a concrete permitted
-decomposition reason and ceremony budget; otherwise inherit intent and simplify.
+Never recommend another document layer as the default fix. Require a concrete unanswered
+question before splitting the work; otherwise link the approved documents and simplify.
 
 If an engineer must decode IDs to understand the outcome, change boundary, sequence,
 safety, or verification, move metadata to traceability and return `Needs rework`, even when
 automatic checks pass.
 
-Report blockers, evidence considered, scorecard, what can be deleted, deferred, or reused,
+Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
 top fixes,
 and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
 stop; do not implement without explicit approval.

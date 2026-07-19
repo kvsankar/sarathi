@@ -16,12 +16,12 @@ must improve judgment without turning every prompt into a checklist wall.
   [feedback-and-learning.md](feedback-and-learning.md), and reference it from prompts.
 - Prefer one crisp stage instruction plus one shared reference over copying a concern into
   every create, verify, review, and assess prompt.
-- Keep `SKILL.md` as the always-loaded routing kernel. It should select the project entry
+- Keep `SKILL.md` as the short instruction file that is always loaded. It should select the project entry
   mode and stage, then load the selected stage prompt and triggered shared docs on demand.
 - Enforce repository prompt budgets in tests. A budget increase requires an explicit
   rationale and removal or consolidation elsewhere; do not make the threshold advisory.
 - Keep the routing skill and repository agent instructions below their tested budgets.
-- Prefer a lean core plus triggered modules from
+- Prefer short core instructions plus only the extra checks required by
   [assurance-profiles.md](assurance-profiles.md) over universal concern lists.
 - Apply [simplicity-first.md](simplicity-first.md): process requirements stay outside
 product architecture, and new generic machinery requires concrete evidence.
@@ -38,7 +38,7 @@ product architecture, and new generic machinery requires concrete evidence.
 - Never soften `must`, `block`, `stop`, approval boundaries, evidence limits, or safety
   rules while simplifying the wording.
 
-## Adding A Cross-Cutting Concern
+## Adding A Risk Check
 
 Before adding a new concern, decide:
 
@@ -48,7 +48,7 @@ Before adding a new concern, decide:
 - Which checks are repeatable program checks and which require independent judgment.
 - Which evidence is an agent-authored claim, and which evidence comes from an independent
   command, real system, file hash, or observed output.
-- Whether the concern needs a hard human gate, an approval record, or just a review
+- Whether the concern needs explicit approval, an approval record, or just a review
   finding.
 
 ## Sub-Agent Independence

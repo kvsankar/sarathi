@@ -1,22 +1,22 @@
 ---
-description: Run repeatable code, test, requirement-link, quality, and extra-risk checks without judging overall quality.
+description: Run repeatable code, test, requirement-link, and project checks without judging overall quality.
 agent: agent
 ---
 
 # Code Verify
 
 Collect repeatable check results for implemented code. Do not edit code or judge overall
-quality. Use `/code-review` for judgment and `/code-assess` for the full gate.
+quality. Use `/code-review` for judgment and `/code-assess` to run both.
 
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
-selected review depth and extra checks. For an Inherited-Intent Implementation Record (or
-legacy Lean Change Record), use approved parent intent in place of missing child spec/design
-files. Use a fresh checker sub-agent when available;
+selected review depth and additional checks. A compact or legacy plan may use approved
+parent documents instead of unnecessary child spec/design files. Use a fresh checker
+sub-agent when available;
 otherwise disclose that sub-agents are unavailable and run the same checks directly.
 
 ## Earlier Documents
 
-Run only the earlier documents that control the plan. Do not fail an inherited-intent plan
+Run only the earlier documents that control the plan. Do not fail a compact or legacy plan
 because unnecessary child spec/design files do not exist. When documents exist, run:
 
 ```pwsh
@@ -44,8 +44,8 @@ shell, and PowerShell source. Use `--src-ext` for repository-specific languages 
 silently omitting them.
 
 Prefer `--tests-argv`; use `--tests-shell` only for trusted commands requiring shell
-behavior. Add `--require-approvals` when the code gate depends on approved plan or mock
-artifacts. Retry with `python3` or `uv run python` when needed.
+behavior. Add `--require-approvals` when implementation depends on an approved plan or
+mock. Retry with `python3` or `uv run python` when needed.
 
 Report exact commands, raw JSON, exits, passed/total, code markers, approval requirements,
 process-ID source hits, and the concrete test or command behind each claimed risk check.
@@ -54,9 +54,9 @@ meaningful. Do not require IDs inside source to establish coverage. Use an exact
 `--generated-traceability-path` only for explicit generated external ledger files, never to
 hide ordinary source pollution.
 
-## Repository And Extra Risk Checks
+## Project And Additional Checks
 
-Run the repository's documented one-command quality gate, normally pre-commit or its
+Run the repository's documented project-check command, normally pre-commit or its
 equivalent. Run only checks assigned by the plan or required by identified risks, such as
 build/package, docs/examples, deployment dry-run/smoke/rollback, environment, security,
 privacy, accessibility, migration, reliability, performance/cost, observability, or
@@ -77,6 +77,6 @@ End with:
 - `Verification result: Pass | Fail | Unable to run`;
 - commands and concise outcomes;
 - evidence gaps and unavailable checks;
-- evidence limits: commands do not prove design fitness, test meaningfulness, simplicity,
+- evidence limits: commands do not prove that the design is suitable, tests are meaningful, or the change is simple,
   true stakeholder feedback, or human approval;
 - recommended `/code-review` or `/code-assess`.

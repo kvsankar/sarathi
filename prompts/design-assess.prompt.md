@@ -7,19 +7,19 @@ agent: agent
 
 Assess the target design using two separate passes. Load
 `prompts/design-verify.prompt.md`, `prompts/design-review.prompt.md`,
-`docs/review-verification-checklist.md`, and the selected review depth and extra checks from
+`docs/review-verification-checklist.md`, and the selected review depth and additional checks from
 `docs/assurance-profiles.md`. Apply `docs/simplicity-first.md`.
 
 ## Run
 
 Run full passes once per revision. After local finding corrections, rerun affected checks
-and focus review on those findings unless scope or controlling intent changed materially.
+and focus review on those findings unless requirements or scope changed.
 
 1. **Check pass**: in a fresh sub-agent when available, run `/design-verify`, including the
    spec checker, and return commands, IDs, metrics, failures, and approval evidence only.
 2. **Review pass**: in a different fresh sub-agent when available, run `/design-review`
-   using the design plus check results. Judge review depth and extra risk checks,
-   requirement fitness, contracts, testability, decisions, risks, and readiness.
+   using the design plus check results. Judge review depth and additional checks,
+   whether the requirements are sufficient, contracts, testability, decisions, risks, and readiness.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
 passes separate. A failed or unfit spec blocks the design verdict.
@@ -27,10 +27,9 @@ passes separate. A failed or unfit spec blocks the design verdict.
 Report:
 
 1. Earlier-document blocker and required revision, or check results.
-2. Review scorecard with review-depth and extra-check fitness.
-3. Human-first comprehensibility result from `docs/human-first-artifacts.md`.
-4. Top fixes ranked by impact.
-5. Verdict: `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`.
+2. Concrete review findings and whether an engineer can understand the opening page.
+3. Top fixes ranked by impact.
+4. Verdict: `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`.
 
 Update `.sdlc/wip.md` and stop for human review. Do not start planning in the same turn
 without an explicit latest-message end-to-end instruction.

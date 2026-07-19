@@ -63,9 +63,9 @@ if that is unavailable, retry with `uv run python`.
 Report:
 
 - Exact command executed.
-- Artifact format and human-first structure issues: crux placement, machine-only visible
-  headings, final traceability, and annotation/table resolution. Unmarked legacy files stay
-  on the legacy contract.
+- Document format and human-first structure issues: Product Overview placement (or legacy
+  Product Crux), machine-only visible headings, final traceability, and annotation/table
+  resolution. Unmarked legacy files stay on the legacy contract.
 - Raw checker JSON.
 - Exit code.
 - `passed/total`.
@@ -74,7 +74,8 @@ Report:
   acceptance-test shape issues, journey-test sequence/composition issues, or vague hits.
 - Whether the required **External Interfaces & Contracts** section is present in full-spec
   mode. This checks structure only; independent review still judges whether each
-  external contract is concrete and real-boundary testable.
+  external contract is concrete and testable through the real dependency or its official
+  test interface.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 

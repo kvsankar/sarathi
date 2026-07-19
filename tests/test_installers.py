@@ -69,7 +69,6 @@ def test_project_install_copies_executable_checker_bundle(tmp_path: Path) -> Non
     checker_dir = tmp_path / "checkers"
     for name in (
         "approvals.py",
-        "complexity.py",
         "markdown_structure.py",
         "schemas.py",
         "waves.py",

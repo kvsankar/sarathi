@@ -10,7 +10,7 @@ appropriate after substantial document edits, after refactors, after resolving r
 findings, and before a handoff where accumulated small issues would make the next agent or
 reviewer work harder.
 
-The pass is scoped. It improves the current document or planned touch set; it does not
+The pass is scoped. It improves the current document or files expected to change; it does not
 silently expand product behavior, redesign architecture, rewrite unrelated modules, or erase
 useful comments, tests, docs, or readable structure. If cleanup discovers out-of-scope work,
 record a finding, follow-up, or need to revise an earlier document instead of slipping it into
@@ -58,10 +58,10 @@ Before ending any `/code-create` slice, the agent must:
 
 1. Re-scan touched code, tests, docs, config, and requirement links for the issues above.
 2. Fix in-scope oddities, redundancy, misleading claims, and theater.
-3. Avoid cosmetic churn outside the planned touch set.
+3. Avoid cosmetic churn outside the files expected to change.
 4. If cleanup changes behavior, contracts, UX, NFRs, or planned scope, stop to revise the
    controlling document instead of hiding the change.
-5. Re-run affected tests and the configured local quality gate after cleanup changes.
+5. Re-run affected tests and the required local project checks after cleanup changes.
 6. Mention the cleanup pass in the handoff, including fixes made and any follow-up findings.
 
 Review and assessment stages must judge whether this pass actually happened and whether it

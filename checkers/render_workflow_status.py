@@ -27,16 +27,24 @@ from waves import parse_learning_waves  # noqa: E402
 APPROVED_STATUSES = {"approved", "auto-approved"}
 FEEDBACK_STATUSES = {"received", "requested", "unavailable", "not-applicable"}
 WIP_LEARNING_FIELDS = (
+    ("Expected Result", "target"),
     ("Learning Target", "target"),
+    ("Feedback From", "feedback_target"),
     ("Feedback Target", "feedback_target"),
     ("Feedback Status", "feedback_status"),
     ("Feedback Evidence", "feedback_evidence"),
+    ("Current Work Group", "active_wave"),
     ("Active Learning Wave", "active_wave"),
+    ("Current Work", "active_work_item"),
     ("Active Work Item", "active_work_item"),
+    ("Parallel Limit", "wip_limit"),
     ("WIP Limit", "wip_limit"),
     ("Active Slices", "active_slices"),
+    ("What Changed", "invalidation_result"),
     ("Invalidation Result", "invalidation_result"),
+    ("Documents To Update", "ancestor_impact"),
     ("Ancestor Impact", "ancestor_impact"),
+    ("Stop Conditions", "stop_or_replan"),
     ("Stop Or Replan Triggers", "stop_or_replan"),
 )
 ASSESSMENT_LEARNING_FIELDS = (
@@ -62,8 +70,11 @@ EXCLUDED_DIRS = {
 }
 METADATA_FIELDS = (
     "Work Scope",
+    "Ready To Implement",
     "Implementation Readiness",
+    "Review Level",
     "Delivery Profile",
+    "Extra Checks",
     "Assurance Modules",
     "Plan Type",
     "Inherited Intent Record",
@@ -527,8 +538,11 @@ def parse_wip(root: Path) -> dict[str, Any]:
         "Current Gate",
         "Project Entry Mode",
         "Work Scope",
+        "Ready To Implement",
         "Implementation Readiness",
+        "Review Level",
         "Delivery Profile",
+        "Extra Checks",
         "Assurance Modules",
     ):
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
@@ -536,7 +550,7 @@ def parse_wip(root: Path) -> dict[str, Any]:
             result[field] = match.group(1).strip()
     for field, key in WIP_LEARNING_FIELDS:
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
-        if match:
+        if match and key not in result["learning"]:
             result["learning"][key] = match.group(1).strip()
     current_artifacts = section(text, "Current Artifacts")
     for line in current_artifacts.splitlines():
@@ -966,15 +980,25 @@ def build_model(root: Path) -> dict[str, Any]:
         for kind in ("spec", "design", "plan")
     }
     wip = parse_wip(root)
-    delivery_profile = str(wip.get("Delivery Profile") or "").strip()
-    assurance_modules = str(wip.get("Assurance Modules") or "").strip()
+    delivery_profile = str(
+        wip.get("Review Level") or wip.get("Delivery Profile") or ""
+    ).strip()
+    assurance_modules = str(
+        wip.get("Extra Checks") or wip.get("Assurance Modules") or ""
+    ).strip()
     for kind in ("plan", "design", "spec"):
         stage_metadata = stages[kind].get("metadata", {})
         if not delivery_profile:
-            delivery_profile = str(stage_metadata.get("Delivery Profile") or "").strip()
+            delivery_profile = str(
+                stage_metadata.get("Review Level")
+                or stage_metadata.get("Delivery Profile")
+                or ""
+            ).strip()
         if not assurance_modules:
             assurance_modules = str(
-                stage_metadata.get("Assurance Modules") or ""
+                stage_metadata.get("Extra Checks")
+                or stage_metadata.get("Assurance Modules")
+                or ""
             ).strip()
     linked_artifacts = child_artifacts(root, paths)
     for identifier, mapped in mapped_children.items():
@@ -1223,7 +1247,7 @@ def state_label(state: str) -> str:
         "missing": "Not yet done",
         "frontier": "Not yet decomposed",
         "expanded": "Plan expanded",
-        "started": "Artifacts started",
+        "started": "Documents started",
         "evidence": "Evidence mapped",
         "planned": "PRs planned",
         "assessed": "Assessed",
@@ -1269,7 +1293,6 @@ def render_parent_approval_dialog(
         path_html = (
             f'<a href="{link}">{esc(path)}</a>' if link else esc(path or "Not found")
         )
-        gate = f"{kind}.approved"
         if state == "approved":
             detail = (
                 f"Current approval {esc(approval.get('id') or 'record')}"
@@ -1280,13 +1303,10 @@ def render_parent_approval_dialog(
             detail = (
                 f"{esc(approval.get('id') or 'The latest approval')} covers an earlier version"
                 f" from {esc(approval.get('approved_at') or 'an unrecorded time')}. "
-                f"Needed: review the current document and record a fresh {esc(gate)} approval."
+                "Needed: review the current document and approve this version."
             )
         elif state == "unapproved":
-            detail = (
-                f"No {esc(gate)} record was found. Needed: review the current document and"
-                f" record its first {esc(gate)} approval."
-            )
+            detail = "No approval was found. Needed: review and approve the current document."
         else:
             detail = (
                 "The document is missing. Needed: create it before requesting approval."
@@ -1332,7 +1352,7 @@ def feedback_badge(status: str | None) -> str:
 def artifact_link(root: Path, output: Path, stage: dict[str, Any]) -> str:
     href = href_for(root, output, stage.get("path"))
     if href is None:
-        return '<span class="empty">No artifact discovered</span>'
+        return '<span class="empty">No document found</span>'
     return f'<a href="{href}">{esc(stage["path"])}</a>'
 
 
@@ -1359,7 +1379,17 @@ def render_artifact_node(
         "plan": "Plan",
     }[kind]
     if stage and stage.get("path"):
-        readiness = stage.get("metadata", {}).get("Implementation Readiness")
+        readiness = stage.get("metadata", {}).get("Ready To Implement")
+        if readiness:
+            readiness = (
+                "Ready to implement"
+                if readiness.casefold() == "yes"
+                else "Not ready to implement"
+                if readiness.casefold() == "no"
+                else readiness
+            )
+        else:
+            readiness = stage.get("metadata", {}).get("Implementation Readiness")
         details = artifact_link(root, output, stage)
         if readiness:
             details += f"<small>{esc(readiness)}</small>"
@@ -1393,8 +1423,9 @@ def render_prs(prs: list[dict[str, Any]], item_state: str) -> str:
     return (
         '<div class="pr-list tree-pr-list">'
         + "".join(
-            f'<span class="pr"><code>{esc(pr["id"])}</code>'
-            f"<small>{pr['evidence_count']} mapped tests</small>{badge(state)}</span>"
+            f'<span class="pr"><strong>{esc(pr["name"])}</strong>'
+            f"<small><code>{esc(pr['id'])}</code> · {pr['evidence_count']} linked tests</small>"
+            f"{badge(state)}</span>"
             for pr in prs
         )
         + "</div>"
@@ -1408,23 +1439,23 @@ def render_assessment_learning(item: dict[str, Any]) -> str:
     learning = assessment.get("learning") or {}
     if not learning:
         return (
-            '<div class="assessment-learning"><h3>Assessed learning</h3>'
-            '<span class="empty">Not recorded in assessment</span></div>'
+            '<div class="assessment-learning"><h3>What we learned</h3>'
+            '<span class="empty">Not recorded</span></div>'
         )
     rows = "".join(
         f"<dt>{esc(label)}</dt><dd>{esc(learning.get(key) or 'Not recorded')}</dd>"
         for label, key in (
-            ("Learning target", "target"),
-            ("Feedback target", "feedback_target"),
-            ("Feedback status", "feedback_status"),
-            ("Feedback evidence", "feedback_evidence"),
-            ("Invalidation result", "invalidation_result"),
-            ("Ancestor impact", "ancestor_impact"),
-            ("Stop or replan", "stop_or_replan"),
+            ("What we wanted to learn", "target"),
+            ("Who or what reviewed it", "feedback_target"),
+            ("Feedback", "feedback_status"),
+            ("Evidence", "feedback_evidence"),
+            ("What changed", "invalidation_result"),
+            ("Related documents", "ancestor_impact"),
+            ("When to change course", "stop_or_replan"),
         )
     )
     return (
-        '<div class="assessment-learning"><h3>Assessed learning</h3>'
+        '<div class="assessment-learning"><h3>What we learned</h3>'
         f'<div class="assessment-feedback">{feedback_badge(learning.get("feedback_status"))}</div>'
         f'<dl class="learning-record">{rows}</dl></div>'
     )
@@ -1456,8 +1487,8 @@ def render_code_node(item: dict[str, Any]) -> str:
     level = item.get("child_level")
     level_class = level if level in {"product", "feature", "slice"} else "unknown"
     if prs:
-        detail = f"{len(prs)} PR slice{'s' if len(prs) != 1 else ''}"
-        detail += f" &middot; {evidence_count} mapped test entr{'ies' if evidence_count != 1 else 'y'}"
+        detail = f"{len(prs)} planned change{'s' if len(prs) != 1 else ''}"
+        detail += f" &middot; {evidence_count} linked test entr{'ies' if evidence_count != 1 else 'y'}"
     else:
         detail = '<span class="empty">No implementation PRs discovered</span>'
     return f"""
@@ -1486,7 +1517,7 @@ def render_malformed_warning(identifiers: list[str]) -> str:
     listed = " ".join(f"<code>{esc(identifier)}</code>" for identifier in identifiers)
     return f"""
 <aside class="validation-warning" role="alert">
-  <strong>{count} malformed WORK allocation{"s" if count != 1 else ""} excluded from valid counts</strong>
+  <strong>{count} invalid work item{"s" if count != 1 else ""} excluded from the totals</strong>
   <span>{listed}</span>
   <small>Use <code>WORK-AREA-NAME</code>; each slug token must be 2-32 uppercase letters or digits and start with a letter.</small>
 </aside>"""
@@ -1521,8 +1552,8 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
     if not wave_model["sequences"]:
         body = """
 <div class="empty-state wave-empty">
-  <strong>No ordered learning waves declared</strong>
-  <span>Add a machine-readable Learning Waves section to a plan; legacy plans remain valid.</span>
+  <strong>No grouped work planned</strong>
+  <span>Work can proceed without groups when no shared review point is needed.</span>
 </div>"""
     else:
         sequences = []
@@ -1558,20 +1589,23 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
                 detail_rows = "".join(
                     f"<dt>{esc(label)}</dt><dd>{esc(value or 'Not recorded')}</dd>"
                     for label, value in (
-                        ("WIP limit", wave.get("wip_limit")),
-                        ("Planned checkpoint", wave.get("checkpoint")),
-                        ("Stop or replan", wave.get("stop_or_replan")),
-                        ("Checkpoint state", checkpoint_label),
-                        ("Feedback status", checkpoint_learning.get("feedback_status")),
+                        ("Work limit", wave.get("wip_limit")),
+                        ("Review point", wave.get("checkpoint")),
+                        ("When to change course", wave.get("stop_or_replan")),
+                        ("Review status", checkpoint_label),
+                        ("Feedback", checkpoint_learning.get("feedback_status")),
                         (
-                            "Feedback evidence",
+                            "Evidence",
                             checkpoint_learning.get("feedback_evidence"),
                         ),
                         (
-                            "Invalidation result",
+                            "What changed",
                             checkpoint_learning.get("invalidation_result"),
                         ),
-                        ("Ancestor impact", checkpoint_learning.get("ancestor_impact")),
+                        (
+                            "Related documents",
+                            checkpoint_learning.get("ancestor_impact"),
+                        ),
                     )
                 )
                 assessment_note = (
@@ -1590,10 +1624,10 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
 <li class="wave-step" data-state="{esc(wave["state"])}">
   <details class="wave-card"{open_attribute}>
     <summary>
-      <span class="wave-order">Wave {esc(wave.get("order") or "?")}</span>
+      <span class="wave-order">Group {esc(wave.get("order") or "?")}</span>
       <span class="wave-title"><code>{esc(wave["id"])}</code><strong>{esc(wave["name"])}</strong></span>
       {badge(wave["state"], status_label)}
-      <span class="wave-target">{esc(wave.get("learning_target") or "Learning target not recorded")}</span>
+      <span class="wave-target">{esc(wave.get("learning_target") or "Expected result not recorded")}</span>
       <span class="wave-members-compact">{members_compact}</span>
     </summary>
     <div class="wave-body">
@@ -1618,7 +1652,7 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
     return f"""
 <section class="waves-view" aria-labelledby="waves-title">
   <div class="waves-heading">
-    <div><h2 id="waves-title">Learning waves</h2><p>Ordered delivery and feedback checkpoints declared by each plan.</p></div>
+    <div><h2 id="waves-title">Work groups</h2><p>Work that shares a review or integration point.</p></div>
     <div class="wave-totals"><strong>{summary["completed"]} / {summary["total"]}</strong><span>completed</span><strong>{summary["in_progress"]}</strong><span>in progress</span></div>
   </div>
   {issues}
@@ -1639,7 +1673,7 @@ def render_tree_branch(
     wave = item.get("wave") or {}
     wave_ids = [wave["id"]] if wave.get("id") else []
     wave_label = (
-        f'<span class="wave-marker" title="{esc(wave["id"])}">Wave {esc(wave.get("order") or "?")}</span>'
+        f'<span class="wave-marker" title="{esc(wave["id"])}">Group {esc(wave.get("order") or "?")}</span>'
         if wave
         else ""
     )
@@ -1673,7 +1707,7 @@ def render_tree_branch(
                 output,
                 "plan",
                 child_level_value,
-                "Inherited-intent plan",
+                "Compact plan",
                 child,
             ),
             render_code_node(item),
@@ -1725,28 +1759,31 @@ def render_tree_branch(
         for label, key in (
             ("Parent scope", "parent_scope"),
             ("Child scope", "child_scope"),
-            ("Parent IDs / inherited obligations", "parent_obligations"),
+            ("Related requirements", "parent_obligations"),
             ("Dependencies", "dependencies"),
-            ("Readiness target", "readiness_target"),
-            ("Required child artifact", "child_requirement"),
-            ("Done signal", "done_signal"),
+            ("Ready when", "readiness_target"),
+            ("Documents needed", "child_requirement"),
+            ("Done when", "done_signal"),
             ("Risks", "risks"),
-            ("Learning target", "learning_target"),
-            ("Feedback target", "feedback_target"),
-            ("Feedback method", "feedback_method"),
-            ("Invalidation question", "invalidation_question"),
-            ("Dependency types", "dependency_types"),
-            ("Stop or replan trigger", "stop_or_replan"),
+            ("What we need to learn", "learning_target"),
+            ("Who or what will review it", "feedback_target"),
+            ("How feedback is gathered", "feedback_method"),
+            ("What could change the plan", "invalidation_question"),
+            ("Dependency details", "dependency_types"),
+            ("When to change course", "stop_or_replan"),
         )
     )
     if wave:
         details += "".join(
             f"<dt>{esc(label)}</dt><dd>{esc(value or 'Not recorded')}</dd>"
             for label, value in (
-                ("Wave", f"Wave {wave.get('order') or '?'}: {wave.get('id') or ''}"),
-                ("Wave purpose", wave.get("learning_target")),
-                ("Wave review point", wave.get("checkpoint")),
-                ("Wave stop or change trigger", wave.get("stop_or_replan")),
+                (
+                    "Work group",
+                    f"Group {wave.get('order') or '?'}: {wave.get('id') or ''}",
+                ),
+                ("Expected result", wave.get("learning_target")),
+                ("Review point", wave.get("checkpoint")),
+                ("Stop condition", wave.get("stop_or_replan")),
             )
         )
     claim = item.get("wip_claim") or {}
@@ -1783,7 +1820,7 @@ def render_tree_branch(
     return f"""
 <details class="tree-branch" data-id="{esc(item["id"])}" data-name="{esc(item["name"])}" data-owner-id="{esc(owner_id)}" data-owner-name="{esc(owner_name)}" data-waves="{esc(" ".join(wave_ids))}" data-level="{esc(child_level_value)}" data-state="{esc(item["state"])}" data-search="{esc(searchable)}"{open_attribute}>
   <summary class="branch-summary">
-    <span class="branch-title"><code>{esc(item["id"])}</code><strong>{esc(item["name"])}</strong></span>
+    <span class="branch-title"><strong>{esc(item["name"])}</strong><small><code>{esc(item["id"])}</code></small></span>
     <span class="branch-path">{esc(parent_label)} &rarr; {esc(child_label)}</span>
     {wave_label}
     {focus_label}
@@ -1794,7 +1831,7 @@ def render_tree_branch(
     {prs_html}
     {children_html}
     <details class="branch-details">
-      <summary>Scope, allocation, PRs, and evidence</summary>
+      <summary>Scope, planned changes, and evidence</summary>
       <div class="detail-layout"><dl>{details}</dl><div>{claim_html}{assessment_learning_html}</div></div>
     </details>
   </div>
@@ -1907,8 +1944,8 @@ def render_html(
             if root_is_implementation
             else """
 <div class="empty-state">
-  <strong>No valid decomposition discovered</strong>
-  <span>A breakdown plan with valid WORK-AREA-NAME identifiers will expand this view.</span>
+  <strong>No child work planned</strong>
+  <span>This view expands when the plan links to smaller pieces of work.</span>
 </div>"""
         )
     branches_html = (
@@ -1933,24 +1970,24 @@ def render_html(
     )
     summary = model["summary"]
     awaiting_count = summary["work_items"] - summary["expanded_items"]
-    approval_scope = "Artifact" if root_is_implementation else "Parent"
+    approval_scope = "Document" if root_is_implementation else "Parent"
     parent_gate_text = (
         f"All {approval_scope.casefold()} approvals current"
         if summary["approved_stages"] == 3
         else f"{summary['approved_stages']} of 3 {approval_scope.casefold()} approvals current"
     )
     expansion_text = (
-        f"{summary['pr_slices']} PR slice{'s' if summary['pr_slices'] != 1 else ''} "
-        f"are organized into {summary['learning_waves']} learning wave"
+        f"{summary['pr_slices']} implementation item{'s' if summary['pr_slices'] != 1 else ''} "
+        f"are organized into {summary['learning_waves']} work group"
         f"{'s' if summary['learning_waves'] != 1 else ''}."
         if root_is_implementation
-        else f"{summary['expanded_items']} of {summary['work_items']} allocations "
-        f"have child plans; {awaiting_count} await decomposition."
+        else f"{summary['expanded_items']} of {summary['work_items']} work items "
+        f"have detailed plans; {awaiting_count} are not yet detailed."
     )
     malformed_count = summary["malformed_work_items"]
     if malformed_count:
         expansion_text += (
-            f" {malformed_count} malformed allocation"
+            f" {malformed_count} invalid work item"
             f"{'s are' if malformed_count != 1 else ' is'} excluded."
         )
     if summary["approved_stages"] == 3:
@@ -2230,6 +2267,8 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   .wave-member-compact {{ justify-content: space-between; padding: 0.25rem 0; border-right: 0; border-bottom: 1px solid var(--line); }}
   .wave-body, .wave-body > dl {{ grid-template-columns: 1fr; }}
   .wave-body dd {{ margin-bottom: 0.3rem; }}
+  .pr {{ align-items: start; flex-wrap: wrap; }}
+  .pr small {{ white-space: normal; }}
 }}
 </style>
 </head>
@@ -2274,9 +2313,9 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   </section>
   {malformed_warning}
   <div class="tree-heading">
-    <div><h2>Workflow tree</h2><p id="tree-description">Open an allocation to inspect its artifact path.</p></div>
+    <div><h2>Work</h2><p id="tree-description">Open an item to see its documents and evidence.</p></div>
     <div class="toolbar">
-      <label class="search"><input id="search" type="search" placeholder="Filter allocations" aria-label="Filter allocations"></label>
+      <label class="search"><input id="search" type="search" placeholder="Filter work" aria-label="Filter work"></label>
       <button class="tree-action" id="expand-all" type="button">Expand all</button>
       <button class="tree-action" id="collapse-all" type="button">Collapse all</button>
     </div>
@@ -2285,7 +2324,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   <details class="legend">
     <summary>Legend</summary>
     <div class="encoding" aria-label="Tree encoding">
-      <div class="encoding-row"><span class="encoding-label">Background = artifact type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
+      <div class="encoding-row"><span class="encoding-label">Background = document type</span><span class="key key-spec">Spec</span><span class="key key-design">Design</span><span class="key key-plan">Plan</span><span class="key key-code">Code + tests</span></div>
       <div class="encoding-row"><span class="encoding-label">Level tag = work scope</span><span class="level level-product">Product</span><span class="level level-feature">Feature</span><span class="level level-slice">Slice</span></div>
       <div class="encoding-row"><span class="encoding-label">Status = observed state</span>{badge("approved")}{badge("started", "In progress")}{badge("missing", "Not started")}</div>
     </div>
@@ -2299,7 +2338,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   <section class="technical-details" aria-label="Workflow details">
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean hash-current approval, passing code assessment, approved code-slice handoff, or an exact hash-current wave checkpoint. Amber dots mean work or evidence is present but not complete. Gray circles mean not started. Learning and feedback fields are explicit WIP, assessment, or checkpoint claims; the renderer never infers them from Git, approvals, or passing tests.</p>
+      <p>Green checks mean completed and reviewed. Amber dots mean work or evidence exists but is not complete. Gray circles mean not started. Status is shown only when it is explicitly recorded; it is never guessed from Git or passing tests.</p>
       {approval_note}
       {traceability_note}
       {assessment_note}
@@ -2347,7 +2386,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   }};
   addMenu('Features', 'feature', unique(rows.filter(row => row.dataset.level === 'feature').map(row => ({{ id: row.dataset.id, label: row.dataset.name }}))));
   addMenu('Slices', 'slice', unique(rows.filter(row => row.dataset.level === 'slice').map(row => ({{ id: row.dataset.id, label: `${{row.dataset.ownerName}} / ${{row.dataset.name}}` }}))));
-  addMenu('Waves', 'wave', unique(rows.flatMap(row => row.dataset.waves.split(' ').filter(Boolean).map(id => ({{ id, label: id }})))));
+  addMenu('Work groups', 'wave', unique(rows.flatMap(row => row.dataset.waves.split(' ').filter(Boolean).map(id => ({{ id, label: id }})))));
   const apply = () => {{
     const wanted = query.value.trim().toLocaleLowerCase();
     const directMatches = new Set(rows.filter(row => {{
@@ -2370,8 +2409,8 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
       if ((wanted || activeLevel || selected.feature.size || selected.slice.size || selected.wave.size) && visible.has(row)) row.open = true;
     }});
     treeDescription.textContent = activeLevel
-      ? `Showing ${{activeLevel}} allocations. Clear the filter by selecting Product above.`
-      : 'Open an allocation to inspect its artifact path.';
+      ? `Showing ${{activeLevel}} work. Clear the filter by selecting Product above.`
+      : 'Open an item to see its documents and evidence.';
   }};
   query.addEventListener('input', apply);
   scopeLinks.forEach(link => link.addEventListener('click', () => {{

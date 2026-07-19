@@ -74,13 +74,13 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     assert bundled.read_bytes() == source.read_bytes()
     guide = source.read_text(encoding="utf-8")
     assert "1. PR-sized leaf" in guide
-    assert "2. Decompose only for unresolved uncertainty" in guide
-    assert "Direct-to-code decision:" in guide
+    assert "2. Split work only when a question blocks implementation" in guide
+    assert "Direct-to-code decision:" not in guide
     assert "Neuring before / after:" in guide
     assert "WORK-FEATURE-ONE" in guide
     assert "WORK-SLICE-A" in guide
     assert "WORK-SYSTEM-INTEGRATION" in guide
-    assert "Product plan allocation" in guide
+    assert "Assigned by the product plan" in guide
     assert "Integration slice child" in guide
     assert "Background = document type" in guide
     assert "Level tag = work scope" in guide
@@ -90,17 +90,16 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     assert "key-work" not in guide
     assert "Slice A spec + LLD" not in guide
     assert "3. Inspect and adapt" in guide
-    assert "Learning-dependent slices:" in guide
-    assert "Lean, Standard, and High-assurance" in guide
-    assert "outside product architecture" in guide
-    assert re.search(r"at most\s+three", guide)
-    assert "There are no line-count targets" in guide
+    assert "Dependent changes:" in guide
+    assert "stricter review when failure could cause serious harm" in guide
+    assert "Process records stay outside product code" in guide
+    assert not re.search(r"at most\s+three", guide)
 
 
 def test_feedback_and_learning_policy_is_wired_into_stage_prompts() -> None:
     policy = (ROOT / "docs" / "feedback-and-learning.md").read_text(encoding="utf-8")
     assert "Could feedback from this slice materially invalidate" in policy
-    assert "Intra-slice parallelism" in policy
+    assert "## Parallel work" in policy
     assert "revision-required" in policy
 
     for name in (
@@ -119,7 +118,8 @@ def test_simplicity_policy_is_wired_into_creation_review_and_assessment() -> Non
     policy = (ROOT / "docs" / "simplicity-first.md").read_text(encoding="utf-8")
     assert "Keep Process Machinery Out Of Product Code" in policy
     assert "Reuse Proof From The Existing System" in policy
-    assert "default to at most three" in policy
+    assert "solution is larger than the problem\nrequires, simplify it" in policy
+    assert "Complexity Budget" not in policy
     assert "Neutral package and current contracts" in policy
 
     for suffix in ("create", "review", "assess"):
@@ -132,13 +132,18 @@ def test_simplicity_policy_is_wired_into_creation_review_and_assessment() -> Non
 
 def test_human_first_policy_is_wired_into_artifact_stages() -> None:
     policy = (ROOT / "docs" / "human-first-artifacts.md").read_text(encoding="utf-8")
-    assert "## Two layers in one file" in policy
+    assert "## Explanation first, mappings last" in policy
     assert "## Authentication dogfood" in policy
     assert "must decode Sarathi identifiers" in policy
 
     for stage in ("spec", "design", "plan"):
-        for suffix in ("create", "review", "assess"):
+        for suffix in ("create", "review"):
             prompt = (ROOT / "prompts" / f"{stage}-{suffix}.prompt.md").read_text(
                 encoding="utf-8"
             )
             assert "docs/human-first-artifacts.md" in prompt
+
+        assess = (ROOT / "prompts" / f"{stage}-assess.prompt.md").read_text(
+            encoding="utf-8"
+        )
+        assert f"prompts/{stage}-review.prompt.md" in assess

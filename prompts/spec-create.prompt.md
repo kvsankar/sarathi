@@ -1,5 +1,5 @@
 ---
-description: Create or revise a proportionate, testable Software Requirements Specification from stakeholder intent.
+description: Write or revise clear, testable requirements from the user's needs.
 agent: agent
 ---
 
@@ -21,10 +21,10 @@ Load only when the trigger applies:
 - `docs/project-entry.md`: starting in an unfamiliar or existing codebase;
 - `docs/srs-authoring.md`: Product/system scope, reconstructed behavior, or terse
   requirements risk;
-- `docs/assurance-profiles.md`: selecting or changing the delivery profile or extra checks;
+- `docs/assurance-profiles.md`: selecting or changing the review level or additional checks;
 - `docs/simplicity-first.md`: proposed implementation machinery, reuse, or a refactor affects
   the requirement boundary;
-- `docs/cross-cutting-concerns.md`: a concrete risk module applies;
+- `docs/cross-cutting-concerns.md`: an identified risk needs additional checks;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before handoff.
 
 If a required reference cannot be found in the active skill bundle or canonical repo,
@@ -34,8 +34,8 @@ report an incomplete installation instead of recreating policy from memory.
 
 Infer and state Product/system, Feature/component, or Slice/change scope. Select Lean,
 Standard, or High-assurance for production work; keep Exploratory for timeboxed
-non-production learning. Record the profile, extra risk checks, reason, and conditions
-that would require stronger review in the spec and current process/WIP state.
+non-production learning. Keep the exact review-level fields in process metadata. In the
+spec, describe important risks and the checks they require in ordinary language.
 
 Before writing, understand the problem, affected stakeholders, success, non-goals,
 observable behavior, external boundaries, acceptance basis, and material constraints. Ask
@@ -47,10 +47,9 @@ Research current external facts when requirements depend on changing standards,
 regulation, vendor contracts, or specialized domain facts. Cite authoritative sources in
 the spec when they control intent.
 
-Before creating a child spec, apply the direct-to-code decision in
-`docs/simplicity-first.md`. If accepted parent intent plus a bounded Implementation plan is
-sufficient, do not create the spec. If not, record the ceremony budget and write only the
-smallest delta that resolves the named uncertainty.
+Before creating a child spec, ask whether the approved requirements and one short plan are
+already enough to implement safely. If so, do not create another spec. If not, write only
+what is needed to answer the specific unresolved question.
 
 ## Author
 
@@ -61,27 +60,31 @@ reproduce the complete parent requirement inventory.
 
 Apply these requirements rules:
 
-- Start new or materially revised specs with the version marker and `## Product Crux`.
+- Start new or materially revised specs with the version marker and `## Product Overview`.
+  Accept `## Product Crux` in existing documents.
   Keep its plain-language problem, users, outcomes, non-goals, success, failures, and
   constraints free of process IDs. Use descriptive headings; put IDs in comments and the
   final `## Traceability` appendix.
 - State stakeholder needs before features and behavior before solution mechanics.
 - Make non-goals explicit enough to prevent accidental scope.
-- Write atomic, necessary, feasible, unambiguous, testable `FR-*`/`NFR-*` obligations.
-- Define black-box `AT-*` criteria and ordered `JT-*` journeys at the spec's scope.
-- Name external contract sources and how the real boundary will be tested. State the risk
-  of test doubles instead of treating invented interfaces as truth.
+- Write each requirement as one necessary, feasible, testable behavior. Keep `FR-*` and
+  `NFR-*` IDs in traceability.
+- Describe observable success and important user journeys. Keep `AT-*` and `JT-*` IDs in
+  traceability.
+- Name the source of each external contract and how it will be tested through the real
+  dependency or its official test interface. If only a mock is available, state what
+  remains untested.
 - For UI-facing work, record presentation/accessibility intent and
   `UI Mock Preference: Required | Optional | Not needed | Deferred`.
-- Include only the extra risk checks this work needs. Do not paste a universal concern list
+- Include only the additional checks this work needs. Do not paste a universal concern list
   or add `None` fields for risks the context does not suggest.
 - Preserve stable IDs during revision and record changes needed in parent documents.
 - Do not turn process links, evidence, approval, or status needs into product requirements.
   Do not specify hypothetical future consumers.
 
-Write `spec.md` unless another path is named. Child specs include
-`Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec when an
-Inherited-Intent Implementation Record can safely authorize code.
+Write `spec.md` unless another path is named. Child specs include the exact machine field
+`Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec when approved
+parent documents and one short implementation plan are enough.
 
 ## Verify And Handoff
 
@@ -96,10 +99,10 @@ sub-agent for checks and another for independent review when available. Without 
 say that the review is not independent and keep the passes separate.
 
 Revise until the result is Pass or an explicitly accepted Pass-with-fixes. Update
-`.sdlc/wip.md` with paths, review depth and extra checks, readiness, evidence, assumptions,
+`.sdlc/wip.md` with the path, exact machine status fields, checks run, assumptions,
 blockers, and next action.
 
-Stop for human review. Report the spec path, scope, readiness, review depth and extra
-checks, assessment, open questions, and recommended `/design-create`. Do not start design
+Stop for human review. Report the spec path, what it defines, checks run, open questions,
+and recommended `/design-create`. Do not start design
 in the same turn
 unless the latest user request explicitly asks for end-to-end continuation.

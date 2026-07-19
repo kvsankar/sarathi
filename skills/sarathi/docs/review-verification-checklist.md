@@ -1,7 +1,7 @@
 # Checks And Review Checklist
 
 Every assessment pairs repeatable check results with independent judgment. Checker JSON is
-never the whole assessment. Run mechanical verification once per artifact revision.
+never the whole assessment. Run automatic checks once per document revision.
 
 ## Independent Passes
 
@@ -25,8 +25,8 @@ unless scope or controlling intent changed materially. Record which mode was use
 | --- | --- |
 | `/spec-assess` | `check_spec.py`, ID/section/coverage structure, approval evidence when required. |
 | `/design-assess` | Spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
-| `/plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, pass/fail verification, exact wave membership, structured complexity budget/count, and targeted exception approval. |
-| `/code-assess` | Earlier checks, `check_code.py`, planned tests, repository quality gate, and planned extra-risk commands. |
+| `/plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, pass/fail verification, and exact membership of any parallel-work group. |
+| `/code-assess` | Earlier checks, `check_code.py`, planned tests, required project checks, and any extra checks in the plan. |
 
 Check results prove only what the command observes. They do not prove
 correctness, meaningful tests, stakeholder feedback, real-boundary execution, merge state,
@@ -36,14 +36,14 @@ or human intent beyond a valid local approval record.
 
 Every reviewer judges:
 
-- accepted intent, scope/readiness, and fitness of earlier documents;
+- approved requirements, scope/readiness, and whether earlier documents are sufficient;
 - selected review depth and only the extra risk checks triggered by context;
 - clear pass/fail checks, real-boundary confidence, risks, and remaining uncertainty;
 - feedback/learning dependencies and changes to parent documents where applicable;
 - simplicity using `docs/simplicity-first.md`.
 - whether the chosen verification is focused, meaningful, and proportionate to risk.
-- whether another artifact is justified by a concrete ceremony budget; recommending a new
-  document layer is never the default fix.
+- whether a specific unanswered question truly requires another document; recommending a
+  new document layer is never the default fix.
 
 Start with simplification: what can be deleted, deferred, collapsed, implemented directly,
 or proved by existing evidence? A document with every required section still fails when it is overbuilt,
@@ -59,11 +59,11 @@ criteria merely because they exist.
 Every non-blocked assessment reports:
 
 1. Check results with exact commands and evidence limits.
-2. Review scorecard, including review-depth, extra-risk, and simplicity fitness.
-3. Deletion, deferral, collapse, and existing-evidence opportunities.
+2. What is clear, what is not, and whether the planned checking matches the actual risk.
+3. What can be deleted, deferred, combined, or proved with existing tests.
 4. Top fixes ranked by impact.
 5. Verdict: `Pass | Pass-with-fixes | Needs rework`.
 
 Use `Blocked-upstream` when a controlling parent document must be corrected before later
 judgment. Code assessment also reports feedback and parent-document changes, and writes
-assessment/wave ledgers only under the evidence rules in `docs/workflow-status.md`.
+assessment and parallel-work ledgers only under the evidence rules in `docs/workflow-status.md`.

@@ -52,17 +52,7 @@ SPEC_SECTIONS = [
 ]
 
 HUMAN_FIRST_SPEC_SECTIONS = [
-    "Product Crux",
-    "User Needs",
-    "Non-Goals",
-    "Features",
-    "Use Cases",
-    "Functional Requirements",
-    "Non-Functional Requirements",
-    "External Interfaces & Contracts",
-    "Acceptance Tests",
-    "Journey Tests",
-    "Assumptions & Open Questions",
+    "Product Overview",
     "Traceability",
 ]
 
@@ -83,8 +73,7 @@ DESIGN_SECTIONS = [
 ]
 
 HUMAN_FIRST_DESIGN_SECTIONS = [
-    "Technical Crux",
-    *DESIGN_SECTIONS[:-1],
+    "Technical Approach",
     "Traceability",
 ]
 
@@ -97,4 +86,7 @@ PLAN_SECTIONS = [
     "Sequencing & Risks",
 ]
 
-HUMAN_FIRST_PLAN_SECTIONS = ["Implementation Crux", *PLAN_SECTIONS, "Traceability"]
+HUMAN_FIRST_PLAN_SECTIONS = [
+    "Implementation Approach",
+    "Traceability",
+]

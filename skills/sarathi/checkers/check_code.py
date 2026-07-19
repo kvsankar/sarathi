@@ -11,7 +11,6 @@ Git history.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import re
@@ -146,11 +145,6 @@ def process_id_hits(files: list[Path], root: Path) -> list[dict]:
     return hits
 
 
-def marker_inventory_hash(markers: list[dict]) -> str:
-    payload = json.dumps(markers, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
-
 def test_command() -> tuple[list[str] | str | None, bool]:
     """Return an argv command by default; shell execution requires opt-in."""
     argv_json = arg("--tests-argv")
@@ -219,6 +213,10 @@ def main() -> int:
         if not is_generated_traceability(path)
     )
     code_markers = marker_hits(scanned_files, Path.cwd())
+    test_markers = marker_hits(
+        sorted(path for path in test_files if not is_generated_traceability(path)),
+        Path.cwd(),
+    )
     source_process_ids = process_id_hits(scanned_files, Path.cwd())
 
     tests_pass: bool | None = None
@@ -233,7 +231,7 @@ def main() -> int:
     plan_text = plan.read_text(encoding="utf-8") if plan.exists() else ""
     approval_requirements: list[dict] = []
     approval_context: dict = {}
-    if require_approvals or code_markers:
+    if require_approvals:
         approval_context = load_approval_context(Path.cwd(), approvals_path, gates_path)
     if require_approvals:
         approval_requirements.append(
@@ -266,24 +264,12 @@ def main() -> int:
                 }
             )
 
-    marker_approval_requirements: list[dict] = []
-    marker_inventory_sha = marker_inventory_hash(code_markers) if code_markers else None
-    if code_markers:
-        marker_approval_requirements.append(
-            approval_requirement(
-                approval_context,
-                Path.cwd(),
-                "code.markers.approved",
-                "code-marker-inventory",
-                artifact_kind="marker-inventory",
-                expected_sha256=marker_inventory_sha,
-            )
-        )
-
     gates = {
         "verification_command_passed": tests_pass is True,
-        "markers_approved": approval_gate_passed(marker_approval_requirements),
         "source_process_ids_absent": not source_process_ids,
+        "skipped_tests_absent": not any(
+            hit["marker"] in {"SKIP", "SKIPIF", "XFAIL"} for hit in test_markers
+        ),
     }
     if require_approvals:
         gates["required_approvals_present"] = approval_gate_passed(
@@ -294,7 +280,6 @@ def main() -> int:
         "verification_command_exit": tests_exit,
         "verification_command_passed": tests_pass,
         "approval_requirements": approval_requirements,
-        "marker_approval_requirements": marker_approval_requirements,
         "approval_ledger": {
             "path": approvals_path,
             "exists": approval_context.get("exists") if approval_context else None,
@@ -306,7 +291,6 @@ def main() -> int:
             ),
         },
         "code_markers": code_markers,
-        "marker_inventory_sha256": marker_inventory_sha,
         "marker_hits": len(code_markers),
         "process_id_hits": source_process_ids,
         "generated_traceability_paths": [
@@ -319,11 +303,30 @@ def main() -> int:
     if as_json:
         print(json.dumps(report, indent=2))
     else:
+        labels = {
+            "verification_command_passed": "Verification command passed",
+            "source_process_ids_absent": (
+                "Source and tests contain no process identifiers"
+            ),
+            "skipped_tests_absent": "Tests contain no skip or expected-failure markers",
+            "required_approvals_present": "Required approvals are current",
+        }
         for key, value in gates.items():
-            print(f"{'PASS' if value else 'FAIL'}  {key}")
+            print(
+                f"{'PASS' if value else 'FAIL'}  "
+                f"{labels.get(key, key.replace('_', ' '))}"
+            )
+        todo_markers = [
+            hit for hit in code_markers if hit["marker"] in {"TODO", "FIXME", "XXX"}
+        ]
+        if todo_markers:
+            print(
+                f"WARN  {len(todo_markers)} TODO, FIXME, or XXX marker"
+                f"{'s' if len(todo_markers) != 1 else ''} found; review before release"
+            )
         command_text = report["verification_command"] or "not provided"
         print(f"\nVerification command: {command_text}")
-        print(f"{report['passed']}/{report['total']} gates passed")
+        print(f"{report['passed']}/{report['total']} checks passed")
     return 0 if all(gates.values()) else 1
 
 

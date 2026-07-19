@@ -1,5 +1,5 @@
 ---
-description: Independently review a Software Requirements Specification using checker results and look for counterexamples.
+description: Independently review requirements using checker results and look for missed cases.
 agent: agent
 ---
 
@@ -15,32 +15,25 @@ Use a fresh reviewer sub-agent when available. Otherwise say that the review is 
 independent and actively seek counterexamples. Passing automatic checks is useful evidence,
 not proof that the requirements are good.
 For corrected findings, focus on those findings and affected boundaries; restart the full
-review only when scope or controlling intent changed materially.
+review only when requirements or scope changed.
 
 ## Judge
 
-Score 1–5 and give a concrete fix below 5:
-
-- problem, stakeholders, boundary, success, non-goals, and scope/readiness;
-- need/feature/use-case fidelity and atomic, design-free FR/NFR quality;
-- black-box AT and ordered JT quality at the declared scope;
-- external contract realism and whether the real boundary can be tested;
-- links from requirements to later work and reconciliation with existing-system sources;
-- selected review depth, extra risk checks, conditions for stronger review, and
-  proportionality;
-- UX/mock preference and other module outcomes only when triggered;
-- simplicity: no process requirement masquerades as product behavior, no hypothetical
-  consumer drives scope, and no generic machinery is specified without concrete evidence.
+Lead with concrete problems. Check that the opening page lets an engineer explain the
+problem, affected users, required behavior, non-goals, success, and important failures.
+Then check that each requirement is observable and testable, external contracts are
+credible, links to later work resolve, and stronger checks are limited to real risks.
 
 Start with simplification: identify requirements, roles, qualities, documents, or future
 behaviors that can be deleted, deferred, or proven by existing evidence. A spec with every
 required section still needs rework when it is overbuilt.
 
-If identifiers interrupt the Product Crux, move them to traceability and return
+If identifiers interrupt the Product Overview (or legacy Product Crux), move them to
+traceability and return
 `Needs rework`. If an engineer must decode IDs to understand the product, rewrite it in
 plain technical language even when automatic checks pass.
 
-Report evidence considered, scorecard, what can be deleted, deferred, or proved by existing
-evidence, top fixes, and
+Report evidence considered, concrete findings, what can be deleted, deferred, or proved by
+existing evidence, top fixes, and
 `Pass | Pass-with-fixes | Needs rework`. Update `.sdlc/wip.md` and stop; do not start design
 without explicit user approval.

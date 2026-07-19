@@ -23,7 +23,7 @@ Command verbs are intentionally distinct:
 - `create`: write or revise a document or code slice.
 - `verify`: run repeatable checks and report their limits.
 - `review`: independently judge quality and look for counterexamples.
-- `assess`: run verification and review as the full gate.
+- `assess`: run verification and review together.
 
 The stage sequence is `spec -> design -> plan -> code`, with matching `create`, `verify`,
 `review`, and `assess` commands. `/workflow-status` is a read-only projection and never
@@ -35,7 +35,7 @@ lives in `docs/` and must not be copied into every prompt.
 All production work uses the same loop:
 
 ```text
-accepted intent -> smallest useful slice -> evidence -> feedback -> inspect/adapt
+approved requirements -> smallest useful change -> results -> feedback -> inspect/adapt
 ```
 
 Use [docs/assurance-profiles.md](docs/assurance-profiles.md) to choose review depth:
@@ -46,19 +46,17 @@ Use [docs/assurance-profiles.md](docs/assurance-profiles.md) to choose review de
   financial, availability, migration, or irreversible-data consequences.
 - **Exploratory** remains a separate non-production track for timeboxed spikes.
 
-Profiles change review depth; they never waive accepted intent, readiness to implement,
+Review levels change review depth; they never waive approved requirements, readiness to implement,
 tests, honest feedback, review of parent documents, human approval points, or safety
 limits. Add only the extra risk checks that the work actually needs. High-assurance asks
 for stronger proof at each delivery step instead of front-loading the whole project.
 
 Apply [docs/simplicity-first.md](docs/simplicity-first.md) as a hard design constraint.
-Process evidence must not become product architecture. Start with the smallest direct
+Process records must not become product architecture. Start with the smallest direct
 implementation, reuse existing suites and contracts as compatibility proof, generalize
 after a second concrete use case, and stop when conceptual complexity exceeds the user's
-mental model. A bounded slice defaults to at most three implementation PRs; exceptions need
-concise justification and a `plan.complexity-approved` record that matches the current plan
-before assessment; final `plan.approved` remains the approval required for code. Sarathi has no LOC
-constraints.
+mental model. If the solution is larger than the problem requires, simplify it. Sarathi has
+no LOC or PR-count constraints.
 
 Record the profile, extra risk checks, reason, and conditions that would require stronger
 review in `.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the source
@@ -67,26 +65,25 @@ document.
 ## Scope And Execution Readiness
 
 - **Product/system**: broad boundary and capabilities.
-- **Feature/component**: coherent capability or subsystem; may be directly code-ready.
-- **Slice/change**: smallest implementable unit; normally code-ready.
+- **Feature/component**: coherent capability or subsystem; may be ready to implement directly.
+- **Slice/change**: smallest implementable unit; normally ready to implement.
 
-Documents declare `Implementation Readiness: Exploratory | Decomposable | Code-ready`.
-`/code-create` blocks without accepted intent and a bounded code-ready Implementation plan.
+`/code-create` blocks without approved requirements and a specific plan that is ready to implement.
 
-At every planning boundary, first ask whether accepted parent artifacts plus one bounded
-Implementation plan safely authorize the next reviewable increment. If yes, plan and code;
-do not create another spec, design, breakdown, wave, or document layer. This applies to
+Before adding another document, ask whether approved earlier documents plus one specific
+implementation plan make the next change clear and safe. If yes, plan and code;
+  do not create another spec, design, breakdown, work group, or document layer. This applies to
 feature/component work and all assurance profiles. Decompose only for a concrete unresolved
 decision, contract, material risk, independently valuable feedback outcome, touch/integration
 conflict, or missing observable acceptance. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
-Breakdown plans use a `WAVE-*` only for near-term `WORK-*` children that share a real
-feedback or integration checkpoint; unscheduled children have no wave. Implementation plans
-list the PRs for one child without assigning PRs to waves. Each wave states what it should
+Breakdown plans use a work group only for near-term `WORK-*` children that share a real
+feedback or integration checkpoint; unscheduled children have no group. Implementation plans
+list the PRs for one child without assigning PRs to groups. Each group states what it should
 teach us, how much may run at once, when
 feedback and integration happen, and when to stop or replan. A
-`.sdlc/wave-checkpoints.yaml` record that matches the current plan closes only its wave. See
+`.sdlc/wave-checkpoints.yaml` record that matches the current plan closes only its group. See
 [docs/feedback-and-learning.md](docs/feedback-and-learning.md).
 
 ## Non-Negotiable Evidence Rules
@@ -111,28 +108,28 @@ Behavior-changing code has focused, meaningful verification. The implementation 
 chosen by the repository; review evaluates whether the resulting tests and commands are
 credible.
 
-Run bounded cleanup and simplify passes before handoff. Fix in-scope oddities, avoid
+Run focused cleanup and simplify passes before handoff. Fix in-scope oddities, avoid
 unrelated refactors, and revise earlier documents if simplification changes accepted
 behavior or contracts. See `docs/cleanup-pass.md` and `docs/simplify-pass.md`.
 
 ## Feedback And Parallelism
 
-Approval means sufficient for the next learning step, not frozen forever. Every code-ready
-slice states what it should teach us, who or what can judge the result, how feedback will
-be gathered, what result would change the plan (`Invalidation Question`), and which parent
-documents may need revision (`Ancestor Impact`). Feedback status is `received`, `requested`,
+Approval means sufficient for the next change, not frozen forever. Every planned change
+states what it should demonstrate, who or what can judge the result, how feedback will be
+gathered, what result would change the plan, and which earlier documents may need revision.
+Feedback status is `received`, `requested`,
 `unavailable`, or `not-applicable`; never fabricate evidence.
 
 After each assessed slice, classify changes to parent documents as `no-change`, `revision-proposed`,
 `revision-required`, or `feedback-required`. Revise before affected work continues.
 
-Prefer intra-slice sub-agent parallelism. Run independent slices concurrently only in a
-bounded wave with clear execution, learning, and integration dependencies, a WIP cap, who
-will combine the work, and conditions for stopping or replanning.
+Prefer sub-agent parallelism inside one change. Run independent changes concurrently only
+when one result cannot invalidate another, file ownership is clear, someone will combine
+the work, and conditions for stopping or replanning are recorded.
 
 ## IDs
 
-- Specs/plans/waves: `KIND-AREA-NAME`, such as `FR-AUTH-SIGNIN`,
+- Specs, plans, and work groups: `KIND-AREA-NAME`, such as `FR-AUTH-SIGNIN`,
   `PR-AUTH-SIGNIN`, and `WAVE-AUTH-BOUNDARY`.
 - Design entities: `KIND-SLUG`, such as `COMP-AUTH` and `IFACE-AUTH`.
 - Design tests: `TEST-AREA-NAME`.
@@ -141,10 +138,10 @@ Tokens are uppercase slugs; numeric placeholder suffixes are invalid. Keep human
 design labels readable and place machine IDs in annotations, glossaries, matrices, and
 required references. See [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
-## Entry, WIP, And Human Gates
+## Entry, WIP, And Required Reviews
 
 Use [docs/project-entry.md](docs/project-entry.md) to choose how Sarathi starts in a new or
-existing system. Baseline adoption reconstructs accepted intent; current
+existing system. Documenting an existing system reconstructs approved requirements; current
 code is evidence, not truth. A planless baseline review is a conformance audit and must be
 explicitly authorized in `.sdlc/process-decisions.yaml`.
 

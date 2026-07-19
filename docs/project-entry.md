@@ -9,16 +9,15 @@ for documents and tests that can be reused.
 Choose exactly one project entry mode before creating or reviewing later documents
 when the repo is not already operating under an SDLC decision record:
 
-- **New project** (`greenfield` / `Greenfield Adoption`): the project starts under Sarathi
-  now. Establish product intent and architecture, then apply direct-to-code readiness at
-  each boundary. Existing external references may satisfy part of that intent.
-- **Document and review the existing system** (`brownfield_baseline` / `Brownfield Baseline
-  Adoption`): create a retrospective spec and design from the existing product, docs,
+- **New project**: the project starts under Sarathi now. Establish product requirements and
+  architecture, then begin implementation wherever those documents and a specific plan are
+  sufficient. Existing external references may satisfy part of the need.
+- **Document and review the existing system**: create a retrospective spec and design from the existing product, docs,
   tests, and code, then perform a baseline
   `/code-review` when requested. A retrospective baseline code review may skip
   `/plan-create` and `/plan-review` because it judges already-written code against
   reconstructed intent, not against a pre-approved implementation plan.
-- **Govern only new changes** (`brownfield_delta_only` / `Brownfield Delta-Only Adoption`):
+- **Govern only new changes**:
   learn enough about the existing system to avoid breaking it, then create or revise
   slice/change documents for the requested change. Existing behavior outside the change is
   accepted unless the change touches it or the user asks for a baseline review.
@@ -48,7 +47,7 @@ Classify each discovered set as one of:
 
 ## Rules For Documenting An Existing System
 
-Baseline adoption reconstructs accepted intent; it is not a blind transcript of
+Documenting an existing system reconstructs approved requirements; it is not a blind transcript of
 whatever the current code happens to do.
 
 - The retrospective SRS expresses reconstructed accepted product/system intent from
@@ -67,11 +66,11 @@ whatever the current code happens to do.
 - If existing tests differ from or fall short of the SRS/design obligations, surface the
   gap rather than rewriting the obligations down to current tests.
 
-A baseline code review is therefore a **baseline conformance audit**, not a generic code
-review. It must report two primary gap sets:
+Review existing code and tests against the reconstructed requirements. Report two kinds of
+gap:
 
 - **Code gaps against SRS**: behavior missing, different, ambiguous, or accidentally
-  implemented relative to reconstructed accepted intent.
+  implemented relative to the reconstructed approved requirements.
 - **Test gaps against SRS/design**: `AT-`, `JT-`, or `TEST-` obligations missing, weakly
   asserted, indirectly covered without a clear pass/fail check, or only covered by risky
   doubles.
@@ -82,7 +81,7 @@ Classify each finding as exactly one of:
 - `add-or-strengthen-tests`: tests should be added or improved to cover accepted
   SRS/design obligations.
 - `revise-artifact`: the SRS or design appears wrong, overreached, or misread current
-  accepted intent.
+  approved requirements.
 - `defer-delta`: the gap is real but should become an explicit future delta only if the
   user approves it.
 
@@ -145,9 +144,9 @@ the current production work needs.
 - A planless baseline `/code-review` must say that it is a retrospective baseline
   review, name the decision record that permits skipping plan review, and avoid claiming
   conformance to a pre-approved implementation plan.
-- New implementation changes in any mode require accepted intent and a bounded code-ready
-  Implementation plan. Existing approved specs/designs are inherited; create only a delta
-  artifact needed for a concrete unresolved decision or risk.
+- New implementation changes in any mode require approved requirements and a specific plan
+  that is ready to implement. Reuse existing approved specs and designs; create another
+  document only for a concrete unresolved decision or risk.
 - Existing documents can satisfy a gate only when they are classified as `adopt` or have
   been `adapt`ed into a fit earlier document. `background` evidence can inform judgment
   but cannot silently stand in for a missing gate.

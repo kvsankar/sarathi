@@ -8,6 +8,21 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Removed
+
+- Remove the required Complexity Budget, Ceremony Budget, Direct-To-Code form, special
+  complexity approval, PR-count limit, keyword triggers, and code-marker approval.
+
+### Changed
+
+- Rewrite the main instructions, reviews, checker messages, and project-status page in
+  ordinary engineering language. New files say `Ready To Implement`, `Extra Checks`,
+  `Expected Result`, and `Work Groups`; older field names remain parseable.
+- Let new human-first documents choose descriptive sections instead of reproducing the
+  legacy template. Existing documents remain readable by the checkers.
+- Report TODO/FIXME/XXX entries as warnings, while skipped and expected-failure tests remain
+  a failing code check without requiring a separate approval form.
+
 ## 0.3.0 - 2026-07-19
 
 ### Changed
