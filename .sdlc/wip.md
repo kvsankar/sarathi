@@ -1,9 +1,9 @@
 # SDLC Work In Progress
 
-Last Updated: 2026-07-19T00:00:00Z
+Last Updated: 2026-07-19T07:54:15Z
 Updated By: agent
-Current Stage: release-preparation
-Current Gate: release.approved
+Current Stage: release
+Current Gate: complete
 Project Entry Mode: brownfield_delta_only
 Work Scope: slice/change
 Implementation Readiness: Code-ready
@@ -21,7 +21,7 @@ intent is in the user prompt, and one direct implementation plan covers the boun
 | --- | --- | --- | --- |
 | Plan | `.sdlc/plan.md` | approved | Hash-current local approval records explicit end-to-end authorization. |
 | Code | repository diff | assessed | Independent focused re-review passed after all findings were fixed. |
-| Release | `CHANGELOG.md` | approved | Version 0.3.0 metadata and local release gates pass. |
+| Release | `CHANGELOG.md` | published | Version 0.3.0 is available from PyPI and GitHub. |
 
 ## Decisions And Assumptions
 
@@ -61,6 +61,11 @@ intent is in the user prompt, and one direct implementation plan covers the boun
 - `bash scripts/install.sh --dry-run` and `uv run sarathi-sdlc install --dry-run`: passed.
   PowerShell is unavailable on this macOS host, so its dry run was not executed.
 - `npm run test:layout`: 5 browser/layout checks passed; `quick_validate.py`: skill valid.
+- GitHub PR `#12`: CI passed and the reviewed release preparation merged to `master` at
+  `85d716682b0b797c9cb9c67f99348370d9bbf0bb`.
+- GitHub Actions release run `29678847794`: build, trusted PyPI publication, and GitHub
+  Release jobs passed.
+- `uvx --refresh --from sarathi-sdlc==0.3.0 sarathi-sdlc --version`: reported `0.3.0`.
 
 ## Feedback And Learning
 
@@ -81,14 +86,13 @@ Stop Or Replan Triggers: legacy incompatibility or any need for process IDs in s
 
 ## Open Questions And Blockers
 
-- GitHub CLI authentication is invalid for all configured accounts, so PR creation and CI
-  observation require `gh auth login -h github.com`.
-- Tagging remains blocked until the release PR is reviewed and merged to `master`.
+- None for release 0.3.0. Production-project feedback on the human-first format should
+  inform the next bounded change rather than alter the published release.
 
 ## Next Recommended Action
 
-Commit and push `agent/human-first-030`, authenticate GitHub CLI, open the release PR, wait
-for CI and review, merge it, then tag the merged `master` commit as `v0.3.0`.
+Use release 0.3.0 in production projects and gather concrete feedback before generalizing
+the document model or checker behavior further.
 
 ## Bootstrap Status
 
