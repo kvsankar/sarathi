@@ -3,7 +3,7 @@
 Last Updated: 2026-07-19T12:30:00Z
 Updated By: agent
 Current Stage: release
-Current Gate: release-preparation
+Current Gate: complete
 Project Entry Mode: brownfield_delta_only
 Work Scope: slice/change
 Ready To Implement: Yes
@@ -22,7 +22,7 @@ requested validation and release as version 0.3.1.
 | Plan | `.sdlc/plan.md` | approved | Covers the process-language cleanup. |
 | Process cleanup | commit `7e03248` | assessed | Independent check and review passed. |
 | Installer change | commit `06f87ac` | merged | Quiet summaries and verbose output are covered by tests. |
-| Release | `CHANGELOG.md` | approved | Version metadata and local release checks pass; push, PR, merge, and tag remain. |
+| Release | `v0.3.1` | published | PyPI and GitHub Release publication completed successfully. |
 
 ## Decisions And Assumptions
 
@@ -43,6 +43,12 @@ requested validation and release as version 0.3.1.
 - Release metadata verification and skill validation passed.
 - The 0.3.1 wheel and source archive built and passed `twine check`.
 - Quiet, verbose, and packaged installer dry runs passed; PowerShell is unavailable on this host.
+- PR `#14` passed CI and merged to `master` at `bd8b023`.
+- GitHub Actions release run `29686151476` built, published to PyPI, and finalized the
+  GitHub Release with both distributions.
+- Public `uvx --refresh --from sarathi-sdlc==0.3.1 sarathi-sdlc --version` reported `0.3.1`.
+- The pinned local tool was replaced with `sarathi-sdlc==0.3.1`; user-scoped installation
+  completed for codex, copilot, claude-code, gemini, claude, and pi.
 
 ## Results And Feedback
 
@@ -54,18 +60,16 @@ Current Work Group: none
 Current Work: none
 Parallel Limit: 1
 What Changed: process paperwork and jargon were removed; installer output is quiet by default with verbose details on demand
-Documents To Update: none before publishing
+Documents To Update: none
 Stop Conditions: failing combined checks, unresolved merge conflicts, or failed release workflow
 
 ## Open Questions And Blockers
 
-- GitHub CLI tokens are invalid, but Git-over-SSH access works. PR/release inspection may
-  require reauthentication if `gh` is needed.
+- None.
 
 ## Next Recommended Action
 
-Validate the merged tree, prepare 0.3.1, merge it through a reviewed PR, tag, and verify the
-release workflow.
+Use 0.3.1 in production projects and gather concrete feedback before adding more process.
 
 ## Bootstrap Status
 
