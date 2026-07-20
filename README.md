@@ -12,6 +12,8 @@ Its enduring delivery loop is:
 accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
 ```
 
+![Sarathi adaptive software delivery process](docs/sarathi-process-diagram.png)
+
 Specifications, designs, plans, and code preserve the decisions made along that loop; they
 do not form a one-way waterfall. Decompose when the work is too complex to understand and
 review safely as one coherent unit. Each stage can be

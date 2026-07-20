@@ -8,6 +8,10 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Docs
+
+- Show the enduring process diagram near the beginning of the README.
+
 ## 0.4.0 - 2026-07-21
 
 ### Changed
