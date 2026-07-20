@@ -55,6 +55,17 @@ def test_recent_safeguards_are_supporting_rules_not_the_process_title() -> None:
     assert "no version numbers" in prompt
 
 
+def test_readme_shows_the_process_diagram_before_feature_details() -> None:
+    readme = read("README.md")
+
+    diagram = (
+        "![Sarathi adaptive software delivery process]"
+        "(docs/sarathi-process-diagram.png)"
+    )
+    assert diagram in readme
+    assert readme.index(diagram) < readme.index("## What You Get")
+
+
 def test_decomposition_policy_distinguishes_splitting_from_more_documents() -> None:
     skill = read("skills/sarathi/SKILL.md")
     policy = read("docs/work-decomposition.md")
