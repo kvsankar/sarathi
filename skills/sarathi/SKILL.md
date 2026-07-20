@@ -19,11 +19,20 @@ The bundle must contain `prompts/`, `docs/`, and `checkers/`. If a required file
 look for another installed `sarathi` bundle or canonical repository source; otherwise
 report an incomplete installation instead of inventing policy.
 
-## Core Loop
+## Enduring Model
+
+Sarathi turns accepted intent into the smallest safe working increment, preserves the
+decisions and evidence needed to review it, decomposes work that is too complex to reason
+about safely as one unit, and adapts the remaining work from real feedback.
 
 ```text
-understand the request -> make the smallest useful change -> test it -> get feedback -> adjust
+accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
 ```
+
+Decompose when a competent engineer cannot understand and review the work safely as one
+coherent unit. Specification, design, plan, and code preserve
+decisions along the loop; they are not a one-way waterfall. Load `docs/enduring-model.md`
+when explaining the whole process.
 
 Production work must preserve approved requirements, useful tests with clear pass/fail
 results, honest feedback, required human approvals, and safety limits.
@@ -36,22 +45,16 @@ Choose the review depth using `docs/assurance-profiles.md`:
   availability, migration, or irreversible-data consequence.
 - **Exploratory**: separate non-production track for timeboxed learning.
 
-The selected level sets how much review is needed. Add stronger checks only for risks that
-are actually present. High-assurance means stronger proof, not designing everything up
-front.
-
 Apply `docs/simplicity-first.md`: keep process records out of product architecture, start
 with the smallest direct implementation, reuse tests from the existing system, and avoid
 general solutions until a current need justifies them. If the solution is more complicated
 than the problem requires, simplify it. Do not use LOC or PR-count targets.
 
-## Report product state first
+## Supporting Status Rule
 
-For status, resume, handoff, remaining-work, readiness, and next-action questions, start
-with the product snapshot in `docs/work-in-progress.md`: goal, working capability and
-location, reusable capability, current increment, remaining shared work, target-owned work,
-deferred work, blockers before coding, and one next action. Check those claims against code
-and source documents. Put stages, approvals, IDs, hashes, and checker counts afterward.
+For status, resume, handoff, remaining-work, readiness, and next-action questions, lead with
+scope-qualified engineering reality and one executable next action. Check the claims and put
+process evidence afterward. Use `docs/work-in-progress.md` for the supporting snapshot fields.
 
 Never use `complete` without its exact scope. State prerequisite, slice, feature, and full
 product status separately when they differ. A completed prerequisite unlocks named work; it
@@ -71,13 +74,11 @@ Load exactly one matching `prompts/<stage>.prompt.md`:
 
 | Stage | Purpose |
 | --- | --- |
-| `spec-*` | What users need, what is out of scope, and how success is observed. |
-| `design-*` | How the system will change and how the difficult parts will be tested. |
-| `plan-*` | The steps to implement and verify the change. |
-| `code-*` | Implementation, checks, and review. |
+| `spec-*` | Needs → features → use cases → requirements → acceptance and journeys. |
+| `design-*` | Architecture, boundaries, decisions, quality attributes, and testability. |
+| `plan-*` | Impact, breakdown or PR graph, sequence, integration, safety, and proof. |
+| `code-*` | Test-first implementation, exact results, independent review, and feedback. |
 | `workflow-status` | Read-only HTML progress summary. |
-
-When invoked generally, choose and run only the next appropriate stage.
 
 ## Orient Before Acting
 
@@ -91,19 +92,16 @@ When invoked generally, choose and run only the next appropriate stage.
    would require stronger review. In YOLO mode, use Standard unless Lean is justified.
 5. Load the selected stage prompt and only its triggered references.
 
-Maintain `.sdlc/wip.md` using `docs/work-in-progress.md`. It is a resume note, not product
-truth or approval evidence.
-
-## Start Implementation As Soon As It Is Safe
+## Decompose Only When It Helps
 
 `/code-create` blocks without approved requirements and a specific implementation plan that
 is ready to implement. Do not write another document when the approved requirements and one
 short plan are enough to start safely.
 
-Split the work only when a specific unanswered decision, external contract, serious risk,
-integration conflict, or missing success condition prevents safe implementation. Feature
-size, easier traceability, or customary document chains are not reasons. Use
-`docs/work-decomposition.md` when a split is genuinely needed.
+If a competent engineer can understand, explain, review, and safely plan the work as one
+coherent unit, keep it together. Otherwise split it along a natural product or technical
+boundary until each part is understandable, testable, and safe to integrate. A split does
+not require a new document chain. Use `docs/work-decomposition.md`.
 
 Breakdown plans use a work group only for near-term `WORK-*` children that share a feedback
 or integration check; unscheduled children have no group. Implementation plans list the PRs
@@ -130,6 +128,8 @@ stops.
 - Specs own `AT-*` and `JT-*` descriptions of observable success.
 - Designs own `TEST-*` descriptions of what must be tested and where.
 - Plans assign tests from parent and local documents to child work or PRs.
+- Behavior-changing code uses Red-Green-Refactor: observe the smallest meaningful test fail,
+  make the minimum change that passes it, and improve the code while tests stay green.
 - Code implements assigned tests and reports the commands and outcomes that exercised them.
 - Process IDs stay in document traceability and external records, never in production/test
   source merely to create a link. Test names describe behavior.
@@ -158,6 +158,8 @@ separate. Stop when an earlier required document is not fit. Use
 
 | Reference | Load when |
 | --- | --- |
+| `docs/enduring-model.md` | Explaining Sarathi, orienting a new project, or relating delivery, decomposition, quality, continuity, and risk. |
+| `docs/requirements-model.md` | Specifications and their needs-to-evidence hierarchy. |
 | `docs/assurance-profiles.md` | Choosing review depth or additional checks. |
 | `docs/simplicity-first.md` | Checking that a solution or PR breakdown is no larger than needed. |
 | `docs/project-entry.md` | Starting in a new or existing codebase. |
@@ -165,7 +167,7 @@ separate. Stop when an earlier required document is not fit. Use
 | `docs/artifact-formatting.md` | Writing or materially revising Markdown documents. |
 | `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; checking readability or source-ID cleanliness. |
 | `docs/cross-cutting-concerns.md` | Choosing checks for security, privacy, reliability, or other identified risks. |
-| `docs/test-ownership.md` | Parent tests or integration span several children. |
+| `docs/test-ownership.md` | Planning or implementing tests, including test-first behavior changes, or when test ownership spans children. |
 | `docs/work-decomposition.md` | Breakdown plans or child document chains are involved. |
 | `docs/feedback-and-learning.md` | Coordinating parallel work, feedback, or earlier-document changes. |
 | `docs/approval-gates.md` | Reading or writing approval/auto-policy ledgers. |

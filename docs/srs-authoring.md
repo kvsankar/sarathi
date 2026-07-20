@@ -3,6 +3,10 @@
 Use these rules when drafting, reconstructing, or reviewing a Software Requirements
 Specification. They extend Sarathi's required SRS format with a stricter quality bar.
 
+Start with the [needs-to-evidence model](requirements-model.md). These rules add atomicity,
+detailed use cases where the behavioral complexity warrants them, measurable supplementary
+requirements, and source reconstruction without replacing that organizing model.
+
 ## Research Basis
 
 - [ISO/IEC/IEEE 29148:2018](https://www.iso.org/standard/72089.html) is the
@@ -16,9 +20,9 @@ Specification. They extend Sarathi's required SRS format with a stricter quality
 - Martin Fowler's use-case guidance emphasizes that the value of use cases is in the text,
   not diagrams, and that use cases organize and elicit requirements:
   <https://martinfowler.com/bliki/UseCase.html>
-- Cockburn-style fully dressed use cases are the baseline template for detailed actor-goal
-  flows: primary actor, scope, goal, trigger, preconditions, minimal guarantees, success
-  guarantees, main success scenario, and extensions/variations.
+- Cockburn-style fully dressed use cases are a useful template when actor-goal flows need
+  detail: primary actor, scope, goal, trigger, preconditions, guarantees, main success
+  scenario, and extensions or variations.
 - Cucumber's Gherkin reference treats examples/scenarios as executable specifications,
   recommends short examples, and uses Given/When/Then to express initial context, event, and
   expected observable outcome: <https://cucumber.io/docs/gherkin/reference/>
@@ -53,9 +57,10 @@ Acceptance tests:
   log/metric/trace,
   deployment artifact, notification, support ID, or measurable threshold.
 
-## Fully Dressed Use Cases
+## Detailed Use Cases
 
-Each `UC-` should include these fields unless explicitly scoped down for a tiny slice:
+When a use case needs detailed actor-goal analysis, include the fields that clarify its
+behavior; do not expand a simple flow merely to complete a template:
 
 - Primary actor
 - Supporting actors/systems
@@ -83,9 +88,12 @@ Use-case review rules:
 - Do not replace alternate/error flows with "handled normally" or "standard error."
 - Frequency/importance may be qualitative when unknown, but it must help prioritization.
 
-## NFR Coverage
+## Supplementary Requirements
 
-Consider each area and either write measurable `NFR-` items or explicitly defer/scope it out:
+Use the categories below only when the accepted scope, stakeholder need, external contract,
+or identified risk makes them relevant. Write measurable supplementary requirements for
+the relevant categories; do not require a universal checklist or explicit `None`/deferred
+entry for every category.
 
 - Performance: latency, throughput, capacity, resource use, startup time, batch duration.
 - Security: authentication, authorization, audit, secrets, abuse resistance, dependency risk.
@@ -152,7 +160,7 @@ Fail or require rework even if the automatic checker passes when the SRS is:
 
 Automatic checks can catch likely problems, not prove quality. Useful checks:
 
-- Missing use-case fields from the fully dressed template.
+- Missing use-case detail needed to understand a material flow, alternative, or failure.
 - Main success scenario without numbered steps.
 - Missing or placeholder alternate/error flows.
 - `UN-`/`FR-` items with multiple sentences, semicolons, repeated "shall", or obvious

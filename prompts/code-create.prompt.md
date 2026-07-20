@@ -1,5 +1,5 @@
 ---
-description: Implement an approved plan that is ready to implement, with behavioral tests and clear check results.
+description: Implement an approved plan test-first, using Red-Green-Refactor for behavior changes and recording clear results.
 agent: agent
 ---
 
@@ -12,13 +12,13 @@ Implement the selected approved plan and keep each delivery item usable and test
 Read `.sdlc/wip.md`, process decisions, approved earlier documents, the implementation plan,
 current code/tests, and repository check commands. A compact plan may link approved parent
 documents instead of repeating them. Load `docs/artifact-contracts.md` for the Code and
-Evidence contract and `docs/feedback-and-learning.md` when coordinated work is active.
+Evidence contract, `docs/test-ownership.md` for test-first implementation, and
+`docs/feedback-and-learning.md` when coordinated work is active.
 
 ## Triggered References
 
 Load only when the trigger applies:
 
-- `docs/test-ownership.md`: the plan maps inherited `AT-*`, `JT-*`, or `TEST-*` obligations;
 - `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an assigned additional
   check, escalation, or new risk needs interpretation;
 - `docs/simplicity-first.md`: implementation exposes unnecessary machinery, a refactor, or a
@@ -39,9 +39,14 @@ because an agent is available.
 
 ## Implement
 
-For every behavior-changing step, add or update the smallest meaningful test with a clear
-pass/fail check, implement the minimum production-quality change, and rerun the focused test
-and affected suite. Refactor only after behavior is protected by that verification.
+For every behavior-changing step, use Red-Green-Refactor: add or update the
+smallest meaningful test of the behavior. Run it and observe it fail for the expected
+reason, then implement the minimum production-quality change that makes it pass. Rerun the
+focused test and affected suite. Refactor only while they remain green.
+
+If a failing automated test is not a sensible driver, use only the narrow cases and
+replacement verification in `docs/test-ownership.md`. State the reason and observed result;
+do not describe post-hoc regression coverage as test-first evidence.
 
 Implement assigned `AT-*`, `JT-*`, and `TEST-*` obligations at their planned levels. Add
 supplemental inner tests when discovered, but do not use them to replace accepted coverage.
@@ -77,6 +82,8 @@ Update `.sdlc/wip.md` and report:
 
 - changed paths and what they now do;
 - exact test and project-check commands with results;
+- the observed Red-Green-Refactor evidence, or the narrow reason and replacement check when
+  a failing test was not a sensible driver;
 - unavailable checks, assumptions, risks, and relevant feedback;
 - changes needed in the spec, design, remaining plan, or code, and whether `/code-assess`
   can start.

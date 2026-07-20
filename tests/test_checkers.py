@@ -1135,7 +1135,7 @@ Implementation Readiness: Decomposable
   Child scope: Slice/change.
   Scope: Deliver the first bounded behavior.
   Parent IDs / inherited obligations: FR-AUTH-SIGNIN.
-  Required child artifacts: Lean Change Record or standard child chain.
+  Required child documents: one specific Implementation plan.
   Dependencies: none.
   Readiness target: Code-ready after the child boundary is selected.
   Risks: none beyond the parent constraint.

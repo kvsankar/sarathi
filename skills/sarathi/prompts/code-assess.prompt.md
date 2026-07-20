@@ -22,8 +22,8 @@ requirements or scope changed.
    commands and evidence only.
 2. **Review pass**: in a different fresh sub-agent when available, run `/code-review` using
    the code and check results. Judge correctness, test pass/fail checks, boundary realism,
-   plan fidelity, review evidence, production quality, feedback, and earlier-document
-   changes.
+   test-first evidence for behavior changes, plan fidelity, review evidence, production
+   quality, feedback, and earlier-document changes.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
 passes separate. Failed or unfit earlier documents produce `Blocked-upstream`.

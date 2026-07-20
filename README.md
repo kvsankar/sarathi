@@ -1,21 +1,22 @@
 # Sarathi
 
-Guided, resumable, reviewable software delivery
+Adaptive, resumable, reviewable software delivery
 
-Sarathi is a set of reusable prompts, skills, and automatic checkers for spec-first
-software delivery with AI coding agents. It helps developers move from a product request to
-requirements, design, planning, implementation, tests, and review without losing
-clear links between intent and tests, resumability, or human review.
+Sarathi turns accepted intent into the smallest safe working increment, preserves the
+decisions and evidence needed to review it, decomposes work that is too complex to reason
+about safely as one unit, and adapts the remaining work from real feedback.
 
-The workflow is driven by approved documents and observed results:
+Its enduring delivery loop is:
 
 ```text
-request -> spec -> design -> plan -> code/tests/logging/errors/docs/build/deploy -> assess
+accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
 ```
 
-Each stage can be created, verified, reviewed, or assessed independently. By default, the
-skill pauses for human input when important information is missing and pauses again after
-generating a document or code slice.
+Specifications, designs, plans, and code preserve the decisions made along that loop; they
+do not form a one-way waterfall. Decompose when the work is too complex to understand and
+review safely as one coherent unit. Each stage can be
+created, verified, reviewed, or assessed independently, and review depth follows actual
+risk. See [Sarathi's enduring model](docs/enduring-model.md).
 
 ## What You Get
 
@@ -192,7 +193,7 @@ The core stage names are:
 
 | Command | Purpose |
 | --- | --- |
-| `/spec-create` | Create or revise a Software Requirements Specification. |
+| `/spec-create` | Define the problem, needs, features, use cases, functional and supplementary requirements, acceptance tests, and journeys. |
 | `/spec-verify` | Run automatic spec checks and report evidence. |
 | `/spec-review` | Independently review spec quality. |
 | `/spec-assess` | Run `/spec-verify` plus `/spec-review`. |
@@ -200,7 +201,7 @@ The core stage names are:
 | `/design-verify` | Run spec and design checks. |
 | `/design-review` | Independently review design quality and whether the spec is sufficient. |
 | `/design-assess` | Run `/design-verify` plus `/design-review`. |
-| `/plan-create` | Create a breakdown or implementation plan with specific PRs and expected file changes. |
+| `/plan-create` | Create a Breakdown or Implementation plan with an Impact Map, dependency graph, sequence, integration, safety, and proof. |
 | `/plan-verify` | Run checks for the spec, design, and plan. |
 | `/plan-review` | Independently review plan readiness, slicing, assignment, and sequencing. |
 | `/plan-assess` | Run `/plan-verify` plus `/plan-review`. |
@@ -235,6 +236,16 @@ Exact invocation syntax depends on the host tool:
 
 ## Workflow Model
 
+The core model is [accepted intent, the smallest safe increment, evidence, feedback, and
+adaptation](docs/enduring-model.md). Specifications use a
+[needs-to-evidence requirements model](docs/requirements-model.md): problems and stakeholder
+needs lead to features, use cases, functional and supplementary requirements, acceptance
+tests, and journeys. Designs turn accepted requirements and constraints into an
+implementable, evolvable technical model. Plans structure delivery through impact analysis,
+breakdown or a PR dependency graph, sequencing, integration, safety, and proof. Code plus
+tests produce working behavior through short Red-Green-Refactor cycles. Repeatable checks
+and independent review gate every stage; they are not deferred until implementation ends.
+
 Work uses three levels. The paired terms below are retained as machine-readable values for
 compatibility:
 
@@ -250,9 +261,10 @@ specific question remains.
 ready to implement.
 
 Start implementation when the approved requirements, design, and one specific plan make the
-next change clear and safe. Add another document only when an unresolved decision, external
-contract, serious risk, ownership conflict, or missing acceptance criterion blocks the work.
-Project size and screen count are not reasons. See
+next change clear and safe. If the work is too complex to understand and review as one
+unit, split it along a natural product or technical boundary until each part is clear,
+testable, and safe to integrate. A split does not automatically require another spec or
+design. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
 ## ID Format
@@ -490,6 +502,12 @@ Test responsibility is split by document and code stage:
   covered only by a self-authored double.
 - Plans assign `AT-` acceptance coverage, `JT-` journey coverage, and `TEST-` obligations
   to PRs.
+- Behavior-changing code follows Red-Green-Refactor: run the smallest meaningful behavioral
+  test and observe the expected failure, implement the minimum change that passes it, then
+  improve the code while the focused test and affected suite remain green. A test written
+  only after implementation is regression coverage, not evidence of test-first development.
+  When a failing automated test is not a sensible driver, use only the narrow cases and
+  replacement verification in [test ownership](docs/test-ownership.md).
 - Code writes the executable tests and implementation. This is where unit, component,
   contract, integration, UI, journey/e2e, quality, migration, build/deploy, docs, and
   operational test implementations are created when planned. A project may maintain a

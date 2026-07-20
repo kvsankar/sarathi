@@ -15,6 +15,25 @@ implementation. Earlier `AT-`, `JT-`, and design `TEST-` obligations must surviv
 allocation and become executable in PRs or explicitly justified non-code
 verification.
 
+## Test-First Implementation
+
+Behavior-changing code follows a short Red-Green-Refactor loop:
+
+1. Write or update the smallest meaningful behavioral test.
+2. Run it and observe it fail for the expected reason.
+3. Implement the minimum production-quality change that makes it pass.
+4. Run the focused test and affected suite, then refactor while they remain green.
+
+The failing result matters: it shows that the test can detect the missing or incorrect
+behavior. A test added only after the implementation is useful regression coverage, but it
+is not evidence of test-first development.
+
+When a failing automated test is not a sensible driver—such as docs or formatting only,
+generated output, build/deployment configuration validation, or characterization of
+unchanged legacy behavior—name the reason and run the closest repeatable validation. Do not
+use an exception for ordinary feature behavior, defect fixes, contracts, validation,
+security rules, or error behavior.
+
 ## Ownership Chain
 
 | Scope | Owns test intent | Typical executable evidence implemented by leaves |

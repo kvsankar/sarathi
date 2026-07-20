@@ -1,12 +1,12 @@
 ---
-description: Explain how the system will change, including important interfaces, decisions, tests, and risks.
+description: Turn accepted requirements and constraints into an implementable, evolvable technical model.
 agent: agent
 ---
 
 # Design Create
 
-Translate approved requirements into a testable design at the level of detail this change
-needs.
+Translate accepted requirements and constraints into an implementable, evolvable technical
+model at the level of detail the work needs.
 
 ## Load And Gate
 
@@ -43,13 +43,19 @@ only the specific unresolved decision and changed boundary.
 
 Start new or materially revised designs with the version marker and
 `## Technical Approach`. Accept `## Technical Crux` in existing documents.
-Explain current/target state, essential model, ownership, changes/non-changes, hard parts,
-and migration order without process IDs. Use descriptive visible headings; keep IDs in
-comments and the final `## Traceability` appendix. Follow the remaining Design contract in
-`docs/artifact-contracts.md`.
+Explain the architectural drivers, system boundary, structure, responsibilities,
+relationships, interfaces, data, runtime behavior, decisions, quality-attribute trade-offs,
+testability, and evolution without process IDs. For changes to an existing system, also
+explain the relevant current state, target state, unchanged boundaries, compatibility, and
+migration. Use descriptive visible headings; keep IDs in comments and the final
+`## Traceability` appendix. Follow the Design contract and its context-specific boundary
+guidance in `docs/artifact-contracts.md`.
 
 - Explain how required behavior maps to components, interfaces, decisions, and tests. Keep
   `TEST-*` IDs in traceability.
+- Select and define the consequential boundaries for this kind of system. For a backend,
+  database schema/data ownership and API contracts are primary review surfaces whenever
+  they apply. Do not inventory irrelevant boundaries.
 - Keep side effects isolated where that makes the design clearer and easier to test.
 - Design success, failure, state, concurrency, lifecycle, compatibility, and recovery at
   material interfaces.

@@ -38,7 +38,11 @@ from markdown_structure import (  # noqa: E402
     human_first_issues,
     primary_definition_ids,
 )
-from schemas import HUMAN_FIRST_SPEC_SECTIONS, SPEC_SECTIONS  # noqa: E402
+from schemas import (  # noqa: E402
+    HUMAN_FIRST_SPEC_SECTIONS,
+    LEGACY_HUMAN_FIRST_SPEC_SECTIONS,
+    SPEC_SECTIONS,
+)
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT|JT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
@@ -201,7 +205,11 @@ def main() -> int:
     bad_fmt = malformed_ids(text)
     orphans = sorted(r for r in refs if r not in all_ids)
     format_name = artifact_format(text)
-    format_issues = human_first_issues(text, "Product Overview")
+    format_issues = human_first_issues(
+        text,
+        ("Product Overview", "Product Crux"),
+        supported_formats=("human-first-v2", "human-first-v3"),
+    )
     approval_requirements = []
     approval_context = {}
     if require_approvals:
@@ -235,11 +243,12 @@ def main() -> int:
     if not require_approvals:
         gates.pop("required_approvals_present")
     if not feature:
-        required_sections = (
-            HUMAN_FIRST_SPEC_SECTIONS
-            if format_name == "human-first-v2"
-            else SPEC_SECTIONS
-        )
+        if format_name == "human-first-v3":
+            required_sections = HUMAN_FIRST_SPEC_SECTIONS
+        elif format_name == "human-first-v2":
+            required_sections = LEGACY_HUMAN_FIRST_SPEC_SECTIONS
+        else:
+            required_sections = SPEC_SECTIONS
         gates["sections_present"] = sections_present_in_order(text, required_sections)
     report = {
         "mode": "feature" if feature else "product",

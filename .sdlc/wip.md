@@ -2,70 +2,86 @@
 
 ## Product Snapshot
 
-Goal: Run Sarathi 0.3.2 with accurate code checking and product-first status reporting.
-Working Today: Sarathi 0.3.2 is published and installed for all supported local agents.
-Reusable Today: Existing Markdown artifacts and version-2 human-first plans remain accepted, and installed stage skills continue to use the shared Sarathi bundle.
-Current Increment: Sarathi 0.3.2 release and local deployment: complete.
-Remaining Shared Work: None for this increment.
+Goal: Release Sarathi 0.4.0 with the enduring process model and corrected definitions of requirements, architecture, decomposition, delivery planning, test-first implementation, and independent review.
+Working Today: The 0.4.0 source, skill bundle, documentation, diagram, checkers, tests, and distribution metadata are aligned and pass the local release gate.
+Reusable Today: Existing create, verify, review, assess, WIP, approval, assurance, traceability, and compatibility behavior remains available.
+Current Increment: Sarathi 0.4.0 release candidate: implemented and validated locally.
+Remaining Shared Work: Merge the release PR, tag merged master, verify publishing, and install 0.4.0 locally.
 Target-Owned Work: None; this change is entirely within Sarathi.
-Deferred: Rich capability inference from source code is deliberately excluded; projects state the compact engineering snapshot themselves.
+Deferred: None.
 Before Coding: none
-Next Action: Use Sarathi 0.3.2 in production projects and report concrete status or checker failures.
+Next Action: Commit and push the 0.4.0 release branch, then open the release PR.
 
 ## Process Snapshot
 
-Last Updated: 2026-07-19T18:17:26Z
+Last Updated: 2026-07-20T19:15:00Z
 Updated By: agent
 Current Stage: release
-Current Gate: released and deployed
+Current Gate: local release gate passed; PR and CI pending
 Project Entry Mode: brownfield_delta_only
-Work Scope: slice/change
+Work Scope: feature/component
 Ready To Implement: Yes
 Review Level: Standard
-Extra Checks: Python 3.9 compatibility, authentication dogfood, installer, distribution
+Extra Checks: bundle parity, prompt budgets, browser layout, image inspection, distribution build, Twine, installer dry runs, release metadata
 
 ## Current Artifacts
 
 | Kind | Path | Status | Notes |
 | --- | --- | --- | --- |
-| Approved plan | `.sdlc/plan.md` | approval-aware checker 21/21 | Covers the complete 0.3.2 increment. |
-| Checker | `checkers/check_code.py`, `checkers/check_plan.py` | full suite passes | Bundled copies match. |
-| Status renderer | `checkers/render_workflow_status.py` | full and layout suites pass | Engineering snapshot renders before process state. |
-| Shared guidance | `docs/work-in-progress.md`, `docs/work-decomposition.md` | revised | Compact product status and reuse classification are canonical here. |
-| Release | `v0.3.2` | published and locally deployed | GitHub Release and PyPI contain the wheel and source archive. |
+| Enduring model | `docs/enduring-model.md` | ready for review | Defines the stable six-part hierarchy. |
+| Routing skill | `skills/sarathi/SKILL.md` | ready for review | Leads with the enduring model; detailed status remains triggered guidance. |
+| Requirements model | `docs/requirements-model.md` | validated | Restores problem and stakeholder needs through features, use cases, functional and supplementary requirements, acceptance tests, journeys, and traceability. |
+| Spec prompts and checker | `prompts/spec-create.prompt.md`, `prompts/spec-review.prompt.md`, `checkers/check_spec.py` | validated | New/materially revised v3 product specs require the complete hierarchy; existing v2 specs remain accepted. |
+| Design contract | `docs/artifact-contracts.md` | validated | Defines design as an implementable, evolvable technical model and selects boundaries by context. |
+| Design prompts | `prompts/design-create.prompt.md`, `prompts/design-review.prompt.md` | validated | Make current/target state conditional and require applicable backend API and database-schema boundaries. |
+| Plan contract | `docs/artifact-contracts.md` | validated | Defines planning as executable delivery structure with a proportionate Impact Map. |
+| Plan prompts | `prompts/plan-create.prompt.md`, `prompts/plan-review.prompt.md` | validated | Distinguish Breakdown child-outcome graphs from Implementation PR graphs without one-PR ceremony. |
+| Decomposition policy | `docs/work-decomposition.md` | validated | Uses one mental-load test, natural boundaries, and a clear stopping rule without coupling a split to more documents. |
+| Test policy and code prompts | `docs/test-ownership.md`, `prompts/code-create.prompt.md`, `prompts/code-review.prompt.md`, `prompts/code-assess.prompt.md` | validated | Require observed Red-Green-Refactor for behavior changes and honest review of that evidence. |
+| Static guide | `docs/sarathi.html` | validated | Draws the full requirements model, adaptive loop, cross-stage test evidence, independent quality gate, and conditional branch/rejoin. |
+| Diagram prompt | `docs/sarathi-process-diagram-prompt.md` | validated | Makes the complete Spec model, test evidence, and independent review first-class. |
+| Raster diagram | `docs/sarathi-process-diagram.png` | inspected | Shows the complete Spec hierarchy while preserving Design, Plan, TDD, test, review, and decomposition corrections. |
+| Compatibility fixes | checker and human-first test files already in the worktree | validated | Preserved and formatted; not overwritten by this increment. |
 
 ## Decisions And Assumptions
 
-- Status answers name the exact completed scope and lead with engineering reality.
-- Plans classify each delivery item as direct reuse, extraction then reuse, target-owned implementation, new behavior, or deferred cleanup.
-- New plans use artifact format 3; existing format-2 and legacy plans remain accepted.
-- WIP remains the current snapshot. Existing approvals and assessments remain the history.
-- The renderer reports supplied engineering state; it does not infer product completion from process records.
-- No approval record, capability registry, history document, evidence ledger, or new process layer was added.
+- Sarathi's stable hierarchy is delivery loop, decomposition when useful, quality model, continuity, risk controls, and supporting authoring rules.
+- Decompose when a competent engineer cannot understand, explain, review, and safely plan the work as one coherent unit. Split along natural boundaries until every part is understandable, testable, and safe to integrate; do not add documents merely because the work was split.
+- Product-first status, reuse classification, identifier placement, and WIP schema remain useful supporting safeguards rather than Sarathi's headline.
+- Specification uses a needs-to-evidence derivation from problem and stakeholder needs to features, use cases, functional and relevant supplementary requirements, black-box acceptance tests, journeys where order matters, and observable evidence. Leffingwell/Widrig is the principal influence; other approaches are optional techniques for concrete gaps, not process modes.
+- New and materially revised specs use format v3 so product specs receive deterministic hierarchy checks; existing v2 specs retain their earlier human-first contract.
+- Backend designs explicitly treat applicable API contracts and database schema/data ownership as primary review surfaces. Other system types select their own consequential boundaries from compact contextual examples.
+- Current state, target state, compatibility, and migration describe changes to existing systems; they do not define architecture generally.
+- Impact Maps describe affected areas and useful extent through contracts, consumers, ownership, compatibility, and cross-area effects rather than LOC estimates.
+- A one-PR Implementation plan is a one-node graph and omits empty dependency, merge-order, parallelism, and integration-topology fields.
+- Behavior-changing code must show that the smallest meaningful test failed for the expected reason before the minimum implementation made it pass; passing post-hoc tests are not test-first evidence.
+- Tests mature across the full process: observable acceptance in the spec, test architecture in design, allocation in the plan, and executable Red-Green-Refactor evidence in code.
+- Every stage is subject to repeatable checks and independent review; assessment combines the two before the result is accepted for the next learning step.
+- The static HTML guide remains deterministic; the detailed native diagram remains a separately generated raster asset with its source prompt checked in.
 
 ## Check And Review Evidence
 
-- Complete Python suite: 150 passed with 84.74% checker coverage.
+- Complete Python suite: 175 passed with 84.69% checker coverage.
 - Browser layout suite: 5 passed at mobile and desktop sizes.
-- Pre-commit, skill validation, bundle parity, release metadata, wheel/sdist build, Twine checks, source installer dry-runs, and packaged-wheel installer dry-run passed.
-- Independent focused review passed with 56 tests; independent deterministic verification passed with 12 focused tests and no failures.
-- Authentication dogfood: the generated page leads with working BPTrial capability, reusable shared mechanics, incomplete extraction, unstarted consumer-owned work, non-blocking migration, the exact prerequisite boundary, and one next action.
-- PR `#16` passed branch, pull-request, and merged-master CI and merged at `0d34afd`.
-- Release run `29698368540` built, validated, published to PyPI, and created the GitHub Release with both distributions.
-- Public `uvx` resolved 0.3.2; the pinned local tool was replaced with 0.3.2 and installed for codex, copilot, claude-code, gemini, claude, and pi.
+- Pre-commit: Ruff, formatting, Markdown, and checker tests passed.
+- Skill validation, bundle parity, instruction budgets, HTML parsing, and `git diff --check` passed.
+- Independent verification and review findings were corrected across the Spec model, versioned checker, proportional supplementary-requirement guidance, bundle copies, and raster.
+- Diagram SHA-256: `c5aeb83d6f5a28fc2363dc5bda92aa8125346b7cda63244500266b01be09bade`.
+- Release metadata matches `v0.4.0`; wheel and source distribution build and pass Twine checks.
+- Bash and packaged-command installer dry runs passed for all supported agent targets. PowerShell is unavailable on this Mac and remains a CI check.
 
 ## Results And Feedback
 
-Expected Result: Report engineering reality first and process state second without adding process machinery.
-Feedback From: user-provided production example and executable checks
+Expected Result: Sarathi presents its enduring adaptive delivery model; specification derives testable requirements from stakeholder needs, design shapes the technical model, planning structures delivery, behavior changes are developed test-first, and every stage receives checks plus independent review.
+Feedback From: user direction, independent review, deterministic checks, browser layout, and visual inspection
 Feedback Status: received
-Feedback Evidence: the old WIP obscured product state in accumulated gate history; the dogfood page makes the capability boundary visible before approvals or checker counts
+Feedback Evidence: `docs/enduring-model.md`, `docs/sarathi.html`, and `docs/sarathi-process-diagram.png`
 Current Work Group: none
 Current Work: none
 Parallel Limit: 1
-What Changed: code checking, product-first status, baseline-reuse planning, WIP replacement, and workflow rendering
+What Changed: Restored the requirements hierarchy, architectural design, delivery planning, explicit Red-Green-Refactor, and independent review across all stages; added backward-compatible Spec v3 enforcement and regenerated both process views.
 Documents To Update: none beyond the canonical and bundled files in this change
-Stop Conditions: test failure, bundle mismatch, installer failure, or release metadata mismatch
+Stop Conditions: contradiction between overview and routing, bundle mismatch, layout failure, or diagram regression to project/version-specific framing
 
 ## Open Questions And Blockers
 

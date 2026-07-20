@@ -408,6 +408,60 @@
       font-size: 0.82rem;
     }
 
+    .return-loop {
+      margin: 12px 28px 0;
+      padding: 9px 44px;
+      border-right: 4px solid var(--design);
+      border-bottom: 4px solid var(--design);
+      border-left: 4px solid var(--design);
+      border-radius: 0 0 36px 36px;
+      color: var(--design);
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .return-loop::before {
+      margin-right: 8px;
+      content: "\21A9";
+      font-size: 1.2rem;
+    }
+
+    .decomposition-map {
+      display: grid;
+      grid-template-columns: minmax(140px, 0.8fr) auto minmax(280px, 1.8fr) auto minmax(140px, 0.8fr);
+      align-items: center;
+      gap: 10px;
+    }
+
+    .decision,
+    .rejoin {
+      padding: 14px;
+      border: 2px solid var(--plan);
+      border-radius: 14px;
+      background: var(--plan-bg);
+      font-size: 0.84rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .rejoin {
+      border-color: var(--code);
+      background: var(--code-bg);
+    }
+
+    .map-arrow {
+      color: var(--design);
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    .branch-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
     .learning-flow {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -523,8 +577,23 @@
       }
 
       .learning-flow,
-      .parallel-rule {
+      .parallel-rule,
+      .branch-options {
         grid-template-columns: 1fr;
+      }
+
+      .return-loop {
+        margin-right: 0;
+        margin-left: 0;
+      }
+
+      .decomposition-map {
+        grid-template-columns: 1fr;
+      }
+
+      .map-arrow {
+        text-align: center;
+        transform: rotate(90deg);
       }
     }
   </style>
@@ -535,463 +604,204 @@
       <div class="header-row">
         <div>
           <h1>Sarathi process</h1>
-          <p class="lede">Two trees show how accepted documents lead to code;
-          the learning loop shows how evidence changes what comes next.</p>
+          <p class="lede">An adaptive delivery model for turning accepted intent into
+          safe working increments, reviewable evidence, and better next decisions.</p>
         </div>
         <a href="sdlc-status.html">Open live project status</a>
       </div>
       <div class="legend" aria-label="Diagram encoding">
         <div class="legend-row">
-          <span class="legend-label">Background = document type</span>
+          <span class="legend-label">The delivery loop</span>
           <span class="key key-spec">Spec</span>
           <span class="key key-design">Design</span>
           <span class="key key-plan">Plan</span>
           <span class="key key-code">Code + tests</span>
         </div>
         <div class="legend-row">
-          <span class="legend-label">Level tag = work scope</span>
-          <span class="level level-product">Product</span>
-          <span class="level level-feature">Feature</span>
-          <span class="level level-slice">Slice</span>
-          <span>Status badge = workflow state</span>
-        </div>
-        <div class="legend-row">
-          <span class="legend-label"><code>WORK-*</code> = assigned work</span>
-            <span class="allocation-key"><code>WORK-EXAMPLE</code> Parent plan
-            <span class="allocation-arrow">&rarr;</span> Focused child work</span>
+          <span class="legend-label">The quality model</span>
+          <span>Create</span>
+          <span>Verify</span>
+          <span>Review</span>
+          <span>Assess</span>
         </div>
       </div>
-      <p class="rule">Only work that is ready to implement invokes <code>/code-create</code>. Approval means
-      safe enough for the next learning step, not frozen or final.</p>
-      <p class="rule">Use lighter review for a small reversible change, normal review by
-      default, and stricter review when failure could cause serious harm. Start with the
-      smallest solution for current users. Process records stay outside product code.</p>
+      <p class="rule"><strong>Enduring model:</strong> accepted intent &rarr; smallest safe
+      increment &rarr; working behavior &rarr; evidence &rarr; feedback &rarr; adapt.</p>
+      <p class="rule">The documents preserve decisions along the loop. They are not a
+      one-way waterfall, and approval means safe enough for the next learning step rather
+      than frozen forever.</p>
     </header>
 
-    <section aria-labelledby="simple-tree">
+    <section aria-labelledby="core-loop">
       <div class="section-head">
-        <h2 id="simple-tree">1. PR-sized leaf</h2>
-        <p>No breakdown is needed.</p>
+        <h2 id="core-loop">1. Deliver in a learning loop</h2>
+        <p>Each stage answers a different question and keeps the next increment grounded.</p>
       </div>
-      <div class="flow" aria-label="Simple implementation workflow">
+      <div class="flow" aria-label="Core delivery loop">
         <div class="node artifact-spec">
           <div class="node-meta">
-            <div class="identity-tags">
-              <span class="level level-slice">Slice</span>
-              <span class="kind">Spec</span>
-            </div>
-            <span class="status approved">Approved</span>
+            <span class="kind">Spec</span>
+            <span class="status approved">Accepted intent</span>
           </div>
-          <strong>Slice spec</strong>
-          <small>Exact behavior and acceptance intent</small>
+          <strong>How is the required behavior defined?</strong>
+          <small>Problem, stakeholders, scope and non-goals; needs &rarr; features; use cases
+          with main, alternate and failure flows; functional and supplementary requirements;
+          black-box acceptance tests and journeys; traceability to observable evidence</small>
         </div>
         <span class="arrow" aria-hidden="true"></span>
         <div class="node artifact-design">
           <div class="node-meta">
-            <div class="identity-tags">
-              <span class="level level-slice">Slice</span>
-              <span class="kind">Design</span>
-            </div>
-            <span class="status approved">Approved</span>
+            <span class="kind">Design</span>
+            <span class="status approved">Technical model understood</span>
           </div>
-          <strong>Change design</strong>
-          <small>Local contracts and test obligations</small>
+          <strong>How is the solution shaped?</strong>
+          <small>Architecture, responsibilities, boundaries, interfaces, data, decisions, quality attributes, and test approach</small>
         </div>
         <span class="arrow" aria-hidden="true"></span>
         <div class="node artifact-plan">
           <div class="node-meta">
-            <div class="identity-tags">
-              <span class="level level-slice">Slice</span>
-              <span class="kind">Plan</span>
-            </div>
-            <span class="status ready">Ready</span>
+            <span class="kind">Plan</span>
+            <span class="status ready">Delivery structured</span>
           </div>
-          <strong>Implementation plan</strong>
-          <small><code>PR-*</code>, Red/Green, files to change, pass/fail checks</small>
+          <strong>How will delivery be structured?</strong>
+          <small>Impact map; Breakdown child outcomes or Implementation PR graph; dependencies, sequence, integration, safety, and proof</small>
         </div>
         <span class="arrow" aria-hidden="true"></span>
         <div class="node artifact-code">
           <div class="node-meta">
-            <div class="identity-tags">
-              <span class="level level-slice">Slice</span>
-              <span class="kind">Code + tests</span>
-            </div>
-            <span class="status assessed">Assessed</span>
+            <span class="kind">Code + tests</span>
+            <span class="status assessed">Evidence</span>
           </div>
+          <strong>Does the behavior work?</strong>
+          <small>Red: observe the behavioral test fail; Green: make the smallest change;
+          Refactor with focused and affected tests green; record exact results</small>
+        </div>
+      </div>
+      <div class="return-loop" aria-label="Evidence and feedback return to earlier decisions">
+        Evidence and feedback confirm or revise the specification, design, and remaining plan
+      </div>
+      <p class="footnote">Observed results return to the specification, design, or plan
+      only when they change accepted needs, boundaries, risks, or remaining work.</p>
+    </section>
+
+    <section aria-labelledby="decomposition">
+      <div class="section-head">
+        <h2 id="decomposition">2. Decompose to make complex work understandable</h2>
+        <p>Keep the work together only while a competent engineer can understand, explain,
+        review, and safely plan it as one coherent unit.</p>
+      </div>
+      <div class="decomposition-map" aria-label="Conditional decomposition and reintegration">
+        <div class="decision">Can the work be understood as one coherent unit?</div>
+        <span class="map-arrow" aria-hidden="true">&rarr;</span>
+        <div class="branch-options">
+          <div class="learning-step"><strong>Capability or outcome</strong><small>Separate useful behavior</small></div>
+          <div class="learning-step"><strong>Responsibility or data</strong><small>Clarify ownership</small></div>
+          <div class="learning-step"><strong>Interface or dependency</strong><small>Isolate the connection</small></div>
+          <div class="learning-step"><strong>Risk or migration</strong><small>Make the difficult step reviewable</small></div>
+        </div>
+        <span class="map-arrow" aria-hidden="true">&rarr;</span>
+        <div class="rejoin">Integrate evidence and return to the delivery loop</div>
+      </div>
+      <p class="rule"><strong>Yes:</strong> keep the work together. <strong>No:</strong>
+      split along a natural product or technical boundary. Stop when each part is
+      understandable, testable, and safe to integrate. A split does not automatically
+      require more documents.</p>
+    </section>
+
+    <section aria-labelledby="quality-model">
+      <div class="section-head">
+        <h2 id="quality-model">3. Test and review throughout delivery</h2>
+        <p>Test intent matures across the stages, and every stage passes through repeatable
+        checks plus independent judgment.</p>
+      </div>
+      <h3>Test evidence thread</h3>
+      <div class="learning-flow" aria-label="Test evidence through every delivery stage">
+        <div class="learning-step">
+          <strong>Spec</strong>
+          <small>Define observable acceptance and important failure cases</small>
+        </div>
+        <div class="learning-step">
+          <strong>Design</strong>
+          <small>Choose the test architecture, environments, and boundary proof</small>
+        </div>
+        <div class="learning-step">
+          <strong>Plan</strong>
+          <small>Assign test obligations and the first expected failures to delivery</small>
+        </div>
+        <div class="learning-step">
           <strong>Code + tests</strong>
-          <small>Production behavior and executable evidence</small>
+          <small>Red &rarr; Green &rarr; Refactor; run focused and affected suites; record exact results</small>
         </div>
       </div>
+      <h3>Quality gate at every stage</h3>
+      <div class="learning-flow" aria-label="Create verify review assess model">
+        <div class="learning-step">
+          <strong>Create</strong>
+          <small>Write or revise the document or working change</small>
+        </div>
+        <div class="learning-step">
+          <strong>Verify</strong>
+          <small>Run repeatable checks and state exactly what they prove</small>
+        </div>
+        <div class="learning-step">
+          <strong>Review</strong>
+          <small>Independently judge clarity, correctness, simplicity, and safety</small>
+        </div>
+        <div class="learning-step">
+          <strong>Assess</strong>
+          <small>Combine the check results with independent judgment</small>
+        </div>
+      </div>
+      <p class="footnote">A stage is not accepted merely because its automatic checks are
+      green. Independent review judges meaning, test adequacy, simplicity, and safety;
+      assessment combines both before the next stage proceeds.</p>
     </section>
 
-    <section aria-labelledby="decomposed-tree">
+    <section aria-labelledby="continuity">
       <div class="section-head">
-        <h2 id="decomposed-tree">2. Split work only when a question blocks implementation</h2>
-        <p>This larger tree applies only when the approved requirements, design, and one
-          implementation plan are not enough. A large feature or many screens is not, by
-          itself, a reason to add more documents.</p>
+        <h2 id="continuity">4. Preserve continuity</h2>
+        <p>A new engineer or agent should be able to resume from evidence rather than chat history.</p>
       </div>
-
-      <p class="rule">Start from the approved requirements and design with one short
-        implementation plan. Add another document only when a specific unanswered product
-        decision, external contract, serious risk, ownership conflict, or missing acceptance
-        criterion prevents safe implementation.</p>
-
-      <p class="rule"><strong>Neuring before / after:</strong> before, approved requirements, architecture,
-        prototype, and runtime evidence still triggered a repeated feature Spec/Design chain.
-        After, one shallow plan implements the first prototype-matching investor UI slice,
-        excludes backend and BLE integration, and stops for stakeholder UI review. Later UI
-        slices reuse the same plan unless feedback changes a real boundary.</p>
-
-      <div class="flow" aria-label="Product document chain">
-        <div class="node artifact-spec">
-          <div class="node-meta">
-            <div class="identity-tags">
-              <span class="level level-product">Product</span>
-              <span class="kind">Spec</span>
-            </div>
-            <span class="status approved">Approved</span>
-          </div>
-          <strong>Product spec</strong>
-          <small>Product AT/JT and system outcomes</small>
-        </div>
-        <span class="arrow" aria-hidden="true"></span>
-        <div class="node artifact-design">
-          <div class="node-meta">
-            <div class="identity-tags">
-              <span class="level level-product">Product</span>
-              <span class="kind">Design</span>
-            </div>
-            <span class="status approved">Approved</span>
-          </div>
-          <strong>Product architecture</strong>
-          <small>System TEST obligations and environments</small>
-        </div>
-        <span class="arrow" aria-hidden="true"></span>
-        <div class="node artifact-plan">
-          <div class="node-meta">
-            <div class="identity-tags">
-              <span class="level level-product">Product</span>
-              <span class="kind">Plan</span>
-            </div>
-            <span class="status approved">Approved</span>
-          </div>
-          <strong>Breakdown plan</strong>
-          <small>Assigns work and parent test intent</small>
-        </div>
+      <div class="parallel-rule" aria-label="Continuity sources">
+        <span><strong>Intent and decisions:</strong> accepted specifications, designs, and plans</span>
+        <span><strong>Working evidence:</strong> behavioral tests, commands, results, and assessments</span>
+        <span><strong>Current position:</strong> a short WIP snapshot with one executable next action</span>
       </div>
-
-      <div class="branches">
-        <div class="branch">
-          <div class="branch-label">
-            <code>WORK-FEATURE-ONE</code>
-            <span>Assigned by the product plan</span>
-            <span class="allocation-arrow">&rarr;</span>
-            <strong>Feature child: sufficiently small leaf</strong>
-          </div>
-          <div class="flow">
-            <div class="node artifact-spec">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-feature">Feature</span>
-                  <span class="kind">Spec</span>
-                </div>
-                <span class="status approved">Approved</span>
-              </div>
-              <strong>Feature 1 spec</strong>
-              <small>Feature AT/JT</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-design">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-feature">Feature</span>
-                  <span class="kind">Design</span>
-                </div>
-                <span class="status approved">Approved</span>
-              </div>
-              <strong>Feature 1 design</strong>
-              <small>Feature composition TEST obligations</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-plan">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-feature">Feature</span>
-                  <span class="kind">Plan</span>
-                </div>
-                <span class="status ready">Ready</span>
-              </div>
-              <strong>Implementation plan</strong>
-              <small>Feature changes and required tests</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-code">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-feature">Feature</span>
-                  <span class="kind">Code + tests</span>
-                </div>
-                <span class="status assessed">Assessed</span>
-              </div>
-              <strong>Feature code + tests</strong>
-              <small>Feature AT, contract, and integration evidence</small>
-            </div>
-          </div>
-        </div>
-
-        <div class="branch">
-          <div class="branch-label">
-            <code>WORK-FEATURE-TWO</code>
-            <span>Assigned by the product plan</span>
-            <span class="allocation-arrow">&rarr;</span>
-            <strong>Feature child: needs another breakdown</strong>
-          </div>
-          <div class="flow">
-            <div class="node artifact-spec">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-feature">Feature</span>
-                  <span class="kind">Spec</span>
-                </div>
-                <span class="status approved">Approved</span>
-              </div>
-              <strong>Feature 2 spec</strong>
-              <small>Feature acceptance intent</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-design">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-feature">Feature</span>
-                  <span class="kind">Design</span>
-                </div>
-                <span class="status approved">Approved</span>
-              </div>
-              <strong>Feature 2 design</strong>
-              <small>Boundaries and composition tests</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-plan">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-feature">Feature</span>
-                  <span class="kind">Plan</span>
-                </div>
-                <span class="status allocated">Needs breakdown</span>
-              </div>
-              <strong>Feature breakdown plan</strong>
-              <small>Allocates slices and feature integration</small>
-            </div>
-          </div>
-
-          <div class="nested" aria-label="Feature 2 slice leaves">
-            <div class="branch-label">
-              <code>WORK-SLICE-A</code>
-              <span>Assigned by the feature plan</span>
-              <span class="allocation-arrow">&rarr;</span>
-              <strong>Slice child A</strong>
-            </div>
-            <div class="flow">
-              <div class="node artifact-spec">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Spec</span>
-                  </div>
-                  <span class="status approved">Approved</span>
-                </div>
-                <strong>Slice A spec</strong>
-                <small>Local behavior and acceptance intent</small>
-              </div>
-              <span class="arrow" aria-hidden="true"></span>
-              <div class="node artifact-design">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Design</span>
-                  </div>
-                  <span class="status approved">Approved</span>
-                </div>
-                <strong>Change A design</strong>
-                <small>Local contracts and boundary obligations</small>
-              </div>
-              <span class="arrow" aria-hidden="true"></span>
-              <div class="node artifact-plan">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Plan</span>
-                  </div>
-                  <span class="status ready">Ready</span>
-                </div>
-                <strong>Slice A plan</strong>
-                <small>Assigned parent and local tests</small>
-              </div>
-              <span class="arrow" aria-hidden="true"></span>
-              <div class="node artifact-code">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Code + tests</span>
-                  </div>
-                  <span class="status assessed">Assessed</span>
-                </div>
-                <strong>Slice A code + tests</strong>
-                <small>Unit, contract, and focused integration</small>
-              </div>
-            </div>
-            <div class="branch-label">
-              <code>WORK-SLICE-B</code>
-              <span>Assigned by the feature plan</span>
-              <span class="allocation-arrow">&rarr;</span>
-              <strong>Slice child B</strong>
-            </div>
-            <div class="flow">
-              <div class="node artifact-spec">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Spec</span>
-                  </div>
-                  <span class="status approved">Approved</span>
-                </div>
-                <strong>Slice B spec</strong>
-                <small>Local behavior and acceptance intent</small>
-              </div>
-              <span class="arrow" aria-hidden="true"></span>
-              <div class="node artifact-design">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Design</span>
-                  </div>
-                  <span class="status approved">Approved</span>
-                </div>
-                <strong>Change B design</strong>
-                <small>Local contracts and boundary obligations</small>
-              </div>
-              <span class="arrow" aria-hidden="true"></span>
-              <div class="node artifact-plan">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Plan</span>
-                  </div>
-                  <span class="status ready">Ready</span>
-                </div>
-                <strong>Slice B plan</strong>
-                <small>Assigned parent and local tests</small>
-              </div>
-              <span class="arrow" aria-hidden="true"></span>
-              <div class="node artifact-code">
-                <div class="node-meta">
-                  <div class="identity-tags">
-                    <span class="level level-slice">Slice</span>
-                    <span class="kind">Code + tests</span>
-                  </div>
-                  <span class="status not-started">Not started</span>
-                </div>
-                <strong>Slice B code + tests</strong>
-                <small>Planned executable evidence</small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="branch integration-branch">
-          <div class="branch-label">
-            <code>WORK-SYSTEM-INTEGRATION</code>
-            <span>Assigned by the product plan</span>
-            <span class="allocation-arrow">&rarr;</span>
-            <strong>Integration slice child</strong>
-          </div>
-          <div class="flow">
-            <div class="node artifact-spec">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-slice">Slice</span>
-                  <span class="kind">Spec</span>
-                </div>
-                <span class="status approved">Approved</span>
-              </div>
-              <strong>Integration slice spec</strong>
-              <small>References product AT/JT and cross-feature obligations</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-design">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-slice">Slice</span>
-                  <span class="kind">Design</span>
-                </div>
-                <span class="status approved">Approved</span>
-              </div>
-              <strong>Integration design</strong>
-              <small>Environment, boundaries, fixtures, and test obligations</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-plan">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-slice">Slice</span>
-                  <span class="kind">Plan</span>
-                </div>
-                <span class="status ready">Ready</span>
-              </div>
-              <strong>Integration implementation plan</strong>
-              <small>PR ownership, environments, pass/fail checks, and requirement links</small>
-            </div>
-            <span class="arrow" aria-hidden="true"></span>
-            <div class="node artifact-code">
-              <div class="node-meta">
-                <div class="identity-tags">
-                  <span class="level level-slice">Slice</span>
-                  <span class="kind">Test code</span>
-                </div>
-                <span class="status not-started">Not started</span>
-              </div>
-              <strong>System integration tests</strong>
-              <small>Executes product journeys, E2E, smoke, and system NFRs</small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <p class="footnote">Integration is incremental: slices prove boundaries, features
-      prove local composition, and explicit integration slices prove cross-feature
-      behavior. Requirement links show ownership; execution results prove outcomes.</p>
+      <p class="rule">The WIP note is navigation, not product truth. Important claims are
+      checked against source documents and working evidence before delivery continues.</p>
     </section>
 
-    <section aria-labelledby="learning-loop">
+    <section aria-labelledby="risk-controls">
       <div class="section-head">
-        <h2 id="learning-loop">3. Inspect and adapt</h2>
-        <p>Every assessed slice can change its parent documents and the next selected work.</p>
+        <h2 id="risk-controls">5. Match assurance to risk</h2>
+        <p>Every production change keeps the same safety floor; actual risk determines the depth of proof.</p>
       </div>
-      <div class="learning-flow" aria-label="Post-slice feedback loop">
-        <div class="learning-step">
-          <strong>Assessed slice</strong>
-          <small>Working code, tests, and observed evidence</small>
-        </div>
-        <div class="learning-step">
-          <strong>Stakeholder or system feedback</strong>
-          <small>Received, requested, unavailable, or not applicable</small>
-        </div>
-        <div class="learning-step">
-          <strong>Parent documents</strong>
-          <small>Spec, design, plan, integration, and process</small>
-        </div>
-        <div class="learning-step">
-          <strong>Next selected work</strong>
-          <small>Continue, revise, stop, cancel, split, reorder, or group parallel work</small>
-        </div>
+      <div class="learning-flow" aria-label="Review depth">
+        <div class="learning-step"><strong>Lean</strong><small>Small, reversible, and low risk</small></div>
+        <div class="learning-step"><strong>Standard</strong><small>The ordinary default or unclear risk</small></div>
+        <div class="learning-step"><strong>High assurance</strong><small>Stronger evidence for material consequences</small></div>
+        <div class="learning-step"><strong>Exploratory</strong><small>Timeboxed learning outside production</small></div>
       </div>
-      <div class="parallel-rule" aria-label="Parallel learning rules">
-        <span><strong>Simplicity:</strong> delete, defer, collapse, or reuse evidence first</span>
-        <span><strong>Inside one change:</strong> independent tasks may run together</span>
-        <span><strong>Separate changes:</strong> group them only when they share a review point</span>
-        <span><strong>Dependent changes:</strong> wait for the result they depend on</span>
+      <p class="footnote">High assurance adds evidence for concrete risks. It does not
+      require the whole project to be designed up front.</p>
+    </section>
+
+    <section aria-labelledby="supporting-rules">
+      <div class="section-head">
+        <h2 id="supporting-rules">6. Keep supporting rules in their place</h2>
+        <p>Practical authoring rules support the delivery model without replacing it.</p>
       </div>
+      <div class="parallel-rule" aria-label="Supporting authoring rules">
+        <span><strong>Readable documents:</strong> explain the product and technical change before metadata</span>
+        <span><strong>Honest status:</strong> state engineering reality and exact completion scope before process state</span>
+        <span><strong>Existing systems:</strong> reuse proven behavior and make ownership explicit</span>
+        <span><strong>Traceability:</strong> preserve links in documents and records, not production code</span>
+        <span><strong>Safe start:</strong> code begins from accepted intent and a bounded plan ready to implement</span>
+        <span><strong>Production boundary:</strong> live deployment requires explicit user approval</span>
+      </div>
+      <p class="rule"><strong>Inspect and adapt:</strong> after each reviewed increment,
+      continue, revise, stop, combine, split, or reorder the remaining work according to
+      observed evidence and feedback.</p>
     </section>
   </main>
 </body>

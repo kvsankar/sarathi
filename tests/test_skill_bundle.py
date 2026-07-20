@@ -11,12 +11,14 @@ SKILL_DOCS = [
     "bootstrap-instructions.md",
     "cleanup-pass.md",
     "cross-cutting-concerns.md",
+    "enduring-model.md",
     "feedback-and-learning.md",
     "human-first-artifacts.md",
     "process-maintenance.md",
     "progressive-disclosure.md",
     "project-entry.md",
     "release-process.md",
+    "requirements-model.md",
     "review-verification-checklist.md",
     "simplicity-first.md",
     "simplify-pass.md",
@@ -73,26 +75,27 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     bundled = SKILL / "docs" / "sarathi.html"
     assert bundled.read_bytes() == source.read_bytes()
     guide = source.read_text(encoding="utf-8")
-    assert "1. PR-sized leaf" in guide
-    assert "2. Split work only when a question blocks implementation" in guide
-    assert "Direct-to-code decision:" not in guide
-    assert "Neuring before / after:" in guide
-    assert "WORK-FEATURE-ONE" in guide
-    assert "WORK-SLICE-A" in guide
-    assert "WORK-SYSTEM-INTEGRATION" in guide
-    assert "Assigned by the product plan" in guide
-    assert "Integration slice child" in guide
-    assert "Background = document type" in guide
-    assert "Level tag = work scope" in guide
+    assert "1. Deliver in a learning loop" in guide
+    assert "2. Decompose to make complex work understandable" in guide
+    assert "3. Test and review throughout delivery" in guide
+    assert "4. Preserve continuity" in guide
+    assert "5. Match assurance to risk" in guide
+    assert "6. Keep supporting rules in their place" in guide
+    assert "Neuring before / after:" not in guide
+    assert "WORK-FEATURE-ONE" not in guide
+    assert "Evidence &rarr; feedback" not in guide
+    assert "Evidence" in guide
+    assert "feedback" in guide
+    assert "adapt" in guide
     assert "artifact-spec" in guide
-    assert "level-product" in guide
     assert "artifact-work" not in guide
     assert "key-work" not in guide
-    assert "Slice A spec + LLD" not in guide
-    assert "3. Inspect and adapt" in guide
-    assert "Dependent changes:" in guide
-    assert "stricter review when failure could cause serious harm" in guide
-    assert "Process records stay outside product code" in guide
+    assert "repeatable checks" in guide
+    assert "Independently judge" in guide
+    assert "High assurance adds evidence" in guide
+    assert "return-loop" in guide
+    assert "decomposition-map" in guide
+    assert "Practical authoring rules support the delivery model" in guide
     assert not re.search(r"at most\s+three", guide)
 
 

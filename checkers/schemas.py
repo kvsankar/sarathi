@@ -51,8 +51,23 @@ SPEC_SECTIONS = [
     "Assumptions & Open Questions",
 ]
 
+LEGACY_HUMAN_FIRST_SPEC_SECTIONS = [
+    ("Product Overview", "Product Crux"),
+    "Traceability",
+]
+
 HUMAN_FIRST_SPEC_SECTIONS = [
-    "Product Overview",
+    ("Product Overview", "Product Crux"),
+    "User Needs",
+    "Non-Goals",
+    "Features",
+    "Use Cases",
+    "Functional Requirements",
+    "Non-Functional Requirements",
+    "External Interfaces & Contracts",
+    "Acceptance Tests",
+    "Journey Tests",
+    "Assumptions & Open Questions",
     "Traceability",
 ]
 
@@ -73,7 +88,7 @@ DESIGN_SECTIONS = [
 ]
 
 HUMAN_FIRST_DESIGN_SECTIONS = [
-    "Technical Approach",
+    ("Technical Approach", "Technical Crux"),
     "Traceability",
 ]
 
