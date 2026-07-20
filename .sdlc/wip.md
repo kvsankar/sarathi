@@ -3,21 +3,21 @@
 ## Product Snapshot
 
 Goal: Release Sarathi 0.4.0 with the enduring process model and corrected definitions of requirements, architecture, decomposition, delivery planning, test-first implementation, and independent review.
-Working Today: The 0.4.0 source, skill bundle, documentation, diagram, checkers, tests, and distribution metadata are aligned and pass the local release gate.
+Working Today: Sarathi 0.4.0 is published and installed for all supported local agents.
 Reusable Today: Existing create, verify, review, assess, WIP, approval, assurance, traceability, and compatibility behavior remains available.
-Current Increment: Sarathi 0.4.0 release candidate: implemented and validated locally.
-Remaining Shared Work: Merge the release PR, tag merged master, verify publishing, and install 0.4.0 locally.
+Current Increment: Sarathi 0.4.0 release and local deployment: complete.
+Remaining Shared Work: None for this increment.
 Target-Owned Work: None; this change is entirely within Sarathi.
 Deferred: None.
 Before Coding: none
-Next Action: Commit and push the 0.4.0 release branch, then open the release PR.
+Next Action: Use Sarathi 0.4.0 in production projects and report concrete process or checker failures.
 
 ## Process Snapshot
 
-Last Updated: 2026-07-20T19:15:00Z
+Last Updated: 2026-07-20T18:51:08Z
 Updated By: agent
 Current Stage: release
-Current Gate: local release gate passed; PR and CI pending
+Current Gate: released and deployed
 Project Entry Mode: brownfield_delta_only
 Work Scope: feature/component
 Ready To Implement: Yes
@@ -42,6 +42,7 @@ Extra Checks: bundle parity, prompt budgets, browser layout, image inspection, d
 | Diagram prompt | `docs/sarathi-process-diagram-prompt.md` | validated | Makes the complete Spec model, test evidence, and independent review first-class. |
 | Raster diagram | `docs/sarathi-process-diagram.png` | inspected | Shows the complete Spec hierarchy while preserving Design, Plan, TDD, test, review, and decomposition corrections. |
 | Compatibility fixes | checker and human-first test files already in the worktree | validated | Preserved and formatted; not overwritten by this increment. |
+| Release | `v0.4.0` | published and locally deployed | GitHub Release and PyPI contain the wheel and source archive. |
 
 ## Decisions And Assumptions
 
@@ -69,6 +70,8 @@ Extra Checks: bundle parity, prompt budgets, browser layout, image inspection, d
 - Diagram SHA-256: `c5aeb83d6f5a28fc2363dc5bda92aa8125346b7cda63244500266b01be09bade`.
 - Release metadata matches `v0.4.0`; wheel and source distribution build and pass Twine checks.
 - Bash and packaged-command installer dry runs passed for all supported agent targets. PowerShell is unavailable on this Mac and remains a CI check.
+- PR `#18` passed both CI runs and merged at `b06a4d3`; release run `29769260860` published PyPI and GitHub artifacts successfully.
+- Public `uvx` resolved 0.4.0; the pinned local tool and installed Codex, Copilot, Claude, Gemini, and Pi assets were replaced with 0.4.0.
 
 ## Results And Feedback
 
