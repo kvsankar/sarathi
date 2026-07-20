@@ -69,7 +69,7 @@ Extra Checks: bundle parity, prompt budgets, browser layout, image inspection, d
 - Independent verification and review findings were corrected across the Spec model, versioned checker, proportional supplementary-requirement guidance, bundle copies, and raster.
 - Diagram SHA-256: `c5aeb83d6f5a28fc2363dc5bda92aa8125346b7cda63244500266b01be09bade`.
 - Release metadata matches `v0.4.0`; wheel and source distribution build and pass Twine checks.
-- Bash and packaged-command installer dry runs passed for all supported agent targets. PowerShell is unavailable on this Mac and remains a CI check.
+- Bash and packaged-command installer dry runs passed for all supported agent targets. PowerShell is unavailable on this Mac, so its dry run was not executed.
 - PR `#18` passed both CI runs and merged at `b06a4d3`; release run `29769260860` published PyPI and GitHub artifacts successfully.
 - Public `uvx` resolved 0.4.0; the pinned local tool and installed Codex, Copilot, Claude, Gemini, and Pi assets were replaced with 0.4.0.
 
