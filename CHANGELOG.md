@@ -8,6 +8,44 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.4.0 - 2026-07-21
+
+### Changed
+
+- Recenter Sarathi's overview, routing skill, static guide, and process diagram on its
+  enduring model: the learning loop, decomposition when useful, independent quality checks,
+  continuity, risk-proportionate assurance, and supporting authoring rules.
+- Make decomposition a simple human judgment: split work when a competent engineer cannot
+  understand and review it safely as one coherent unit, then stop when each part is clear,
+  testable, and safe to integrate. Keep extra documents independent from that decision.
+- Treat product-first status, reuse classification, and identifier placement as supporting
+  safeguards rather than the identity or headline of the delivery process.
+- Restore design as an implementable, evolvable technical model rather than merely a
+  current-to-target change description. Require designs to select consequential boundaries
+  for their context, including applicable database-schema and API boundaries in backends.
+- Restore planning as executable delivery structure rather than only the next safe
+  increment. Distinguish Breakdown child-outcome graphs from Implementation PR graphs, and
+  require proportionate impact, dependency, sequencing, integration, safety, and proof.
+- Restore explicit Red-Green-Refactor for behavior-changing code, including observation of
+  the expected failing test before the minimum implementation, and make test evidence plus
+  independent review visible across every stage of the enduring model and process diagram.
+- Restore a needs-to-evidence specification model, principally influenced by
+  Leffingwell/Widrig, as a core stage definition:
+  problem and stakeholder needs lead to features, use cases, functional and supplementary
+  requirements, black-box acceptance tests, journeys, and traceability to observable
+  evidence. New and materially revised specs use format version 3 so the checker requires
+  that complete product-spec hierarchy; existing version-2 specs retain their earlier
+  human-first contract.
+
+### Fixed
+
+- Keep existing version-2 plans with the documented `Implementation Crux` heading
+  readable while new plans use `Implementation Approach`.
+- Keep existing version-2 specifications and designs with the documented
+  `Product Crux` and `Technical Crux` headings readable.
+- Accept the documented `Required child documents` wording in Breakdown-plan
+  allocations while retaining the legacy `Required child artifacts` field.
+
 ## 0.3.2 - 2026-07-19
 
 ### Changed

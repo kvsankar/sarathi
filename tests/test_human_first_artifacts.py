@@ -385,7 +385,7 @@ def test_human_first_spec_resolves_annotations_and_checks_structure(
 
     rc, report = run_checker(
         load_checker("check_spec"),
-        [str(path), "--feature"],
+        [str(path)],
         monkeypatch,
         capsys,
         tmp_path,
@@ -398,18 +398,39 @@ def test_human_first_spec_resolves_annotations_and_checks_structure(
     assert report["gates"]["human_first_structure"] is True
 
 
-def test_version_two_requires_the_plain_opening_heading(tmp_path, monkeypatch, capsys):
+def test_version_two_accepts_documented_legacy_opening_headings(
+    tmp_path, monkeypatch, capsys
+):
     spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
     spec_path.write_text(
         human_first_spec().replace("## Product Overview", "## Product Crux", 1),
         encoding="utf-8",
     )
-    module = load_checker("check_spec")
+    design_path.write_text(
+        human_first_design().replace("## Technical Approach", "## Technical Crux", 1),
+        encoding="utf-8",
+    )
 
-    rc, report = run_checker(module, [str(spec_path)], monkeypatch, capsys, tmp_path)
+    spec_rc, spec_report = run_checker(
+        load_checker("check_spec"),
+        [str(spec_path)],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+    design_rc, design_report = run_checker(
+        load_checker("check_design"),
+        [str(design_path), "--component", "--spec", str(spec_path)],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
 
-    assert rc == 1
-    assert "missing_crux:Product Overview" in report["human_first_issues"]
+    assert spec_rc == 0
+    assert spec_report["human_first_issues"] == []
+    assert design_rc == 0
+    assert design_report["human_first_issues"] == []
 
 
 def test_human_first_design_and_plan_accept_descriptive_headings(
@@ -684,7 +705,11 @@ PR-AUTH-COMPAT has no dependency.
 def test_version_two_plan_remains_accepted_without_baseline_classification(
     tmp_path, monkeypatch, capsys
 ):
-    text = human_first_plan().replace('version="3"', 'version="2"')
+    text = (
+        human_first_plan()
+        .replace('version="3"', 'version="2"')
+        .replace("## Implementation Approach", "## Implementation Crux")
+    )
     baseline_start = text.index("## Baseline Reuse")
     overview_start = text.index("## Overview")
     text = (text[:baseline_start] + text[overview_start:]).replace(
@@ -729,9 +754,7 @@ def test_unknown_format_version_does_not_fall_back_to_legacy(
     ]
 
 
-def test_plan_only_format_version_is_not_accepted_for_other_artifacts(
-    tmp_path, monkeypatch, capsys
-):
+def test_version_three_spec_format_is_supported(tmp_path, monkeypatch, capsys):
     path = tmp_path / "spec.md"
     path.write_text(
         human_first_spec().replace('version="2"', 'version="3"'), encoding="utf-8"
@@ -739,17 +762,71 @@ def test_plan_only_format_version_is_not_accepted_for_other_artifacts(
 
     rc, report = run_checker(
         load_checker("check_spec"),
-        [str(path), "--feature"],
+        [str(path)],
         monkeypatch,
         capsys,
         tmp_path,
     )
 
+    assert rc == 0
+    assert report["artifact_format"] == "human-first-v3"
+    assert report["human_first_issues"] == []
+
+
+def test_version_three_product_spec_requires_complete_hierarchy(
+    tmp_path, monkeypatch, capsys
+):
+    path = tmp_path / "spec.md"
+    path.write_text(
+        """# Thin product spec
+<!-- sarathi:artifact-format version="3" -->
+
+## Product Overview
+
+People need the product to work.
+
+## Traceability
+
+No mappings yet.
+""",
+        encoding="utf-8",
+    )
+
+    rc, report = run_checker(
+        load_checker("check_spec"), [str(path)], monkeypatch, capsys, tmp_path
+    )
+
     assert rc == 1
     assert report["artifact_format"] == "human-first-v3"
-    assert report["human_first_issues"] == [
-        "unsupported_artifact_format:human-first-v3"
-    ]
+    assert report["gates"]["sections_present"] is False
+
+
+def test_version_two_product_spec_retains_legacy_human_first_contract(
+    tmp_path, monkeypatch, capsys
+):
+    path = tmp_path / "spec.md"
+    path.write_text(
+        """# Existing product spec
+<!-- sarathi:artifact-format version="2" -->
+
+## Product Overview
+
+People need the product to work.
+
+## Traceability
+
+No mappings yet.
+""",
+        encoding="utf-8",
+    )
+
+    rc, report = run_checker(
+        load_checker("check_spec"), [str(path)], monkeypatch, capsys, tmp_path
+    )
+
+    assert rc == 0
+    assert report["artifact_format"] == "human-first-v2"
+    assert report["gates"]["sections_present"] is True
 
 
 def test_dogfood_covers_all_requested_scenarios():

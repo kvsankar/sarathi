@@ -13,14 +13,15 @@ intent, not implementation architecture.
 Read `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, existing documents, and relevant
 repository evidence. Load `docs/artifact-contracts.md` and
 `docs/human-first-artifacts.md` for the Spec contract, narrative, and traceability layers.
+Load `docs/requirements-model.md` for the requirements hierarchy.
 
 ## Triggered References
 
 Load only when the trigger applies:
 
 - `docs/project-entry.md`: starting in an unfamiliar or existing codebase;
-- `docs/srs-authoring.md`: Product/system scope, reconstructed behavior, or terse
-  requirements risk;
+- `docs/srs-authoring.md`: reconstructed behavior, detailed use cases, measurable
+  supplementary requirements, or terse requirements risk;
 - `docs/assurance-profiles.md`: selecting or changing the review level or additional checks;
 - `docs/simplicity-first.md`: proposed implementation machinery, reuse, or a refactor affects
   the requirement boundary;
@@ -60,17 +61,23 @@ reproduce the complete parent requirement inventory.
 
 Apply these requirements rules:
 
-- Start new or materially revised specs with the version marker and `## Product Overview`.
+- Start new or materially revised specs with
+  `<!-- sarathi:artifact-format version="3" -->` and `## Product Overview`.
   Accept `## Product Crux` in existing documents.
   Keep its plain-language problem, users, outcomes, non-goals, success, failures, and
   constraints free of process IDs. Use descriptive headings; put IDs in comments and the
   final `## Traceability` appendix.
-- State stakeholder needs before features and behavior before solution mechanics.
+- Derive features from stakeholder needs; use cases then describe actor-goal behavior in
+  context, including meaningful alternate and failure flows.
 - Make non-goals explicit enough to prevent accidental scope.
-- Write each requirement as one necessary, feasible, testable behavior. Keep `FR-*` and
-  `NFR-*` IDs in traceability.
-- Describe observable success and important user journeys. Keep `AT-*` and `JT-*` IDs in
-  traceability.
+- Write each functional requirement as one necessary, feasible, testable behavior. Write
+  measurable supplementary requirements for relevant qualities and constraints. Keep
+  `FR-*` and `NFR-*` IDs in traceability.
+- Define black-box acceptance tests for required behavior and qualities. Define journey
+  tests when confidence depends on an ordered end-to-end story. Keep `AT-*` and `JT-*` IDs
+  in traceability.
+- Preserve the derivation from problem and needs through features, use cases, requirements,
+  acceptance tests, and journeys in the final traceability section.
 - Name the source of each external contract and how it will be tested through the real
   dependency or its official test interface. If only a mock is available, state what
   remains untested.

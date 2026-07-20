@@ -119,7 +119,10 @@ WORK_ALLOCATION_FIELDS = {
     "Child scope": "child_scope",
     "Scope": "scope",
     "Parent IDs / inherited obligations": "parent_obligations",
-    "Required child artifacts": "required_child_artifacts",
+    (
+        "Required child artifacts",
+        "Required child documents",
+    ): "required_child_artifacts",
 }
 LEAN_CHANGE_FIELDS = (
     "Why Lean",
@@ -238,11 +241,15 @@ def external_double_mentions(text: str) -> list[str]:
 def missing_work_allocation_fields(block: str) -> list[str]:
     missing = []
     for label, key in WORK_ALLOCATION_FIELDS.items():
-        pattern = re.compile(
-            rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(label)}"
-            rf"(?:\*\*)?\s*:\s*\S"
-        )
-        if not pattern.search(block):
+        labels = (label,) if isinstance(label, str) else label
+        patterns = [
+            re.compile(
+                rf"(?im)^\s*(?:[-*+]\s+)?(?:\*\*)?{re.escape(candidate)}"
+                rf"(?:\*\*)?\s*:\s*\S"
+            )
+            for candidate in labels
+        ]
+        if not any(pattern.search(block) for pattern in patterns):
             missing.append(key)
     return missing
 
@@ -348,7 +355,7 @@ def main() -> int:
     format_name = artifact_format(text)
     format_issues = human_first_issues(
         text,
-        "Implementation Approach",
+        ("Implementation Approach", "Implementation Crux"),
         ("human-first-v2", "human-first-v3"),
     )
     cited = {

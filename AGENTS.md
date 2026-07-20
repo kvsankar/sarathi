@@ -70,13 +70,11 @@ document.
 
 `/code-create` blocks without approved requirements and a specific plan that is ready to implement.
 
-Before adding another document, ask whether approved earlier documents plus one specific
-implementation plan make the next change clear and safe. If yes, plan and code;
-  do not create another spec, design, breakdown, work group, or document layer. This applies to
-feature/component work and all assurance profiles. Decompose only for a concrete unresolved
-decision, contract, material risk, independently valuable feedback outcome, touch/integration
-conflict, or missing observable acceptance. See
-[docs/work-decomposition.md](docs/work-decomposition.md).
+At every planning boundary, ask whether a competent engineer can understand, explain,
+review, and safely plan the work as one coherent unit. If yes, use one Implementation plan.
+If not, split along a natural product or technical boundary until each part is
+understandable, testable, and safe to integrate. A split does not automatically require
+another spec or design. See [docs/work-decomposition.md](docs/work-decomposition.md).
 
 Breakdown plans use a work group only for near-term `WORK-*` children that share a real
 feedback or integration checkpoint; unscheduled children have no group. Implementation plans

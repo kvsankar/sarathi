@@ -13,15 +13,19 @@ service, a new document hierarchy, a writing framework, or a readability score. 
 markers enable the human-first checks:
 
 ```markdown
-<!-- New specifications and designs -->
+<!-- New specifications -->
+<!-- sarathi:artifact-format version="3" -->
+
+<!-- New designs -->
 <!-- sarathi:artifact-format version="2" -->
 
 <!-- New plans, including baseline-reuse classification -->
 <!-- sarathi:artifact-format version="3" -->
 ```
 
-Existing version-2 plans remain valid without the newer baseline classification. Unmarked
-documents use the legacy checker rules and remain parseable. When an agent
+Existing version-2 specs remain valid without the complete version-3 section check, and
+version-2 plans remain valid without the newer baseline classification. Unmarked documents
+use the legacy checker rules and remain parseable. When an agent
 substantially revises one, it adds the marker and converts the document without changing the
 approved requirements merely for formatting. A checker cannot infer edit history from file
 contents, so creation and review instructions enforce that transition.
@@ -61,12 +65,22 @@ annotations and the final appendix own stable mapping. Requirements remain atomi
 testable, acceptance scenarios remain black-box, and high-assurance work retains the extra
 failure and evidence detail its risk needs.
 
+The readable body still follows the requirements model in
+`docs/requirements-model.md`: stakeholder needs lead to features, use cases explain main,
+alternate, and failure behavior, functional and supplementary requirements make it
+precise, and acceptance tests and journeys define observable proof. Moving IDs to the
+appendix must not flatten that reasoning into a generic summary.
+
 ## Designs
 
-A design starts with `## Technical Approach`. Its opening page explains current state, target
-state, the essential model, shared versus service-owned responsibilities, changes and
-deliberate non-changes, difficult risks, and implementation or migration order. Use compact
-diagrams when relationships are clearer visually.
+A design starts with `## Technical Approach`. Its opening page explains the architectural
+drivers, system boundary, essential technical model, responsibilities, relationships,
+consequential interfaces and data, important decisions and trade-offs, testability, and
+evolution. It selects the boundaries that matter for the kind of system, following
+`docs/artifact-contracts.md`; applicable backend API and database-schema boundaries are
+explicit. For an existing-system change, it also explains the relevant current state,
+target state, unchanged boundaries, compatibility, and migration. Use compact diagrams when
+relationships are clearer visually.
 
 Component and interface headings describe their role, such as `Password mechanism service`
 or `BPTrial compatibility adapter`. Stable component, interface, decision, risk, and test
@@ -74,10 +88,18 @@ obligation IDs live in annotations or `## Traceability`.
 
 ## Plans
 
-A plan starts with `## Implementation Approach`. It explains the delivered outcome, exact
-technical change, non-change boundary, sequence, safety constraints, and how success will be
-demonstrated. Descriptive implementation-item headings remain understandable without
-decoding milestone, work, PR, requirement, component, or test-obligation IDs.
+A plan starts with `## Implementation Approach`. It explains how the approved technical
+model becomes an executable delivery structure: outcomes, impacted areas and extent,
+breakdown or PR dependency graph, sequence, integration points, safety, and proof. It says
+why `Plan Type: Breakdown | Implementation` fits. A Breakdown plan organizes broad work
+into independently useful child outcomes; an Implementation plan organizes one code-ready
+outcome into reviewable PRs. One cohesive PR is a valid one-node graph.
+
+Follow with a proportionate `## Impact Map`. Identify affected product and delivery areas,
+what is added, changed, removed, or deliberately untouched, affected consumers and owners,
+compatibility concerns, and allocation to child work or PRs. Do not use LOC estimates or
+list irrelevant areas. Descriptive headings remain understandable without decoding process
+IDs.
 
 Follow with a short `## Baseline Reuse` section. Explain what already works in the current
 or sibling system, what is reusable now, what must be extracted, what remains target-owned,
@@ -109,8 +131,11 @@ exclusions; this does not permit traceability blocks in ordinary source.
 Reviewers judge what automatic checks cannot:
 
 - Can I explain the problem and proposed approach after reading the first page?
-- Are current state, target state, change boundary, and non-change boundary clear?
-- Can I understand the implementation sequence without decoding identifiers?
+- Are the technical model, important boundaries, responsibilities, decisions, and trade-offs clear?
+- For an existing-system change, are current state, target state, compatibility, migration,
+  and unchanged boundaries clear?
+- For a plan, can I understand the Impact Map, Breakdown or PR graph, sequence,
+  integration, safety, and proof without decoding identifiers?
 - Are identifiers supporting traceability rather than interrupting the explanation?
 - Could process metadata move to the appendix without losing technical meaning?
 

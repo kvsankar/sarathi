@@ -34,7 +34,7 @@ def test_product_first_contract_is_wired_into_status_and_planning() -> None:
     plan_review = read("prompts/plan-review.prompt.md")
     status_prompt = read("prompts/workflow-status.prompt.md")
 
-    assert "## Report product state first" in skill
+    assert "## Supporting Status Rule" in skill
     assert "Never use `complete` without its exact scope" in skill
     for field in (
         "Goal:",

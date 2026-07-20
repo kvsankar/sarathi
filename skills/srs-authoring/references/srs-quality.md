@@ -3,6 +3,19 @@
 Use these rules when drafting, reconstructing, or reviewing a Software Requirements
 Specification. They extend Sarathi's structural SRS format with a stricter quality bar.
 
+## Requirements Model
+
+Use Sarathi's needs-to-evidence model: problem and stakeholders lead to stakeholder needs;
+features derive from those needs; use cases express behavior in context; functional and
+relevant supplementary requirements make behavior and qualities precise; acceptance tests
+and journeys define observable proof; traceability preserves the derivation from need to
+evidence. The model is principally influenced by Leffingwell/Widrig. Other requirements
+approaches are optional techniques for concrete gaps, not modes or required sections.
+
+Visible headings and prose use descriptive language. Attach stable IDs through structured
+comments or the final traceability section. A reader must understand the requirement, use
+case, or acceptance scenario without decoding an ID.
+
 ## Research Basis
 
 - [ISO/IEC/IEEE 29148:2018](https://www.iso.org/standard/72089.html) is the
@@ -16,9 +29,9 @@ Specification. They extend Sarathi's structural SRS format with a stricter quali
 - Martin Fowler's use-case guidance emphasizes that the value of use cases is in the text,
   not diagrams, and that use cases organize and elicit requirements:
   <https://martinfowler.com/bliki/UseCase.html>
-- Cockburn-style fully dressed use cases are the baseline template for detailed actor-goal
-  flows: primary actor, scope, goal, trigger, preconditions, minimal guarantees, success
-  guarantees, main success scenario, and extensions/variations.
+- Cockburn-style fully dressed use cases are a useful template when actor-goal flows need
+  detail: primary actor, scope, goal, trigger, preconditions, guarantees, main success
+  scenario, and extensions or variations.
 - Cucumber's Gherkin reference treats examples/scenarios as executable specifications,
   recommends short examples, and uses Given/When/Then to express initial context, event, and
   expected observable outcome: <https://cucumber.io/docs/gherkin/reference/>
@@ -27,32 +40,48 @@ Specification. They extend Sarathi's structural SRS format with a stricter quali
 
 User needs:
 
-- Write one `UN-` per stakeholder and one outcome or pain.
+- Write one need per stakeholder and one outcome or pain.
 - Avoid joining two actors, two pains, or a goal plus a solution in one need.
-- Good: `UN-OPS-TRACE Operators need enough diagnostic context to explain a failed import.`
+- Good: `Operators need enough diagnostic context to explain a failed import.`
 - Split: "Admins and support staff need secure login and audit history."
 
 Functional requirements:
 
-- Write one externally observable obligation per `FR-`.
+- Write one externally observable obligation per functional requirement.
 - Use "shall"; avoid "and" when it joins separate obligations.
 - Split separate create/read/update/delete behavior, separate user-visible states, separate
   validation rules, and separate integration outcomes unless the combined behavior is one
   indivisible business rule.
 - Avoid implementation language unless the technology is an external constraint or contract.
 
+Supplementary requirements:
+
+- Capture measurable qualities and constraints that apply across use cases rather than
+  hiding them inside functional behavior.
+- Include only relevant performance, security, privacy, reliability, usability,
+  accessibility, interoperability, compliance, operability, migration, deployment, and
+  documentation expectations.
+
 Acceptance tests:
 
-- Write one scenario, rule example, or measurable quality check per `AT-`.
+- Write one scenario, rule example, or measurable quality check per acceptance test.
 - Prefer Given/When/Then or an equivalent setup/action/oracle shape.
-- Map each `AT-` to one `UC-` and a small set of `FR-`/`NFR-` IDs. If one `AT-` needs many
-  requirements, split it or make it a `JT-` journey.
+- Map each acceptance test to one use case and a small set of functional or supplementary
+  requirements in traceability. If one acceptance test needs many requirements, split it or
+  make it a journey.
 - The oracle must be externally observable: UI/API output, event, file, log/metric/trace,
   deployment artifact, notification, support ID, or measurable threshold.
 
-## Fully Dressed Use Cases
+Journey tests:
 
-Each `UC-` should include these fields unless explicitly scoped down for a tiny slice:
+- Compose acceptance scenarios when confidence depends on an ordered story across states,
+  actors, screens, APIs, jobs, or services.
+- Name the observable final result and important intermediate state transitions.
+
+## Detailed Use Cases
+
+When a use case needs detailed actor-goal analysis, include the fields that clarify its
+behavior; do not expand a simple flow merely to complete a template:
 
 - Primary actor
 - Supporting actors/systems
@@ -80,9 +109,11 @@ Use-case review rules:
 - Do not replace alternate/error flows with "handled normally" or "standard error."
 - Frequency/importance may be qualitative when unknown, but it must help prioritization.
 
-## NFR Coverage
+## Supplementary Requirements
 
-Consider each area and either write measurable `NFR-` items or explicitly defer/scope it out:
+Use the categories below only when scope, stakeholder need, an external contract, or a real
+risk makes them relevant. Write measurable supplementary requirements for those categories;
+do not require a universal checklist or explicit `None`/deferred entry for every category.
 
 - Performance: latency, throughput, capacity, resource use, startup time, batch duration.
 - Security: authentication, authorization, audit, secrets, abuse resistance, dependency risk.
@@ -149,7 +180,7 @@ Fail or require rework even if the structural checker passes when the SRS is:
 
 Mechanical checks can catch likely problems, not prove quality. Useful checks:
 
-- Missing use-case fields from the fully dressed template.
+- Missing use-case detail needed to understand a material flow, alternative, or failure.
 - Main success scenario without numbered steps.
 - Missing or placeholder alternate/error flows.
 - `UN-`/`FR-` items with multiple sentences, semicolons, repeated "shall", or obvious

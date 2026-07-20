@@ -331,7 +331,7 @@ def main() -> int:
     orphans = sorted(r for r in refs if r not in known)
     ext_double_mentions = external_double_mentions(text)
     format_name = artifact_format(text)
-    format_issues = human_first_issues(text, "Technical Approach")
+    format_issues = human_first_issues(text, ("Technical Approach", "Technical Crux"))
     risk_text = section_text(text, "Risks & Trade-offs")
     drift_risks = [
         risk

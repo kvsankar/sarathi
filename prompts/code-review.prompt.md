@@ -24,6 +24,11 @@ a full review only if requirements or scope changed.
 Lead with actionable findings ordered by severity and grounded in file/line references.
 Check correctness, important edge cases, fit with the approved documents, meaningful tests
 with clear pass/fail results, and whether external dependencies were tested credibly.
+For behavior changes, inspect whether the evidence shows a meaningful test failing for the
+expected reason before the implementation made it pass, followed by safe refactoring. Do
+not infer test-first development merely because tests now exist or pass. Accept a non-Red
+path only for a narrow case described in `docs/test-ownership.md` with credible replacement
+verification.
 Confirm that changed files match the plan, project checks passed, process IDs did not enter
 source, and the implementation is no more complicated than the requested behavior.
 Treat unexplained skips and expected failures as evidence gaps. An environment-specific

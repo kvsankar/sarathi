@@ -26,17 +26,19 @@ Load references only when their trigger applies:
 
 | Reference | Load When |
 | --- | --- |
+| `docs/enduring-model.md` | Explaining Sarathi, orienting a new project, or deciding how delivery, decomposition, quality, continuity, and risk fit together. |
 | `docs/work-in-progress.md` | Starting, resuming, pausing, handing off, or blocking SDLC work in a project; reading or updating `.sdlc/wip.md`. |
 | `docs/project-entry.md` | Starting in a new or existing codebase, or deciding how much existing work to document. |
 | `docs/artifact-contracts.md` | Writing or revising a spec, design, plan, or code evidence record. |
+| `docs/requirements-model.md` | Creating or reviewing a specification and preserving the hierarchy from stakeholder needs to observable evidence. |
 | `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; reviewing first-page comprehensibility; checking process IDs in source. |
 | `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, existing compatibility proof, or PR breakdown. |
 | `docs/assurance-profiles.md` | Choosing or changing review depth and extra checks for specific risks. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `/spec-create` or `/code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
-| `docs/test-ownership.md` | A plan must assign earlier acceptance, journey, or integration tests. |
-| `docs/work-decomposition.md` | Deciding whether a specific unanswered question requires another document before implementation. |
+| `docs/test-ownership.md` | Planning or implementing tests, including test-first behavior changes, or assigning acceptance, journey, or integration tests. |
+| `docs/work-decomposition.md` | Deciding whether complex work should be split, where to split it, or whether a child needs another document. |
 | `docs/feedback-and-learning.md` | Planning or completing changes; handling stakeholder feedback, updates to earlier documents, or parallel work. |
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs repeatable checks with independent review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |

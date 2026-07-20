@@ -8,12 +8,12 @@ Begin with the smallest direct implementation that satisfies the approved behavi
 Apply `docs/simplicity-first.md`; do not design product machinery to satisfy process
 requirement links, evidence, approval, or status needs.
 
-New and materially revised specs and designs use format version 2; new and materially
-revised plans use format version 3 for baseline-reuse classification. All follow
+New and materially revised specs use format version 3; designs use format version 2; plans
+use format version 3. All follow
 `docs/human-first-artifacts.md`: put the plain-language overview or approach first,
 use descriptive visible headings, and keep machine mappings in structured comments and a
-final `## Traceability` section. Existing version-2 plans and unmarked legacy documents
-retain their earlier contracts for backward compatibility.
+final `## Traceability` section. Existing version-2 specs and plans and unmarked legacy
+documents retain their earlier contracts for backward compatibility.
 
 ## Common Metadata
 
@@ -34,7 +34,12 @@ approved requirements and architecture and proceed directly.
 
 ## Spec Contract
 
-Version 2 product specs use **Product Overview**. Existing documents may use the legacy
+Specification turns a problem and stakeholder needs into an agreed, testable model of
+required system behavior. Follow the hierarchy in `docs/requirements-model.md`: needs lead
+to features, use cases explain behavior in context, functional and supplementary
+requirements make it precise, and acceptance tests and journeys define observable proof.
+
+Version 3 product specs use **Product Overview**. Existing documents may use the legacy
 **Mission Statement** or **Product Crux** heading. Then use this checker-visible order:
 
 1. **User Needs**: atomic `UN-AREA-NAME` stakeholder outcomes.
@@ -42,7 +47,8 @@ Version 2 product specs use **Product Overview**. Existing documents may use the
 3. **Features**: `FEAT-AREA-NAME`, each linked to needs.
 4. **Use Cases**: `UC-AREA-NAME` actor/goal flows, alternatives, failures, postconditions.
 5. **Functional Requirements**: atomic, testable `FR-AREA-NAME` obligations.
-6. **Non-Functional Requirements**: measurable `NFR-AREA-NAME` qualities/constraints.
+6. **Non-Functional Requirements**: measurable supplementary `NFR-AREA-NAME`
+   qualities/constraints.
 7. **External Interfaces & Contracts**: exact boundaries, versions, success/errors,
    lifecycle, auth, and real-boundary testability; state `None` when applicable.
 8. **Acceptance Tests**: black-box `AT-AREA-NAME` criteria mapped to requirements.
@@ -58,9 +64,32 @@ purely internal change states which accepted behavior remains unchanged.
 
 Specs own externally observable intent. They do not prescribe unit/component architecture.
 `AT-*` is black-box acceptance intent; `JT-*` is a long ordered story. Use
-`docs/srs-authoring.md` for broad or reconstructed requirements.
+`docs/srs-authoring.md` for detailed or reconstructed requirements guidance.
 
 ## Design Contract
+
+Design turns accepted requirements and constraints into an implementable, evolvable
+technical model. It explains the system boundary, structure, responsibilities,
+relationships, interfaces, data, runtime behavior, important decisions and trade-offs,
+quality attributes, testability, operability, and expected evolution to the depth justified
+by the work.
+
+Select the boundaries that carry important contracts, ownership, state, risk, or change.
+Do not reproduce every category when it is irrelevant:
+
+| Context | Boundaries that commonly deserve explicit treatment |
+| --- | --- |
+| Backend or service | API contracts; database schema, data ownership, transactions and migration; service/module boundaries; events and external integrations; trust and deployment boundaries. |
+| Web frontend | Route and page boundaries; component/module ownership; client/server rendering; local, shared and server-state ownership; backend and browser-platform contracts. |
+| Mobile app | Screen and navigation boundaries; UI/domain/platform responsibilities; local storage, remote sync and offline conflict behavior; backend APIs; OS services, permissions and lifecycle. |
+| Data or ML system | Source and sink schemas; batch/stream boundaries; transformation or model interfaces; data ownership and retention; training/serving and monitoring boundaries. |
+| Library, SDK or CLI | Public API and compatibility boundary; extension points; host/runtime integration; configuration, errors and side effects. |
+| Infrastructure or operations | Deployable units; network and trust boundaries; state ownership; configuration and secrets; rollout, failure isolation and rollback. |
+
+These are review prompts, not a universal checklist. A design names the few boundaries that
+shape the solution and explains their contracts, ownership, failure behavior, and means of
+verification. For backend work, applicable database-schema and API boundaries must never be
+left implicit.
 
 Product designs begin with **Technical Approach**. Existing documents may use the legacy
 **Technical Crux** heading. Then use this checker-visible order:
@@ -102,35 +131,60 @@ An existing approved prototype may instead be referenced as
 
 ## Plan Contract
 
+Planning turns an approved technical model into an executable delivery structure. Every
+plan makes the outcomes, impacted areas, dependencies, sequence, integration points,
+verification, safety, and feedback visible. It uses one of two shapes:
+
+Choose the shape by asking whether a competent engineer can understand, explain, review,
+and safely plan the work as one coherent unit.
+
+- A **Breakdown plan** structures broad work as independently useful child outcomes, with
+  ownership, dependencies, readiness needs, and feedback or integration points.
+- An **Implementation plan** structures one code-ready outcome as a graph of reviewable PRs,
+  with their impacts, dependencies, merge order, tests, integration, and rollback. A
+  cohesive one-PR change is a valid graph with one node; do not split it merely to create
+  more process structure.
+
+Every new plan contains a proportionate **Impact Map**. Name the affected product and
+delivery surfaces—for example modules, files, APIs, database schemas or migrations, data,
+tests, configuration, build/deployment, observability, and documentation—and say what is
+added, changed, removed, or deliberately untouched. State the extent far enough to expose
+affected consumers, owners, compatibility concerns, cross-area work, and likely conflicts;
+do not use LOC estimates as a substitute. A small local change needs only a few lines.
+
 Plans declare `Plan Type: Breakdown | Implementation`. They begin with **Implementation
 Approach**; existing documents may use the legacy **Implementation Crux** heading. Then
-record whether the approved requirements and design are enough to begin, or name the
-specific unanswered question that requires another document. Plans use this
+record why that plan shape fits the approved requirements and design. Plans use this
 checker-visible order:
 
-1. **Baseline Reuse**: what works in the current or sibling system, what becomes shared,
+1. **Impact Map**: affected areas, nature and extent of change, consumers/owners, and
+   allocation to child work or PRs.
+2. **Baseline Reuse**: what works in the current or sibling system, what becomes shared,
    what stays target-owned, what is new, and what is deferred.
-2. **Overview**: goal, common metadata, plan type, branch/CI context.
-3. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
+3. **Overview**: goal, common metadata, plan type, branch/CI context.
+4. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
    depth, cleanup/simplify, and feedback cadence.
-4. **Milestones**: `MILE-AREA-NAME` outcome groups.
-5. **Pull Requests / Child Work Items**. Each item has one `Work Classification:` value:
+5. **Milestones**: `MILE-AREA-NAME` outcome groups.
+6. **Pull Requests / Child Work Items**. Each item has one `Work Classification:` value:
    `reuse directly`, `extract then reuse`, `target-owned implementation`, `new behavior`,
    or `deferred cleanup`.
-6. **Coverage Map**: parent/local intent and `TEST-*` obligations assigned completely.
-7. **Work Groups**: optional near-term child-work coordination for Breakdown plans.
-8. **Sequencing & Risks**: dependency types, critical path, conflicts, rollback,
+7. **Coverage Map**: parent/local intent and `TEST-*` obligations assigned completely.
+8. **Work Groups**: optional near-term child-work coordination for Breakdown plans.
+9. **Sequencing & Risks**: dependency graph, merge/delivery order, parallel paths, critical
+   path, integration points, conflicts, rollback,
    ownership for combining parallel work, and stop/replan conditions.
-9. **Traceability**: final compact allocations for milestones, work items, PRs, inherited
+10. **Traceability**: final compact allocations for milestones, work items, PRs, inherited
    intent, and test obligations.
 
-A Breakdown plan defines `WORK-AREA-NAME` allocations. Each names parent/child scope,
-inherited IDs and test obligations, minimum required documents, dependencies, readiness target,
-risks, and done signal. It never authorizes code directly.
+A Breakdown plan defines a dependency graph of `WORK-AREA-NAME` allocations. Each names the
+observable child outcome, affected areas at the useful level of detail, parent/child scope,
+inherited obligations, minimum required documents, owner, dependencies, readiness target,
+risks, integration or feedback point, and done signal. It never authorizes code directly.
 
 An Implementation plan defines `PR-AREA-NAME` items. Each PR states:
 
-- specific scope and the files expected to change;
+- specific outcome and the files/modules/contracts expected to change;
+- its part of the Impact Map, including the nature and extent of the change;
 - assigned FR/AT/JT/COMP/TEST IDs, focused verification, and clear pass/fail checks;
 - test levels and real-boundary/fixture strategy;
 - extra risk work (build/release, docs, observability, errors, environments,
@@ -140,6 +194,11 @@ An Implementation plan defines `PR-AREA-NAME` items. Each PR states:
 - execution, learning, and integration dependencies;
 - UI stakeholder review point when the PR completes an approved-prototype UI slice;
 - a concise reason the PR is cohesive and independently reviewable.
+
+When an Implementation plan has more than one PR, define the graph edges, predecessor and
+successor PRs, merge order, safe parallel paths, critical path, conflicts, and integration
+points. A one-PR plan states that it is a one-node graph and omits empty dependency,
+parallelism, merge-order, and integration-topology fields.
 
 In a short implementation plan that reuses earlier documents, each `PR-*` states the files
 expected to change, focused verification, inherited IDs and pass/fail checks, and any risk
@@ -185,10 +244,13 @@ Older short-plan fields remain readable, but new plans do not need or advertise 
 ## Code And Evidence Contract
 
 `/code-create` implements only an explicitly selected plan that is ready to implement, including a short
-implementation plan that reuses earlier documents. It stays within the files expected to
-change and keeps the suite green at each PR boundary. It records the exact test and
-verification commands run, their observed results, and any unavailable evidence. Test names
-remain behavior-focused.
+implementation plan that reuses earlier documents. For behavior changes it uses the
+Red-Green-Refactor loop in `docs/test-ownership.md`: observe the smallest meaningful test
+fail for the expected reason, make the minimum production-quality change that passes it,
+then improve the code while focused and affected tests stay green. It stays within the
+files expected to change and keeps the suite green at each PR boundary. It records the
+exact test and verification commands run, their observed results, and any unavailable
+evidence. Test names remain behavior-focused.
 
 Sarathi process IDs never go into production or test names, comments, docstrings,
 decorators, annotations, runtime values, logs, or generated source merely for traceability.

@@ -6,6 +6,9 @@ must improve judgment without turning every prompt into a checklist wall.
 ## Prompt Budget
 
 - Keep stage prompts focused on stage-specific actions, gates, and stop conditions.
+- Keep Sarathi's identity anchored in [enduring-model.md](enduring-model.md). Treat status
+  formats, identifier placement, compatibility rules, and checker fixes as supporting
+  guidance rather than the top-level process story.
 - Put repeated policy in shared docs such as
   [project-entry.md](project-entry.md), [progressive-disclosure.md](progressive-disclosure.md),
   [work-in-progress.md](work-in-progress.md),
