@@ -21,6 +21,8 @@ Load only when the trigger applies:
 
 - `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an assigned additional
   check, escalation, or new risk needs interpretation;
+- `docs/project-quality-gates.md`: inspect the project gate before implementation and load
+  the policy when its configuration or hook is missing or needs to change;
 - `docs/simplicity-first.md`: implementation exposes unnecessary machinery, a refactor, or a
   simplification decision;
 - `docs/cleanup-pass.md`, `docs/simplify-pass.md`, and `docs/artifact-formatting.md`:
@@ -32,6 +34,10 @@ When one exists, `.sdlc/wip.md` selects it. If coordinated work has a declared l
 checkpoint, enforce it. Confirm the expected files, first failing tests, smallest intended
 implementation, required behavior/tests, pass/fail checks, risks, who or what will review the result,
 dependencies, and reasons to stop or replan.
+
+Inspect the repository's documented local gate and hook. Reuse them when present. When
+missing, configure and document the smallest ecosystem-appropriate gate authorized by the
+plan, install it in the working checkout, and keep slow or environment-heavy checks in CI.
 
 Update `.sdlc/wip.md` with the exact active `WORK-*` item and, when applicable, its active
 `WAVE-*`. Do not exceed its declared parallel-work limit. Do not start additional work merely
@@ -64,8 +70,8 @@ machinery merely to satisfy the process.
 
 ## Verify The Boundary
 
-Run focused and full planned tests, formatter/linter/type/static/security checks, pre-commit
-or repository equivalent, build/docs/deployment/environment checks, and all additional checks
+Run focused and full planned tests, the project gate required by
+`docs/project-quality-gates.md`, build/docs/deployment/environment checks, and all additional checks
 assigned to this PR. Run coverage only when the repository policy or accepted risk profile
 requires it.
 

@@ -1,4 +1,4 @@
-import re
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,12 +11,14 @@ SKILL_DOCS = [
     "bootstrap-instructions.md",
     "cleanup-pass.md",
     "cross-cutting-concerns.md",
+    "design-principles.md",
     "enduring-model.md",
     "feedback-and-learning.md",
     "human-first-artifacts.md",
     "process-maintenance.md",
     "progressive-disclosure.md",
     "project-entry.md",
+    "project-quality-gates.md",
     "release-process.md",
     "requirements-model.md",
     "review-verification-checklist.md",
@@ -57,9 +59,12 @@ def test_sarathi_skill_contains_version_and_update_checker() -> None:
     manifest = SKILL / "manifest.json"
     checker = SKILL / "scripts" / "check_update.py"
 
-    assert manifest.is_file()
+    metadata = json.loads(manifest.read_text(encoding="utf-8"))
+    assert metadata["distribution"] == "sarathi-sdlc"
+    assert metadata["schema_version"] == 1
+    assert metadata["version"]
+    assert metadata["update_url"].startswith("https://pypi.org/")
     assert checker.is_file()
-    assert "SARATHI_UPDATE_CHECK=0" in (SKILL / "SKILL.md").read_text(encoding="utf-8")
 
 
 def test_sarathi_skill_bundles_shared_docs() -> None:
@@ -74,79 +79,3 @@ def test_sarathi_skill_bundles_static_process_guide() -> None:
     source = ROOT / "docs" / "sarathi.html"
     bundled = SKILL / "docs" / "sarathi.html"
     assert bundled.read_bytes() == source.read_bytes()
-    guide = source.read_text(encoding="utf-8")
-    assert "1. Deliver in a learning loop" in guide
-    assert "2. Decompose to make complex work understandable" in guide
-    assert "3. Test and review throughout delivery" in guide
-    assert "4. Preserve continuity" in guide
-    assert "5. Match assurance to risk" in guide
-    assert "6. Keep supporting rules in their place" in guide
-    assert "Neuring before / after:" not in guide
-    assert "WORK-FEATURE-ONE" not in guide
-    assert "Evidence &rarr; feedback" not in guide
-    assert "Evidence" in guide
-    assert "feedback" in guide
-    assert "adapt" in guide
-    assert "artifact-spec" in guide
-    assert "artifact-work" not in guide
-    assert "key-work" not in guide
-    assert "repeatable checks" in guide
-    assert "Independently judge" in guide
-    assert "High assurance adds evidence" in guide
-    assert "return-loop" in guide
-    assert "decomposition-map" in guide
-    assert "Practical authoring rules support the delivery model" in guide
-    assert not re.search(r"at most\s+three", guide)
-
-
-def test_feedback_and_learning_policy_is_wired_into_stage_prompts() -> None:
-    policy = (ROOT / "docs" / "feedback-and-learning.md").read_text(encoding="utf-8")
-    assert "Could feedback from this slice materially invalidate" in policy
-    assert "## Parallel work" in policy
-    assert "revision-required" in policy
-
-    for name in (
-        "plan-create.prompt.md",
-        "plan-review.prompt.md",
-        "plan-assess.prompt.md",
-        "code-create.prompt.md",
-        "code-review.prompt.md",
-        "code-assess.prompt.md",
-    ):
-        prompt = (ROOT / "prompts" / name).read_text(encoding="utf-8")
-        assert "docs/feedback-and-learning.md" in prompt
-
-
-def test_simplicity_policy_is_wired_into_creation_review_and_assessment() -> None:
-    policy = (ROOT / "docs" / "simplicity-first.md").read_text(encoding="utf-8")
-    assert "Keep Process Machinery Out Of Product Code" in policy
-    assert "Reuse Proof From The Existing System" in policy
-    assert "solution is larger than the problem\nrequires, simplify it" in policy
-    assert "Complexity Budget" not in policy
-    assert "Neutral package and current contracts" in policy
-
-    for suffix in ("create", "review", "assess"):
-        for stage in ("spec", "design", "plan", "code"):
-            prompt = (ROOT / "prompts" / f"{stage}-{suffix}.prompt.md").read_text(
-                encoding="utf-8"
-            )
-            assert "docs/simplicity-first.md" in prompt
-
-
-def test_human_first_policy_is_wired_into_artifact_stages() -> None:
-    policy = (ROOT / "docs" / "human-first-artifacts.md").read_text(encoding="utf-8")
-    assert "## Explanation first, mappings last" in policy
-    assert "## Authentication dogfood" in policy
-    assert "must decode Sarathi identifiers" in policy
-
-    for stage in ("spec", "design", "plan"):
-        for suffix in ("create", "review"):
-            prompt = (ROOT / "prompts" / f"{stage}-{suffix}.prompt.md").read_text(
-                encoding="utf-8"
-            )
-            assert "docs/human-first-artifacts.md" in prompt
-
-        assess = (ROOT / "prompts" / f"{stage}-assess.prompt.md").read_text(
-            encoding="utf-8"
-        )
-        assert f"prompts/{stage}-review.prompt.md" in assess

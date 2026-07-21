@@ -8,6 +8,30 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.5.0 - 2026-07-21
+
+### Changed
+
+- Restore project guardrails that require each Sarathi-guided production repository to
+  provide a committed, documented local quality gate and pre-commit hook or ecosystem
+  equivalent, with language-appropriate formatting, linting, type/static checks, and tests.
+- Restore explicit design principles including functional core/imperative shell, cohesion,
+  coupling, interface-first contracts, testability, operability, and decision rationale;
+  make DDD, Clean/Hexagonal Architecture, BDD, vertical slices, CQRS, event sourcing, and
+  SOLID conditional tools rather than default architecture.
+- Nudge designs toward the smallest useful set of context, component, dependency, sequence,
+  state, data-flow, or deployment diagrams when visual explanation materially improves
+  review, without requiring a catalogue of diagram types.
+- Replace prompt-prose substring tests with structural frontmatter, link, bundle, budget,
+  checker, installer, and rendered-behavior coverage; remove wording-freezing foundation
+  suites and their prose fixtures.
+
+### Removed
+
+- Remove repository-local `.sdlc` plans, approvals, decisions, and WIP records, and clarify
+  that ordinary Sarathi maintenance uses repository tests and review rather than running
+  Sarathi's product-stage workflow on itself.
+
 ### Docs
 
 - Show the enduring process diagram near the beginning of the README.

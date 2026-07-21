@@ -115,12 +115,10 @@ def test_direct_assess_aliases_resolve_transitive_prompts(tmp_path: Path) -> Non
         sarathi_prompts = skill_root / "sarathi" / "prompts"
         for stage in ("spec", "design", "plan", "code"):
             alias = skill_root / f"{stage}-assess"
-            skill_text = (alias / "SKILL.md").read_text(encoding="utf-8")
             prompt = alias / "prompts" / f"{stage}-assess.prompt.md"
             prompt_text = prompt.read_text(encoding="utf-8")
 
-            assert "../sarathi/prompts/" in skill_text
-            assert "report engineering state before process state" in skill_text
+            assert (alias / "SKILL.md").is_file()
             references = PROMPT_REF.findall(prompt_text)
             assert references
             for reference in references:

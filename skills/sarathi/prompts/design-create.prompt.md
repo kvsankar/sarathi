@@ -13,8 +13,9 @@ model at the level of detail the work needs.
 Read `.sdlc/wip.md`, process decisions, the accepted spec, existing design/code evidence,
 and relevant ADRs. Block when requirements are materially ambiguous or unfit.
 
-Load `docs/artifact-contracts.md` and `docs/human-first-artifacts.md` for the Design
-contract, narrative, and traceability layers.
+Load `docs/artifact-contracts.md`, `docs/design-principles.md`, and
+`docs/human-first-artifacts.md` for the Design contract, architectural judgment, narrative,
+and traceability layers.
 
 ## Triggered References
 
@@ -56,7 +57,11 @@ guidance in `docs/artifact-contracts.md`.
 - Select and define the consequential boundaries for this kind of system. For a backend,
   database schema/data ownership and API contracts are primary review surfaces whenever
   they apply. Do not inventory irrelevant boundaries.
-- Keep side effects isolated where that makes the design clearer and easier to test.
+- Choose the smallest useful set of diagrams from `docs/design-principles.md` when visual
+  explanation materially improves review; do not produce a diagram catalogue.
+- Separate deterministic decisions from side effects using functional core/imperative shell
+  or an equivalent explicit boundary. Use vocabulary suited to the system; the boundary
+  itself is required.
 - Design success, failure, state, concurrency, lifecycle, compatibility, and recovery at
   material interfaces.
 - Compare realistic alternatives for material decisions and create/update ADRs.
