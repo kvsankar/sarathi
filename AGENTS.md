@@ -16,6 +16,16 @@ specification and learns through feedback; it is not a linear waterfall checklis
 Do not treat `.github` as canonical source. `.github/prompts` is only a project-scoped
 GitHub Copilot installation target.
 
+## Repository Maintenance Is Not Self-Hosted
+
+Do not run Sarathi's stage workflow on this repository for ordinary maintenance. Do not
+create or maintain root `.sdlc/` specs, plans, approvals, decisions, or WIP records here.
+Use the user's request, the working diff, focused tests, independent review when useful,
+and `CHANGELOG.md` as the maintenance evidence. The `.sdlc` behavior described below is
+product guidance for repositories using Sarathi, not state for this repository itself.
+Only run an explicit self-dogfooding experiment when the user asks for one, and keep its
+temporary state untracked.
+
 ## Command Contract
 
 Command verbs are intentionally distinct:
@@ -137,6 +147,9 @@ design labels readable and place machine IDs in annotations, glossaries, matrice
 required references. See [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
 ## Entry, WIP, And Required Reviews
+
+The rules in this section apply to target repositories using Sarathi; the maintenance
+exception above applies to this repository itself.
 
 Use [docs/project-entry.md](docs/project-entry.md) to choose how Sarathi starts in a new or
 existing system. Documenting an existing system reconstructs approved requirements; current

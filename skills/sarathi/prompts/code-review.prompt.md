@@ -9,8 +9,9 @@ Review code/tests without editing unless asked. Read earlier documents, the diff
 implementation, `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`,
 `docs/feedback-and-learning.md`, `docs/test-ownership.md`, `docs/cleanup-pass.md`, and
-`docs/simplify-pass.md`. For an authorized existing-system baseline review, follow
-`docs/project-entry.md`; otherwise block when approved requirements or an implementable plan are missing or unfit.
+`docs/simplify-pass.md`, plus `docs/project-quality-gates.md`. For an authorized
+existing-system baseline review, follow `docs/project-entry.md`; otherwise block when
+approved requirements or an implementable plan are missing or unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples. Do not rerun commands unless needed to
@@ -29,8 +30,9 @@ expected reason before the implementation made it pass, followed by safe refacto
 not infer test-first development merely because tests now exist or pass. Accept a non-Red
 path only for a narrow case described in `docs/test-ownership.md` with credible replacement
 verification.
-Confirm that changed files match the plan, project checks passed, process IDs did not enter
-source, and the implementation is no more complicated than the requested behavior.
+Confirm that changed files match the plan, the committed local gate and hook are suitable
+for the repository and passed, process IDs did not enter source, and the implementation is
+no more complicated than the requested behavior.
 Treat unexplained skips and expected failures as evidence gaps. An environment-specific
 skip is acceptable when another explicit command or CI job runs that boundary successfully;
 the marker inventory alone neither rejects the code nor proves the evidence sufficient.

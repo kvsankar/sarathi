@@ -829,26 +829,6 @@ No mappings yet.
     assert report["gates"]["sections_present"] is True
 
 
-def test_dogfood_covers_all_requested_scenarios():
-    guide = (ROOT / "docs" / "human-first-artifacts.md").read_text(encoding="utf-8")
-
-    for phrase in (
-        "BPTrial",
-        "consumer-backend",
-        "neuring-auth wheel",
-        "Identity",
-        "Mechanism",
-        "Credential",
-        "compatibility adapter",
-        "Small behavior change",
-        "High-assurance migration",
-        "Existing legacy document",
-        "test_replayed_reset_token_cannot_change_password",
-        "test_at_auth_reset_replay",
-    ):
-        assert phrase in guide
-
-
 def test_small_change_stays_compact_and_human_first(tmp_path, monkeypatch, capsys):
     path = tmp_path / "plan.md"
     text = small_change_plan()

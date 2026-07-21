@@ -72,7 +72,8 @@ Design turns accepted requirements and constraints into an implementable, evolva
 technical model. It explains the system boundary, structure, responsibilities,
 relationships, interfaces, data, runtime behavior, important decisions and trade-offs,
 quality attributes, testability, operability, and expected evolution to the depth justified
-by the work.
+by the work. Apply `docs/design-principles.md`; named architectural approaches require a
+concrete adoption signal and do not replace contextual design judgment.
 
 Select the boundaries that carry important contracts, ownership, state, risk, or change.
 Do not reproduce every category when it is irrelevant:
@@ -97,7 +98,8 @@ Product designs begin with **Technical Approach**. Existing documents may use th
 1. **Overview**: context, scope, readiness, review level, and extra checks.
 2. **Tech Stack**: accepted choices and versions/constraints where material.
 3. **Drivers & Constraints**: requirements, quality attributes, boundaries, risks.
-4. **Layers**: readable names and responsibilities.
+4. **Structure / Layers when applicable**: explain decomposition and dependency direction;
+   use named layers only for a real separation, otherwise describe the direct structure.
 5. **Components**: readable names, responsibilities, dependencies, and `COMP-*` IDs.
 6. **Interfaces**: contracts, errors, compatibility, ownership, and `IFACE-*` IDs.
 7. **Decision and I/O boundaries**: where decisions are made and where external effects occur.
@@ -112,7 +114,9 @@ Product designs begin with **Technical Approach**. Existing documents may use th
 
 Feature and change designs may reference parent architecture and include only changed
 boundaries. Human-facing headings remain readable; machine IDs live in annotations and the
-final traceability appendix. Diagrams use readable labels.
+final traceability appendix. Select suitable diagrams using `docs/design-principles.md`
+when they materially improve understanding; diagrams use readable labels and remain aligned
+with the written design.
 
 The design defines test architecture, build/release shape, environments, docs architecture,
 observability/error behavior, and other extra risk checks only when triggered by accepted

@@ -21,6 +21,8 @@ Load only when the trigger applies:
 
 - `docs/feedback-and-learning.md`: UI review, feedback dependencies, or parallel work;
 - `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an identified risk needs an additional check;
+- `docs/project-quality-gates.md`: the repository lacks a local gate or hook, or the
+  delivery changes its language or tooling;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: before handoff.
 
 Block only on intent, architecture, approval, or risk gaps that make implementation unsafe.
@@ -77,6 +79,8 @@ For an Implementation plan:
 - name the first behavioral tests that will fail for the expected reason, the smallest
   implementation that should make them pass, and subsequent cleanup, with clear pass/fail
   results;
+- inspect the repository's documented local gate and hook; when either is missing, assign
+  their smallest useful setup to the first PR and include the expected files and commands;
 - reuse accepted architecture and existing compatibility evidence;
 - schedule several sequential prototype-matching UI slices in one plan when they share
   behavior and architecture, stopping for stakeholder UI review after each slice;

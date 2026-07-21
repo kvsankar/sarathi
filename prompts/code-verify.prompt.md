@@ -10,7 +10,8 @@ quality. Use `/code-review` for judgment and `/code-assess` to run both.
 
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
 selected review depth and additional checks. A compact or legacy plan may use approved
-parent documents instead of unnecessary child spec/design files. Use a fresh checker
+parent documents instead of unnecessary child spec/design files. Load
+`docs/project-quality-gates.md`. Use a fresh checker
 sub-agent when available;
 otherwise disclose that sub-agents are unavailable and run the same checks directly.
 
@@ -60,9 +61,9 @@ hide ordinary source pollution.
 
 ## Project And Additional Checks
 
-Run the repository's documented project-check command, normally pre-commit or its
-equivalent. Run only checks assigned by the plan or required by identified risks, such as
-build/package, docs/examples, deployment dry-run/smoke/rollback, environment, security,
+Confirm and run the committed local gate and hook required by
+`docs/project-quality-gates.md`. Run only additional checks assigned by the plan or required
+by identified risks, such as build/package, docs/examples, deployment dry-run/smoke/rollback, environment, security,
 privacy, accessibility, migration, reliability, performance/cost, observability, or
 external-integration commands.
 

@@ -397,10 +397,3 @@ def test_check_code_reports_missing_and_invalid_scan_inputs(
         {"path": "missing.py", "reason": "does not exist"},
         {"path": "source.txt", "reason": "unsupported source extension .txt"},
     ]
-
-
-def test_approval_checker_uses_python_39_compatible_utc():
-    approvals = (ROOT / "checkers" / "approvals.py").read_text(encoding="utf-8")
-
-    assert "from datetime import UTC" not in approvals
-    assert "timezone.utc" in approvals

@@ -7,7 +7,7 @@ agent: agent
 
 Review the target design without editing it unless asked. Read the accepted requirements,
 `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
-`docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
+`docs/design-principles.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
 `docs/human-first-artifacts.md`. Answer its first-page comprehension questions. Stop
 as `Blocked-upstream` when the spec is unfit.
 
@@ -26,6 +26,16 @@ and migration. Then check that the design selects the important boundaries for i
 using the examples in `docs/artifact-contracts.md`. Backend designs must make applicable API
 and database-schema boundaries reviewable. Tests must be able to prove the design, and the
 solution must be no more complicated than current needs require.
+
+Apply the enduring principles in `docs/design-principles.md`. Treat named approaches as
+conditional: require a concrete adoption signal, justified extent, simpler alternative,
+cost, and verification strategy. Flag ceremonial DDD, ports, layers, interfaces, CQRS,
+event sourcing, BDD tooling, unjustified vertical slices, or SOLID-driven factories,
+inheritance, and indirection that do not solve a present problem. Confirm the design has an
+explicit decision/effect boundary even when it uses different vocabulary.
+Check whether a missing diagram leaves an important relationship, dependency, runtime
+interaction, state transition, data flow, or deployment decision hard to review. Also flag
+diagrams that add no information or disagree with the design.
 
 Start with simplification. Name parts, commands, generated files, tests, or diagrams that
 can be removed, deferred, collapsed, or proved by existing checks. A design with every

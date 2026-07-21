@@ -10,3 +10,4 @@ htmlcov/
 node_modules/
 test-results/
 playwright-report/
+.sdlc/
