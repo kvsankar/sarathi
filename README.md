@@ -3,9 +3,17 @@
 A disciplined, adaptive workflow for building production software with AI coding agents.
 
 sarathi helps AI coding agents and software teams turn accepted intent into the smallest safe
-working increment, preserves the
-decisions and evidence needed to review it, decomposes work that is too complex to reason
-about safely as one unit, and adapts the remaining work from real feedback.
+working increment, preserves the decisions and evidence needed to review it, decomposes work
+that is too complex to reason about safely as one unit, and adapts the remaining work from
+real feedback.
+
+## Why sarathi?
+
+In the Mahabharata, Krishna serves as Arjuna's *sarathi*—his charioteer and counsel. He does
+not replace Arjuna's agency; he helps him see the situation clearly, reason through doubt,
+and act with purpose. sarathi takes its name from that partnership: it helps engineers and
+AI agents navigate complex software decisions and reach production with evidence,
+discipline, and human judgment intact.
 
 Its enduring delivery loop is:
 

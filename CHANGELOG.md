@@ -13,7 +13,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 ### Changed
 
 - Position sarathi as a production software engineering workflow for AI coding agents, and
-  use the lowercase product name consistently in titles and the process diagram.
+  use the lowercase product name consistently in titles and the process diagram. Explain
+  the name through Krishna's role as Arjuna's *sarathi*: guidance that preserves human
+  agency and judgment.
 
 ## 0.5.0 - 2026-07-21
 
