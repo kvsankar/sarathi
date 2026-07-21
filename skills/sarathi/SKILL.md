@@ -1,9 +1,9 @@
 ---
 name: sarathi
-description: Sarathi helps teams define, implement, check, and review software changes while preserving decisions and test evidence.
+description: sarathi helps teams build production software with AI agents while preserving decisions, checks, reviews, and test evidence.
 ---
 
-# Sarathi
+# sarathi
 
 At the start of each invocation, run the bundled `scripts/check_update.py` with an
 available Python interpreter. Surface any update notice, but never block delivery when the

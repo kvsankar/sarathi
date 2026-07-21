@@ -1,4 +1,4 @@
 interface:
-  display_name: "Sarathi"
+  display_name: "sarathi"
   short_description: "Agent-Steered SDLC for resumable, reviewable software delivery"
   default_prompt: "Use $sarathi to create, verify, review, assess, or resume the current SDLC artifact."

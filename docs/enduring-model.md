@@ -1,4 +1,4 @@
-# Sarathi's Enduring Model
+# sarathi's Enduring Model
 
 Sarathi turns accepted intent into the smallest safe working increment, preserves the
 decisions and evidence needed to review it, decomposes work that is too complex to reason

@@ -2097,7 +2097,7 @@ def render_html(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{esc(model["project"])} - Sarathi workflow status</title>
+<title>{esc(model["project"])} - sarathi workflow status</title>
 <style>
 :root {{
   --bg: #f4f6f8;
@@ -2356,7 +2356,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <div><div class="eyebrow">Sarathi workflow status</div><h1>{esc(model["project"])}</h1></div>
+    <div><div class="eyebrow">sarathi workflow status</div><h1>{esc(model["project"])}</h1></div>
     <div class="topbar-meta">{guide_link}</div>
   </div>
 </header>

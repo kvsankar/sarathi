@@ -1,18 +1,18 @@
-# Sarathi enduring process diagram prompt
+# sarathi production software engineering process diagram prompt
 
 Use case: infographic-diagram
 Asset type: detailed software-delivery process poster for engineers and stakeholders
 
 Primary request: Create a polished, native AI-generated landscape process diagram titled
-"SARATHI — ADAPTIVE SOFTWARE DELIVERY". Explain Sarathi's timeless core rather than recent
-feature fixes. The image must present one enduring model: accepted intent becomes the
+"sarathi — PRODUCTION SOFTWARE ENGINEERING WITH AI AGENTS". Explain sarathi's timeless core
+rather than recent feature fixes. The image must present one enduring model: accepted intent becomes the
 smallest safe working increment; decisions and evidence remain reviewable; work is
 decomposed when it is too complex to reason about safely as one unit; feedback changes what happens
 next. The result must unmistakably be an adaptive loop, not a waterfall and not a visual
 changelog.
 
-Audience: software engineers, technical leads, product owners, reviewers, and security or
-reliability stakeholders.
+Audience: software engineers working with AI coding agents, technical leads, product owners,
+reviewers, and security or reliability stakeholders.
 
 Style/medium: premium editorial systems infographic; crisp vector-like shapes rendered as
 a high-quality raster image; restrained technical illustration; clean sans-serif
@@ -29,7 +29,7 @@ Continuity, risk, and authoring rules remain quiet supporting material. Keep all
 clean and avoid crossing arrows.
 
 1. TITLE AND ENDURING STATEMENT
-   - Large title, verbatim: "SARATHI — ADAPTIVE SOFTWARE DELIVERY"
+   - Large title, verbatim: "sarathi — PRODUCTION SOFTWARE ENGINEERING WITH AI AGENTS"
    - Subtitle, verbatim:
      "Accepted intent becomes safe working software — evidence and feedback shape what comes next."
    - Small badge: "Enduring model — not waterfall"
@@ -163,10 +163,10 @@ the visual hierarchy.
 Text constraints: Render every quoted title, label, and caption exactly as written. Use no
 Sarathi IDs, no invented acronyms, no project-specific examples, no version numbers, no
 gibberish placeholder text, no tiny unreadable footnotes, no logos, no trademarks, and no
-watermark. Maintain accurate spelling of "Sarathi", "Verify", "Assess", "decompose",
+watermark. Maintain accurate spelling of "sarathi", "Verify", "Assess", "decompose",
 "assurance", and "evidence".
 
 Output intent: a detailed standalone raster infographic suitable for documentation,
 presentations, and zoomed review. Prioritize conceptual relationships and legibility over
-decoration. The viewer's first impression must be Sarathi's enduring delivery model, not a
-collection of recent corrective policies.
+decoration. The viewer's first impression must be sarathi's production software engineering
+workflow for AI agents, not a collection of recent corrective policies.

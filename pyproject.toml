@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sarathi-sdlc"
-version = "0.5.0"
-description = "Resumable, reviewable software delivery skills and prompts"
+version = "0.5.1"
+description = "Production software engineering workflows for AI coding agents"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
