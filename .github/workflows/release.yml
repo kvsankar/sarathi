@@ -99,6 +99,6 @@ jobs:
             gh release create "$GITHUB_REF_NAME" dist/* \
               --repo "$GITHUB_REPOSITORY" \
               --verify-tag \
-              --title "Sarathi $GITHUB_REF_NAME" \
+              --title "sarathi $GITHUB_REF_NAME" \
               --generate-notes
           fi

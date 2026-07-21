@@ -28,7 +28,7 @@ Use marker comments so the block can be updated idempotently:
 
 ```markdown
 <!-- sarathi:start -->
-## Sarathi
+## sarathi
 
 This project uses the Sarathi process. For SDLC work, first load the
 `sarathi` skill or the installed stage prompt, then read `.sdlc/wip.md` and

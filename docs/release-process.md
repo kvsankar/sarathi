@@ -84,7 +84,7 @@ prepared deliberately.
    merged `master` commit:
 
    ```sh
-   git tag -a vX.Y.Z -m "Sarathi vX.Y.Z"
+   git tag -a vX.Y.Z -m "sarathi vX.Y.Z"
    ```
 
 9. Push the tag:

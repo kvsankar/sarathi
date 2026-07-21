@@ -321,7 +321,7 @@ name: $stageName
 description: "$description"
 ---
 
-# Sarathi Stage: $stageName
+# sarathi Stage: $stageName
 
 This is a direct GitHub Copilot CLI skill alias for the Sarathi $stageName stage.
 

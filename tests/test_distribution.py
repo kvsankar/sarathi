@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "skills" / "sarathi" / "manifest.json"
 UPDATE_SCRIPT = ROOT / "skills" / "sarathi" / "scripts" / "check_update.py"
 CURRENT_VERSION = json.loads(MANIFEST.read_text(encoding="utf-8"))["version"]
+CURRENT_MAJOR, CURRENT_MINOR, CURRENT_PATCH = map(int, CURRENT_VERSION.split("."))
+NEWER_VERSION = f"{CURRENT_MAJOR}.{CURRENT_MINOR}.{CURRENT_PATCH + 1}"
 
 
 def load_update_module():
@@ -89,14 +91,14 @@ def test_update_notice_requires_approval_and_pins_version(
 ) -> None:
     update = load_update_module()
     monkeypatch.setenv("SARATHI_UPDATE_CACHE", str(tmp_path / "update.json"))
-    monkeypatch.setattr(update, "_fetch_latest", lambda _: "0.5.1")
+    monkeypatch.setattr(update, "_fetch_latest", lambda _: NEWER_VERSION)
     monkeypatch.setattr(sys, "argv", [str(UPDATE_SCRIPT)])
 
     assert update.main() == 0
     notice = capsys.readouterr().out
     assert f"installed version is {CURRENT_VERSION}" in notice
     assert "explicit user approval" in notice
-    assert "sarathi-sdlc==0.5.1" in notice
+    assert f"sarathi-sdlc=={NEWER_VERSION}" in notice
 
 
 def test_failed_update_check_is_cached_and_does_not_block(

@@ -1,10 +1,19 @@
-# Sarathi
+# sarathi — Production Software Engineering with AI Agents
 
-Adaptive, resumable, reviewable software delivery
+A disciplined, adaptive workflow for building production software with AI coding agents.
 
-Sarathi turns accepted intent into the smallest safe working increment, preserves the
-decisions and evidence needed to review it, decomposes work that is too complex to reason
-about safely as one unit, and adapts the remaining work from real feedback.
+sarathi helps AI coding agents and software teams turn accepted intent into the smallest safe
+working increment, preserves the decisions and evidence needed to review it, decomposes work
+that is too complex to reason about safely as one unit, and adapts the remaining work from
+real feedback.
+
+## Why sarathi?
+
+In the Mahabharata, Krishna serves as Arjuna's *sarathi*—his charioteer and counsel. He does
+not replace Arjuna's agency; he helps him see the situation clearly, reason through doubt,
+and act with purpose. sarathi takes its name from that partnership: it helps engineers and
+AI agents navigate complex software decisions and reach production with evidence,
+discipline, and human judgment intact.
 
 Its enduring delivery loop is:
 
@@ -12,13 +21,13 @@ Its enduring delivery loop is:
 accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
 ```
 
-![Sarathi adaptive software delivery process](docs/sarathi-process-diagram.png)
+![sarathi production software engineering with AI agents](docs/sarathi-process-diagram.png)
 
 Specifications, designs, plans, and code preserve the decisions made along that loop; they
 do not form a one-way waterfall. Decompose when the work is too complex to understand and
 review safely as one coherent unit. Each stage can be
 created, verified, reviewed, or assessed independently, and review depth follows actual
-risk. See [Sarathi's enduring model](docs/enduring-model.md).
+risk. See [sarathi's enduring model](docs/enduring-model.md).
 
 ## What You Get
 

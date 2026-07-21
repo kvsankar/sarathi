@@ -1,8 +1,13 @@
-# Sarathi's Enduring Model
+# sarathi's Enduring Model
 
 Sarathi turns accepted intent into the smallest safe working increment, preserves the
 decisions and evidence needed to review it, decomposes work that is too complex to reason
 about safely as one unit, and adapts the remaining work from real feedback.
+
+The name comes from the Mahabharata, where Krishna serves as Arjuna's *sarathi*—his
+charioteer and counsel. Krishna helps Arjuna see clearly and act with purpose without
+replacing his agency. In the same spirit, sarathi guides engineers and AI agents through
+complex software decisions while keeping human judgment responsible for the destination.
 
 This is the stable model. Formatting rules, status fields, identifiers, ledgers, and
 checker behavior support it; they are not the identity of the process.
