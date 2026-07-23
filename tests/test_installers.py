@@ -127,6 +127,22 @@ def test_direct_assess_aliases_resolve_transitive_prompts(tmp_path: Path) -> Non
             assert sarathi_prompts.is_dir()
 
 
+def test_project_install_assembles_canonical_docs_into_skill(tmp_path: Path) -> None:
+    run_project_copilot_install(tmp_path)
+
+    expected = sorted((ROOT / "docs").iterdir(), key=lambda path: path.name)
+    for skill_root in (
+        tmp_path / ".github" / "skills",
+        tmp_path / ".agents" / "skills",
+    ):
+        installed_docs = skill_root / "sarathi" / "docs"
+        assert sorted(path.name for path in installed_docs.iterdir()) == [
+            path.name for path in expected
+        ]
+        for source in expected:
+            assert (installed_docs / source.name).read_bytes() == source.read_bytes()
+
+
 def test_project_install_copies_executable_checker_bundle(tmp_path: Path) -> None:
     run_project_copilot_install(tmp_path)
     checker_dir = tmp_path / "checkers"

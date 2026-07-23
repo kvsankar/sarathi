@@ -177,10 +177,10 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
   provided; every installed skill still contains its self-contained checker bundle. Source
   installers retain `-NoCheckers` and `--no-checkers` for explicitly skipping the copy.
 
-Installed skill bundles are self-contained: each `sarathi` skill copy includes
-`SKILL.md`, agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. Prompt
-commands or stage skill aliases are also installed separately where host tools can expose
-them directly.
+Installed skill bundles are self-contained: the installer assembles each `sarathi` skill copy
+from the canonical `docs/`, `prompts/`, and `checkers/` sources, plus `SKILL.md` and agent
+config. Prompt commands or stage skill aliases are also installed separately where host tools
+can expose them directly.
 
 Every dry or real install prints the destination folders before doing work.
 
@@ -588,7 +588,7 @@ completeness, and consistency across stages.
 ```text
 docs/      user-facing documentation and review notes
 prompts/   source stage prompt definitions
-skills/    native skill bundles
+skills/    skill-specific definitions and metadata
 checkers/  repeatable structure and link checks
 scripts/   installers for Windows, macOS, Linux, and WSL
 tests/     checker tests

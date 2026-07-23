@@ -8,6 +8,13 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Changed
+
+- Lead the installed `sarathi` skill with its delivery model and an explicit map of every
+  direct stage skill, moving update-check mechanics after that orientation.
+- Assemble installed skill bundles from canonical docs, prompts, and checkers instead of
+  storing source mirrors; remove the unused standalone SRS-authoring skill.
+
 ## 0.5.1 - 2026-07-21
 
 ### Changed

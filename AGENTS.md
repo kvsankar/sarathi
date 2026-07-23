@@ -7,8 +7,8 @@ specification and learns through feedback; it is not a linear waterfall checklis
 
 - `docs/`: shared process policy and user-facing guides.
 - `prompts/`: canonical stage prompts and command definitions.
-- `skills/`: installable skill bundles. `skills/sarathi` mirrors selected canonical
-  prompts, docs, and checkers.
+- `skills/`: skill-specific definitions and metadata. Installers assemble the `sarathi`
+  bundle from canonical prompts, docs, and checkers at installation time.
 - `checkers/`: repeatable checks for required structure and links.
 - `scripts/`: Windows, macOS, Linux, and WSL installers.
 - `tests/`: checker, bundle, renderer, prompt-budget, and browser regressions.
@@ -192,7 +192,8 @@ the passes separate. Stop assessment when an earlier required document is unfit.
   reference; deterministic rules belong in checkers.
 - Use `apply_patch` for manual edits. Do not overwrite user changes or generated consumer
   documents.
-- Mirror canonical prompts/checkers and the selected docs into `skills/sarathi`.
+- Keep `skills/sarathi` limited to skill-specific files; make installers assemble canonical
+  prompts, checkers, and docs into each installed bundle.
 - Update `CHANGELOG.md` for user-visible process, checker, installer, or skill changes.
 - Keep deterministic output free of timestamps, randomness, network assets, and
   environment-dependent content unless the document schema explicitly requires them.
