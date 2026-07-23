@@ -16,9 +16,8 @@ accepted intent -> smallest safe increment -> working behavior -> evidence -> fe
 
 ## Direct Stage Skills
 
-Use one direct skill when stage and action are clear. `create` authors or revises; `verify`
-runs repeatable checks; `review` judges quality independently; `assess` runs both.
-`workflow-status` is read-only and never advances a gate.
+Use one direct skill when stage and action are clear: `create` authors, `verify` checks,
+`review` judges independently, `assess` runs both; `workflow-status` is read-only.
 
 | Work | Direct skills | Use when |
 | --- | --- | --- |
@@ -33,15 +32,9 @@ concern.
 
 ## Skill Maintenance
 
-At the start of each invocation, run bundled `scripts/check_update.py` with an available
-Python interpreter. Surface an update notice, but never block delivery when the check is
-silent, unavailable, or offline. If an update is available, report both versions and never
-update automatically. With explicit user approval, install that exact version, verify the
-installed manifest, and ask the user to reload agent tools. Respect `SARATHI_UPDATE_CHECK=0`.
-
-The bundle must contain `prompts/`, `docs/`, and `checkers/`. If a required file is absent,
-look for another installed `sarathi` bundle or canonical repository source; otherwise report an
-incomplete installation instead of inventing policy.
+Run bundled `scripts/check_update.py` at invocation start; surface an update notice but never
+block offline, auto-update, or install without approval. Respect `SARATHI_UPDATE_CHECK=0`.
+If required `prompts/`, `docs/`, or `checkers/` files are absent, report an incomplete install.
 
 ## Enduring Model
 
@@ -50,15 +43,20 @@ coherent unit. Specification, design, plan, and code preserve decisions along th
 are not a one-way waterfall. Load `docs/enduring-model.md` when explaining the whole process.
 
 Production work must preserve approved requirements, useful tests with clear pass/fail
-results, honest feedback, required human approvals, and safety limits.
+results, honest feedback, required approvals, and safety limits.
 
-Choose review depth with `docs/assurance-profiles.md`:
+Choose a delivery assurance profile with `docs/assurance-profiles.md`:
 
 - **Lean**: small, reversible, low-risk production change.
 - **Standard**: ordinary default or unclear risk.
 - **High-assurance**: material security, privacy, safety, regulatory, availability,
   migration, or irreversible-data consequence.
-- **Exploratory**: separate non-production track for timeboxed learning.
+
+Choose an approval policy separately with `docs/approval-gates.md`: **Human checkpoints**
+stop for explicit approval at each material gate; **Automatic eligible gates** uses only an
+explicit local policy and never covers excluded safety or production gates. Work may deliver
+either a **Product increment** or **Decision/evidence**; this changes its done signal, not its
+required assurance or approval policy.
 
 Apply `docs/simplicity-first.md`: keep process records out of product architecture, start with
 the smallest direct implementation, reuse existing-system tests, and avoid general solutions
@@ -67,14 +65,9 @@ problem requires. Do not use LOC or PR-count targets.
 
 ## Supporting Status Rule
 
-For status, resume, handoff, remaining-work, readiness, and next-action questions, lead with
-scope-qualified engineering reality and one executable next action. Check claims and put
-process evidence afterward. Use `docs/work-in-progress.md` for supporting snapshot fields.
-
-Never use `complete` without its exact scope. State prerequisite, slice, feature, and full
-product status separately when they differ. A completed prerequisite unlocks named work; it
-does not complete the feature. Use ordinary technical names unless traceability detail was
-requested.
+For status, resume, handoff, readiness, and next-action questions, lead with scoped engineering
+reality and one executable next action; put checked process evidence afterward. Never call work
+complete without its scope. A completed prerequisite unlocks named work, not the whole feature.
 
 ## Orient Before Acting
 
@@ -84,9 +77,12 @@ requested.
    baseline, or a change to an existing system.
 3. Infer Product/system, Feature/component, or Slice/change scope. Ask only when the answer
    would materially change the document.
-4. Select Lean, Standard, or High-assurance and additional checks. Record why and what would
-   require stronger review. In YOLO mode, use Standard unless Lean is justified.
-5. Load only the selected `prompts/<stage>.prompt.md` and its triggered references.
+4. At project entry and first requirements for a feature, present the assurance profile and
+   approval policy choices with a contextual recommendation. Record the explicit choice or
+   confirmation of a project default, plus the work outcome. Never infer automatic approval.
+5. Select Lean, Standard, or High-assurance and additional checks. Record why and what would
+   require stronger assurance. In YOLO mode, use Standard unless Lean is justified.
+6. Load only the selected `prompts/<stage>.prompt.md` and its triggered references.
 
 ## Decompose Only When It Helps
 
@@ -114,8 +110,9 @@ review report:
 3. End the turn before starting the next stage.
 
 Continue across stages only when the latest user request explicitly asks for end-to-end or
-unattended execution. YOLO permits assumptions but does not bypass readiness, declared file
-scope, blockers in earlier documents, test evidence, safety, approval, or human-review stops.
+unattended execution and the recorded approval policy permits the current gate. Human
+checkpoints always stop for explicit approval. YOLO permits assumptions but never selects
+automatic approval or bypasses readiness, declared scope, blockers, evidence, or safety stops.
 
 ## Evidence Invariants
 
@@ -151,7 +148,7 @@ fit. Use `docs/review-verification-checklist.md`.
 | --- | --- |
 | `docs/enduring-model.md` | Explaining Sarathi, orienting a project, or relating delivery, decomposition, quality, continuity, and risk. |
 | `docs/requirements-model.md` | Specifications and their needs-to-evidence hierarchy. |
-| `docs/assurance-profiles.md` | Choosing review depth or additional checks. |
+| `docs/assurance-profiles.md` | Choosing delivery assurance or additional checks. |
 | `docs/simplicity-first.md` | Checking whether a solution or PR breakdown is no larger than needed. |
 | `docs/project-entry.md` | Starting in a new or existing codebase. |
 | `docs/work-in-progress.md` | Starting, resuming, blocking, handing off, or answering status and next-action questions. |
@@ -161,7 +158,7 @@ fit. Use `docs/review-verification-checklist.md`.
 | `docs/test-ownership.md` | Planning or implementing tests, including test-first changes, or when test ownership spans children. |
 | `docs/work-decomposition.md` | Breakdown plans or child document chains are involved. |
 | `docs/feedback-and-learning.md` | Coordinating parallel work, feedback, or earlier-document changes. |
-| `docs/approval-gates.md` | Reading or writing approval/auto-policy ledgers. |
+| `docs/approval-gates.md` | Choosing approval policy or reading approval/auto-policy ledgers. |
 | `docs/cleanup-pass.md` and `docs/simplify-pass.md` | Handoff quality passes apply. |
 | `docs/workflow-status.md` | Rendering or interpreting workflow status. |
 

@@ -1,71 +1,75 @@
-# Review Depth And Extra Risk Checks
+# Delivery Assurance Profiles And Extra Risk Checks
 
-Sarathi uses one delivery process. The review level sets how much checking and independent
-review the work needs. It does not allow anyone to skip approved requirements, readiness to
-implement, tests, feedback, or review of earlier documents.
+Sarathi uses one delivery process. A delivery assurance profile sets the evidence and
+independent review the work needs. It never allows anyone to skip approved requirements,
+readiness to implement, tests, feedback, or earlier-document review.
 
 ## Rules That Never Change
 
-Every production profile keeps these rules:
+Every profile keeps these rules:
 
-- Work from approved requirements and a plan that is ready to implement.
-- Deliver the smallest useful change that can be understood and tested on its own.
-- Use appropriate executable tests with clear pass/fail checks.
+- Product-increment work uses approved requirements and a plan ready to implement; it proves
+  the smallest useful change with appropriate executable tests.
+- Decision/evidence work uses an accepted question, decision owner, evidence method,
+  boundaries, and stop condition or timebox; it records the resulting decision and next
+  action. Experiments, inspection, prototypes, and checks must be credible and repeatable
+  enough for the consequence, but do not claim product readiness.
 - Record feedback honestly; never invent stakeholder or observed-system evidence.
 - Inspect affected parent specs, designs, plans, code, integration, and process after an
   assessed slice.
 - Stop or replan when evidence invalidates active work.
 - Preserve required approvals, safety constraints, and explicit approval boundaries.
-- Apply `docs/simplicity-first.md`: process records never justify product machinery,
-  and conceptual complexity must stay inside the user's mental model.
+- Apply `docs/simplicity-first.md`: process records never justify product machinery, and
+  conceptual complexity must stay inside the user's mental model.
 
-The existing **Exploratory track** remains separate. It covers timeboxed spikes,
-prototypes, and investigations that are not production-ready. Exploratory code becomes
-production work only after choosing one of the review levels below.
+## Delivery Assurance Profiles
 
-## Review Levels
+Choose the least intensive profile justified by consequence, reversibility, uncertainty, and
+available test results. The profile may differ by feature or change.
 
-Choose the least intensive review level justified by consequence, reversibility,
-uncertainty, and available test results. The level may differ by feature or change.
-
-| Profile | Use when | Expected depth |
+| Profile | Use when | Expected proof |
 | --- | --- | --- |
-| Lean | The change is small, reversible, well understood, and affects little. | A short plan, one or few PRs, targeted tests, and direct feedback. |
-| Standard | Ordinary product or feature delivery with meaningful integration or operational concerns. This is the default when risk is unclear. | A specific plan, integration/deployment results where applicable, and independent assessment when useful. |
-| High-assurance | Failure could cause material security, privacy, safety, regulatory, financial, availability, migration, or irreversible data harm. | Stronger independent review, realistic-boundary evidence, rehearsals where applicable, auditable decisions, and tighter approval gates. |
+| Lean | The work is small, reversible, well understood, and affects little. | A short delivery or evidence plan, targeted checks, and direct feedback. |
+| Standard | Ordinary delivery with meaningful integration or operational concerns; the default when risk is unclear. | A specific delivery or evidence plan, applicable real-boundary results, and independent assessment when useful. |
+| High-assurance | Failure could cause material security, privacy, safety, regulatory, financial, availability, migration, or irreversible-data harm. | Stronger independent review, realistic-boundary evidence, rehearsals where applicable, auditable decisions, and tighter approval gates. |
 
 High-assurance means stronger evidence for actual risk. It does not mean more hierarchy,
 document depth, or recursive Spec/Design/Plan chains. An accepted high-assurance design may
 be reused by one specific Implementation plan and proceed directly to code.
 
-## Choosing a level
+## Choosing A Profile
 
-At project entry or before the first affected document, state:
+At project entry, and when requirements begin for a feature, present the choices with a
+contextual recommendation. Record an explicit selection or confirmation of the project
+default; never silently infer an automatic approval policy from YOLO or unattended wording.
 
-- `Review Level: Lean | Standard | High-assurance`
+State:
+
+- `Delivery Assurance Profile: Lean | Standard | High-assurance`
 - `Extra Checks: comma-separated checks or none`
-- a short reason;
+- a short reason; and
 - what would require stronger review.
 
-Record the default in `.sdlc/process-decisions.yaml` when that file exists. Record an
+Record the default in `.sdlc/process-decisions.yaml` when that file exists. Record a
 document or slice override in `.sdlc/wip.md` and the accepted spec or plan. In YOLO mode,
-use Standard when evidence is insufficient to justify Lean. A user may override the
-profile, but remaining risk must remain explicit.
+use Standard when evidence is insufficient to justify Lean. A user may override the profile,
+but remaining risk must remain explicit.
 
 Escalate before affected work continues when new evidence increases blast radius,
 irreversibility, uncertainty, external-boundary risk, or legal/safety consequence.
-Reducing review depth requires evidence and must not remove obligations already accepted
-by a parent document.
+Reducing assurance requires evidence and must not remove obligations accepted by a parent
+document.
 
-A compact implementation plan is allowed at any review level when approved requirements
-and architecture make the change ready to implement. Escalate only an unresolved boundary
-or risk; do not add unrelated document layers.
+A compact implementation plan is allowed at any profile when approved requirements and
+architecture make a product increment ready to implement. A decision/evidence plan instead
+states its question, method, boundaries, timebox, decision owner, and done signal. Escalate
+only an unresolved boundary or risk; do not add unrelated document layers.
 
-## Extra checks for specific risks
+## Extra Checks For Specific Risks
 
-The review level sets a baseline. Add only the checks required by the product context, the
-changed boundary, or an approved requirement. Existing machine-readable documents store
-these choices in `Extra Checks`. Older field names remain readable.
+The profile sets a baseline. Add only checks required by product context, the changed
+boundary, or an approved requirement. Existing machine-readable documents store these
+choices in `Extra Checks`. Older field names remain readable.
 
 | Extra check | Use when | Additional evidence |
 | --- | --- | --- |
@@ -79,13 +83,12 @@ these choices in `Extra Checks`. Older field names remain readable.
 | Build and release | Packaging, CI/CD, infrastructure, rollout, or environment changes. | Build artifact, dry run, smoke, promotion, rollback, and release evidence. |
 | Documentation | Users, integrators, operators, support, or auditors depend on guidance. | Validated examples, links/build, runbook, migration or release documentation. |
 
-[cross-cutting-concerns.md](cross-cutting-concerns.md) assigns each extra check to the
-document that owns it. Do not paste every option into every document. Mark an extra check
-`not-applicable` only when the context could reasonably suggest it and the rationale helps
-reviewers.
+`docs/cross-cutting-concerns.md` assigns each extra check to the document that owns it. Do
+not paste every option into every document. Mark an extra check `not-applicable` only when
+the context reasonably suggests it and the rationale helps reviewers.
 
-## A review level is not a status
+## A Profile Is Not A Status
 
-A review level tells the team how deeply to plan and review; it is not a completion status.
-Lean does not mean unchecked, and High-assurance does not mean complete. Checks, reviews,
-feedback, and approvals remain separate results.
+An assurance profile tells the team how deeply to plan and review; it is not a completion
+status. Lean does not mean unchecked, and High-assurance does not mean complete. Checks,
+reviews, feedback, and approvals remain separate results.

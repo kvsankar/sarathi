@@ -24,6 +24,8 @@ Lead with concrete problems. Check that the opening page lets an engineer explai
 problem, affected users, required behavior, non-goals, success, and important failures.
 Then check that each requirement is observable and testable, external contracts are
 credible, links to later work resolve, and stronger checks are limited to real risks.
+For a Decision/evidence outcome, check the stated question, decision owner, evidence method,
+boundaries, stop condition or timebox, and decision/next action instead of product readiness.
 
 Check the requirements derivation, not merely the presence of sections: stakeholder needs
 must justify features; use cases must explain the main behavior plus meaningful alternate
@@ -43,5 +45,6 @@ plain technical language even when automatic checks pass.
 
 Report evidence considered, concrete findings, what can be deleted, deferred, or proved by
 existing evidence, top fixes, and
-`Pass | Pass-with-fixes | Needs rework`. Update `.sdlc/wip.md` and stop; do not start design
-without explicit user approval.
+`Pass | Pass-with-fixes | Needs rework`. Update `.sdlc/wip.md` and stop according to the
+recorded approval policy. Human checkpoints require explicit approval; automatic approval
+needs an eligible local policy and explicit end-to-end continuation before design.

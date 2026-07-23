@@ -53,7 +53,8 @@ python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
 When checking a later gate that depends on approved earlier documents, add
 `--require-approvals`. This checks `.sdlc/approvals.yaml` for hash-matched `spec.approved`,
 `design.approved`, and, when applicable, `ux.mock.approved` records with UTC `approved_at`
-timestamps. Do not require approvals while drafting a plan that still needs human review.
+timestamps. Do not require approval while drafting; require it only when the plan is ready to
+advance and the recorded policy makes the gate applicable.
 
 For a compact plan that relies on approved parent documents, verify those documents first,
 then run the plan checker with `--feature` and the parent document options needed to

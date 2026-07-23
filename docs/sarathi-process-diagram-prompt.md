@@ -128,13 +128,12 @@ clean and avoid crossing arrows.
    "A new engineer or agent can resume from source records and observed results."
 
 6. RISK CONTROLS — DEPTH FOLLOWS CONSEQUENCE
-   Show a compact rail titled "ASSURANCE FOLLOWS RISK" with four levels:
+   Show a compact rail titled "ASSURANCE FOLLOWS RISK" with three levels:
    "Lean — small and reversible"
    "Standard — ordinary default"
-   "High assurance — stronger proof for material risk"
-   "Exploratory — timeboxed, non-production"
+   "High-assurance — stronger proof for material risk"
 
-   Caption, verbatim: "High assurance adds evidence, not up-front ceremony."
+   Caption, verbatim: "High-assurance adds evidence, not up-front ceremony."
 
 7. SUPPORTING AUTHORING RULES — VISUALLY SECONDARY
    Use a narrow pale footer band titled "SUPPORTING RULES". Include only four short items:

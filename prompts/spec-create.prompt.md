@@ -22,7 +22,7 @@ Load only when the trigger applies:
 - `docs/project-entry.md`: starting in an unfamiliar or existing codebase;
 - `docs/srs-authoring.md`: reconstructed behavior, detailed use cases, measurable
   supplementary requirements, or terse requirements risk;
-- `docs/assurance-profiles.md`: selecting or changing the review level or additional checks;
+- `docs/assurance-profiles.md`: selecting or changing delivery assurance or additional checks;
 - `docs/simplicity-first.md`: proposed implementation machinery, reuse, or a refactor affects
   the requirement boundary;
 - `docs/cross-cutting-concerns.md`: an identified risk needs additional checks;
@@ -33,10 +33,13 @@ report an incomplete installation instead of recreating policy from memory.
 
 ## Establish Intent
 
-Infer and state Product/system, Feature/component, or Slice/change scope. Select Lean,
-Standard, or High-assurance for production work; keep Exploratory for timeboxed
-non-production learning. Keep the exact review-level fields in process metadata. In the
-spec, describe important risks and the checks they require in ordinary language.
+Infer and state Product/system, Feature/component, or Slice/change scope. At project entry or
+the first requirements for a feature, present a contextual recommendation and ask the user to
+select or confirm: Delivery Assurance Profile (Lean, Standard, High-assurance), Approval
+Policy (Human checkpoints, Automatic eligible gates), and Work Outcome (Product increment,
+Decision/evidence). Record the explicit choice or confirmed default in process metadata; never
+infer automatic approval from YOLO or unattended wording. Describe important risks and checks
+in ordinary language.
 
 Before writing, understand the problem, affected stakeholders, success, non-goals,
 observable behavior, external boundaries, acceptance basis, and material constraints. Ask
@@ -109,7 +112,7 @@ Revise until the result is Pass or an explicitly accepted Pass-with-fixes. Updat
 `.sdlc/wip.md` with the path, exact machine status fields, checks run, assumptions,
 blockers, and next action.
 
-Stop for human review. Report the spec path, what it defines, checks run, open questions,
-and recommended `/design-create`. Do not start design
-in the same turn
-unless the latest user request explicitly asks for end-to-end continuation.
+Stop according to the recorded approval policy. Human checkpoints require explicit approval;
+automatic approval needs an eligible local policy and explicit end-to-end continuation before
+design. Report the spec path, what it defines, checks run, open questions, and recommended
+`/design-create`.

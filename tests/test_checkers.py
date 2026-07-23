@@ -409,6 +409,10 @@ auto_approval:
     - production-deployment.approved
 """,
     )
+    (tmp_path / ".sdlc" / "process-decisions.yaml").write_text(
+        "approval:\n  policy: automatic_eligible_gates\n",
+        encoding="utf-8",
+    )
     module = load_checker("check_spec")
 
     rc, report = run_main(
@@ -421,6 +425,100 @@ auto_approval:
 
     assert rc == 0
     assert report["approval_requirements"][0]["status"] == "auto-approved"
+
+
+def test_check_spec_rejects_auto_approval_under_human_checkpoints(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-AUTO-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+                "status": "auto-approved",
+                "approved_by": "AUTO",
+            }
+        ],
+        gates_yaml="""version: 1
+auto_approval:
+  enabled: true
+  expires_at: "2999-01-01T00:00:00Z"
+  allowed_scopes:
+    - product/system
+  allowed_gates:
+    - spec.approved
+""",
+    )
+    (tmp_path / ".sdlc" / "process-decisions.yaml").write_text(
+        "approval:\n  policy: human_checkpoints\n",
+        encoding="utf-8",
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["approval_requirements"][0]["issues"] == [
+        "auto approval conflicts with recorded approval policy: human_checkpoints"
+    ]
+
+
+def test_check_spec_rejects_auto_approval_without_recorded_policy(
+    tmp_path, monkeypatch, capsys
+):
+    spec_path = tmp_path / "spec.md"
+    write_valid_spec(spec_path)
+    write_approval_ledger(
+        tmp_path,
+        [
+            {
+                "id": "APR-AUTO-SPEC",
+                "gate": "spec.approved",
+                "scope": "product/system",
+                "kind": "spec",
+                "path": "spec.md",
+                "sha256": file_hash(spec_path),
+                "status": "auto-approved",
+                "approved_by": "AUTO",
+            }
+        ],
+        gates_yaml="""version: 1
+auto_approval:
+  enabled: true
+  expires_at: "2999-01-01T00:00:00Z"
+  allowed_scopes:
+    - product/system
+  allowed_gates:
+    - spec.approved
+""",
+    )
+    module = load_checker("check_spec")
+
+    rc, report = run_main(
+        module,
+        ["spec.md", "--require-approvals", "--json"],
+        monkeypatch,
+        capsys,
+        tmp_path,
+    )
+
+    assert rc == 1
+    assert report["approval_requirements"][0]["issues"] == [
+        "auto approval requires recorded approval policy: automatic_eligible_gates"
+    ]
 
 
 def test_approval_requirement_uses_later_valid_reapproval(
@@ -1311,7 +1409,7 @@ def test_check_plan_accepts_well_formed_lean_change_record(
 
 Work Scope: Slice/change
 Implementation Readiness: Code-ready
-Delivery Profile: Lean
+Delivery Assurance Profile: Lean
 Plan Type: Implementation
 Parent Work Item: WORK-AUTH-CHANGE
 Lean Change Record: Yes

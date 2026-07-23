@@ -33,7 +33,7 @@ Load references only when their trigger applies:
 | `docs/requirements-model.md` | Creating or reviewing a specification and preserving the hierarchy from stakeholder needs to observable evidence. |
 | `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; reviewing first-page comprehensibility; checking process IDs in source. |
 | `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, existing compatibility proof, or PR breakdown. |
-| `docs/assurance-profiles.md` | Choosing or changing review depth and extra checks for specific risks. |
+| `docs/assurance-profiles.md` | Choosing or changing delivery assurance and extra checks for specific risks. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `/spec-create` or `/code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
@@ -67,8 +67,8 @@ For existing projects, start with discovery rather than the full stage stack:
 1. Load `docs/work-in-progress.md` and read `.sdlc/wip.md` if present.
 2. Load `docs/project-entry.md`.
 3. Inspect enough repository files to choose the starting mode and find existing material.
-4. Record or update `.sdlc/process-decisions.yaml` when the user chooses or approves the
-   mode.
+4. Record or update `.sdlc/process-decisions.yaml` when the user chooses or confirms the
+   entry mode, delivery assurance profile, approval policy, or work outcome.
 5. Load only the selected stage prompt.
 6. Load deeper docs or checker sources only when the stage reaches that concern.
 7. Update `.sdlc/wip.md` before stopping or handing off.

@@ -89,7 +89,9 @@ Current Gate: none | human-review | blocked | approved-for-next-stage
 Project Entry Mode: greenfield | brownfield_baseline | brownfield_delta_only | unknown
 Work Scope: product/system | feature/component | slice/change | unknown
 Ready To Implement: Yes | No | unknown
-Review Level: Lean | Standard | High-assurance | Exploratory | unknown
+Delivery Assurance Profile: Lean | Standard | High-assurance | unknown
+Approval Policy: Human checkpoints | Automatic eligible gates | unknown
+Work Outcome: Product increment | Decision/evidence | unknown
 Extra Checks: comma-separated checks or none
 
 ## Current Artifacts

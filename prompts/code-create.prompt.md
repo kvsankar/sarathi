@@ -35,6 +35,10 @@ checkpoint, enforce it. Confirm the expected files, first failing tests, smalles
 implementation, required behavior/tests, pass/fail checks, risks, who or what will review the result,
 dependencies, and reasons to stop or replan.
 
+For a `Decision/evidence` outcome, implement only the planned experiment or prototype within
+its stated boundaries. Record the evidence, decision, and next action; do not claim product
+readiness or deploy the result without new product-increment requirements.
+
 Inspect the repository's documented local gate and hook. Reuse them when present. When
 missing, configure and document the smallest ecosystem-appropriate gate authorized by the
 plan, install it in the working checkout, and keep slow or environment-heavy checks in CI.
@@ -94,9 +98,9 @@ Update `.sdlc/wip.md` and report:
 - changes needed in the spec, design, remaining plan, or code, and whether `/code-assess`
   can start.
 
-Stop for human review after the code change. Do not start the next feedback-dependent PR,
-release, or deployment without explicit approval or a latest-message unattended
-instruction; required document changes (`revision-required`) or missing feedback
-(`feedback-required`) still block affected work.
+Stop according to the recorded approval policy after the code change. Human checkpoints
+require explicit approval; automatic approval needs an eligible local policy and a
+latest-message unattended instruction. Required document changes (`revision-required`),
+missing feedback, release, and deployment boundaries still block affected work.
 For approved-prototype UI work, this stop is a mandatory stakeholder UI review after every
 completed UI change.

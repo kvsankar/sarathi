@@ -97,7 +97,9 @@ these exact `.sdlc/wip.md` fields:
 
 ```text
 Expected Result: assumption, behavior, boundary, or risk under test
-Review Level: Lean | Standard | High-assurance | Exploratory | unknown
+Delivery Assurance Profile: Lean | Standard | High-assurance | unknown
+Approval Policy: Human checkpoints | Automatic eligible gates | unknown
+Work Outcome: Product increment | Decision/evidence | unknown
 Extra Checks: comma-separated checks or none
 Feedback From: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable

@@ -68,7 +68,7 @@ proof.
 
 The agent performs this scan and may draft evidence-backed revisions. It must not silently
 redefine accepted product behavior, contracts, safety posture, or scope. Material revisions
-go through the matching create/assess command and human review gate. Small factual updates
+go through the matching create/assess command and recorded approval policy. Small factual updates
 that preserve approved behavior may be included in the current change when they stay within
 the files expected to change.
 
@@ -109,6 +109,8 @@ automatic bookkeeping step at the boundary. Do not introduce repeated user-facin
 between them. Historical approvals remain history and must not be reported repeatedly as
 current invalid-record noise after an approved revision.
 
-Unattended or end-to-end mode may cross human collaboration pauses when explicitly requested,
-but it does not remove learning dependencies. The agent must still stop or replan work whose
-accepted assumptions were shown to be wrong.
+Unattended or end-to-end mode may cross a collaboration pause only when the recorded approval
+policy permits automatic approval for that local gate. It does not remove learning
+dependencies or cross protected gates, including release/deployment, security/privacy
+acceptance, and required UI approval. The agent must still stop or replan work whose accepted
+assumptions were shown to be wrong.

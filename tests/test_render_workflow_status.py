@@ -87,7 +87,9 @@ Next Action: Run the target persistence assessment.
 
 ## Process Snapshot
 Current Stage: code-create
-Review Level: Standard
+Delivery Assurance Profile: Standard
+Approval Policy: Human checkpoints
+Work Outcome: Product increment
 Extra Checks: documentation
 
 ## Results And Feedback
@@ -106,7 +108,9 @@ Stop Conditions: Stop if the API changes.
 
     result = module.parse_wip(tmp_path)
 
-    assert result["Review Level"] == "Standard"
+    assert result["Delivery Assurance Profile"] == "Standard"
+    assert result["Approval Policy"] == "Human checkpoints"
+    assert result["Work Outcome"] == "Product increment"
     assert result["Extra Checks"] == "documentation"
     assert result["product_status"] == {
         "goal": "Deliver report exports in the target service.",
@@ -122,6 +126,120 @@ Stop Conditions: Stop if the API changes.
     assert result["learning"]["target"] == "Confirm the public behavior."
     assert result["learning"]["active_work_item"] == "WORK-DEMO-ALPHA"
     assert result["learning"]["stop_or_replan"] == "Stop if the API changes."
+
+
+def test_renderer_prefers_new_delivery_fields_and_renders_choices(tmp_path):
+    module = load_renderer()
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+Delivery Assurance Profile: Standard
+Review Level: Lean
+Approval Policy: Automatic eligible gates
+Work Outcome: Decision/evidence
+Extra Checks: external integration
+""",
+    )
+
+    model = module.build_model(tmp_path)
+    rendered = module.render_html(
+        model,
+        tmp_path,
+        tmp_path / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["delivery"] == {
+        "profile": "Standard",
+        "approval_policy": "Automatic eligible gates",
+        "work_outcome": "Decision/evidence",
+        "modules": "external integration",
+    }
+    assert "Delivery choices" in rendered
+    assert "Assurance profile: Standard." in rendered
+    assert "Approval policy: Automatic eligible gates." in rendered
+    assert "Work outcome: Decision/evidence." in rendered
+
+
+def test_renderer_rejects_auto_approval_under_human_checkpoints(tmp_path):
+    module = load_renderer()
+    spec = write(tmp_path / "docs" / "spec.md", spec_text())
+    write(
+        tmp_path / ".sdlc" / "approvals.yaml",
+        f"""version: 1
+approvals:
+  - id: APR-AUTO-SPEC
+    gate: spec.approved
+    scope: product/system
+    artifact:
+      kind: spec
+      path: docs/spec.md
+      sha256: {digest(spec)}
+    status: auto-approved
+    approved_by: AUTO
+    approved_at: "2026-07-15T00:00:00Z"
+""",
+    )
+    write(
+        tmp_path / ".sdlc" / "gates.yaml",
+        """auto_approval:
+  enabled: true
+  expires_at: "2999-01-01T00:00:00Z"
+  allowed_scopes: [product/system]
+  allowed_gates: [spec.approved]
+""",
+    )
+    write(
+        tmp_path / ".sdlc" / "process-decisions.yaml",
+        "approval:\n  policy: human_checkpoints\n",
+    )
+
+    model = module.build_model(tmp_path)
+
+    assert model["stages"]["spec"]["state"] == "stale"
+    assert model["stages"]["spec"]["approval"]["status"] == "auto-approved"
+    assert ".sdlc/process-decisions.yaml" in {
+        source["path"] for source in model["sources"]
+    }
+
+
+def test_renderer_rejects_auto_approval_outside_gate_policy(tmp_path):
+    module = load_renderer()
+    spec = write(tmp_path / "docs" / "spec.md", spec_text())
+    write(
+        tmp_path / ".sdlc" / "approvals.yaml",
+        f"""version: 1
+approvals:
+  - id: APR-AUTO-SPEC
+    gate: spec.approved
+    scope: product/system
+    artifact:
+      kind: spec
+      path: docs/spec.md
+      sha256: {digest(spec)}
+    status: auto-approved
+    approved_by: AUTO
+    approved_at: "2026-07-15T00:00:00Z"
+""",
+    )
+    write(
+        tmp_path / ".sdlc" / "gates.yaml",
+        """auto_approval:
+  enabled: true
+  expires_at: "2999-01-01T00:00:00Z"
+  allowed_scopes: [product/system]
+  allowed_gates: [design.approved]
+""",
+    )
+    write(
+        tmp_path / ".sdlc" / "process-decisions.yaml",
+        "approval:\n  policy: automatic_eligible_gates\n",
+    )
+
+    model = module.build_model(tmp_path)
+
+    assert model["stages"]["spec"]["state"] == "stale"
+    assert model["stages"]["spec"]["approval"]["status"] == "auto-approved"
 
 
 def test_product_snapshot_is_visually_primary_and_process_state_is_secondary(tmp_path):
@@ -432,7 +550,9 @@ approvals:
 
 Current Stage: code-create
 Current Gate: human-review
-Delivery Profile: Standard
+Delivery Assurance Profile: Standard
+Approval Policy: Human checkpoints
+Work Outcome: Product increment
 Assurance Modules: external integration, documentation
 Learning Target: validate the public API boundary before expanding the next capability
 Feedback Target: API consumer and sandbox response evidence
@@ -569,6 +689,8 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
 
     assert model["delivery"] == {
         "profile": "Standard",
+        "approval_policy": "Human checkpoints",
+        "work_outcome": "Product increment",
         "modules": "external integration, documentation",
     }
     assert model["summary"] == {

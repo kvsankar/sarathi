@@ -52,7 +52,8 @@ python checkers/check_design.py design.md --spec spec.md --json
 When checking a later gate that depends on an already-approved spec or required mock
 UI, add `--require-approvals`. This checks `.sdlc/approvals.yaml` for hash-matched
 `spec.approved` and, when applicable, `ux.mock.approved` records with UTC `approved_at`
-timestamps. Do not require approvals while drafting a design that still needs human review.
+timestamps. Do not require approval while drafting; require it only when the design is ready
+to advance and the recorded policy makes the gate applicable.
 
 For a component/slice design, add `--component` and `--parent <parent-design.md>` when
 applicable.

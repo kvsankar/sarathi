@@ -265,7 +265,7 @@ behavioral test names. Do not inflate the change with process vocabulary.
 ### High-assurance migration
 
 Explain data ownership, migration order, rollback, failure behavior, and evidence in human
-technical language. High assurance adds realistic proof and independent review, not
+technical language. High-assurance adds realistic proof and independent review, not
 identifier-heavy prose.
 
 ### Existing legacy document

@@ -48,18 +48,19 @@ All production work uses the same loop:
 approved requirements -> smallest useful change -> results -> feedback -> inspect/adapt
 ```
 
-Use [docs/assurance-profiles.md](docs/assurance-profiles.md) to choose review depth:
+Use [docs/assurance-profiles.md](docs/assurance-profiles.md) to choose a delivery assurance
+profile:
 
 - **Lean** for small, reversible, low-risk production changes.
 - **Standard** as the ordinary default or when risk is unclear.
 - **High-assurance** when failure has material security, privacy, safety, regulatory,
   financial, availability, migration, or irreversible-data consequences.
-- **Exploratory** remains a separate non-production track for timeboxed spikes.
 
-Review levels change review depth; they never waive approved requirements, readiness to implement,
-tests, honest feedback, review of parent documents, human approval points, or safety
-limits. Add only the extra risk checks that the work actually needs. High-assurance asks
-for stronger proof at each delivery step instead of front-loading the whole project.
+Assurance profiles change evidence depth; they never waive approved requirements, readiness to
+implement, tests, honest feedback, earlier-document review, or safety limits. Choose approval
+policy separately: human checkpoints stop for explicit approval; automatic approval applies
+only to eligible gates under explicit local policy. Work may deliver a product increment or
+decision/evidence; its outcome does not lower required assurance or approval boundaries.
 
 Apply [docs/simplicity-first.md](docs/simplicity-first.md) as a hard design constraint.
 Process records must not become product architecture. Start with the smallest direct
@@ -68,9 +69,10 @@ after a second concrete use case, and stop when conceptual complexity exceeds th
 mental model. If the solution is larger than the problem requires, simplify it. Sarathi has
 no LOC or PR-count constraints.
 
-Record the profile, extra risk checks, reason, and conditions that would require stronger
-review in `.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the source
-document.
+At project entry and first requirements for a feature, present the profile and approval-policy
+options with a contextual recommendation. Record the explicit selection or confirmed default,
+work outcome, extra checks, reason, and escalation conditions in
+`.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the source document.
 
 ## Scope And Execution Readiness
 
@@ -167,8 +169,9 @@ materially revising a spec, design, ADR, plan, code slice, assessment, or review
 3. End the turn before starting the next stage.
 
 Continue across stages only when the latest user request explicitly asks for end-to-end or
-unattended execution. YOLO permits reasonable assumptions but does not bypass readiness,
-touch-set, earlier-document blockers, evidence, safety, or human-review gates.
+unattended execution and the recorded approval policy permits the current gate. Human
+checkpoints always stop for explicit approval. YOLO permits reasonable assumptions but never
+selects automatic approval or bypasses readiness, touch-set, blockers, evidence, or safety.
 
 Approval records use `.sdlc/approvals.yaml`; optional limited automatic approval policy uses
 `.sdlc/gates.yaml`. Follow [docs/approval-gates.md](docs/approval-gates.md).

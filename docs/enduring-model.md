@@ -70,7 +70,7 @@ current boundary, the evidence behind it, and one executable next action.
 
 All production work keeps accepted intent, readiness to implement, credible tests, honest
 feedback, human approval points, and safety limits. Review becomes deeper only when the
-actual risks demand stronger evidence. High assurance adds proof for material risk; it does
+actual risks demand stronger evidence. High-assurance adds proof for material risk; it does
 not require the whole project to be designed up front.
 
 ## 6. Keep Supporting Rules In Their Place

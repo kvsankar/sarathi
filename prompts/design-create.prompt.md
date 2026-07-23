@@ -13,7 +13,7 @@ model at the level of detail the work needs.
 Read `.sdlc/wip.md`, process decisions, the accepted spec, existing design/code evidence,
 and relevant ADRs. Block when requirements are materially ambiguous or unfit.
 
-Load `docs/artifact-contracts.md`, `docs/design-principles.md`, and
+Load `docs/artifact-contracts.md`, `docs/assurance-profiles.md`, `docs/design-principles.md`, and
 `docs/human-first-artifacts.md` for the Design contract, architectural judgment, narrative,
 and traceability layers.
 
@@ -22,15 +22,15 @@ and traceability layers.
 Load only when the trigger applies:
 
 - `docs/simplicity-first.md`: a new abstraction, reuse decision, or refactor is in scope;
-- `docs/assurance-profiles.md`: selecting or changing review depth or additional checks;
 - `docs/cross-cutting-concerns.md`: an identified risk needs an owner and checks;
 - `docs/test-ownership.md`: parent or cross-child test intent is involved;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before handoff.
 
-Use the recorded review level unless new scope or risk evidence requires stronger review.
-Keep exact process fields in metadata. In the design, explain important risks and their
-checks in ordinary language. High-assurance requires stronger proof at important
-boundaries, not distant design work.
+Use the recorded assurance profile, approval policy, and work outcome unless new evidence
+requires a change. Keep exact process fields in metadata. For decision/evidence work, design
+only the method, boundaries, and credible proof needed for its decision; do not imply a
+shippable product increment. High-assurance requires stronger proof at important boundaries,
+not distant design work.
 
 Ask one focused question per turn only for a decision that materially changes architecture,
 contracts, risk, or readiness. In YOLO mode, record assumptions and trade-offs; do not
@@ -69,7 +69,7 @@ guidance in `docs/artifact-contracts.md`.
   dependency or its official test interface. If only a mock is available, state what
   remains untested.
 - Define developer verification and only the additional environments/module tactics
-  justified by the chosen review depth and context.
+  justified by the chosen delivery assurance profile and context.
 - Keep logging, errors, deployment, docs, security/privacy, UI/accessibility, migration,
   resilience, performance/cost, and operations proportional to the risks actually present.
 - Do not add reusable machinery without a current need. Prefer the direct solution.
@@ -104,7 +104,7 @@ run `/design-assess`, with one fresh sub-agent for checks and another for indepe
 when available. Revise the design or requirements until Pass or explicitly accepted
 Pass-with-fixes.
 
-Run simplify, update `.sdlc/wip.md`, and stop for human review. Report changed paths, the
-approach, important decisions and risks, checks run, open questions, and recommended
-`/plan-create`. Do not start planning in the same turn without an explicit end-to-end
-instruction.
+Run simplify, update `.sdlc/wip.md`, and stop according to the recorded approval policy.
+Human checkpoints require explicit approval; automatic approval needs an eligible local policy
+and an explicit end-to-end instruction before planning. Report changed paths, evidence, open
+questions, and recommended `/plan-create`.

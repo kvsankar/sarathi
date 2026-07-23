@@ -86,7 +86,10 @@ LEAN_CHANGE_RECORD = re.compile(r"^\s*Lean Change Record\s*:\s*Yes\s*$", re.I | 
 INHERITED_INTENT_RECORD = re.compile(
     r"^\s*Inherited Intent Record\s*:\s*Yes\s*$", re.I | re.M
 )
-DELIVERY_PROFILE = re.compile(r"^\s*Delivery Profile\s*:\s*(.+?)\s*$", re.I | re.M)
+DELIVERY_PROFILE = re.compile(
+    r"^\s*(?:Delivery Assurance Profile|Delivery Profile)\s*:\s*(.+?)\s*$",
+    re.I | re.M,
+)
 IMPLEMENTATION_READINESS = re.compile(
     r"^\s*Implementation Readiness\s*:\s*(.+?)\s*$", re.I | re.M
 )

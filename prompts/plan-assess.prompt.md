@@ -7,7 +7,7 @@ agent: agent
 
 Assess the target plan using two separate passes. Load `prompts/plan-verify.prompt.md`,
 `prompts/plan-review.prompt.md`, `docs/review-verification-checklist.md`,
-`docs/feedback-and-learning.md`, and the selected review depth and additional checks from
+`docs/feedback-and-learning.md`, and the selected delivery assurance profile and additional checks from
 `docs/assurance-profiles.md`. Apply `docs/simplicity-first.md`.
 
 ## Run
@@ -21,7 +21,7 @@ requirements or scope changed.
    commands, metrics, IDs, failures, and approval evidence only.
 2. **Review pass**: in a different fresh sub-agent when available, run `/plan-review` using
    the plan plus check results. Judge slicing, pass/fail checks, dependencies, feedback,
-   parallel work, review depth, and readiness.
+   parallel work, delivery assurance, and readiness.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
 passes separate. Failed or unfit earlier documents block the plan verdict. A compact plan
@@ -34,5 +34,6 @@ Report:
 3. Top fixes ranked by impact.
 4. Verdict: `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`.
 
-Update `.sdlc/wip.md` and stop for human review. Do not start implementation in the same
-turn without an explicit latest-message end-to-end instruction.
+Update `.sdlc/wip.md` and stop according to the recorded approval policy. Human checkpoints
+require explicit approval; automatic approval needs an eligible local policy and an explicit
+end-to-end instruction before implementation.

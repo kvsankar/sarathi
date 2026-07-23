@@ -33,6 +33,9 @@ verification.
 Confirm that changed files match the plan, the committed local gate and hook are suitable
 for the repository and passed, process IDs did not enter source, and the implementation is
 no more complicated than the requested behavior.
+For a Decision/evidence outcome, also confirm the code stays within the experimental boundary,
+the resulting evidence supports the named decision, and no product-ready or deployment claim
+is made.
 Treat unexplained skips and expected failures as evidence gaps. An environment-specific
 skip is acceptable when another explicit command or CI job runs that boundary successfully;
 the marker inventory alone neither rejects the code nor proves the evidence sufficient.
@@ -44,5 +47,7 @@ design, or plan; do not confine it to local refactoring.
 
 Report findings, blockers in earlier documents, evidence limits, what can be deleted,
 deferred, or reused, top fixes, feedback and earlier-document changes, and
-`Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and stop;
-do not start another PR, release, or deployment without explicit approval.
+`Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and stop
+according to the recorded approval policy. Human checkpoints require explicit approval;
+automatic approval needs an eligible local policy and explicit unattended continuation.
+Release and deployment always require explicit approval.

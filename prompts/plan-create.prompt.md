@@ -10,9 +10,9 @@ impact, dependencies, sequence, integration, safety, and proof.
 
 ## Load And Gate
 
-Read `.sdlc/wip.md`, accepted parent specs/designs/ADRs/prototypes, the existing plan, and
+Read `.sdlc/wip.md`, process decisions, accepted parent specs/designs/ADRs/prototypes, the existing plan, and
 repository delivery conventions. Load `docs/artifact-contracts.md` and
-`docs/simplicity-first.md`, `docs/human-first-artifacts.md`, `docs/test-ownership.md`, and
+`docs/assurance-profiles.md`, `docs/simplicity-first.md`, `docs/human-first-artifacts.md`, `docs/test-ownership.md`, and
 `docs/work-decomposition.md`.
 
 ## Triggered References
@@ -20,7 +20,7 @@ repository delivery conventions. Load `docs/artifact-contracts.md` and
 Load only when the trigger applies:
 
 - `docs/feedback-and-learning.md`: UI review, feedback dependencies, or parallel work;
-- `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an identified risk needs an additional check;
+- `docs/cross-cutting-concerns.md`: an identified risk needs an extra check;
 - `docs/project-quality-gates.md`: the repository lacks a local gate or hook, or the
   delivery changes its language or tooling;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: before handoff.
@@ -36,7 +36,7 @@ Ask one question:
 > coherent unit?
 
 - If yes, choose `Plan Type: Implementation` and map the outcome into PRs. A component or
-  feature may proceed directly at any review level.
+  feature may proceed directly at any delivery assurance profile.
 - If no, split along natural product or technical boundaries and choose `Plan Type:
   Breakdown` for the resulting independently useful child outcomes.
 
@@ -45,6 +45,12 @@ alone is not the test. An unanswered requirement or design question should be re
 where it belongs; it does not automatically require a Breakdown plan. Link accepted parent
 documents instead of reproducing them. A Breakdown plan organizes child outcomes; it does
 not authorize code.
+
+For a `Decision/evidence` work outcome, make the plan's done signal the named decision, not a
+shippable increment. State the question, decision owner, evidence method, boundaries,
+timebox or stop condition, and next action. Recommend `/code-create` only when a planned
+prototype or experiment needs code; otherwise recommend the evidence-gathering or decision
+step.
 
 ## Structure The Delivery
 
@@ -107,6 +113,7 @@ available. After local fixes, use focused re-verification/re-review; restart the
 only if requirements or scope changed.
 
 Record checker results, approvals, and workflow status together. Update `.sdlc/wip.md`, run
-simplify, and stop for human review unless the latest request
-explicitly authorizes end-to-end execution. Recommend `/code-create` for a passing
-Implementation plan.
+simplify, and stop according to the recorded approval policy. Human checkpoints require
+explicit approval; automatic approval needs an eligible local policy and an explicit
+end-to-end instruction. Recommend `/code-create` only for a product increment or a planned
+code experiment; otherwise recommend the evidence-gathering or decision step.

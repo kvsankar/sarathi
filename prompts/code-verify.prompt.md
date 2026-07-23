@@ -9,7 +9,7 @@ Collect repeatable check results for implemented code. Do not edit code or judge
 quality. Use `/code-review` for judgment and `/code-assess` to run both.
 
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
-selected review depth and additional checks. A compact or legacy plan may use approved
+selected delivery assurance and additional checks. A compact or legacy plan may use approved
 parent documents instead of unnecessary child spec/design files. Load
 `docs/project-quality-gates.md`. Use a fresh checker
 sub-agent when available;
