@@ -8,6 +8,14 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.6.1 - 2026-07-23
+
+### Fixed
+
+- Rebuild the installer-owned `sarathi` documentation, prompt, and checker subdirectories on
+  upgrade. Remove the retired Sarathi-owned `srs-authoring` skill only when its exact historical
+  file tree and hashes match; preserve unrelated user files.
+
 ## 0.6.0 - 2026-07-23
 
 ### Changed
