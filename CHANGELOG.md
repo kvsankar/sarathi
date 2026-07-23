@@ -8,6 +8,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.6.0 - 2026-07-23
+
 ### Changed
 
 - Default newly created Sarathi specs, designs, plans, and saved review/assessment reports to
