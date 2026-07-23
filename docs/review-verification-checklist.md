@@ -67,3 +67,5 @@ Every non-blocked assessment reports:
 Use `Blocked-upstream` when a controlling parent document must be corrected before later
 judgment. Code assessment also reports feedback and parent-document changes, and writes
 assessment and parallel-work ledgers only under the evidence rules in `docs/workflow-status.md`.
+Save the report in the matching document area's `reviews/` folder using
+`docs/document-locations.md`; do not leave review conclusions only in chat.

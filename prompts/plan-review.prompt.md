@@ -6,7 +6,7 @@ agent: agent
 # Plan Review
 
 Review the target plan without editing it unless asked. Read earlier required documents,
-`.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
+`.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`, `docs/document-locations.md`,
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
 `docs/feedback-and-learning.md`, plus `docs/human-first-artifacts.md` and its first-page
 comprehension questions, plus `docs/work-decomposition.md`. Load
@@ -62,7 +62,8 @@ automatic checks pass.
 
 Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
 top fixes,
-and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
-stop according to the recorded approval policy. Human checkpoints require explicit approval;
-automatic approval needs an eligible local policy and explicit end-to-end continuation before
-implementation.
+and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Write/update
+the scope-appropriate report from `docs/document-locations.md`: `plan-review.md` only for
+Product/system, otherwise `<work-slug>.plan-review.md`. Update WIP and stop according to the
+recorded approval policy. Human checkpoints require explicit approval; automatic approval
+needs an eligible local policy and explicit end-to-end continuation before implementation.

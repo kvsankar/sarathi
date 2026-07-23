@@ -49,3 +49,28 @@ def test_repository_maintenance_does_not_self_host_sarathi() -> None:
     ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
 
     assert ".sdlc/" in ignored
+
+
+def test_stage_prompts_use_document_areas_and_persist_reviews() -> None:
+    locations = ROOT / "docs" / "document-locations.md"
+    location_text = locations.read_text(encoding="utf-8")
+    assert "Product/system scope" in location_text
+    for stage in ("spec", "design", "plan"):
+        assert "docs/document-locations.md" in (
+            PROMPTS / f"{stage}-create.prompt.md"
+        ).read_text(encoding="utf-8")
+        assert f"<work-slug>.{stage}.md" in (
+            PROMPTS / f"{stage}-create.prompt.md"
+        ).read_text(encoding="utf-8")
+        assert f"<work-slug>.{stage}-review.md" in (
+            PROMPTS / f"{stage}-review.prompt.md"
+        ).read_text(encoding="utf-8")
+        assert f"<work-slug>.{stage}-assessment.md" in (
+            PROMPTS / f"{stage}-assess.prompt.md"
+        ).read_text(encoding="utf-8")
+    assert "<work-slug>.code-review.md" in (
+        PROMPTS / "code-review.prompt.md"
+    ).read_text(encoding="utf-8")
+    assert "<work-slug>.code-assessment.md" in (
+        PROMPTS / "code-assess.prompt.md"
+    ).read_text(encoding="utf-8")

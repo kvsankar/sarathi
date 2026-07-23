@@ -10,6 +10,11 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Default newly created Sarathi specs, designs, plans, and saved review/assessment reports to
+  the context-appropriate `docs/` area instead of repository-root files. Require persistent
+  Markdown review records in the matching `reviews/` folder. Product/system work uses
+  `spec.md`, `design.md`, and `plan.md`; smaller work uses one descriptive shared work slug
+  in every filename, including review records.
 - Replace the ambiguous review-level framing with three independent delivery decisions:
   assurance profile (Lean, Standard, or High-assurance), approval policy, and work outcome.
   Remove Exploratory as a separate delivery track; decision/evidence work now uses the same

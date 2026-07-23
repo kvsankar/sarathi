@@ -32,8 +32,9 @@ results only and does not judge overall quality. If sub-agents are unavailable, 
 the host lacks sub-agent capability and run the same
 checks directly.
 
-Target the plan file the user provides, defaulting to `plan.md`. Do not edit it unless
-explicitly asked.
+Target the plan file the user provides; otherwise resolve the location with
+`docs/document-locations.md`: normally `docs/plan.md` for Product/system, otherwise the
+work slug's `.plan.md` file. Do not edit it unless explicitly asked.
 
 ## Checks
 

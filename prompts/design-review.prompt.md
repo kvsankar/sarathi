@@ -6,7 +6,7 @@ agent: agent
 # Design Review
 
 Review the target design without editing it unless asked. Read the accepted requirements,
-`.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
+`.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`, `docs/document-locations.md`,
 `docs/design-principles.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
 `docs/human-first-artifacts.md`. Answer its first-page comprehension questions. Stop
 as `Blocked-upstream` when the spec is unfit.
@@ -50,7 +50,8 @@ engineer must decode IDs to understand the architecture, rewrite it in plain lan
 
 Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
 top fixes,
-and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
-stop according to the recorded approval policy. Human checkpoints require explicit approval;
-automatic approval needs an eligible local policy and explicit end-to-end continuation before
-planning.
+and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Write/update
+the scope-appropriate report from `docs/document-locations.md`: `design-review.md` only for
+Product/system, otherwise `<work-slug>.design-review.md`. Update WIP and stop according to
+the recorded approval policy. Human checkpoints require explicit approval; automatic approval
+needs an eligible local policy and explicit end-to-end continuation before planning.

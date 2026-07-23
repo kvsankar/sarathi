@@ -618,6 +618,7 @@ for GitHub Copilot project-scoped prompts.
 - Static process guide and example tree: [docs/sarathi.html](docs/sarathi.html)
 - Cross-scope test and integration ownership: [docs/test-ownership.md](docs/test-ownership.md)
 - Review checklist: [docs/review-verification-checklist.md](docs/review-verification-checklist.md)
+- Document locations and persistent review records: [docs/document-locations.md](docs/document-locations.md)
 - Slug ID migration: [docs/slug-id-migration.md](docs/slug-id-migration.md)
 - Approval gates: [docs/approval-gates.md](docs/approval-gates.md)
 - Agent-facing repository guidance: [AGENTS.md](AGENTS.md)

@@ -6,7 +6,7 @@ agent: agent
 # Spec Review
 
 Review the target spec without editing it unless asked. Read `.sdlc/wip.md`, available
-verification evidence, `docs/artifact-contracts.md`, `docs/assurance-profiles.md`, and
+verification evidence, `docs/artifact-contracts.md`, `docs/document-locations.md`, `docs/assurance-profiles.md`, and
 `docs/simplicity-first.md`. Load `docs/requirements-model.md` and
 `docs/human-first-artifacts.md`, then answer the first-page comprehension questions. Load
 `docs/srs-authoring.md` for reconstructed, terse, or over-bundled requirements or when use
@@ -45,6 +45,8 @@ plain technical language even when automatic checks pass.
 
 Report evidence considered, concrete findings, what can be deleted, deferred, or proved by
 existing evidence, top fixes, and
-`Pass | Pass-with-fixes | Needs rework`. Update `.sdlc/wip.md` and stop according to the
+`Pass | Pass-with-fixes | Needs rework`. Write/update
+the scope-appropriate report from `docs/document-locations.md`: `spec-review.md` only for
+Product/system, otherwise `<work-slug>.spec-review.md`. Update WIP and stop according to the
 recorded approval policy. Human checkpoints require explicit approval; automatic approval
 needs an eligible local policy and explicit end-to-end continuation before design.

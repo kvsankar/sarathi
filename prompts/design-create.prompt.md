@@ -13,7 +13,7 @@ model at the level of detail the work needs.
 Read `.sdlc/wip.md`, process decisions, the accepted spec, existing design/code evidence,
 and relevant ADRs. Block when requirements are materially ambiguous or unfit.
 
-Load `docs/artifact-contracts.md`, `docs/assurance-profiles.md`, `docs/design-principles.md`, and
+Load `docs/artifact-contracts.md`, `docs/document-locations.md`, `docs/assurance-profiles.md`, `docs/design-principles.md`, and
 `docs/human-first-artifacts.md` for the Design contract, architectural judgment, narrative,
 and traceability layers.
 
@@ -77,12 +77,13 @@ guidance in `docs/artifact-contracts.md`.
   schema/OpenAPI, CI, build, and deployment tests; add only focused proof for the changed
   boundary.
 
-Write `design.md` and, for Product/system scope, its reviewable `design.html` unless other
-paths are named. For Feature/component or Slice/change scope, create `design.html` only
-when visual review materially helps the decision. Child designs include
-the exact machine field `Parent Work Item: WORK-AREA-NAME`. Do not repeat parent
-architecture or create a separate design when approved parent documents and one short plan
-are sufficient.
+Use the scope-appropriate name from `docs/document-locations.md`: `design.md` only for
+Product/system, otherwise `<work-slug>.design.md`; for Product/system also write its
+reviewable `design.html` unless other paths are named. For Feature/component or Slice/change,
+create `design.html` only when visual review materially helps the decision. Child designs
+include the exact machine field `Parent Work Item: WORK-AREA-NAME`. Do not repeat parent
+architecture or create a separate design when approved parent documents and one short plan are
+sufficient.
 
 If `UI Mock Preference: Required` and no approved prototype exists, create or update `mock-ui.html` with required screens,
 states, flows, responsiveness, and accessibility intent. Record approval status; production
@@ -95,8 +96,8 @@ reuse its existing `ux.mock.approved` record instead of creating another mock.
 Run:
 
 ```pwsh
-python checkers/check_spec.py spec.md --json
-python checkers/check_design.py design.md --spec spec.md --json
+python checkers/check_spec.py <spec-path> --json
+python checkers/check_design.py <design-path> --spec <spec-path> --json
 ```
 
 Retry launchers when needed. For child documents, use checker feature/parent options. Then

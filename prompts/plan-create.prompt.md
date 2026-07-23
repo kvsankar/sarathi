@@ -11,7 +11,7 @@ impact, dependencies, sequence, integration, safety, and proof.
 ## Load And Gate
 
 Read `.sdlc/wip.md`, process decisions, accepted parent specs/designs/ADRs/prototypes, the existing plan, and
-repository delivery conventions. Load `docs/artifact-contracts.md` and
+repository delivery conventions. Load `docs/artifact-contracts.md`, `docs/document-locations.md`, and
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`, `docs/human-first-artifacts.md`, `docs/test-ownership.md`, and
 `docs/work-decomposition.md`.
 
@@ -103,7 +103,8 @@ Each item names its observable result, affected areas, owner, dependencies, read
 integration or feedback point, and done signal. Require only the minimum document for each,
 and use a work group only for a real shared checkpoint.
 
-Write `plan.md` unless another path is named. Do not create `plan.html`.
+Use the scope-appropriate name from `docs/document-locations.md`: `plan.md` only for
+Product/system, otherwise `<work-slug>.plan.md`, unless another path is named; do not create `plan.html`.
 
 ## Verify And Handoff
 
