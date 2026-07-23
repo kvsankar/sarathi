@@ -26,6 +26,8 @@ and migration. Then check that the design selects the important boundaries for i
 using the examples in `docs/artifact-contracts.md`. Backend designs must make applicable API
 and database-schema boundaries reviewable. Tests must be able to prove the design, and the
 solution must be no more complicated than current needs require.
+For a Decision/evidence outcome, judge whether the method can credibly answer the stated
+question and preserve its decision boundary; do not require a shippable implementation.
 
 Apply the enduring principles in `docs/design-principles.md`. Treat named approaches as
 conditional: require a concrete adoption signal, justified extent, simpler alternative,
@@ -49,4 +51,6 @@ engineer must decode IDs to understand the architecture, rewrite it in plain lan
 Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
 top fixes,
 and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
-stop; do not start planning without explicit approval.
+stop according to the recorded approval policy. Human checkpoints require explicit approval;
+automatic approval needs an eligible local policy and explicit end-to-end continuation before
+planning.

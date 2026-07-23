@@ -15,6 +15,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $PromptSource = Join-Path $RepoRoot "prompts"
 $CheckerSource = Join-Path $RepoRoot "checkers"
+$DocSource = Join-Path $RepoRoot "docs"
 $SkillSource = Join-Path $RepoRoot "skills/sarathi"
 $TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).Path
 
@@ -68,6 +69,9 @@ function Set-AtomicUtf8File {
 
 if (-not (Test-Path -LiteralPath $PromptSource)) {
     throw "Prompt source folder not found: $PromptSource"
+}
+if (-not (Test-Path -LiteralPath $DocSource)) {
+    throw "Documentation source folder not found: $DocSource"
 }
 if (-not $NoCheckers -and -not (Test-Path -LiteralPath $CheckerSource)) {
     throw "Checker source folder not found: $CheckerSource"
@@ -280,6 +284,14 @@ function Copy-SkillFolder {
         Where-Object { $_.Name -ne "SKILL.md" } |
         Copy-Item -Destination $Destination -Recurse -Force
     Copy-AtomicFile (Join-Path $SkillSource "SKILL.md") (Join-Path $Destination "SKILL.md")
+
+    $docDest = Join-Path $Destination "docs"
+    if (Test-Path -LiteralPath $docDest) {
+        Remove-Item -LiteralPath $docDest -Recurse -Force
+    }
+    New-Item -ItemType Directory -Force -Path $docDest | Out-Null
+    Get-ChildItem -Force -LiteralPath $DocSource |
+        Copy-Item -Destination $docDest -Recurse -Force
 
     $promptDest = Join-Path $Destination "prompts"
     if (Test-Path -LiteralPath $promptDest) {

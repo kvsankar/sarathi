@@ -22,6 +22,7 @@ else
 fi
 PROMPT_SOURCE="$REPO_ROOT/prompts"
 CHECKER_SOURCE="$REPO_ROOT/checkers"
+DOC_SOURCE="$REPO_ROOT/docs"
 SKILL_SOURCE="$REPO_ROOT/skills/sarathi"
 
 TARGET_ROOT="$(pwd)"
@@ -129,6 +130,10 @@ fi
 
 if [[ ! -d "$PROMPT_SOURCE" ]]; then
   echo "Prompt source folder not found: $PROMPT_SOURCE" >&2
+  exit 1
+fi
+if [[ ! -d "$DOC_SOURCE" ]]; then
+  echo "Documentation source folder not found: $DOC_SOURCE" >&2
   exit 1
 fi
 if [[ "$NO_CHECKERS" -eq 0 && ! -d "$CHECKER_SOURCE" ]]; then
@@ -352,6 +357,10 @@ copy_skill_folder() {
     fi
   done < <(find "$SKILL_SOURCE" -mindepth 1 -maxdepth 1 -print0)
   atomic_copy_file "$SKILL_SOURCE/SKILL.md" "$dest/SKILL.md"
+
+  rm -rf "$dest/docs"
+  mkdir -p "$dest/docs"
+  cp -R "$DOC_SOURCE"/. "$dest/docs/"
 
   rm -rf "$dest/prompts"
   mkdir -p "$dest/prompts"

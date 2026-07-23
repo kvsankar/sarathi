@@ -1,4 +1,0 @@
-interface:
-  display_name: "SRS Authoring"
-  short_description: "Detailed SRS drafting and review guardrails"
-  default_prompt: "Use $srs-authoring to draft or review a detailed Software Requirements Specification."

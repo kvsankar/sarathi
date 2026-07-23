@@ -37,7 +37,7 @@ or human intent beyond a valid local approval record.
 Every reviewer judges:
 
 - approved requirements, scope/readiness, and whether earlier documents are sufficient;
-- selected review depth and only the extra risk checks triggered by context;
+- selected delivery assurance profile and only the extra risk checks triggered by context;
 - clear pass/fail checks, real-boundary confidence, risks, and remaining uncertainty;
 - feedback/learning dependencies and changes to parent documents where applicable;
 - simplicity using `docs/simplicity-first.md`.

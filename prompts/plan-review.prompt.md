@@ -35,6 +35,8 @@ integrate. For an Implementation plan, check that PR nodes have coherent outcome
 allocation, verification, and applicable rollback. When there is more than one PR, require
 meaningful graph edges, merge order, safe parallel paths, critical path, conflicts, and
 integration points. A one-PR plan is a one-node graph and omits empty topology fields.
+For a Decision/evidence outcome, judge the evidence method, decision owner, boundaries,
+timebox or stop condition, and next action rather than demanding a shippable result.
 
 For every behavior-changing PR, require a credible Red-Green-Refactor sequence: the first
 meaningful behavioral test and expected failure, the minimum implementation that should
@@ -61,4 +63,6 @@ automatic checks pass.
 Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
 top fixes,
 and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and
-stop; do not implement without explicit approval.
+stop according to the recorded approval policy. Human checkpoints require explicit approval;
+automatic approval needs an eligible local policy and explicit end-to-end continuation before
+implementation.

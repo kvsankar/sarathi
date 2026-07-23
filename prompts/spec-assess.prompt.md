@@ -7,7 +7,7 @@ agent: agent
 
 Assess the target spec using two separate passes. Load `prompts/spec-verify.prompt.md`,
 `prompts/spec-review.prompt.md`, `docs/review-verification-checklist.md`, and the selected
-review level and additional checks from `docs/assurance-profiles.md`. Apply
+delivery assurance profile and additional checks from `docs/assurance-profiles.md`. Apply
 `docs/simplicity-first.md`.
 
 ## Run
@@ -18,7 +18,7 @@ and focus review on those findings unless requirements or scope changed.
 1. **Check pass**: in a fresh sub-agent when available, run `/spec-verify` and return the
    command, IDs, metrics, failures, and approval evidence without judging overall quality.
 2. **Review pass**: in a different fresh sub-agent when available, run `/spec-review` using
-   the spec and check results. Judge depth against the selected review level and additional
+   the spec and check results. Judge depth against the selected assurance profile and additional
    checks, not a universal concern list.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and execute the
@@ -32,5 +32,6 @@ Stop as `Blocked-upstream` when the spec cannot be judged responsibly. Otherwise
 3. Top fixes ranked by impact.
 4. Verdict: `Pass | Pass-with-fixes | Needs rework`.
 
-Update `.sdlc/wip.md` and stop for human review. Do not start design in the same turn unless
-the latest request explicitly asks for end-to-end continuation.
+Update `.sdlc/wip.md` and stop according to the recorded approval policy. Human checkpoints
+require explicit approval; automatic approval needs an eligible local policy and an explicit
+end-to-end instruction before design.

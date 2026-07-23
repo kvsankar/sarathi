@@ -21,7 +21,9 @@ Every controlling document states these exact machine-readable fields:
 
 - `Work Scope: product/system | feature/component | slice/change`
 - `Ready To Implement: Yes | No`
-- `Review Level: Lean | Standard | High-assurance | Exploratory`
+- `Delivery Assurance Profile: Lean | Standard | High-assurance`
+- `Approval Policy: Human checkpoints | Automatic eligible gates`
+- `Work Outcome: Product increment | Decision/evidence`
 - `Extra Checks: comma-separated checks or none`
 
 A child document also states `Parent Work Item: WORK-AREA-NAME`. Preserve stable IDs during
@@ -54,8 +56,9 @@ Version 3 product specs use **Product Overview**. Existing documents may use the
 8. **Acceptance Tests**: black-box `AT-AREA-NAME` criteria mapped to requirements.
 9. **Journey Tests**: ordered `JT-AREA-NAME` compositions of acceptance scenarios, or an
     explicit reason none are needed.
-10. **Assumptions & Open Questions**: unresolved facts, deferrals, reason for review depth,
-    extra risk checks, conditions for stronger review, and UI mock preference.
+10. **Assumptions & Open Questions**: unresolved facts, deferrals, reason for the assurance
+    profile, approval policy, work outcome, extra checks, conditions for stronger assurance,
+    and UI mock preference.
 11. **Traceability**: final links from needs through tests, including priority/risk where useful.
 
 Feature and slice specs may omit irrelevant empty sections but retain common metadata,
@@ -95,7 +98,7 @@ left implicit.
 Product designs begin with **Technical Approach**. Existing documents may use the legacy
 **Technical Crux** heading. Then use this checker-visible order:
 
-1. **Overview**: context, scope, readiness, review level, and extra checks.
+1. **Overview**: context, scope, readiness, delivery assurance, approval policy, work outcome, and extra checks.
 2. **Tech Stack**: accepted choices and versions/constraints where material.
 3. **Drivers & Constraints**: requirements, quality attributes, boundaries, risks.
 4. **Structure / Layers when applicable**: explain decomposition and dependency direction;
@@ -137,7 +140,13 @@ An existing approved prototype may instead be referenced as
 
 Planning turns an approved technical model into an executable delivery structure. Every
 plan makes the outcomes, impacted areas, dependencies, sequence, integration points,
-verification, safety, and feedback visible. It uses one of two shapes:
+verification, safety, and feedback visible. It uses one of two shapes.
+
+Plan shape and work outcome are independent. A product increment uses the delivery structure
+below to reach working behavior. A decision/evidence plan records its question, decision
+owner, method, boundaries, stop condition or timebox, evidence, and decision/next action; it
+does not claim product readiness. It uses code/PR structure only when an experiment or
+prototype actually needs it.
 
 Choose the shape by asking whether a competent engineer can understand, explain, review,
 and safely plan the work as one coherent unit.

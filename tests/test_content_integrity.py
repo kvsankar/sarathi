@@ -27,12 +27,8 @@ def test_documented_local_references_resolve() -> None:
     canonical = [ROOT / "AGENTS.md", ROOT / "README.md"]
     canonical.extend(sorted((ROOT / "docs").glob("*.md")))
     canonical.extend(sorted((ROOT / "prompts").glob("*.md")))
-    bundled = [SKILL / "SKILL.md"]
-    bundled.extend(sorted((SKILL / "docs").glob("*.md")))
-    bundled.extend(sorted((SKILL / "prompts").glob("*.md")))
-
     missing: list[str] = []
-    for source in canonical + bundled:
+    for source in canonical + [SKILL / "SKILL.md"]:
         text = source.read_text(encoding="utf-8")
         for raw_target in MARKDOWN_LINK.findall(text):
             target = raw_target.strip().strip("<>").split("#", 1)[0]

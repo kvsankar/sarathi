@@ -33,7 +33,7 @@ Use marker comments so the block can be updated idempotently:
 This project uses the Sarathi process. For SDLC work, first load the
 `sarathi` skill or the installed stage prompt, then read `.sdlc/wip.md` and
 `.sdlc/process-decisions.yaml` if present. Resume from the WIP file's next recommended
-action, check claims against the named documents, and preserve the human review gates.
+action, check claims against the named documents, and preserve the recorded approval gates.
 
 Do not skip required spec/design/plan/code gates for new implementation deltas. A
 retrospective baseline review may skip plan creation only when `.sdlc/process-decisions.yaml`

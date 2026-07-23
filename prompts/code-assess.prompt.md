@@ -8,7 +8,7 @@ agent: agent
 Assess the implemented change using a separate check pass and review pass. Load
 `prompts/code-verify.prompt.md`, `prompts/code-review.prompt.md`,
 `docs/review-verification-checklist.md`, `docs/feedback-and-learning.md`,
-`docs/workflow-status.md`, and the selected review depth and additional checks from
+`docs/workflow-status.md`, and the selected delivery assurance profile and additional checks from
 `docs/assurance-profiles.md`. Apply `docs/simplicity-first.md`.
 
 ## Run
@@ -51,6 +51,7 @@ plan SHA-256. Do not close when required feedback, work to combine parallel chan
 `revision-required` work remains. The checkpoint closes one group only; it does not assess the
 enclosing plan, approve the next group, or prove merge/release.
 
-Update `.sdlc/wip.md` and stop. Do not start the next PR, release, or deployment in the same
-turn without an explicit latest-message unattended instruction; `revision-required` and
-`feedback-required` still block affected work.
+Update `.sdlc/wip.md` and stop according to the recorded approval policy. Human checkpoints
+require explicit approval; automatic approval needs an eligible local policy and explicit
+unattended continuation. `revision-required`, `feedback-required`, release, and deployment
+boundaries still block affected work.

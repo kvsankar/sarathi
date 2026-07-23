@@ -25,6 +25,29 @@ when the repo is not already operating under an SDLC decision record:
 Existing specs, designs, plans, ADRs, tickets, roadmaps, tests, docs, CI, and deployment
 files are not a fourth mode. They are discovered inputs that can appear in any mode.
 
+## Choose Delivery Decisions
+
+At project entry, present the delivery assurance profiles and approval policies with a
+recommendation grounded in the current scope and risks. When requirements begin for a feature,
+present the current project defaults and ask the user to confirm or override them. Do not infer
+automatic approval from YOLO, end-to-end, or unattended wording.
+
+Record three independent choices:
+
+- **Delivery assurance profile**: Lean, Standard, or High-assurance. It determines the
+  strength of evidence and review; use [assurance-profiles.md](assurance-profiles.md).
+- **Approval policy**: Human checkpoints or automatic approval for eligible gates. It
+  determines whether the agent must wait at a material gate; use
+  [approval-gates.md](approval-gates.md).
+- **Work outcome**: Product increment or decision/evidence. Product work is done when the
+  accepted behavior works. Decision work is done when credible evidence answers a stated
+  question sufficiently for a named decision.
+
+Decision/evidence work uses the same profile and approval policy as product work. Record its
+question, decision owner, evidence method, allowed boundaries, stop condition or timebox, and
+the decision/next action. It must not claim product readiness merely because it produced code
+or a prototype. If its result should ship, begin or revise product-increment requirements.
+
 ## Find Existing Material
 
 For every mode, scan for useful existing material before choosing the next stage:
@@ -119,21 +142,24 @@ project_entry:
     - "Legacy requirements may remain incomplete until touched by a future delta."
   next_recommended_stage: "/spec-create"
 delivery:
-  profile: "lean | standard | high-assurance"
-  assurance_modules:
+  assurance_profile: "lean | standard | high-assurance"
+  work_outcome: "product_increment | decision_evidence"
+  extra_checks:
     - "external-integration"
   rationale: "Ordinary production change with a vendor boundary."
   escalation_triggers:
     - "The change touches authentication or irreversible data migration."
+approval:
+  policy: "human_checkpoints | automatic_eligible_gates"
+  rationale: "Feature changes pause for product review."
 ```
 
 If the agent infers a low-risk mode in YOLO mode, record `decided_by: "agent-inferred"` and
 list the assumption and risk. If the user later corrects the mode, update the record rather
 than silently relying on the stale decision.
 
-Choose review depth separately using [assurance-profiles.md](assurance-profiles.md). The
-starting mode says how Sarathi enters the repository; the profile says how much evidence
-the current production work needs.
+The starting mode says how Sarathi enters the repository. The assurance profile, approval
+policy, and work outcome describe how the current work proceeds.
 
 ## Stage Rules
 

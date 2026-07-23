@@ -16,6 +16,7 @@ from typing import Any
 
 UTC_TS = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 APPROVED_STATUSES = {"approved", "auto-approved"}
+AUTOMATIC_APPROVAL_POLICY = "automatic_eligible_gates"
 
 
 def _strip_comment(line: str) -> str:
@@ -182,9 +183,25 @@ def _norm_project_path(project_root: Path, path: str | Path) -> str:
 def _policy_allows(
     record: dict[str, Any],
     policy: dict[str, Any],
+    recorded_approval_policy: str | None = None,
     now: datetime | None = None,
 ) -> list[str]:
     issues: list[str] = []
+    normalized_recorded_policy = (
+        recorded_approval_policy.strip().casefold().replace("-", "_").replace(" ", "_")
+        if recorded_approval_policy is not None
+        else None
+    )
+    if normalized_recorded_policy is None:
+        return [
+            "auto approval requires recorded approval policy: "
+            f"{AUTOMATIC_APPROVAL_POLICY}"
+        ]
+    if normalized_recorded_policy != AUTOMATIC_APPROVAL_POLICY:
+        return [
+            "auto approval conflicts with recorded approval policy: "
+            f"{recorded_approval_policy}"
+        ]
     auto = policy.get("auto_approval") if isinstance(policy, dict) else None
     if not isinstance(auto, dict) or auto.get("enabled") is not True:
         return ["auto approval used but not enabled in gates policy"]
@@ -215,6 +232,7 @@ def validate_approval_record(
     record: Any,
     project_root: Path,
     gates_policy: dict[str, Any] | None = None,
+    recorded_approval_policy: str | None = None,
 ) -> list[str]:
     issues: list[str] = []
     if not isinstance(record, dict):
@@ -254,7 +272,9 @@ def validate_approval_record(
         elif artifact.get("sha256") != actual_hash:
             issues.append(f"artifact hash is stale: {artifact.get('path')}")
     if record.get("status") == "auto-approved":
-        issues.extend(_policy_allows(record, gates_policy or {}))
+        issues.extend(
+            _policy_allows(record, gates_policy or {}, recorded_approval_policy)
+        )
     return issues
 
 
@@ -272,6 +292,7 @@ def load_approval_context(
         "records": [],
         "invalid_records": [],
         "load_error": None,
+        "recorded_approval_policy": None,
     }
     gates_policy: dict[str, Any] = {}
     try:
@@ -280,6 +301,14 @@ def load_approval_context(
             gates_policy = loaded_policy if isinstance(loaded_policy, dict) else {}
         context["gates_policy_exists"] = gates_file.exists()
         context["gates_policy"] = gates_policy
+        decisions_file = project_root / ".sdlc/process-decisions.yaml"
+        if decisions_file.exists():
+            decisions = load_yaml_file(decisions_file)
+            approval = (
+                decisions.get("approval") if isinstance(decisions, dict) else None
+            )
+            if isinstance(approval, dict) and approval.get("policy"):
+                context["recorded_approval_policy"] = str(approval["policy"])
         if not approvals_file.exists():
             return context
         data = load_yaml_file(approvals_file)
@@ -290,7 +319,12 @@ def load_approval_context(
         context["records"] = records
         invalid = []
         for record in records:
-            issues = validate_approval_record(record, project_root, gates_policy)
+            issues = validate_approval_record(
+                record,
+                project_root,
+                gates_policy,
+                context["recorded_approval_policy"],
+            )
             if issues:
                 invalid.append(
                     {

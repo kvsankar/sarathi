@@ -19,7 +19,7 @@ CHECKER_DIR = Path(__file__).resolve().parent
 if str(CHECKER_DIR) not in sys.path:
     sys.path.insert(0, str(CHECKER_DIR))
 
-from approvals import load_yaml_file  # noqa: E402
+from approvals import load_approval_context, load_yaml_file  # noqa: E402
 from markdown_structure import annotation_attrs  # noqa: E402
 from schemas import PLAN_ID_CANDIDATE, is_plan_id, is_wave_id  # noqa: E402
 from waves import parse_learning_waves  # noqa: E402
@@ -83,6 +83,9 @@ METADATA_FIELDS = (
     "Work Scope",
     "Ready To Implement",
     "Implementation Readiness",
+    "Delivery Assurance Profile",
+    "Approval Policy",
+    "Work Outcome",
     "Review Level",
     "Delivery Profile",
     "Extra Checks",
@@ -358,7 +361,11 @@ def wave_checkpoint_for(
 
 
 def approval_for(
-    root: Path, path: Path, gate: str, records: list[dict[str, Any]]
+    root: Path,
+    path: Path,
+    gate: str,
+    records: list[dict[str, Any]],
+    invalid_by_id: dict[Any, list[str]],
 ) -> dict[str, Any]:
     current_hash = sha256_file(path)
     path_matches: list[dict[str, Any]] = []
@@ -376,6 +383,7 @@ def approval_for(
         if (
             record.get("status") in APPROVED_STATUSES
             and artifact.get("sha256") == current_hash
+            and record.get("id") not in invalid_by_id
         ):
             return {
                 "state": "approved",
@@ -404,6 +412,7 @@ def artifact_model(
     kind: str,
     path: Path | None,
     records: list[dict[str, Any]],
+    invalid_by_id: dict[Any, list[str]],
 ) -> dict[str, Any]:
     if path is None:
         return {
@@ -416,7 +425,7 @@ def artifact_model(
         }
     text = read_text(path)
     gate = f"{kind}.approved"
-    approval = approval_for(root, path, gate, records)
+    approval = approval_for(root, path, gate, records, invalid_by_id)
     return {
         "kind": kind,
         "state": approval["state"],
@@ -552,6 +561,9 @@ def parse_wip(root: Path) -> dict[str, Any]:
         "Work Scope",
         "Ready To Implement",
         "Implementation Readiness",
+        "Delivery Assurance Profile",
+        "Approval Policy",
+        "Work Outcome",
         "Review Level",
         "Delivery Profile",
         "Extra Checks",
@@ -987,7 +999,19 @@ def project_title(root: Path, spec: dict[str, Any]) -> str:
 
 def build_model(root: Path) -> dict[str, Any]:
     root = root.resolve()
-    records, approval_error = load_approval_records(root)
+    approval_context = load_approval_context(root)
+    records = approval_context["records"]
+    approval_error = approval_context["load_error"]
+    auto_approval_ids = {
+        record.get("id")
+        for record in records
+        if record.get("status") == "auto-approved"
+    }
+    invalid_by_id = {
+        item["id"]: item["issues"]
+        for item in approval_context["invalid_records"]
+        if item["id"] in auto_approval_ids
+    }
     assessment_records, assessment_error = load_code_assessment_records(root)
     checkpoint_records, checkpoint_error = load_wave_checkpoint_records(root)
     mapped_paths, mapped_children, artifact_path_error = artifact_path_mapping(root)
@@ -996,13 +1020,18 @@ def build_model(root: Path) -> dict[str, Any]:
         for kind in ("spec", "design", "plan")
     }
     stages = {
-        kind: artifact_model(root, kind, paths[kind], records)
+        kind: artifact_model(root, kind, paths[kind], records, invalid_by_id)
         for kind in ("spec", "design", "plan")
     }
     wip = parse_wip(root)
     delivery_profile = str(
-        wip.get("Review Level") or wip.get("Delivery Profile") or ""
+        wip.get("Delivery Assurance Profile")
+        or wip.get("Review Level")
+        or wip.get("Delivery Profile")
+        or ""
     ).strip()
+    approval_policy = str(wip.get("Approval Policy") or "").strip()
+    work_outcome = str(wip.get("Work Outcome") or "").strip()
     assurance_modules = str(
         wip.get("Extra Checks") or wip.get("Assurance Modules") or ""
     ).strip()
@@ -1010,10 +1039,15 @@ def build_model(root: Path) -> dict[str, Any]:
         stage_metadata = stages[kind].get("metadata", {})
         if not delivery_profile:
             delivery_profile = str(
-                stage_metadata.get("Review Level")
+                stage_metadata.get("Delivery Assurance Profile")
+                or stage_metadata.get("Review Level")
                 or stage_metadata.get("Delivery Profile")
                 or ""
             ).strip()
+        if not approval_policy:
+            approval_policy = str(stage_metadata.get("Approval Policy") or "").strip()
+        if not work_outcome:
+            work_outcome = str(stage_metadata.get("Work Outcome") or "").strip()
         if not assurance_modules:
             assurance_modules = str(
                 stage_metadata.get("Extra Checks")
@@ -1037,10 +1071,12 @@ def build_model(root: Path) -> dict[str, Any]:
         design_path = linked.get("design")
         child_path = linked.get("plan")
         item["child_spec"] = (
-            artifact_model(root, "spec", spec_path, records) if spec_path else None
+            artifact_model(root, "spec", spec_path, records, invalid_by_id)
+            if spec_path
+            else None
         )
         item["child_design"] = (
-            artifact_model(root, "design", design_path, records)
+            artifact_model(root, "design", design_path, records, invalid_by_id)
             if design_path
             else None
         )
@@ -1066,7 +1102,7 @@ def build_model(root: Path) -> dict[str, Any]:
         evidence_count = sum(pr["evidence_count"] for pr in prs)
         claim = wip_claim_for(wip, child_relative)
         code_slice_approval = approval_for(
-            root, child_path, "code_slice.approved", records
+            root, child_path, "code_slice.approved", records, invalid_by_id
         )
         assessment = code_assessment_for(
             root, item["id"], child_path, assessment_records
@@ -1082,7 +1118,9 @@ def build_model(root: Path) -> dict[str, Any]:
             {
                 "state": completion_state
                 or ("evidence" if evidence_count else "expanded"),
-                "child_plan": artifact_model(root, "plan", child_path, records),
+                "child_plan": artifact_model(
+                    root, "plan", child_path, records, invalid_by_id
+                ),
                 "child_level": None,
                 "prs": prs,
                 "evidence_count": evidence_count,
@@ -1112,10 +1150,12 @@ def build_model(root: Path) -> dict[str, Any]:
             design_path = linked.get("design")
             leaf_plan_path = linked.get("plan")
             child["child_spec"] = (
-                artifact_model(root, "spec", spec_path, records) if spec_path else None
+                artifact_model(root, "spec", spec_path, records, invalid_by_id)
+                if spec_path
+                else None
             )
             child["child_design"] = (
-                artifact_model(root, "design", design_path, records)
+                artifact_model(root, "design", design_path, records, invalid_by_id)
                 if design_path
                 else None
             )
@@ -1141,7 +1181,7 @@ def build_model(root: Path) -> dict[str, Any]:
             prs = plan_prs(leaf_text, traces)
             evidence_count = sum(pr["evidence_count"] for pr in prs)
             code_slice_approval = approval_for(
-                root, leaf_plan_path, "code_slice.approved", records
+                root, leaf_plan_path, "code_slice.approved", records, invalid_by_id
             )
             assessment = code_assessment_for(
                 root, child["id"], leaf_plan_path, assessment_records
@@ -1155,9 +1195,14 @@ def build_model(root: Path) -> dict[str, Any]:
                     else "evidence"
                     if evidence_count
                     else "expanded",
-                    "child_plan": artifact_model(root, "plan", leaf_plan_path, records),
+                    "child_plan": artifact_model(
+                        root, "plan", leaf_plan_path, records, invalid_by_id
+                    ),
                     "child_level": child_level(
-                        child, artifact_model(root, "plan", leaf_plan_path, records)
+                        child,
+                        artifact_model(
+                            root, "plan", leaf_plan_path, records, invalid_by_id
+                        ),
                     ),
                     "prs": prs,
                     "evidence_count": evidence_count,
@@ -1192,6 +1237,8 @@ def build_model(root: Path) -> dict[str, Any]:
     source_paths = [path for path in paths.values() if path is not None]
     for optional in (
         root / ".sdlc" / "approvals.yaml",
+        root / ".sdlc" / "gates.yaml",
+        root / ".sdlc" / "process-decisions.yaml",
         root / ".sdlc" / "wip.md",
         root / ".sdlc" / "test-traceability.yaml",
         root / ".sdlc" / "code-assessments.yaml",
@@ -1212,6 +1259,8 @@ def build_model(root: Path) -> dict[str, Any]:
         "wip": wip,
         "delivery": {
             "profile": delivery_profile or "Not recorded",
+            "approval_policy": approval_policy or "Not recorded",
+            "work_outcome": work_outcome or "Not recorded",
             "modules": assurance_modules or "Not recorded",
         },
         "work_items": items,
@@ -2394,6 +2443,10 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
     </div>
   </section>
   {malformed_warning}
+  <details class="read-note">
+    <summary>Delivery choices</summary>
+    <p>Assurance profile: {esc(model["delivery"]["profile"])}. Approval policy: {esc(model["delivery"]["approval_policy"])}. Work outcome: {esc(model["delivery"]["work_outcome"])}. Extra checks: {esc(model["delivery"]["modules"])}.</p>
+  </details>
   <div class="tree-heading">
     <div><h2>Work</h2><p id="tree-description">Open an item to see its documents and evidence.</p></div>
     <div class="toolbar">

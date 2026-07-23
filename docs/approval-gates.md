@@ -15,6 +15,29 @@ available feedback from appropriate stakeholders, record feedback not yet obtain
 expect revision when implementation, integration, deployment, or use produces new evidence.
 See [feedback-and-learning.md](feedback-and-learning.md).
 
+## Approval Policy
+
+At project entry, and when requirements begin for a feature, the agent must ask the user to
+select or confirm one policy. Show the practical difference in the current context and record
+the choice in `.sdlc/process-decisions.yaml` and `.sdlc/wip.md`.
+
+- **Human checkpoints**: stop at every material approval gate for explicit human approval.
+  This is the default.
+- **Automatic approval for eligible gates**: use a current `.sdlc/gates.yaml` policy to
+  record automatic approvals only for its listed scopes and gates. It may support unattended
+  delivery when the user explicitly requests it; it never means every gate is automatic.
+
+YOLO, “use your judgment,” or end-to-end wording never selects automatic approval. Release,
+production deployment, security/privacy risk acceptance, required UI approval, and any gate
+excluded by local policy still require the explicit approval their rule names.
+
+When `.sdlc/process-decisions.yaml` records a policy, it is authoritative: checkers reject an
+`auto-approved` record unless the recorded policy is `automatic_eligible_gates`.
+`.sdlc/gates.yaml` then limits which automatic gates are eligible; it does not select
+automatic approval by itself. When no approval policy is recorded, the default is Human
+checkpoints and automatic records are rejected until the user explicitly selects automatic
+eligible gates.
+
 ## Files
 
 - `.sdlc/approvals.yaml` records local human or automatic approvals.
@@ -85,8 +108,7 @@ date -u +"%Y-%m-%dT%H:%M:%SZ"
 
 ## Auto Approval
 
-Use auto-approval only as an explicit local policy for low-risk work, such as internal
-prototypes.
+Use automatic approval only as an explicit local policy for eligible low-risk work.
 
 ```yaml
 version: 1

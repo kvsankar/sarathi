@@ -54,8 +54,9 @@ python checkers/check_spec.py <spec.md> --feature --parent <parent-spec.md> --js
 
 When checking that an already-reviewed spec has a valid local approval before later
 work, add `--require-approvals`. This checks `.sdlc/approvals.yaml` for a hash-matched
-`spec.approved` record with a UTC `approved_at` timestamp. Do not require approvals while
-drafting a spec that still needs human review.
+`spec.approved` record with a UTC `approved_at` timestamp. Do not require approval while
+drafting; require it only when the spec is ready to advance and the recorded policy makes the
+gate applicable.
 
 If `python` is unavailable or fails because the launcher is missing, retry with `python3`;
 if that is unavailable, retry with `uv run python`.

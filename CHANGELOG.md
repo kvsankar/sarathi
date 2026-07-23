@@ -8,6 +8,17 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Changed
+
+- Replace the ambiguous review-level framing with three independent delivery decisions:
+  assurance profile (Lean, Standard, or High-assurance), approval policy, and work outcome.
+  Remove Exploratory as a separate delivery track; decision/evidence work now uses the same
+  assurance and approval choices with an evidence-based definition of done.
+- Lead the installed `sarathi` skill with its delivery model and an explicit map of every
+  direct stage skill, moving update-check mechanics after that orientation.
+- Assemble installed skill bundles from canonical docs, prompts, and checkers instead of
+  storing source mirrors; remove the unused standalone SRS-authoring skill.
+
 ## 0.5.1 - 2026-07-21
 
 ### Changed

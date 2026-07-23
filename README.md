@@ -26,8 +26,9 @@ accepted intent -> smallest safe increment -> working behavior -> evidence -> fe
 Specifications, designs, plans, and code preserve the decisions made along that loop; they
 do not form a one-way waterfall. Decompose when the work is too complex to understand and
 review safely as one coherent unit. Each stage can be
-created, verified, reviewed, or assessed independently, and review depth follows actual
-risk. See [sarathi's enduring model](docs/enduring-model.md).
+created, verified, reviewed, or assessed independently. Delivery assurance follows actual
+risk; approval policy and the intended work outcome are chosen separately. See
+[sarathi's enduring model](docs/enduring-model.md).
 
 ## What You Get
 
@@ -177,10 +178,10 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
   provided; every installed skill still contains its self-contained checker bundle. Source
   installers retain `-NoCheckers` and `--no-checkers` for explicitly skipping the copy.
 
-Installed skill bundles are self-contained: each `sarathi` skill copy includes
-`SKILL.md`, agent config, bundled `prompts/*.prompt.md`, and bundled `checkers/*.py`. Prompt
-commands or stage skill aliases are also installed separately where host tools can expose
-them directly.
+Installed skill bundles are self-contained: the installer assembles each `sarathi` skill copy
+from the canonical `docs/`, `prompts/`, and `checkers/` sources, plus `SKILL.md` and agent
+config. Prompt commands or stage skill aliases are also installed separately where host tools
+can expose them directly.
 
 Every dry or real install prints the destination folders before doing work.
 
@@ -382,14 +383,19 @@ Diagnostics and failure behavior are covered across the lifecycle:
 Reviews stop when logging, telemetry, or error-handling intent is missing from the earlier
 document that should own it.
 
-## Review Depth
+## Delivery Decisions
 
-Production work uses review depth matched to risk: Lean for small,
-reversible changes; Standard as the ordinary default; and High-assurance for material
-security, privacy, safety, regulatory, financial, availability, migration, or irreversible
-data risk. Exploratory remains a separate non-production track. Add only checks relevant to
-the actual risk; the review level never bypasses tests, feedback, or required approvals. See
-[docs/assurance-profiles.md](docs/assurance-profiles.md).
+At project entry and for the first requirements of a feature, choose and record three
+independent decisions: a delivery assurance profile, approval policy, and work outcome.
+Lean suits small reversible work, Standard is the ordinary default or choice when risk is
+unclear, and High-assurance adds proof for material security, privacy, safety, regulatory,
+financial, availability, migration, or irreversible-data risk. Approval policy is either
+human checkpoints or automatic approval for locally eligible gates; YOLO and unattended
+language never choose automatic approval. Work is either a product increment or a
+decision/evidence result. Add only checks relevant to the actual risk; none of these choices
+bypasses tests, feedback, safety limits, or protected approval gates. See
+[delivery assurance profiles](docs/assurance-profiles.md),
+[approval gates](docs/approval-gates.md), and [project entry](docs/project-entry.md).
 
 ## General Cleanup
 
@@ -436,9 +442,10 @@ Plans also inspect the existing system and sibling services before describing wo
 delivery item says whether it reuses existing code, extracts then reuses it, remains
 target-owned, adds genuinely new behavior, or defers non-blocking cleanup.
 
-## Required Reviews And YOLO Mode
+## Approval Policy And YOLO Mode
 
-By default, important transitions require human review:
+Human checkpoints are the default approval policy. Under it, important transitions require
+human review:
 
 - If important input is missing, the agent asks one focused question at a time.
 - After a document or code slice is generated, materially revised, reviewed, or assessed, the agent stops
@@ -449,13 +456,19 @@ By default, important transitions require human review:
   the mock.
 - Reviews stop when they discover issues in an earlier spec, design, or plan.
 
-The human review pause is required. A completed spec does not automatically flow into
-design; a completed design does not automatically flow into planning; a completed plan does
-not automatically flow into code; and an assessed code slice does not automatically flow
-into the next learning-dependent slice or release/deployment work until its feedback status
-and parent-document check are visible. The agent should end its turn with document paths,
+With human checkpoints, a completed spec does not automatically flow into design; a completed
+design does not automatically flow into planning; a completed plan does not automatically
+flow into code; and an assessed code slice does not automatically flow into the next
+learning-dependent slice or release/deployment work until its feedback status and
+parent-document check are visible. The agent should end its turn with document paths,
 readiness/status, verification/review/assessment results, open questions, and the recommended
 next command.
+
+An explicit `automatic_eligible_gates` policy may cross only gates enabled by local
+`.sdlc/gates.yaml` and only during explicitly requested end-to-end continuation. It never
+crosses release or production deployment, security or privacy acceptance, required UI
+approval, locally excluded gates, or a stop caused by missing evidence, failed checks, or a
+learning dependency.
 
 You can opt into **YOLO mode** with phrases like:
 
@@ -467,9 +480,10 @@ proceed without questions
 ```
 
 YOLO mode lets the agent make reasonable assumptions and continue, but it must record those
-assumptions, risks, and trade-offs. YOLO does not bypass readiness checks, expected file
-changes, required tests, safety constraints, or the default review pause unless you explicitly ask for
-end-to-end unattended continuation.
+assumptions, risks, and trade-offs. YOLO does not select automatic approval or bypass
+readiness checks, expected file changes, required tests, safety constraints, or protected
+approval gates. End-to-end continuation additionally needs the recorded automatic policy and
+an eligible local gate.
 
 ## Approval Records
 
@@ -588,7 +602,7 @@ completeness, and consistency across stages.
 ```text
 docs/      user-facing documentation and review notes
 prompts/   source stage prompt definitions
-skills/    native skill bundles
+skills/    skill-specific definitions and metadata
 checkers/  repeatable structure and link checks
 scripts/   installers for Windows, macOS, Linux, and WSL
 tests/     checker tests
