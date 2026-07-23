@@ -33,11 +33,14 @@ an approval record, completion percentage, or substitute for checks and review.
 - **Assessed learning evidence**: an assessed branch can show the learning and next
   decisions recorded in a passing code assessment that matches the current plan.
 
-The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; child specs,
+The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; use
+`.sdlc/artifact-paths.yaml` when [document-locations.md](document-locations.md) selected a
+non-standard or ambiguous area. Child specs,
 designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
 the first heading. A compact implementation plan that reuses approved earlier documents is
 shown without false missing-spec/design nodes; older marker fields remain readable. It also reads
-Breakdown-plan `Work Groups` sections; `.sdlc/approvals.yaml`;
+Breakdown-plan `Work Groups` sections; `.sdlc/approvals.yaml`; `.sdlc/gates.yaml`;
+`.sdlc/process-decisions.yaml`;
 `.sdlc/code-assessments.yaml`; `.sdlc/wave-checkpoints.yaml`; `.sdlc/wip.md`; and
 `.sdlc/test-traceability.yaml` when a project voluntarily maintains one. It ignores common
 dependency, cache, and VCS directories.

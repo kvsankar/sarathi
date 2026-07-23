@@ -161,6 +161,13 @@ explicitly authorized in `.sdlc/process-decisions.yaml`.
 Read and maintain `.sdlc/wip.md` using [docs/work-in-progress.md](docs/work-in-progress.md).
 It is a resumable navigation note, not approval or product truth.
 
+Choose a context-appropriate document area with
+[docs/document-locations.md](docs/document-locations.md); use root `docs/` only when no
+more specific area can be inferred, never a root-file default. Only Product/system documents
+use `spec.md`, `design.md`, and `plan.md`; smaller scopes use one descriptive work slug in
+every filename. Save direct review and assessment output as Markdown in that area's `reviews/`
+folder with the same naming rule.
+
 When `sarathi` is invoked generally, run only the next appropriate stage. After creating or
 materially revising a spec, design, ADR, plan, code slice, assessment, or review report:
 

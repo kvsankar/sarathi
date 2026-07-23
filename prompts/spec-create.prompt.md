@@ -11,7 +11,7 @@ intent, not implementation architecture.
 ## Load
 
 Read `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, existing documents, and relevant
-repository evidence. Load `docs/artifact-contracts.md` and
+repository evidence. Load `docs/artifact-contracts.md`, `docs/document-locations.md`, and
 `docs/human-first-artifacts.md` for the Spec contract, narrative, and traceability layers.
 Load `docs/requirements-model.md` for the requirements hierarchy.
 
@@ -92,16 +92,17 @@ Apply these requirements rules:
 - Do not turn process links, evidence, approval, or status needs into product requirements.
   Do not specify hypothetical future consumers.
 
-Write `spec.md` unless another path is named. Child specs include the exact machine field
-`Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec when approved
-parent documents and one short implementation plan are enough.
+Use the scope-appropriate name from `docs/document-locations.md`: `spec.md` only for
+Product/system, otherwise `<work-slug>.spec.md`, unless another path is named. Child specs
+include `Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec when
+approved parent documents and one short plan are enough.
 
 ## Verify And Handoff
 
 Run the repeatable format and link checker and fix failures:
 
 ```pwsh
-python checkers/check_spec.py spec.md --json
+python checkers/check_spec.py <spec-path> --json
 ```
 
 Retry with `python3` or `uv run python` when needed. Then run `/spec-assess`; use one fresh

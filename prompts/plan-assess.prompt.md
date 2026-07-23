@@ -8,7 +8,7 @@ agent: agent
 Assess the target plan using two separate passes. Load `prompts/plan-verify.prompt.md`,
 `prompts/plan-review.prompt.md`, `docs/review-verification-checklist.md`,
 `docs/feedback-and-learning.md`, and the selected delivery assurance profile and additional checks from
-`docs/assurance-profiles.md`. Apply `docs/simplicity-first.md`.
+`docs/assurance-profiles.md`. Load `docs/document-locations.md`. Apply `docs/simplicity-first.md`.
 
 ## Run
 
@@ -34,6 +34,8 @@ Report:
 3. Top fixes ranked by impact.
 4. Verdict: `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`.
 
-Update `.sdlc/wip.md` and stop according to the recorded approval policy. Human checkpoints
-require explicit approval; automatic approval needs an eligible local policy and an explicit
-end-to-end instruction before implementation.
+Write the scope-appropriate report from `docs/document-locations.md`: `plan-assessment.md`
+only for Product/system, otherwise `<work-slug>.plan-assessment.md`. Update `.sdlc/wip.md`
+and stop according to the recorded approval policy. Human checkpoints require explicit
+approval; automatic approval needs an eligible local policy and an explicit end-to-end
+instruction before implementation.

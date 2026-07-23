@@ -98,9 +98,10 @@ Extra Checks: comma-separated checks or none
 
 | Kind | Path | Status | Notes |
 | --- | --- | --- | --- |
-| Spec | spec.md | draft/reviewed/approved/stale/missing | ... |
-| Design | design.md | draft/reviewed/approved/stale/missing | ... |
-| Plan | plan.md | draft/reviewed/approved/stale/missing | ... |
+| Spec | selected canonical path | draft/reviewed/approved/stale/missing | ... |
+| Design | selected canonical path | draft/reviewed/approved/stale/missing | ... |
+| Plan | selected canonical path | draft/reviewed/approved/stale/missing | ... |
+| Latest review or assessment | selected `reviews/*.md` path | Pass/Pass-with-fixes/Needs rework/Blocked-upstream | ... |
 
 ## Decisions And Assumptions
 

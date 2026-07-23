@@ -25,6 +25,11 @@ when the repo is not already operating under an SDLC decision record:
 Existing specs, designs, plans, ADRs, tickets, roadmaps, tests, docs, CI, and deployment
 files are not a fourth mode. They are discovered inputs that can appear in any mode.
 
+Before creating a new controlling document, choose its documentation area with
+[document-locations.md](document-locations.md). Reuse the closest established `docs/` area
+for the current work, or use repository-root `docs/` only when no more specific location can
+be inferred. Record non-standard canonical paths in `.sdlc/artifact-paths.yaml`.
+
 ## Choose Delivery Decisions
 
 At project entry, present the delivery assurance profiles and approval policies with a

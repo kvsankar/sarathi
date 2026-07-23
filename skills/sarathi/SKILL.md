@@ -32,9 +32,8 @@ concern.
 
 ## Skill Maintenance
 
-Run bundled `scripts/check_update.py` at invocation start; surface an update notice but never
-block offline, auto-update, or install without approval. Respect `SARATHI_UPDATE_CHECK=0`.
-If required `prompts/`, `docs/`, or `checkers/` files are absent, report an incomplete install.
+Run bundled `scripts/check_update.py` at invocation start; never auto-update or install
+without approval. Respect `SARATHI_UPDATE_CHECK=0`; missing bundle files mean incomplete install.
 
 ## Enduring Model
 
@@ -152,6 +151,7 @@ fit. Use `docs/review-verification-checklist.md`.
 | `docs/simplicity-first.md` | Checking whether a solution or PR breakdown is no larger than needed. |
 | `docs/project-entry.md` | Starting in a new or existing codebase. |
 | `docs/work-in-progress.md` | Starting, resuming, blocking, handing off, or answering status and next-action questions. |
+| `docs/document-locations.md` | Choosing document/review-report paths or recording non-standard canonical paths. |
 | `docs/artifact-formatting.md` | Writing or materially revising Markdown documents. |
 | `docs/human-first-artifacts.md` | Creating or revising a spec, design, or plan; checking readability or source-ID cleanliness. |
 | `docs/cross-cutting-concerns.md` | Choosing checks for security, privacy, reliability, or other identified risks. |

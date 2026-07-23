@@ -32,8 +32,9 @@ results only and does not judge overall quality. If sub-agents are unavailable, 
 the host lacks sub-agent capability and run the same
 checks directly.
 
-Target the design file the user provides, defaulting to `design.md`. Do not edit it unless
-explicitly asked.
+Target the design file the user provides; otherwise resolve the location with
+`docs/document-locations.md`: normally `docs/design.md` for Product/system, otherwise the
+work slug's `.design.md` file. Do not edit it unless explicitly asked.
 
 ## Checks
 

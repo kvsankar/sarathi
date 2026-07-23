@@ -6,7 +6,7 @@ agent: agent
 # Code Review
 
 Review code/tests without editing unless asked. Read earlier documents, the diff or
-implementation, `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`,
+implementation, `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`, `docs/document-locations.md`,
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`,
 `docs/feedback-and-learning.md`, `docs/test-ownership.md`, `docs/cleanup-pass.md`, and
 `docs/simplify-pass.md`, plus `docs/project-quality-gates.md`. For an authorized
@@ -47,7 +47,9 @@ design, or plan; do not confine it to local refactoring.
 
 Report findings, blockers in earlier documents, evidence limits, what can be deleted,
 deferred, or reused, top fixes, feedback and earlier-document changes, and
-`Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Update `.sdlc/wip.md` and stop
-according to the recorded approval policy. Human checkpoints require explicit approval;
-automatic approval needs an eligible local policy and explicit unattended continuation.
-Release and deployment always require explicit approval.
+`Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Write/update
+the scope-appropriate report from `docs/document-locations.md`: `code-review.md` only for
+Product/system, otherwise `<work-slug>.code-review.md`. Update WIP and stop according to the
+recorded approval policy. Human checkpoints require explicit approval; automatic approval
+needs an eligible local policy and explicit unattended continuation. Release and deployment
+always require explicit approval.

@@ -30,6 +30,11 @@ A child document also states `Parent Work Item: WORK-AREA-NAME`. Preserve stable
 revision. Use descriptive uppercase slug IDs with exactly the grammar documented in
 `docs/slug-id-migration.md`.
 
+Choose paths using [document-locations.md](document-locations.md). New documents use a
+context-appropriate `docs/` area, never repository-root defaults unless explicitly requested.
+Only Product/system scope uses `spec.md`, `design.md`, and `plan.md`; smaller scopes use one
+descriptive work slug in every document and report filename.
+
 `Yes` means the next change is specific enough to implement and has no unresolved product
 or architecture decision. Scope size alone does not decide this; a feature may reuse
 approved requirements and architecture and proceed directly.
@@ -126,10 +131,11 @@ observability/error behavior, and other extra risk checks only when triggered by
 intent or context. A primary external boundary needs real or official conformance evidence
 or explicit acceptance of the remaining risk.
 
-Write `design.md` plus a reviewable `design.html` for Product/system designs. For a
-Feature/component or Slice/change design, create `design.html` only when diagrams or another
-visual review surface materially help the decision. `design.md` remains the source of truth;
-the HTML view must stay aligned with it. Reusing approved earlier documents does not require a separate
+Write the selected document area's correctly named design Markdown plus a reviewable
+`design.html` for Product/system designs. For a Feature/component or Slice/change design,
+create `design.html` only when diagrams or another visual review surface materially help the
+decision. The Markdown remains the source of truth; the HTML view must stay aligned with it.
+Reusing approved earlier documents does not require a separate
 design document. When the spec says a UI mock is Required and no approved prototype exists,
 produce/update `mock-ui.html` and
 stop for explicit approval before production UI implementation.
@@ -175,8 +181,8 @@ checker-visible order:
 2. **Baseline Reuse**: what works in the current or sibling system, what becomes shared,
    what stays target-owned, what is new, and what is deferred.
 3. **Overview**: goal, common metadata, plan type, branch/CI context.
-4. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, review
-   depth, cleanup/simplify, and feedback cadence.
+4. **Strategy**: delivery approach, planned verification, extra risk checks, integration cadence, delivery
+   assurance, cleanup/simplify, and feedback cadence.
 5. **Milestones**: `MILE-AREA-NAME` outcome groups.
 6. **Pull Requests / Child Work Items**. Each item has one `Work Classification:` value:
    `reuse directly`, `extract then reuse`, `target-owned implementation`, `new behavior`,
@@ -240,7 +246,7 @@ Breakdown-plan `WORK-*` may remain unscheduled. Later groups stay at the least d
 by current evidence. Use a group only when one or more near-term children share a real
 feedback or integration checkpoint.
 
-Write `plan.md`. Markdown remains the source of truth. The generated workflow-status page is
+Write the selected document area's correctly named plan Markdown. Markdown remains the source of truth. The generated workflow-status page is
 the shared HTML view for delivery progress, assigned work, work groups, and PRs; do not create a
 separate `plan.html` by default.
 

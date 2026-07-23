@@ -11,7 +11,7 @@ quality. Use `/code-review` for judgment and `/code-assess` to run both.
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
 selected delivery assurance and additional checks. A compact or legacy plan may use approved
 parent documents instead of unnecessary child spec/design files. Load
-`docs/project-quality-gates.md`. Use a fresh checker
+`docs/document-locations.md` and `docs/project-quality-gates.md`. Use a fresh checker
 sub-agent when available;
 otherwise disclose that sub-agents are unavailable and run the same checks directly.
 
@@ -21,9 +21,9 @@ Run only the earlier documents that control the plan. Do not fail a compact or l
 because unnecessary child spec/design files do not exist. When documents exist, run:
 
 ```pwsh
-python checkers/check_spec.py spec.md --json
-python checkers/check_design.py design.md --spec spec.md --json
-python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
+python checkers/check_spec.py <spec-path> --json
+python checkers/check_design.py <design-path> --spec <spec-path> --json
+python checkers/check_plan.py <plan-path> --spec <spec-path> --design <design-path> --json
 ```
 
 Report failures in earlier documents without reinterpreting them as a quality judgment.
@@ -34,7 +34,7 @@ Run the planned test command through:
 
 ```pwsh
 python checkers/check_code.py \
-  --plan plan.md \
+  --plan <plan-path> \
   --tests-argv '<json-array>' \
   --json
 ```

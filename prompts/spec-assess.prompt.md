@@ -7,7 +7,8 @@ agent: agent
 
 Assess the target spec using two separate passes. Load `prompts/spec-verify.prompt.md`,
 `prompts/spec-review.prompt.md`, `docs/review-verification-checklist.md`, and the selected
-delivery assurance profile and additional checks from `docs/assurance-profiles.md`. Apply
+delivery assurance profile and additional checks from `docs/assurance-profiles.md`. Load
+`docs/document-locations.md`. Apply
 `docs/simplicity-first.md`.
 
 ## Run
@@ -32,6 +33,8 @@ Stop as `Blocked-upstream` when the spec cannot be judged responsibly. Otherwise
 3. Top fixes ranked by impact.
 4. Verdict: `Pass | Pass-with-fixes | Needs rework`.
 
-Update `.sdlc/wip.md` and stop according to the recorded approval policy. Human checkpoints
-require explicit approval; automatic approval needs an eligible local policy and an explicit
-end-to-end instruction before design.
+Write the scope-appropriate report from `docs/document-locations.md`: `spec-assessment.md`
+only for Product/system, otherwise `<work-slug>.spec-assessment.md`. Update `.sdlc/wip.md`
+and stop according to the recorded approval policy. Human checkpoints require explicit
+approval; automatic approval needs an eligible local policy and an explicit end-to-end
+instruction before design.
