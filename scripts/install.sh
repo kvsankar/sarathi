@@ -347,6 +347,40 @@ atomic_copy_file() {
   mv -f "$temp" "$dest"
 }
 
+remove_retired_srs_authoring() {
+  local skill_root="$1"
+  local retired="$skill_root/srs-authoring"
+  local skill_hash agent_hash reference_hash hash_command
+  if command -v sha256sum >/dev/null 2>&1; then
+    hash_command="sha256sum"
+  else
+    hash_command="shasum -a 256"
+  fi
+  if [[ -d "$retired" ]] &&
+    [[ "$(find "$retired" -type f | wc -l | tr -d ' ')" == "3" ]] &&
+    [[ "$(find "$retired" -type d | wc -l | tr -d ' ')" == "3" ]] &&
+    [[ "$(find "$retired" -mindepth 1 ! -type f ! -type d | wc -l | tr -d ' ')" == "0" ]] &&
+    [[ -f "$retired/SKILL.md" ]] &&
+    [[ -f "$retired/agents/openai.yaml" ]] &&
+    [[ -f "$retired/references/srs-quality.md" ]]; then
+    skill_hash="$($hash_command "$retired/SKILL.md" | awk '{print $1}')"
+    agent_hash="$($hash_command "$retired/agents/openai.yaml" | awk '{print $1}')"
+    reference_hash="$($hash_command "$retired/references/srs-quality.md" | awk '{print $1}')"
+  else
+    return 0
+  fi
+
+  if [[ "$agent_hash" == "960503fe7ddf3a3bd675cc2373438eb271e29bcef84eaf65eb3914e5640a3c0b" ]] &&
+    { [[ "$skill_hash" == "cd6f56c6759a2ab9c1f15e926b1f0f254a12fe7d7ceecb3b574794345d6a0647" &&
+      "$reference_hash" == "092fa2f148f507e84b1cb6374d272c94ad9e7f9dce9d7974ebd7354910c7969b" ]] ||
+      [[ "$skill_hash" == "2e9aa5cb0c985397b5ecdfcdf74985fbef4205e8e81aa2d73bbefbbeea6550ee" &&
+      "$reference_hash" == "824c0bbc14f8fc0788a6ec78d6c4f88a9c416473b9f7fd2d5be2c9133aa520b2" ]]; }; then
+    rm -rf "$retired"
+    echo "Removed retired Sarathi skill -> $retired"
+  fi
+  return 0
+}
+
 copy_skill_folder() {
   local dest="$1"
   local source_item
@@ -420,6 +454,7 @@ EOF
       cp "$CHECKER_SOURCE"/*.py "$stage_dest/checkers"/
     fi
   done
+  remove_retired_srs_authoring "$skill_root"
 }
 
 install_copilot() {
@@ -459,6 +494,7 @@ install_codex() {
     return
   fi
   copy_skill_folder "$skill_dest"
+  remove_retired_srs_authoring "$(dirname "$skill_dest")"
   echo "Installed Codex skill -> $skill_dest"
   copy_codex_prompt_files "$prompt_dest"
   echo "Installed Codex direct prompts -> $prompt_dest"
@@ -485,6 +521,7 @@ install_claude_code() {
   done
   echo "Installed Claude Code slash commands -> $dest"
   copy_skill_folder "$skill_dest"
+  remove_retired_srs_authoring "$(dirname "$skill_dest")"
   echo "Installed Claude Code skill -> $skill_dest"
 }
 
@@ -535,6 +572,7 @@ install_claude_export() {
     prompt_body "$file" > "$dest/$(command_name "$file").md"
   done
   copy_skill_folder "$dest/skills/sarathi"
+  remove_retired_srs_authoring "$dest/skills"
   echo "Exported Claude prompt pack -> $dest"
   echo "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
 }
@@ -556,6 +594,7 @@ install_pi_export() {
     prompt_body "$file" > "$dest/$(command_name "$file").md"
   done
   copy_skill_folder "$dest/skills/sarathi"
+  remove_retired_srs_authoring "$dest/skills"
   echo "Exported Pi prompt pack -> $dest"
   echo "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }

@@ -105,6 +105,11 @@ Alternatively, use `pipx install sarathi-sdlc`. After upgrading the package, rer
 most once per 24 hours and report newer releases without blocking work or updating
 automatically. Set `SARATHI_UPDATE_CHECK=0` to disable that check.
 
+An upgrade rebuilds Sarathi's bundled `docs/`, `prompts/`, and `checkers/` subdirectories, so
+retired bundled files do not remain. It preserves other files in the installed `sarathi`
+folder and only removes the retired standalone `srs-authoring` bundle when it exactly matches
+the historical Sarathi-owned files.
+
 ## Install From A Source Checkout
 
 Clone the repository and run from its root when developing or testing an unreleased change.

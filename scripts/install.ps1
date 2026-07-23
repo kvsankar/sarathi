@@ -17,7 +17,7 @@ $PromptSource = Join-Path $RepoRoot "prompts"
 $CheckerSource = Join-Path $RepoRoot "checkers"
 $DocSource = Join-Path $RepoRoot "docs"
 $SkillSource = Join-Path $RepoRoot "skills/sarathi"
-$TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).Path
+$TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).ProviderPath
 
 function Write-Detail {
     param([string]$Message)
@@ -28,8 +28,8 @@ function Write-Detail {
 
 function Test-SamePath {
     param([string]$Left, [string]$Right)
-    $leftResolved = (Resolve-Path -LiteralPath $Left).Path.TrimEnd('\', '/')
-    $rightResolved = (Resolve-Path -LiteralPath $Right).Path.TrimEnd('\', '/')
+    $leftResolved = (Resolve-Path -LiteralPath $Left).ProviderPath.TrimEnd('\', '/')
+    $rightResolved = (Resolve-Path -LiteralPath $Right).ProviderPath.TrimEnd('\', '/')
     return [string]::Equals($leftResolved, $rightResolved, [System.StringComparison]::OrdinalIgnoreCase)
 }
 
@@ -63,6 +63,52 @@ function Set-AtomicUtf8File {
     } finally {
         if (Test-Path -LiteralPath $temporaryPath) {
             Remove-Item -LiteralPath $temporaryPath -Force
+        }
+    }
+}
+
+function Remove-RetiredSrsAuthoring {
+    param([string]$SkillRoot)
+    $retired = Join-Path $SkillRoot "srs-authoring"
+    $marker = Join-Path $retired "SKILL.md"
+    if (-not (Test-Path -LiteralPath $marker)) {
+        return
+    }
+    $expectedVariants = @(
+        @{
+            "SKILL.md" = "cd6f56c6759a2ab9c1f15e926b1f0f254a12fe7d7ceecb3b574794345d6a0647"
+            "agents/openai.yaml" = "960503fe7ddf3a3bd675cc2373438eb271e29bcef84eaf65eb3914e5640a3c0b"
+            "references/srs-quality.md" = "092fa2f148f507e84b1cb6374d272c94ad9e7f9dce9d7974ebd7354910c7969b"
+        },
+        @{
+            "SKILL.md" = "2e9aa5cb0c985397b5ecdfcdf74985fbef4205e8e81aa2d73bbefbbeea6550ee"
+            "agents/openai.yaml" = "960503fe7ddf3a3bd675cc2373438eb271e29bcef84eaf65eb3914e5640a3c0b"
+            "references/srs-quality.md" = "824c0bbc14f8fc0788a6ec78d6c4f88a9c416473b9f7fd2d5be2c9133aa520b2"
+        }
+    )
+    $entries = @(Get-ChildItem -LiteralPath $retired -Force -Recurse)
+    $files = @($entries | Where-Object { -not $_.PSIsContainer })
+    $directories = @($entries | Where-Object { $_.PSIsContainer })
+    $reparsePoints = @(
+        $entries | Where-Object {
+            $_.Attributes -band [System.IO.FileAttributes]::ReparsePoint
+        }
+    )
+    if ($entries.Count -ne 5 -or $files.Count -ne 3 -or $directories.Count -ne 2 -or
+        $reparsePoints.Count -ne 0) {
+        return
+    }
+    $actual = @{}
+    foreach ($file in $files) {
+        $relative = $file.FullName.Substring($retired.Length).TrimStart('\', '/') -replace '\\', '/'
+        $actual[$relative] = (Get-FileHash -Algorithm SHA256 -LiteralPath $file.FullName).Hash.ToLowerInvariant()
+    }
+    foreach ($expected in $expectedVariants) {
+        if (($actual.Keys | Where-Object { -not $expected.ContainsKey($_) }).Count -eq 0 -and
+            ($expected.Keys | Where-Object { -not $actual.ContainsKey($_) -or $actual[$_] -ne $expected[$_] }).Count -eq 0) {
+            Remove-Item -LiteralPath $retired -Recurse -Force
+            Write-Detail "Removed retired Sarathi skill -> $retired"
+            return
         }
     }
 }
@@ -367,6 +413,7 @@ to stop for the user.
                 Copy-Item -Destination $checkerDest -Force
         }
     }
+    Remove-RetiredSrsAuthoring $skillRoot
 }
 
 function Install-Copilot {
@@ -405,6 +452,7 @@ function Install-Codex {
         return
     }
     Copy-SkillFolder $dest.Skill
+    Remove-RetiredSrsAuthoring (Split-Path -Parent $dest.Skill)
     Write-Detail "Installed Codex skill -> $($dest.Skill)"
     Copy-CodexPromptFiles $dest.Prompts
     Write-Detail "Installed Codex direct prompts -> $($dest.Prompts)"
@@ -432,6 +480,7 @@ function Install-ClaudeCode {
     }
     Write-Detail "Installed Claude Code slash commands -> $dest"
     Copy-SkillFolder $skillDest
+    Remove-RetiredSrsAuthoring (Split-Path -Parent $skillDest)
     Write-Detail "Installed Claude Code skill -> $skillDest"
 }
 
@@ -482,6 +531,7 @@ function Install-ClaudeExport {
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
     Copy-SkillFolder (Join-Path $dest "skills/sarathi")
+    Remove-RetiredSrsAuthoring (Join-Path $dest "skills")
     Write-Detail "Exported Claude prompt pack -> $dest"
     Write-Detail "Note: Claude web/desktop has no stable local slash-command folder; import/copy these prompts manually."
 }
@@ -504,6 +554,7 @@ function Install-PiExport {
         Set-Content -LiteralPath (Join-Path $dest "$name.md") -Value $body -NoNewline
     }
     Copy-SkillFolder (Join-Path $dest "skills/sarathi")
+    Remove-RetiredSrsAuthoring (Join-Path $dest "skills")
     Write-Detail "Exported Pi prompt pack -> $dest"
     Write-Detail "Note: Pi has no stable local slash-command folder; import/copy these prompts manually."
 }
