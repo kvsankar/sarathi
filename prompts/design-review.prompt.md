@@ -8,7 +8,8 @@ agent: agent
 Review the target design without editing it unless asked. Read the accepted requirements,
 `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`, `docs/document-locations.md`,
 `docs/design-principles.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
-`docs/human-first-artifacts.md`. Answer its first-page comprehension questions. Stop
+`docs/human-first-artifacts.md`. Follow `docs/result-reporting.md` for the report. Answer
+its first-page comprehension questions. Stop
 as `Blocked-upstream` when the spec is unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
@@ -18,7 +19,7 @@ review only when requirements or scope changed.
 
 ## Judge
 
-Lead with concrete problems. Check that the opening page makes the architectural drivers,
+After the plain-language review result, report concrete problems. Check that the opening page makes the architectural drivers,
 system boundary, technical model, responsibilities, consequential interfaces and data,
 important decisions and trade-offs, and test approach clear. For an existing-system change,
 also check the relevant current state, target state, compatibility, unchanged boundaries,
@@ -48,9 +49,10 @@ model, boundaries, decisions, trade-offs, or change-specific explanation, move t
 traceability and return `Needs rework`. If an
 engineer must decode IDs to understand the architecture, rewrite it in plain language.
 
-Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
-top fixes,
-and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Write/update
+Report one plain-language result, categorized findings, interpreted evidence, what can be
+deleted, deferred, or reused, and impact-ranked fixes. Preserve
+`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` only as the explained secondary
+process status. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `design-review.md` only for
 Product/system, otherwise `<work-slug>.design-review.md`. Update WIP and stop according to
 the recorded approval policy. Human checkpoints require explicit approval; automatic approval

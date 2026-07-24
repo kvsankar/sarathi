@@ -68,6 +68,6 @@ Use a work group only when near-term children share a real feedback or integrati
 checkpoint. Do not use one merely to group sequential PRs. Unscheduled children need no
 group.
 
-`/code-create` starts from approved requirements and a specific Implementation plan that is
+The `code-create` stage starts from approved requirements and a specific Implementation plan that is
 ready to implement. After each assessed child, use the evidence to confirm or revise the
 remaining work and its parent documents.

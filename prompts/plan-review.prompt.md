@@ -10,7 +10,8 @@ Review the target plan without editing it unless asked. Read earlier required do
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
 `docs/feedback-and-learning.md`, plus `docs/human-first-artifacts.md` and its first-page
 comprehension questions, plus `docs/work-decomposition.md`. Load
-`docs/test-ownership.md`. Stop as `Blocked-upstream` when spec/design is unfit.
+`docs/test-ownership.md` and `docs/result-reporting.md`. Stop as `Blocked-upstream` when
+spec/design is unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
@@ -20,7 +21,7 @@ the full review only if requirements or scope changed.
 
 ## Judge
 
-Lead with concrete problems. Check that an engineer can understand why this is a Breakdown
+After the plain-language review result, report concrete problems. Check that an engineer can understand why this is a Breakdown
 or Implementation plan, the outcomes, Impact Map, dependency graph, sequence, parallel
 paths, integration points, safety constraints, and proof without decoding IDs. The Impact
 Map must identify the nature and useful extent of changes—not just filenames—including
@@ -60,9 +61,10 @@ If an engineer must decode IDs to understand the outcome, change boundary, seque
 safety, or verification, move metadata to traceability and return `Needs rework`, even when
 automatic checks pass.
 
-Report blockers, evidence considered, concrete findings, what can be deleted, deferred, or reused,
-top fixes,
-and `Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Write/update
+Report one plain-language result, categorized findings, interpreted evidence, what can be
+deleted, deferred, or reused, and impact-ranked fixes. Preserve
+`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` only as the explained secondary
+process status. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `plan-review.md` only for
 Product/system, otherwise `<work-slug>.plan-review.md`. Update WIP and stop according to the
 recorded approval policy. Human checkpoints require explicit approval; automatic approval

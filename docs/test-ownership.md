@@ -5,7 +5,7 @@ feature/component, and slice/change documents.
 
 ## Core Rule
 
-Only an Implementation plan that is ready to implement may invoke `/code-create`. The change being
+Only an Implementation plan that is ready to implement may enter `code-create`. The change being
 implemented is usually a slice/change, but a sufficiently small feature may be implemented
 directly. Its PR may implement production code and executable tests whose approved
 requirements live in an earlier document.
@@ -44,7 +44,7 @@ security rules, or error behavior.
 
 An `AT-` is an externally observable acceptance criterion, not automatically an integration
 test. Design chooses the executable level and records a `TEST-` obligation and pass/fail check when
-needed. Plan assigns that obligation to a child `WORK-` item or `PR-`; `/code-create`
+needed. Plan assigns that obligation to a child `WORK-` item or `PR-`; `code-create`
 implements it in the assigned change.
 
 ## Integration Placement

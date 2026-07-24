@@ -17,6 +17,10 @@ This keeps broad process policy from crowding out stage-specific judgment.
 - non-negotiable operating constraints that affect every stage;
 - what to do when a required checker is unavailable.
 
+Only the top-level `sarathi` skill is implicitly discoverable. Standalone stage skills use
+the `sarathi-<stage>-<action>` namespace and explicit-only agent metadata; their instructions
+remain agent-neutral.
+
 Do not copy full stage procedures, long cross-cutting concern lists, checker schemas, or
 review rubrics into `SKILL.md` when a referenced prompt or doc can carry them.
 
@@ -28,6 +32,7 @@ Load references only when their trigger applies:
 | --- | --- |
 | `docs/enduring-model.md` | Explaining Sarathi, orienting a new project, or deciding how delivery, decomposition, quality, continuity, and risk fit together. |
 | `docs/work-in-progress.md` | Starting, resuming, pausing, handing off, or blocking SDLC work in a project; reading or updating `.sdlc/wip.md`. |
+| `docs/result-reporting.md` | Reporting any stage result, verification, review, assessment, workflow status, pause, or handoff. |
 | `docs/project-entry.md` | Starting in a new or existing codebase, or deciding how much existing work to document. |
 | `docs/artifact-contracts.md` | Writing or revising a spec, design, plan, or code evidence record. |
 | `docs/document-locations.md` | Choosing a document area, recording non-standard paths, or saving a review/assessment report. |
@@ -36,7 +41,7 @@ Load references only when their trigger applies:
 | `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, existing compatibility proof, or PR breakdown. |
 | `docs/assurance-profiles.md` | Choosing or changing delivery assurance and extra checks for specific risks. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
-| `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `/spec-create` or `/code-review`. |
+| `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `spec-create` or `code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
 | `docs/test-ownership.md` | Planning or implementing tests, including test-first behavior changes, or assigning acceptance, journey, or integration tests. |
 | `docs/work-decomposition.md` | Deciding whether complex work should be split, where to split it, or whether a child needs another document. |
@@ -58,7 +63,7 @@ generally, first use `SKILL.md` to choose the next stage, then load exactly the 
 stage prompt. Do not preload all stage prompts just because the workflow contains them.
 
 When a stage prompt references another shared doc, load that doc only if the current work
-needs its details. For example, `/spec-create` can cite project-entry rules while writing a
+needs its details. For example, `spec-create` can cite project-entry rules while writing a
 greenfield product spec without loading code-review or plan-assess instructions.
 
 ## Existing Project Loading

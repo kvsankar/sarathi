@@ -44,8 +44,10 @@ them. A completed prerequisite must never be described as a completed feature. E
 ## Product-first status
 
 For status, resume, handoff, remaining-work, readiness, and next-action requests, report
-engineering reality before process state. A reader should see, in order:
+engineering reality before process state and follow [result-reporting.md](result-reporting.md).
+A reader should see, in order:
 
+- one plain-language status and its main engineering consequence;
 - the end goal;
 - what works today and where;
 - what is reusable today;
@@ -56,9 +58,10 @@ engineering reality before process state. A reader should see, in order:
 - exact blockers before coding; and
 - one next executable action.
 
-Use ordinary technical names. Put document state, approvals, IDs, hashes, and checker
-counts afterward as supporting evidence. If `complete` could mean either a prerequisite or
-the broader feature, state both scopes explicitly.
+Use one plain-language result, ordinary technical names, categorized findings, and
+impact-ranked actions. Put document state, approvals, internal verdicts, IDs, hashes, and
+interpreted checker results afterward as supporting evidence. If `complete` could mean
+either a prerequisite or the broader feature, state both scopes explicitly.
 
 ## Required Shape
 
@@ -70,6 +73,8 @@ when they are materially updated:
 
 ## Product Snapshot
 
+Status Result: Ready | Ready after minor fixes | Not ready | Cannot assess yet
+Status Summary: plain-language reason and consequence for the recorded status
 Goal: end capability and target system
 Working Today: capability and the system where it currently works
 Reusable Today: shared code or contracts usable without further extraction

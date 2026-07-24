@@ -32,6 +32,9 @@ product architecture, and new generic machinery requires concrete evidence.
 ## Plain Language
 
 - Write for a capable software practitioner who has not learned Sarathi's vocabulary.
+- Follow [result-reporting.md](result-reporting.md) for every generated result or handoff:
+  one engineering outcome first, categorized findings, interpreted check evidence, explained
+  secondary process status, and actions ranked by practical impact.
 - Prefer `document`, `check`, `review`, `parent`, `child`, `existing system`, and
   `pass/fail result` over `artifact`, `mechanical verification`, `qualitative judgment`,
   `ancestor`, `descendant`, `brownfield`, and `oracle` in explanatory prose.
@@ -40,6 +43,20 @@ product architecture, and new generic machinery requires concrete evidence.
 - Use one term for one idea. Do not create a synonym merely to sound formal.
 - Never soften `must`, `block`, `stop`, approval boundaries, evidence limits, or safety
   rules while simplifying the wording.
+
+## Stage Skill Exposure
+
+- Keep `sarathi` as the only skill eligible for implicit invocation.
+- Limit implicit `sarathi` selection to Sarathi or managed delivery-workflow intent; an
+  ordinary code-generation request is not enough.
+- Name standalone stage skills `sarathi-<stage>-<action>` and require explicit invocation
+  through agent metadata. Never install generic skill names such as `code-create`.
+- Compose stages internally by loading canonical `prompts/*.prompt.md` instructions. Do not
+  invoke another public explicit-only stage skill unless the user named it.
+- Keep generated stage skill instructions agent-neutral. Host-specific installation and
+  reload guidance belongs in installer output or user documentation, not inside the skill.
+- Preserve internal prompt filenames and machine stage values such as `code-create`; the
+  prefix distinguishes public skills without migrating process records.
 
 ## Adding A Risk Check
 

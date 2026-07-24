@@ -262,7 +262,7 @@ Older short-plan fields remain readable, but new plans do not need or advertise 
 
 ## Code And Evidence Contract
 
-`/code-create` implements only an explicitly selected plan that is ready to implement, including a short
+The `code-create` stage implements only an explicitly selected plan that is ready to implement, including a short
 implementation plan that reuses earlier documents. For behavior changes it uses the
 Red-Green-Refactor loop in `docs/test-ownership.md`: observe the smallest meaningful test
 fail for the expected reason, make the minimum production-quality change that passes it,
@@ -280,7 +280,7 @@ cleanup, and simplify. Coverage or detailed test-link inventories are used only 
 project or accepted risk profile calls for them. Report unavailable evidence as unavailable,
 not passing.
 
-`/code-assess` may write a `.sdlc/code-assessments.yaml` Pass record that matches the current plan using the
+The `code-assess` stage may write a `.sdlc/code-assessments.yaml` Pass record that matches the current plan using the
 schema in `docs/workflow-status.md`. When every exact group member, review point, and
 earlier-document decision is complete, it may write a
 `.sdlc/wave-checkpoints.yaml` record that matches the current plan. Neither file is human

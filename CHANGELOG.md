@@ -8,6 +8,30 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.7.0 - 2026-07-24
+
+### Changed
+
+- Lead specification, design, plan, code, verification, review, assessment, workflow-status,
+  and handoff responses with one plain-language engineering result. Separate product/code
+  problems, missing verification, and process/documentation problems; interpret checker
+  results; explain specialized terms; and keep exact internal verdicts as secondary process
+  status.
+- Rename standalone stage skills from generic names such as `code-create` to explicit
+  `sarathi-*` names, make them agent-neutral and explicit-only, and leave only the top-level
+  `sarathi` router eligible for implicit invocation. Upgrades archive recognizable
+  installer-owned unprefixed stage skills outside skill discovery without changing their
+  contents; unrelated generic skills remain untouched.
+
+### Fixed
+
+- Recognize legacy unprefixed stage aliases with LF or CRLF line endings during upgrade,
+  compose assessment passes through canonical prompts without implicitly invoking public
+  explicit-only skills, preserve unprefixed internal stage values, and require verification
+  responses to put their plain-language result first. Run legacy-alias migration for every
+  installer tool selection, and keep canonical handoffs host-neutral by rendering stage IDs
+  through the current host's installed invocation form.
+
 ## 0.6.1 - 2026-07-23
 
 ### Fixed

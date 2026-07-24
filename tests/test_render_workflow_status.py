@@ -156,9 +156,97 @@ Extra Checks: external integration
         "modules": "external integration",
     }
     assert "Delivery choices" in rendered
-    assert "Assurance profile: Standard." in rendered
-    assert "Approval policy: Automatic eligible gates." in rendered
-    assert "Work outcome: Decision/evidence." in rendered
+    assert "Verification depth (assurance profile): Standard." in rendered
+    assert "Approval approach (approval policy): Automatic eligible gates." in rendered
+    assert "Intended result (work outcome): Decision/evidence." in rendered
+
+
+def test_renderer_leads_with_recorded_plain_language_status(tmp_path):
+    module = load_renderer()
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+
+## Product Snapshot
+
+Status Result: Not ready
+Status Summary: The release build still exposes an internal review screen.
+Goal: Release the reviewed screen safely.
+""",
+    )
+
+    model = module.build_model(tmp_path)
+    rendered = module.render_html(
+        model,
+        tmp_path,
+        tmp_path / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["wip"]["product_status"]["status_result"] == "Not ready"
+    assert "Status result: Not ready" in rendered
+    assert "The release build still exposes an internal review screen." in rendered
+    assert "This is a project-authored status snapshot" in rendered
+    assert rendered.index("Status result: Not ready") < rendered.index("Process state")
+
+
+def test_renderer_does_not_infer_a_green_status_when_none_is_recorded(tmp_path):
+    module = load_renderer()
+    model = module.build_model(tmp_path)
+    rendered = module.render_html(
+        model,
+        tmp_path,
+        tmp_path / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert "Status result: Cannot assess yet" in rendered
+    assert "No valid plain-language status is recorded." in rendered
+    assert "Status result: Ready" not in rendered
+
+
+def test_renderer_rejects_scoped_text_in_the_four_value_status_field(tmp_path):
+    module = load_renderer()
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+Status Result: Ready for implementation planning
+Status Summary: Planning can start, but release is not ready.
+""",
+    )
+
+    model = module.build_model(tmp_path)
+    rendered = module.render_html(
+        model,
+        tmp_path,
+        tmp_path / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert "Status result: Cannot assess yet" in rendered
+    assert "Status result: Ready for implementation planning" not in rendered
+
+
+def test_renderer_keeps_scope_in_summary_beside_a_base_status(tmp_path):
+    module = load_renderer()
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+Status Result: Ready
+Status Summary: Ready for implementation planning, not release.
+""",
+    )
+
+    model = module.build_model(tmp_path)
+    rendered = module.render_html(
+        model,
+        tmp_path,
+        tmp_path / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert "Status result: Ready" in rendered
+    assert "Ready for implementation planning, not release." in rendered
 
 
 def test_renderer_rejects_auto_approval_under_human_checkpoints(tmp_path):
@@ -273,7 +361,7 @@ Current Gate: human-review
         module.GUIDE_FILENAME,
     )
 
-    assert rendered.index("Product snapshot") < rendered.index(
+    assert rendered.index("Status result: Cannot assess yet") < rendered.index(
         "Documents and delivery evidence"
     )
     assert "Target persistence and API work has not started." in rendered
@@ -871,7 +959,7 @@ def test_hash_current_code_slice_approval_marks_only_the_slice_handed_off(tmp_pa
     assert model["work_items"][0]["code_slice_approval"]["state"] == "approved"
     assert model["summary"]["handed_off_items"] == 1
     assert "WORK-DEMO-ALPHA" in rendered
-    assert "Slice handed off" in rendered
+    assert "Approved for the next integration step" in rendered
     assert ">Completed<" not in rendered
 
 
@@ -938,8 +1026,8 @@ Implementation Readiness: Code-ready
 
     assert parent["state"] == "children-assessed"
     assert parent["children"][0]["state"] == "slice-handed-off"
-    assert "Children assessed" in rendered
-    assert "Slice handed off" in rendered
+    assert "Child work reviewed or approved for the next step" in rendered
+    assert "Approved for the next integration step" in rendered
     assert ">Completed<" not in rendered
 
 
@@ -997,7 +1085,7 @@ assessments:
     }
     assert model["summary"]["assessed_items"] == 1
     assert "WORK-DEMO-ALPHA" in rendered
-    assert "Assessed" in rendered
+    assert "Code checks and review passed" in rendered
     assert "What we learned" in rendered
     assert "Feedback received" in rendered
     assert "revision-proposed: record observed retry timing" in rendered
@@ -1205,7 +1293,7 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert first.encode() == second.encode()
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
-    assert "Engineering state" in first
+    assert "Project-reported engineering status" in first
     assert "Process state" in first
     assert "Documents and delivery evidence" in first
     assert "WORK-DEMO-ALPHA" in first

@@ -13,7 +13,8 @@ intent, not implementation architecture.
 Read `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, existing documents, and relevant
 repository evidence. Load `docs/artifact-contracts.md`, `docs/document-locations.md`, and
 `docs/human-first-artifacts.md` for the Spec contract, narrative, and traceability layers.
-Load `docs/requirements-model.md` for the requirements hierarchy.
+Load `docs/requirements-model.md` for the requirements hierarchy and
+`docs/result-reporting.md` for the handoff.
 
 ## Triggered References
 
@@ -105,9 +106,9 @@ Run the repeatable format and link checker and fix failures:
 python checkers/check_spec.py <spec-path> --json
 ```
 
-Retry with `python3` or `uv run python` when needed. Then run `/spec-assess`; use one fresh
-sub-agent for checks and another for independent review when available. Without sub-agents,
-say that the review is not independent and keep the passes separate.
+Retry with `python3` or `uv run python` when needed. Then execute the assessment instructions
+from `prompts/spec-assess.prompt.md`; use one fresh sub-agent for checks and another for
+independent review when available. Without sub-agents, disclose non-independence and keep the passes separate.
 
 Revise until the result is Pass or an explicitly accepted Pass-with-fixes. Update
 `.sdlc/wip.md` with the path, exact machine status fields, checks run, assumptions,
@@ -115,5 +116,5 @@ blockers, and next action.
 
 Stop according to the recorded approval policy. Human checkpoints require explicit approval;
 automatic approval needs an eligible local policy and explicit end-to-end continuation before
-design. Report the spec path, what it defines, checks run, open questions, and recommended
-`/design-create`.
+design. Give one plain-language handoff result, then the spec path, what it defines,
+interpreted checks, categorized problems, impact-ranked actions, and recommended next stage `design-create` in the current host's explicit invocation form.

@@ -8,7 +8,8 @@ agent: agent
 Review the target spec without editing it unless asked. Read `.sdlc/wip.md`, available
 verification evidence, `docs/artifact-contracts.md`, `docs/document-locations.md`, `docs/assurance-profiles.md`, and
 `docs/simplicity-first.md`. Load `docs/requirements-model.md` and
-`docs/human-first-artifacts.md`, then answer the first-page comprehension questions. Load
+`docs/human-first-artifacts.md`, then answer the first-page comprehension questions. Follow
+`docs/result-reporting.md` for the report. Load
 `docs/srs-authoring.md` for reconstructed, terse, or over-bundled requirements or when use
 cases and supplementary requirements need detailed review.
 
@@ -20,7 +21,7 @@ review only when requirements or scope changed.
 
 ## Judge
 
-Lead with concrete problems. Check that the opening page lets an engineer explain the
+After the plain-language review result, report concrete problems. Check that the opening page lets an engineer explain the
 problem, affected users, required behavior, non-goals, success, and important failures.
 Then check that each requirement is observable and testable, external contracts are
 credible, links to later work resolve, and stronger checks are limited to real risks.
@@ -43,9 +44,9 @@ traceability and return
 `Needs rework`. If an engineer must decode IDs to understand the product, rewrite it in
 plain technical language even when automatic checks pass.
 
-Report evidence considered, concrete findings, what can be deleted, deferred, or proved by
-existing evidence, top fixes, and
-`Pass | Pass-with-fixes | Needs rework`. Write/update
+Report one plain-language result, categorized findings, interpreted evidence, what can be
+deleted, deferred, or proved by existing evidence, and impact-ranked fixes. Preserve
+`Pass | Pass-with-fixes | Needs rework` only as the explained secondary process status. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `spec-review.md` only for
 Product/system, otherwise `<work-slug>.spec-review.md`. Update WIP and stop according to the
 recorded approval policy. Human checkpoints require explicit approval; automatic approval

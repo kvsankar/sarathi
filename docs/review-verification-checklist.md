@@ -23,10 +23,10 @@ unless scope or controlling intent changed materially. Record which mode was use
 
 | Assessment | Required evidence |
 | --- | --- |
-| `/spec-assess` | `check_spec.py`, ID/section/coverage structure, approval evidence when required. |
-| `/design-assess` | Spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
-| `/plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, pass/fail verification, and exact membership of any parallel-work group. |
-| `/code-assess` | Earlier checks, `check_code.py`, planned tests, required project checks, and any extra checks in the plan. |
+| `spec-assess` | `check_spec.py`, ID/section/coverage structure, approval evidence when required. |
+| `design-assess` | Spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
+| `plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, pass/fail verification, and exact membership of any parallel-work group. |
+| `code-assess` | Earlier checks, `check_code.py`, planned tests, required project checks, and any extra checks in the plan. |
 
 Check results prove only what the command observes. They do not prove
 correctness, meaningful tests, stakeholder feedback, real-boundary execution, merge state,
@@ -56,16 +56,20 @@ criteria merely because they exist.
 
 ## Report
 
-Every non-blocked assessment reports:
+Follow `docs/result-reporting.md`. Lead with one plain-language engineering result, keep the
+machine verdict as a secondary explained process status, separate product/code problems,
+missing verification, and process/documentation problems, and interpret checker results
+before raw counts. Every non-blocked assessment reports:
 
 1. Check results with exact commands and evidence limits.
 2. What is clear, what is not, and whether the planned checking matches the actual risk.
 3. What can be deleted, deferred, combined, or proved with existing tests.
 4. Top fixes ranked by impact.
-5. Verdict: `Pass | Pass-with-fixes | Needs rework`.
+5. Internal verdict: `Pass | Pass-with-fixes | Needs rework`.
 
 Use `Blocked-upstream` when a controlling parent document must be corrected before later
-judgment. Code assessment also reports feedback and parent-document changes, and writes
+judgment. Explain which earlier document is blocking judgment and what must change. Code
+assessment also reports feedback and parent-document changes, and writes
 assessment and parallel-work ledgers only under the evidence rules in `docs/workflow-status.md`.
 Save the report in the matching document area's `reviews/` folder using
 `docs/document-locations.md`; do not leave review conclusions only in chat.

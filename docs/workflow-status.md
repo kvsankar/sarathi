@@ -3,12 +3,16 @@
 Sarathi can render a repeatable, read-only HTML page showing how parent intent has expanded
 into working code and tests. The page helps people find and understand the work. It is not
 an approval record, completion percentage, or substitute for checks and review.
+Human-facing status responses follow [result-reporting.md](result-reporting.md): one
+plain-language engineering result comes first, and internal document and approval states
+are explained afterward.
 
 ## What The View Shows
 
-- **Engineering snapshot first**: the goal, working and reusable capability, current
-  increment, remaining shared and target-owned work, deferred work, coding blockers, and
-  next action from `.sdlc/wip.md`. Every completion claim names its exact scope.
+- **Engineering snapshot first**: the explicitly recorded `Status Result` and
+  ordinary-language `Status Summary`, followed by the goal, working and reusable capability,
+  current increment, remaining shared and target-owned work, deferred work, coding blockers,
+  and next action from `.sdlc/wip.md`. Every completion claim names its exact scope.
 - **Document tree trunk**: product spec, design, and plan presence, readiness, and whether
   each approval matches the current file.
 - **Process state second**: current document approvals, delivery evidence, and the most
@@ -30,8 +34,8 @@ an approval record, completion percentage, or substitute for checks and review.
 - **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
   `WORK-AREA-NAME` remain visible in a repair warning but are excluded from valid
   allocation counts and workflow branches.
-- **Assessed learning evidence**: an assessed branch can show the learning and next
-  decisions recorded in a passing code assessment that matches the current plan.
+- **Checks-and-review learning evidence**: a branch whose code checks and review passed can
+  show the learning and next decisions recorded in a matching code-assessment record.
 
 The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; use
 `.sdlc/artifact-paths.yaml` when [document-locations.md](document-locations.md) selected a
@@ -58,17 +62,18 @@ dependency, cache, and VCS directories.
 | Child plan found | A parent `WORK-` item has a child implementation plan. |
 | PRs planned | A child plan declares PR slices without linked executable tests. |
 | Tests linked | At least one child `PR-` has entries in the test-link file. |
-| Assessed | A `.sdlc/code-assessments.yaml` entry matching the current plan records `Pass` for the child plan and `WORK-*` item. |
-| Slice handed off | A matching `code_slice.approved` record approves the child plan as a slice handoff. It does not complete its parent feature. |
-| Children assessed | Every discovered child slice is assessed or handed off; the parent feature has no inferred completion state. |
+| Code checks and review passed | A `.sdlc/code-assessments.yaml` entry matching the current plan records `Pass` for the child plan and `WORK-*` item. |
+| Approved for the next integration step | A matching `code_slice.approved` record approves the child plan for handoff. It does not complete its parent feature. |
+| Child work reviewed or approved for the next step | Every discovered child slice passed its code assessment or was approved for handoff; the parent feature has no inferred completion state. |
 | Not yet broken down | A parent `WORK-` item has no child implementation plan. |
 | Group closed | A checkpoint matches the current plan, group ID, and exact member list. |
 | Group in progress | The group is explicitly active or at least one member has implementation evidence. |
 | Group not started | No member has implementation evidence and the group is not active. |
 
 The visual status grammar is deliberately small: a green check means an approval matches
-the current file, a code assessment passed, a code slice was handed off, or a work-group
-review point was closed. It does not mean the enclosing feature is complete. An amber dot
+the current file, code checks and review passed, a code slice was approved for the next
+integration step, or a work-group review point was closed. It does not mean the enclosing
+feature is complete. An amber dot
 means work or evidence is present, and a gray circle means not started. A branch with linked
 tests remains amber until a code assessment establishes a stronger state.
 
@@ -81,9 +86,13 @@ verified. WIP statuses are shown only as project-authored claims. The renderer n
 completion from source-file counts or ordinary Git activity.
 
 Engineering state comes only from these exact `.sdlc/wip.md` fields. Missing fields display
-`Not recorded`; the renderer does not infer product state from approvals or Git:
+`Not recorded`; the renderer does not infer product state from approvals or Git. A missing
+or invalid status result displays `Cannot assess yet` and explains that no valid result was
+recorded:
 
 ```text
+Status Result: Ready | Ready after minor fixes | Not ready | Cannot assess yet
+Status Summary: plain-language reason and consequence for the recorded status
 Goal: end capability and target system
 Working Today: capability and the system where it currently works
 Reusable Today: shared code usable without extraction
@@ -206,9 +215,9 @@ assessments:
 ```
 
 Only `Pass` is green. `Pass-with-fixes`, stale plan hashes, WIP prose, mapped tests, and Git
-or GitHub state do not imply assessment or completion. `Slice handed off` additionally
-requires a hash-current `code_slice.approved` record whose artifact is the child
-implementation plan; it does not complete its parent feature.
+or GitHub state do not imply assessment or completion. The displayed “Approved for the next
+integration step” state additionally requires a `code_slice.approved` record that matches
+the current child implementation plan; it does not complete its parent feature.
 Legacy passing assessment records without a `learning` mapping remain valid and display
 `Not recorded in assessment`; the renderer does not invent a story from unrelated state.
 

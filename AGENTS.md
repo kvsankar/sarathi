@@ -36,7 +36,7 @@ Command verbs are intentionally distinct:
 - `assess`: run verification and review together.
 
 The stage sequence is `spec -> design -> plan -> code`, with matching `create`, `verify`,
-`review`, and `assess` commands. `/workflow-status` is a read-only projection and never
+`review`, and `assess` commands. `$sarathi-workflow-status` is a read-only projection and never
 advances a gate. Canonical behavior lives in `prompts/<stage>.prompt.md`; shared behavior
 lives in `docs/` and must not be copied into every prompt.
 
@@ -80,7 +80,7 @@ work outcome, extra checks, reason, and escalation conditions in
 - **Feature/component**: coherent capability or subsystem; may be ready to implement directly.
 - **Slice/change**: smallest implementable unit; normally ready to implement.
 
-`/code-create` blocks without approved requirements and a specific plan that is ready to implement.
+`$sarathi-code-create` blocks without approved requirements and a specific plan that is ready to implement.
 
 At every planning boundary, ask whether a competent engineer can understand, explain,
 review, and safely plan the work as one coherent unit. If yes, use one Implementation plan.
