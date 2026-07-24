@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 
-
 ROOT = Path(__file__).resolve().parents[1]
 PROMPTS = ROOT / "prompts"
 GUIDE = ROOT / "docs" / "result-reporting.md"
@@ -19,7 +18,12 @@ def prompt_text(command: str) -> str:
 def test_shared_guide_defines_one_primary_result_and_secondary_process_status() -> None:
     text = guide_text()
 
-    for result in ("Ready", "Ready after minor fixes", "Not ready", "Cannot assess yet"):
+    for result in (
+        "Ready",
+        "Ready after minor fixes",
+        "Not ready",
+        "Cannot assess yet",
+    ):
         assert f"**{result}**" in text
 
     assert "Assessment result: Not ready" in text
@@ -41,8 +45,8 @@ def test_shared_guide_separates_findings_and_interprets_checker_results() -> Non
 
     assert "Order findings within each group by practical impact" in text
     assert (
-        "The requirements, design, and implementation plan passed their structural checks."
-        in text
+        "The requirements, design, and implementation plan passed "
+        "their structural checks." in text
     )
     assert "Do not present `12/12`" in text
     assert "every required and applicable command completed and succeeded" in text
@@ -54,7 +58,7 @@ def test_shared_guide_separates_findings_and_interprets_checker_results() -> Non
     assert "A verify-only result does not replace this broader" in text
 
 
-def test_shared_guide_explains_specialized_terms_and_contains_requested_example() -> None:
+def test_shared_guide_explains_terms_and_contains_requested_example() -> None:
     text = guide_text()
 
     for specialized_term in (
