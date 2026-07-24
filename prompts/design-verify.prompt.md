@@ -7,8 +7,9 @@ agent: agent
 
 ## Workflow state
 
-At the start of this stage, follow `docs/work-in-progress.md`: read `.sdlc/wip.md` if it
-exists, check important claims against the named files, and use it only as a resume note.
+At the start of this stage, follow `docs/work-in-progress.md` and load
+`docs/result-reporting.md`: read `.sdlc/wip.md` if it exists, check important claims against
+the named files, and use it only as a resume note.
 Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
 with the current stage, document paths, decisions/assumptions, check results,
 blockers/open questions, bootstrap status, and next recommended action. Do not store
@@ -23,8 +24,8 @@ paths, hashes, IDs, approval records, and syntax where wrapping would reduce cor
 or readability.
 
 Run repeatable checks for a Software Design Document. This command collects evidence
-only; it does not judge whether the design is a good design. Use `/design-review` for
-independent judgment and `/design-assess` for checks plus review.
+only; it does not judge whether the design is a good design. Use the `design-review` stage for
+independent judgment and `design-assess` for checks plus review.
 
 If the host exposes sub-agent capability, run this verification in a fresh-context
 checker sub-agent. This is mandatory for verify stages. The checker reports repeatable
@@ -85,9 +86,10 @@ Report:
 
 ## Output
 
-End with:
+Start with one plain result from `docs/result-reporting.md`:
 
-- **Verification result**: Pass / Fail / Unable to run.
+- **Verification result**: Checks passed / Checks failed / Checks could not run.
+- **Interpretation**: what the checks establish, before raw totals or JSON.
 - **Evidence limits**: format and link checks only; independent review is still required for
   whether the design is suitable, trade-offs, dependencies, risks, decisions, and testability.
-- **Recommended next command**: `/design-review` or `/design-assess`.
+- **Recommended next stage**: `design-review` or `design-assess`, using the current host's explicit invocation form.

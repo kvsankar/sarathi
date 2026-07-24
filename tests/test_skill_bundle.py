@@ -24,3 +24,12 @@ def test_sarathi_skill_source_contains_only_skill_specific_files() -> None:
         "manifest.json",
         "scripts",
     ]
+
+
+def test_only_top_level_skill_allows_implicit_invocation() -> None:
+    skill_text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+    metadata = (SKILL / "agents" / "openai.yaml").read_text(encoding="utf-8")
+
+    assert "allow_implicit_invocation: true" in metadata
+    assert "not ordinary code generation" in skill_text
+    assert "Do not select `$sarathi` merely because" in skill_text

@@ -1,6 +1,6 @@
 ---
 name: sarathi
-description: sarathi helps teams build production software with AI agents while preserving decisions, checks, reviews, and test evidence.
+description: sarathi manages structured production delivery with specifications, designs, plans, approvals, checks, reviews, and test evidence. Use for Sarathi or managed delivery-workflow requests, not ordinary code generation.
 ---
 
 # sarathi
@@ -16,19 +16,15 @@ accepted intent -> smallest safe increment -> working behavior -> evidence -> fe
 
 ## Direct Stage Skills
 
-Use one direct skill when stage and action are clear: `create` authors, `verify` checks,
-`review` judges independently, `assess` runs both; `workflow-status` is read-only.
+Where standalone agent skills are installed, they use `$sarathi-<stage>-<action>`, where
+stage is `spec`, `design`, `plan`, or `code`, and action is `create`, `verify`, `review`, or
+`assess`. `$sarathi-workflow-status` is read-only. Other hosts use their explicit native
+command form. Only this top-level `$sarathi` skill may be selected implicitly; never select a
+stage skill or direct command unless the user explicitly invokes its full installed name.
+Do not select `$sarathi` merely because an ordinary request asks an agent to generate code.
 
-| Work | Direct skills | Use when |
-| --- | --- | --- |
-| Requirements | `spec-create`, `spec-verify`, `spec-review`, `spec-assess` | Defining or evaluating needs, requirements, acceptance, and journeys. |
-| Technical design | `design-create`, `design-verify`, `design-review`, `design-assess` | Defining or evaluating boundaries, decisions, quality attributes, and testability. |
-| Delivery plan | `plan-create`, `plan-verify`, `plan-review`, `plan-assess` | Defining or evaluating impact, work, sequence, integration, safety, and proof. |
-| Implementation | `code-create`, `code-verify`, `code-review`, `code-assess` | Implementing or evaluating an approved plan, its tests, and its evidence. |
-| Progress | `workflow-status` | Rendering a read-only delivery-progress summary. |
-
-When the direct skill is unclear, select it as described below. Do not load every stage or
-concern.
+When no stage skill was explicitly invoked, use this top-level router to select and load the
+canonical stage prompt. Do not implicitly invoke a stage skill or load every concern.
 
 ## Skill Maintenance
 
@@ -64,9 +60,9 @@ problem requires. Do not use LOC or PR-count targets.
 
 ## Supporting Status Rule
 
-For status, resume, handoff, readiness, and next-action questions, lead with scoped engineering
-reality and one executable next action; put checked process evidence afterward. Never call work
-complete without its scope. A completed prerequisite unlocks named work, not the whole feature.
+Follow `docs/result-reporting.md` for all human-facing results and handoffs. Lead with one
+scoped engineering outcome, explain secondary process verdicts, and scope every completion
+claim.
 
 ## Orient Before Acting
 
@@ -151,6 +147,7 @@ fit. Use `docs/review-verification-checklist.md`.
 | `docs/simplicity-first.md` | Checking whether a solution or PR breakdown is no larger than needed. |
 | `docs/project-entry.md` | Starting in a new or existing codebase. |
 | `docs/work-in-progress.md` | Starting, resuming, blocking, handing off, or answering status and next-action questions. |
+| `docs/result-reporting.md` | Reporting any result, status, pause, or handoff. |
 | `docs/document-locations.md` | Choosing document/review-report paths or recording non-standard canonical paths. |
 | `docs/artifact-formatting.md` | Writing or materially revising Markdown documents. |
 | `docs/human-first-artifacts.md` | Creating or revising a spec, design, or plan; checking readability or source-ID cleanliness. |

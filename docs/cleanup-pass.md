@@ -54,7 +54,7 @@ evidence, useful diagnostic signal, or an honest finding that the evidence is mi
 
 ## Required Code-Slice Pass
 
-Before ending any `/code-create` slice, the agent must:
+Before ending any `code-create` slice, the agent must:
 
 1. Re-scan touched code, tests, docs, config, and requirement links for the issues above.
 2. Fix in-scope oddities, redundancy, misleading claims, and theater.

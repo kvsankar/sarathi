@@ -7,9 +7,10 @@ agent: agent
 
 Render a read-only Sarathi progress page for the target project. Load
 `docs/workflow-status.md`, `docs/work-decomposition.md`, `docs/assurance-profiles.md`, and
-`docs/feedback-and-learning.md`; read `.sdlc/wip.md`, hash-current code-assessment records,
-and current parallel-work checkpoints when present, and check important claims against the source
-documents. This command does not create or revise a spec, design, plan, approval,
+`docs/feedback-and-learning.md`, plus `docs/result-reporting.md` for the response; read
+`.sdlc/wip.md`, current code-assessment records, and parallel-work checkpoints when present,
+and check important claims against source documents. This command does not create or revise a
+spec, design, plan, approval,
 implementation, or review report, so it does not approve or advance work.
 Run it together with related checks and status updates; do not create another user-facing
 pause for status alone.
@@ -31,11 +32,13 @@ Use `--check` when the user asks for freshness verification or CI integration.
 
 Report:
 
+- one plain-language status for the scoped engineering work and its main consequence;
 - generated status and process-guide paths;
 - the concise engineering snapshot shown first by the page: goal, working and reusable
   capability, remaining shared and target-owned work, deferred work, coding blockers, and
   next action;
-- process and approval state only after that product snapshot;
+- process and approval state only after that product snapshot, with specialized terms
+  explained;
 - any error, stale source, or missing input that prevents the page from being current or
   trustworthy;
 - the workflow tree as the place to inspect a selected feature, change, work group, or PR.

@@ -6,13 +6,13 @@ agent: agent
 # Code Verify
 
 Collect repeatable check results for implemented code. Do not edit code or judge overall
-quality. Use `/code-review` for judgment and `/code-assess` to run both.
+quality. Use the `code-review` stage for judgment and `code-assess` to run both.
 
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
 selected delivery assurance and additional checks. A compact or legacy plan may use approved
 parent documents instead of unnecessary child spec/design files. Load
-`docs/document-locations.md` and `docs/project-quality-gates.md`. Use a fresh checker
-sub-agent when available;
+`docs/document-locations.md`, `docs/project-quality-gates.md`, and
+`docs/result-reporting.md`. Use a fresh checker sub-agent when available;
 otherwise disclose that sub-agents are unavailable and run the same checks directly.
 
 ## Earlier Documents
@@ -77,11 +77,11 @@ recorded by code-create without judging its sufficiency.
 
 ## Output
 
-End with:
+Start with one plain result:
 
-- `Verification result: Pass | Fail | Unable to run`;
-- commands and concise outcomes;
-- evidence gaps and unavailable checks;
+- `Verification result: Checks passed | Checks failed | Checks could not run`;
+- what the checks establish, then commands and raw metrics;
+- missing verification and unavailable checks, separate from process/documentation problems;
 - evidence limits: commands do not prove that the design is suitable, tests are meaningful, or the change is simple,
   true stakeholder feedback, or human approval;
-- recommended `/code-review` or `/code-assess`.
+- recommended next stage, `code-review` or `code-assess`, using the current host's explicit invocation form.

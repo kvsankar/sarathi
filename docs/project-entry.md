@@ -14,8 +14,8 @@ when the repo is not already operating under an SDLC decision record:
   sufficient. Existing external references may satisfy part of the need.
 - **Document and review the existing system**: create a retrospective spec and design from the existing product, docs,
   tests, and code, then perform a baseline
-  `/code-review` when requested. A retrospective baseline code review may skip
-  `/plan-create` and `/plan-review` because it judges already-written code against
+  `code-review` when requested. A retrospective baseline code review may skip
+  `plan-create` and `plan-review` because it judges already-written code against
   reconstructed intent, not against a pre-approved implementation plan.
 - **Govern only new changes**:
   learn enough about the existing system to avoid breaking it, then create or revise
@@ -145,7 +145,7 @@ project_entry:
     - "Existing behavior outside the requested delta is accepted as baseline."
   risks:
     - "Legacy requirements may remain incomplete until touched by a future delta."
-  next_recommended_stage: "/spec-create"
+  next_recommended_stage: "spec-create"
 delivery:
   assurance_profile: "lean | standard | high-assurance"
   work_outcome: "product_increment | decision_evidence"
@@ -172,7 +172,7 @@ policy, and work outcome describe how the current work proceeds.
 - Existing-system baseline work may create retrospective specs and designs from observed
   behavior, docs, tests, and code. Mark reconstructed intent clearly and flag gaps where the
   current system's intended behavior cannot be inferred.
-- A planless baseline `/code-review` must say that it is a retrospective baseline
+- A planless baseline `code-review` must say that it is a retrospective baseline
   review, name the decision record that permits skipping plan review, and avoid claiming
   conformance to a pre-approved implementation plan.
 - New implementation changes in any mode require approved requirements and a specific plan

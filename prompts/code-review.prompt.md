@@ -9,7 +9,8 @@ Review code/tests without editing unless asked. Read earlier documents, the diff
 implementation, `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`, `docs/document-locations.md`,
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`,
 `docs/feedback-and-learning.md`, `docs/test-ownership.md`, `docs/cleanup-pass.md`, and
-`docs/simplify-pass.md`, plus `docs/project-quality-gates.md`. For an authorized
+`docs/simplify-pass.md`, plus `docs/project-quality-gates.md` and
+`docs/result-reporting.md`. For an authorized
 existing-system baseline review, follow `docs/project-entry.md`; otherwise block when
 approved requirements or an implementable plan are missing or unfit.
 
@@ -22,7 +23,7 @@ a full review only if requirements or scope changed.
 
 ## Judge
 
-Lead with actionable findings ordered by severity and grounded in file/line references.
+After the plain-language review result, report actionable findings ordered by severity and grounded in file/line references.
 Check correctness, important edge cases, fit with the approved documents, meaningful tests
 with clear pass/fail results, and whether external dependencies were tested credibly.
 For behavior changes, inspect whether the evidence shows a meaningful test failing for the
@@ -45,9 +46,10 @@ be removed, collapsed, deferred, or proved by existing checks. A green, traceabl
 `Needs rework` when overbuilt. Simplification may require revision of an earlier spec,
 design, or plan; do not confine it to local refactoring.
 
-Report findings, blockers in earlier documents, evidence limits, what can be deleted,
-deferred, or reused, top fixes, feedback and earlier-document changes, and
-`Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Write/update
+Report one plain-language result, categorized findings, interpreted evidence, what can be
+deleted, deferred, or reused, impact-ranked fixes, feedback, and earlier-document changes.
+Preserve `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` only as the explained
+secondary process status. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `code-review.md` only for
 Product/system, otherwise `<work-slug>.code-review.md`. Update WIP and stop according to the
 recorded approval policy. Human checkpoints require explicit approval; automatic approval

@@ -58,6 +58,12 @@ WIP_PRODUCT_FIELDS = (
     ("Before Coding", "before_coding"),
     ("Next Action", "next_action"),
 )
+WIP_STATUS_RESULTS = {
+    "ready": "Ready",
+    "ready after minor fixes": "Ready after minor fixes",
+    "not ready": "Not ready",
+    "cannot assess yet": "Cannot assess yet",
+}
 ASSESSMENT_LEARNING_FIELDS = (
     ("target", "target"),
     ("feedback_target", "feedback_target"),
@@ -577,6 +583,13 @@ def parse_wip(root: Path) -> dict[str, Any]:
         if match and key not in result["learning"]:
             result["learning"][key] = match.group(1).strip()
     for field, key in WIP_PRODUCT_FIELDS:
+        match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
+        if match:
+            result["product_status"][key] = match.group(1).strip()
+    for field, key in (
+        ("Status Result", "status_result"),
+        ("Status Summary", "status_summary"),
+    ):
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match:
             result["product_status"][key] = match.group(1).strip()
@@ -1307,6 +1320,18 @@ def esc(value: Any) -> str:
 def render_product_snapshot(wip: dict[str, Any]) -> str:
     """Render engineering state before any process or approval state."""
     product_status = wip.get("product_status") or {}
+    recorded_result = product_status.get("status_result", "")
+    status_result = WIP_STATUS_RESULTS.get(recorded_result.casefold())
+    if status_result:
+        status_summary = product_status.get("status_summary") or (
+            "No plain-language reason was recorded for this status."
+        )
+    else:
+        status_result = "Cannot assess yet"
+        status_summary = (
+            "No valid plain-language status is recorded. Review the engineering details "
+            "below before deciding whether the work can continue."
+        )
     cards = "".join(
         f'<article class="product-status-card"><h3>{esc(label)}</h3>'
         f"<p>{esc(product_status.get(key) or 'Not recorded')}</p></article>"
@@ -1321,14 +1346,19 @@ def render_product_snapshot(wip: dict[str, Any]) -> str:
         if missing
         else ""
     )
+    claim_note = (
+        '<p class="product-status-warning">This is a project-authored status snapshot, '
+        "not an independent readiness check.</p>"
+    )
     return f"""
   <section class="product-status" aria-labelledby="product-status-title">
     <div class="product-status-head">
-      <div class="product-status-kicker">Engineering state</div>
-      <h2 id="product-status-title">Product snapshot</h2>
-      <p>What works, what remains, what is deferred, and what happens next.</p>
+      <div class="product-status-kicker">Project-reported engineering status</div>
+      <h2 id="product-status-title">Status result: {esc(status_result)}</h2>
+      <p>{esc(status_summary)}</p>
     </div>
     <div class="product-status-grid">{cards}</div>
+    {claim_note}
     {note}
   </section>"""
 
@@ -1352,9 +1382,9 @@ def state_label(state: str) -> str:
         "started": "Documents started",
         "evidence": "Evidence mapped",
         "planned": "PRs planned",
-        "assessed": "Assessed",
-        "children-assessed": "Children assessed",
-        "slice-handed-off": "Slice handed off",
+        "assessed": "Code checks and review passed",
+        "children-assessed": "Child work reviewed or approved for the next step",
+        "slice-handed-off": "Approved for the next integration step",
         "completed": "Review point closed",
     }.get(state, state.replace("-", " ").title())
 
@@ -1587,7 +1617,7 @@ def render_code_node(item: dict[str, Any]) -> str:
     {badge(state)}
   </div>
   <strong>Delivered by child slices</strong>
-  <div class="node-detail">{assessed} / {len(children)} child slice{"s" if len(children) != 1 else ""} assessed or handed off</div>
+  <div class="node-detail">{assessed} of {len(children)} child slice{"s" if len(children) != 1 else ""} passed code checks and review or were approved for the next integration step</div>
 </div>"""
     prs = item["prs"]
     evidence_count = item["evidence_count"]
@@ -1922,9 +1952,9 @@ def render_tree_branch(
     is_focus = item["id"] == focus_id
     branch_status = {
         "frontier": "Not started",
-        "assessed": "Assessed",
-        "children-assessed": "Children assessed",
-        "slice-handed-off": "Slice handed off",
+        "assessed": "Code checks and review passed",
+        "children-assessed": "Child work reviewed or approved for the next step",
+        "slice-handed-off": "Approved for the next integration step",
     }.get(item["state"], "In progress")
     open_attribute = " open" if is_focus else ""
     focus_label = '<span class="focus-label">Current focus</span>' if is_focus else ""
@@ -2427,17 +2457,17 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="feature">Features</a></div>
-        <div class="delivery-states">{feature_rollup["handed_off"]} / {feature_rollup["total"]} handed off | {feature_rollup["assessed"]} assessed | {feature_rollup["in_progress"]} in progress | {feature_rollup["planned"]} planned next | {feature_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-states">{feature_rollup["handed_off"]} of {feature_rollup["total"]} approved for the next integration step | {feature_rollup["assessed"]} passed code review or completed child review/handoff | {feature_rollup["in_progress"]} in progress | {feature_rollup["planned"]} planned next | {feature_rollup["not_planned"]} not yet planned</div>
         <div class="delivery-total">Feature work is planned through child records and delivery evidence.</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Feature slices</a></div>
-        <div class="delivery-states">{feature_slice_rollup["handed_off"]} / {feature_slice_rollup["total"]} handed off | {feature_slice_rollup["assessed"]} assessed | {feature_slice_rollup["in_progress"]} in progress | {feature_slice_rollup["planned"]} planned next | {feature_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-states">{feature_slice_rollup["handed_off"]} of {feature_slice_rollup["total"]} approved for the next integration step | {feature_slice_rollup["assessed"]} passed code review or completed child review/handoff | {feature_slice_rollup["in_progress"]} in progress | {feature_slice_rollup["planned"]} planned next | {feature_slice_rollup["not_planned"]} not yet planned</div>
         <div class="delivery-total">Feature-owned slices are shown with their feature prefix.</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Product-owned slices</a></div>
-        <div class="delivery-states">{product_slice_rollup["handed_off"]} / {product_slice_rollup["total"]} handed off | {product_slice_rollup["assessed"]} assessed | {product_slice_rollup["in_progress"]} in progress | {product_slice_rollup["planned"]} planned next | {product_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-states">{product_slice_rollup["handed_off"]} of {product_slice_rollup["total"]} approved for the next integration step | {product_slice_rollup["assessed"]} passed code review or completed child review/handoff | {product_slice_rollup["in_progress"]} in progress | {product_slice_rollup["planned"]} planned next | {product_slice_rollup["not_planned"]} not yet planned</div>
         <div class="delivery-total">Product-owned slices cover cross-feature integration and release work.</div>
       </div>
     </div>
@@ -2445,7 +2475,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   {malformed_warning}
   <details class="read-note">
     <summary>Delivery choices</summary>
-    <p>Assurance profile: {esc(model["delivery"]["profile"])}. Approval policy: {esc(model["delivery"]["approval_policy"])}. Work outcome: {esc(model["delivery"]["work_outcome"])}. Extra checks: {esc(model["delivery"]["modules"])}.</p>
+    <p>Verification depth (assurance profile): {esc(model["delivery"]["profile"])}. Approval approach (approval policy): {esc(model["delivery"]["approval_policy"])}. Intended result (work outcome): {esc(model["delivery"]["work_outcome"])}. Additional required checks: {esc(model["delivery"]["modules"])}.</p>
   </details>
   <div class="tree-heading">
     <div><h2>Work</h2><p id="tree-description">Open an item to see its documents and evidence.</p></div>
@@ -2473,7 +2503,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   <section class="technical-details" aria-label="Workflow details">
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean a document is approved, a slice is assessed or handed off, or a review point is closed. They do not mean the enclosing feature is complete. Amber dots mean work or evidence exists. Gray circles mean not started. Status is shown only when it is explicitly recorded; it is never guessed from Git or passing tests.</p>
+      <p>Green checks mean a document is approved, a code change passed its checks and review, a slice was approved for the next integration step, or a review point was closed. They do not mean the enclosing feature is complete. Amber dots mean work or evidence exists. Gray circles mean not started. Status is shown only when it is explicitly recorded; it is never guessed from Git or passing tests.</p>
       {approval_note}
       {traceability_note}
       {assessment_note}

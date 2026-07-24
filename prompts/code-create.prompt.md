@@ -13,7 +13,8 @@ Read `.sdlc/wip.md`, process decisions, approved earlier documents, the implemen
 current code/tests, and repository check commands. A compact plan may link approved parent
 documents instead of repeating them. Load `docs/artifact-contracts.md` for the Code and
 Evidence contract, `docs/test-ownership.md` for test-first implementation, and
-`docs/feedback-and-learning.md` when coordinated work is active.
+`docs/feedback-and-learning.md` when coordinated work is active. Load
+`docs/result-reporting.md` for the handoff.
 
 ## Triggered References
 
@@ -90,13 +91,15 @@ affected checks.
 
 Update `.sdlc/wip.md` and report:
 
+- one plain-language handoff result and the main engineering consequence;
 - changed paths and what they now do;
-- exact test and project-check commands with results;
+- exact test and project-check commands with interpreted results;
 - the observed Red-Green-Refactor evidence, or the narrow reason and replacement check when
   a failing test was not a sensible driver;
-- unavailable checks, assumptions, risks, and relevant feedback;
-- changes needed in the spec, design, remaining plan, or code, and whether `/code-assess`
-  can start.
+- product/code problems, missing verification, and process/documentation problems kept
+  separate;
+- assumptions, risks, relevant feedback, required earlier-document changes, impact-ranked
+  actions, and whether the `code-assess` stage can start.
 
 Stop according to the recorded approval policy after the code change. Human checkpoints
 require explicit approval; automatic approval needs an eligible local policy and a

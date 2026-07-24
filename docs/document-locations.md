@@ -39,15 +39,17 @@ Use its `children` mapping for work-item-specific paths when applicable. See
 
 ## Preserve Review Output
 
-Every direct `/spec-review`, `/design-review`, `/plan-review`, and `/code-review` writes or
+Every direct `spec-review`, `design-review`, `plan-review`, and `code-review` writes or
 updates a Markdown report in `<document-area>/reviews/`. Product/system reports normally use
 `spec-review.md`, `design-review.md`, `plan-review.md`, or `code-review.md`. Smaller-scope
 reports use the document's work slug, such as `auth-signin.spec-review.md`; assessments use
 `auth-signin.<stage>-assessment.md` with separate **Check Pass** and **Review Pass** sections.
 For a child, use that child's document area, not a repository-wide review folder.
 
-Each report states the target paths and revisions or hashes when available, scope, evidence
-and commands, independence limits, findings ordered by impact, simplifications considered,
-verdict, and open follow-ups. It is an evidence record, not approval or proof of stakeholder
-feedback. Update the current report for the reviewed revision; link earlier reports when
-history matters instead of duplicating their contents.
+Each report follows [result-reporting.md](result-reporting.md): one plain-language result,
+categorized findings, interpreted evidence, practical next actions, and then the exact
+internal verdict as process status. It also states the target paths and revisions or hashes
+when available, scope, commands, independence limits, simplifications considered, and open
+follow-ups. It is an evidence record, not approval or proof of stakeholder feedback. Update
+the current report for the reviewed revision; link earlier reports when history matters
+instead of duplicating their contents.

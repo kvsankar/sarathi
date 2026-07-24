@@ -234,6 +234,13 @@ copilot_skill_dests() {
   fi
 }
 
+legacy_stage_skill_roots() {
+  local skill_dest
+  while IFS= read -r skill_dest; do
+    dirname "$skill_dest"
+  done < <(copilot_skill_dests)
+}
+
 copy_codex_prompt_files() {
   local dest="$1"
   mkdir -p "$dest"
@@ -258,12 +265,12 @@ write_destination_summary() {
         echo "  GitHub Copilot prompts -> $(copilot_prompt_dest)"
         while IFS= read -r skill_dest; do
           echo "  GitHub Copilot skill -> $skill_dest"
-          echo "  GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
+          echo "  Explicit Sarathi stage skills -> $(dirname "$skill_dest")"
         done < <(copilot_skill_dests)
         if [[ "$SCOPE" == "user" ]]; then
           echo "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
         fi
-        echo "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
+        echo "    Explicit stages use prefixed skills such as sarathi-code-review and sarathi-code-assess."
         echo "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
         ;;
       claude-code)
@@ -407,29 +414,69 @@ copy_skill_folder() {
   fi
 }
 
-copy_copilot_stage_skills() {
+archive_retired_unprefixed_stage_skills() {
+  local skill_root="$1"
+  local preview="${2:-0}"
+  local archive_root file stage_name retired archived archive_suffix
+  archive_root="$(dirname "$skill_root")/sarathi-retired-stage-skills"
+
+  for file in "$PROMPT_SOURCE"/*.prompt.md; do
+    stage_name="$(command_name "$file")"
+    retired="$skill_root/$stage_name"
+    [[ -d "$retired" && -f "$retired/SKILL.md" ]] || continue
+    tr -d '\r' < "$retired/SKILL.md" | grep -Fx "name: $stage_name" >/dev/null || continue
+    grep -Fq "This is a direct GitHub Copilot CLI skill alias for the Sarathi $stage_name stage." "$retired/SKILL.md" || continue
+    archived="$archive_root/$stage_name"
+    archive_suffix=1
+    while [[ -e "$archived" ]]; do
+      archived="$archive_root/$stage_name-$archive_suffix"
+      archive_suffix=$((archive_suffix + 1))
+    done
+    if [[ "$preview" -eq 1 ]]; then
+      echo "Would archive retired unprefixed Sarathi stage skill -> $archived" >&3
+    else
+      mkdir -p "$archive_root"
+      mv "$retired" "$archived"
+      echo "Archived retired unprefixed Sarathi stage skill -> $archived"
+    fi
+  done
+}
+
+archive_retired_stage_skills_for_scope() {
+  local preview="${1:-0}"
+  local skill_root
+  while IFS= read -r skill_root; do
+    [[ -d "$skill_root" ]] || continue
+    archive_retired_unprefixed_stage_skills "$skill_root" "$preview"
+  done < <(legacy_stage_skill_roots)
+}
+
+copy_explicit_stage_skills() {
   local main_skill_dest="$1"
   local skill_root
   skill_root="$(dirname "$main_skill_dest")"
 
   for file in "$PROMPT_SOURCE"/*.prompt.md; do
-    local stage_name stage_dest prompt_file_name description stage_skill_temp
+    local stage_name skill_name stage_dest prompt_file_name description
+    local stage_skill_temp stage_agent_temp
     stage_name="$(command_name "$file")"
-    stage_dest="$skill_root/$stage_name"
+    skill_name="sarathi-$stage_name"
+    stage_dest="$skill_root/$skill_name"
     prompt_file_name="$(basename "$file")"
-    description="$(printf 'Sarathi stage skill for %s. %s' "$stage_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+    description="$(printf 'Explicit-only Sarathi stage %s. Use only when the user explicitly invokes %s. %s' "$stage_name" "$skill_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
 
     mkdir -p "$stage_dest"
     stage_skill_temp="$(mktemp "$stage_dest/.SKILL.md.XXXXXX")"
     cat > "$stage_skill_temp" <<EOF
 ---
-name: $stage_name
+name: $skill_name
 description: "$description"
 ---
 
-# sarathi Stage: $stage_name
+# Sarathi Stage: $stage_name
 
-This is a direct GitHub Copilot CLI skill alias for the Sarathi $stage_name stage.
+This is an agent-neutral, explicit-only entry point for the Sarathi $stage_name stage.
+Do not invoke it implicitly for an ordinary coding request.
 
 Follow the bundled prompt file prompts/$prompt_file_name exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
@@ -438,11 +485,26 @@ Resolve any transitive prompts referenced as prompts/*.prompt.md from
 by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
 Keep required approvals, safety stops, declared file scope, test evidence, and independent
-review. For status and handoff responses, follow ../sarathi/docs/work-in-progress.md and
-report engineering state before process state. Do not start later work when the prompt says
-to stop for the user.
+review. For every result, status, or handoff response, follow
+../sarathi/docs/result-reporting.md and ../sarathi/docs/work-in-progress.md. Lead with one
+plain engineering outcome and explain secondary process status. Do not start later work
+when the prompt says to stop for the user.
 EOF
     mv -f "$stage_skill_temp" "$stage_dest/SKILL.md"
+
+    rm -rf "$stage_dest/agents"
+    mkdir -p "$stage_dest/agents"
+    stage_agent_temp="$(mktemp "$stage_dest/agents/.openai.yaml.XXXXXX")"
+    cat > "$stage_agent_temp" <<EOF
+interface:
+  display_name: "Sarathi $stage_name"
+  short_description: "Explicit Sarathi stage: $stage_name"
+  default_prompt: "Use \$$skill_name to run the Sarathi $stage_name stage."
+
+policy:
+  allow_implicit_invocation: false
+EOF
+    mv -f "$stage_agent_temp" "$stage_dest/agents/openai.yaml"
 
     rm -rf "$stage_dest/prompts"
     mkdir -p "$stage_dest/prompts"
@@ -454,6 +516,7 @@ EOF
       cp "$CHECKER_SOURCE"/*.py "$stage_dest/checkers"/
     fi
   done
+  archive_retired_unprefixed_stage_skills "$skill_root"
   remove_retired_srs_authoring "$skill_root"
 }
 
@@ -464,7 +527,7 @@ install_copilot() {
     echo "Would install GitHub Copilot prompts -> $dest"
     while IFS= read -r skill_dest; do
       echo "Would install GitHub Copilot skill -> $skill_dest"
-      echo "Would install GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
+      echo "Would install explicit Sarathi stage skills -> $(dirname "$skill_dest")"
     done < <(copilot_skill_dests)
     return
   fi
@@ -476,12 +539,12 @@ install_copilot() {
   while IFS= read -r skill_dest; do
     copy_skill_folder "$skill_dest"
     echo "Installed GitHub Copilot skill -> $skill_dest"
-    copy_copilot_stage_skills "$skill_dest"
-    echo "Installed GitHub Copilot direct stage skills -> $(dirname "$skill_dest")"
+    copy_explicit_stage_skills "$skill_dest"
+    echo "Installed explicit Sarathi stage skills -> $(dirname "$skill_dest")"
   done < <(copilot_skill_dests)
   echo "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
   echo "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
-  echo "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
+  echo "Explicit stage skills use the sarathi- prefix, such as sarathi-code-review and sarathi-code-assess."
 }
 
 install_codex() {
@@ -655,7 +718,16 @@ else
   IFS=',' read -r -a TOOL_LIST <<< "$TOOLS"
 fi
 
+for tool in "${TOOL_LIST[@]}"; do
+  case "$tool" in
+    codex|copilot|claude-code|gemini|claude|pi) ;;
+    *) echo "Unknown tool: $tool" >&2; exit 2 ;;
+  esac
+done
+
 write_destination_summary
+
+archive_retired_stage_skills_for_scope "$DRY_RUN"
 
 copy_checkers
 
@@ -667,7 +739,6 @@ for tool in "${TOOL_LIST[@]}"; do
     gemini) install_gemini ;;
     claude) install_claude_export ;;
     pi) install_pi_export ;;
-    *) echo "Unknown tool: $tool" >&2; exit 2 ;;
   esac
 done
 

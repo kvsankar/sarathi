@@ -9,9 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PROMPT_REF = re.compile(r"prompts/[A-Za-z0-9._-]+\.prompt\.md")
 
 
-def run_project_copilot_install(target: Path) -> None:
+def project_install_command(target: Path, tool: str) -> list[str]:
     if os.name == "nt":
-        command = [
+        return [
             "powershell.exe",
             "-NoProfile",
             "-ExecutionPolicy",
@@ -23,22 +23,33 @@ def run_project_copilot_install(target: Path) -> None:
             "-Scope",
             "project",
             "-Tool",
-            "copilot",
+            tool,
             "-NoCrossInstall",
         ]
-    else:
-        command = [
-            "bash",
-            str(ROOT / "scripts" / "install.sh"),
-            "--target",
-            str(target),
-            "--scope",
-            "project",
-            "--tools",
-            "copilot",
-            "--no-cross-install",
-        ]
-    subprocess.run(command, check=True, capture_output=True, text=True)
+    return [
+        "bash",
+        str(ROOT / "scripts" / "install.sh"),
+        "--target",
+        str(target),
+        "--scope",
+        "project",
+        "--tools",
+        tool,
+        "--no-cross-install",
+    ]
+
+
+def run_project_install(target: Path, tool: str) -> None:
+    subprocess.run(
+        project_install_command(target, tool),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def run_project_copilot_install(target: Path) -> None:
+    run_project_install(target, "copilot")
 
 
 def run_installer_dry_run(*, verbose: bool) -> subprocess.CompletedProcess[str]:
@@ -105,7 +116,9 @@ def test_verbose_installer_reports_details_without_expected_warnings() -> None:
     assert f"Dry run complete for target: {ROOT}" in result.stdout
 
 
-def test_direct_assess_aliases_resolve_transitive_prompts(tmp_path: Path) -> None:
+def test_prefixed_stage_skills_are_explicit_agent_neutral_and_complete(
+    tmp_path: Path,
+) -> None:
     run_project_copilot_install(tmp_path)
 
     for skill_root in (
@@ -113,8 +126,26 @@ def test_direct_assess_aliases_resolve_transitive_prompts(tmp_path: Path) -> Non
         tmp_path / ".agents" / "skills",
     ):
         sarathi_prompts = skill_root / "sarathi" / "prompts"
+        stage_names = [
+            f"{stage}-{action}"
+            for stage in ("spec", "design", "plan", "code")
+            for action in ("create", "verify", "review", "assess")
+        ] + ["workflow-status"]
+        for stage_name in stage_names:
+            alias = skill_root / f"sarathi-{stage_name}"
+            skill_text = (alias / "SKILL.md").read_text(encoding="utf-8")
+            agent_text = (alias / "agents" / "openai.yaml").read_text(encoding="utf-8")
+
+            assert f"name: sarathi-{stage_name}" in skill_text
+            assert "agent-neutral, explicit-only" in skill_text
+            assert "GitHub" not in skill_text
+            assert "Copilot" not in skill_text
+            assert "allow_implicit_invocation: false" in agent_text
+            assert f"$sarathi-{stage_name}" in agent_text
+            assert not (skill_root / stage_name).exists()
+
         for stage in ("spec", "design", "plan", "code"):
-            alias = skill_root / f"{stage}-assess"
+            alias = skill_root / f"sarathi-{stage}-assess"
             prompt = alias / "prompts" / f"{stage}-assess.prompt.md"
             prompt_text = prompt.read_text(encoding="utf-8")
 
@@ -125,6 +156,228 @@ def test_direct_assess_aliases_resolve_transitive_prompts(tmp_path: Path) -> Non
                 assert (skill_root / "sarathi" / reference).is_file()
             assert (alias / "checkers" / "check_plan.py").is_file()
             assert sarathi_prompts.is_dir()
+
+
+def test_upgrade_archives_recognizable_unprefixed_stage_skills_without_data_loss(
+    tmp_path: Path,
+) -> None:
+    run_project_copilot_install(tmp_path)
+
+    for skill_root in (
+        tmp_path / ".github" / "skills",
+        tmp_path / ".agents" / "skills",
+    ):
+        for stage in ("code-create", "code-review"):
+            retired = skill_root / stage
+            (retired / "prompts" / "nested").mkdir(parents=True)
+            (retired / "checkers" / "nested").mkdir(parents=True)
+            skill_text = f"""---
+name: {stage}
+description: user-modified legacy alias
+---
+
+This is a direct GitHub Copilot CLI skill alias for the Sarathi {stage} stage.
+
+User-added instructions must survive migration.
+"""
+            if stage == "code-review":
+                (retired / "SKILL.md").write_bytes(
+                    skill_text.replace("\n", "\r\n").encode("utf-8")
+                )
+            else:
+                (retired / "SKILL.md").write_text(skill_text, encoding="utf-8")
+            (retired / "prompts" / f"{stage}.prompt.md").write_text(
+                f"user-modified prompt for {stage}", encoding="utf-8"
+            )
+            (retired / "prompts" / "nested" / "fixture.txt").write_text(
+                f"nested prompt data for {stage}", encoding="utf-8"
+            )
+            (retired / "checkers" / "check_plan.py").write_text(
+                f"# user-modified checker for {stage}", encoding="utf-8"
+            )
+            (retired / "checkers" / "nested" / "fixture.json").write_text(
+                f'{{"stage": "{stage}"}}', encoding="utf-8"
+            )
+            (retired / "local-notes.md").write_text(
+                f"user-owned notes for {stage}", encoding="utf-8"
+            )
+
+        unrelated = skill_root / "code-verify"
+        unrelated.mkdir()
+        (unrelated / "SKILL.md").write_text(
+            """---
+name: code-verify
+description: unrelated user skill
+---
+
+This generic skill is not a legacy Sarathi alias.
+""",
+            encoding="utf-8",
+        )
+
+    run_project_copilot_install(tmp_path)
+
+    for skill_root in (
+        tmp_path / ".github" / "skills",
+        tmp_path / ".agents" / "skills",
+    ):
+        archive_root = skill_root.parent / "sarathi-retired-stage-skills"
+        for stage in ("code-create", "code-review"):
+            archived = archive_root / stage
+            assert not (skill_root / stage).exists()
+            assert "User-added instructions must survive migration." in (
+                archived / "SKILL.md"
+            ).read_text(encoding="utf-8")
+            if stage == "code-review":
+                assert b"\r\n" in (archived / "SKILL.md").read_bytes()
+            assert (archived / "prompts" / f"{stage}.prompt.md").read_text(
+                encoding="utf-8"
+            ) == f"user-modified prompt for {stage}"
+            assert (archived / "prompts" / "nested" / "fixture.txt").read_text(
+                encoding="utf-8"
+            ) == f"nested prompt data for {stage}"
+            assert (archived / "checkers" / "check_plan.py").read_text(
+                encoding="utf-8"
+            ) == f"# user-modified checker for {stage}"
+            assert (archived / "checkers" / "nested" / "fixture.json").read_text(
+                encoding="utf-8"
+            ) == f'{{"stage": "{stage}"}}'
+            assert (archived / "local-notes.md").read_text(
+                encoding="utf-8"
+            ) == f"user-owned notes for {stage}"
+            assert (skill_root / f"sarathi-{stage}" / "SKILL.md").is_file()
+
+        assert (skill_root / "code-verify" / "SKILL.md").is_file()
+
+
+def test_legacy_alias_recognition_is_crlf_safe_in_both_installers() -> None:
+    bash = (ROOT / "scripts" / "install.sh").read_text(encoding="utf-8")
+    powershell = (ROOT / "scripts" / "install.ps1").read_text(encoding="utf-8")
+
+    assert "tr -d '\\r'" in bash
+    assert r'\r?$"' in powershell
+
+
+def test_codex_only_upgrade_archives_legacy_aliases_from_shared_skill_roots(
+    tmp_path: Path,
+) -> None:
+    for skill_root in (
+        tmp_path / ".github" / "skills",
+        tmp_path / ".agents" / "skills",
+    ):
+        retired = skill_root / "code-review"
+        retired.mkdir(parents=True)
+        (retired / "SKILL.md").write_text(
+            """---
+name: code-review
+description: legacy
+---
+
+This is a direct GitHub Copilot CLI skill alias for the Sarathi code-review stage.
+""",
+            encoding="utf-8",
+        )
+
+    run_project_install(tmp_path, "codex")
+
+    for skill_root in (
+        tmp_path / ".github" / "skills",
+        tmp_path / ".agents" / "skills",
+    ):
+        assert not (skill_root / "code-review").exists()
+        assert (
+            skill_root.parent
+            / "sarathi-retired-stage-skills"
+            / "code-review"
+            / "SKILL.md"
+        ).is_file()
+
+
+def test_invalid_tool_does_not_archive_or_copy_before_failure(tmp_path: Path) -> None:
+    retired = tmp_path / ".agents" / "skills" / "code-review"
+    retired.mkdir(parents=True)
+    (retired / "SKILL.md").write_text(
+        """---
+name: code-review
+description: legacy
+---
+
+This is a direct GitHub Copilot CLI skill alias for the Sarathi code-review stage.
+""",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        project_install_command(tmp_path, "codxe"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert retired.is_dir()
+    assert not (tmp_path / "checkers").exists()
+    assert not (tmp_path / ".agents" / "sarathi-retired-stage-skills").exists()
+
+
+def test_dry_run_previews_archive_without_moving_legacy_alias(tmp_path: Path) -> None:
+    retired = tmp_path / ".agents" / "skills" / "code-review"
+    retired.mkdir(parents=True)
+    (retired / "SKILL.md").write_text(
+        """---
+name: code-review
+description: legacy
+---
+
+This is a direct GitHub Copilot CLI skill alias for the Sarathi code-review stage.
+""",
+        encoding="utf-8",
+    )
+    archived = tmp_path / ".agents" / "sarathi-retired-stage-skills" / "code-review"
+    archived.mkdir(parents=True)
+    (archived / "earlier-copy.md").write_text("keep", encoding="utf-8")
+    collision_free = archived.parent / "code-review-1"
+    command = project_install_command(tmp_path, "codex")
+    command.append("-DryRun" if os.name == "nt" else "--dry-run")
+
+    result = subprocess.run(command, check=True, capture_output=True, text=True)
+
+    assert (
+        f"Would archive retired unprefixed Sarathi stage skill -> {collision_free}"
+        in result.stdout
+    )
+    assert retired.is_dir()
+    assert (archived / "earlier-copy.md").read_text(encoding="utf-8") == "keep"
+    assert not collision_free.exists()
+
+
+def test_upgrade_uses_collision_free_archive_name_and_removes_generic_alias(
+    tmp_path: Path,
+) -> None:
+    run_project_copilot_install(tmp_path)
+    skill_root = tmp_path / ".agents" / "skills"
+    retired = skill_root / "code-create"
+    retired.mkdir()
+    (retired / "SKILL.md").write_text(
+        """---
+name: code-create
+description: legacy
+---
+
+This is a direct GitHub Copilot CLI skill alias for the Sarathi code-create stage.
+""",
+        encoding="utf-8",
+    )
+    archived = skill_root.parent / "sarathi-retired-stage-skills" / "code-create"
+    archived.mkdir(parents=True)
+    (archived / "earlier-copy.md").write_text("keep both", encoding="utf-8")
+
+    run_project_copilot_install(tmp_path)
+
+    collision_free = archived.parent / "code-create-1"
+    assert not retired.exists()
+    assert (archived / "earlier-copy.md").read_text(encoding="utf-8") == "keep both"
+    assert (collision_free / "SKILL.md").is_file()
 
 
 def test_project_install_assembles_canonical_docs_into_skill(tmp_path: Path) -> None:

@@ -15,7 +15,7 @@ and relevant ADRs. Block when requirements are materially ambiguous or unfit.
 
 Load `docs/artifact-contracts.md`, `docs/document-locations.md`, `docs/assurance-profiles.md`, `docs/design-principles.md`, and
 `docs/human-first-artifacts.md` for the Design contract, architectural judgment, narrative,
-and traceability layers.
+and traceability layers. Load `docs/result-reporting.md` for the handoff.
 
 ## Triggered References
 
@@ -101,11 +101,13 @@ python checkers/check_design.py <design-path> --spec <spec-path> --json
 ```
 
 Retry launchers when needed. For child documents, use checker feature/parent options. Then
-run `/design-assess`, with one fresh sub-agent for checks and another for independent review
-when available. Revise the design or requirements until Pass or explicitly accepted
-Pass-with-fixes.
+execute the assessment instructions from `prompts/design-assess.prompt.md`, with one fresh
+sub-agent for checks and another for independent review when available. Revise the design or
+requirements until Pass or explicitly accepted Pass-with-fixes.
 
 Run simplify, update `.sdlc/wip.md`, and stop according to the recorded approval policy.
 Human checkpoints require explicit approval; automatic approval needs an eligible local policy
-and an explicit end-to-end instruction before planning. Report changed paths, evidence, open
-questions, and recommended `/plan-create`.
+and an explicit end-to-end instruction before planning. Give one plain-language handoff
+result, then changed paths, interpreted evidence, categorized problems, impact-ranked
+actions, assumptions, risks, open questions, and recommended next stage `plan-create` using
+the current host's explicit invocation form.

@@ -108,7 +108,9 @@ automatically. Set `SARATHI_UPDATE_CHECK=0` to disable that check.
 An upgrade rebuilds Sarathi's bundled `docs/`, `prompts/`, and `checkers/` subdirectories, so
 retired bundled files do not remain. It preserves other files in the installed `sarathi`
 folder and only removes the retired standalone `srs-authoring` bundle when it exactly matches
-the historical Sarathi-owned files.
+the historical Sarathi-owned files. Recognizable older unprefixed stage aliases are moved
+intact to a sibling `sarathi-retired-stage-skills/` archive outside skill discovery; unrelated
+generic skills are not moved.
 
 ## Install From A Source Checkout
 
@@ -172,10 +174,10 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
   prompt folder and skills under `~/.copilot/skills/sarathi` plus
   `~/.agents/skills/sarathi`. Project scope installs prompts to
   `<project>/.github/prompts` and skills to `<project>/.github/skills/sarathi`
-  plus `<project>/.agents/skills/sarathi`. Copilot CLI does not treat prompt
-  files as custom built-in slash commands, so the installer also creates direct stage skill
-  aliases such as `code-review`, `code-verify`, and `code-assess` under the same skill roots.
-- **Claude Code**: installs slash commands and the skill.
+  plus `<project>/.agents/skills/sarathi`. The installer also creates agent-neutral,
+  explicit-only stage skills such as `sarathi-code-review`, `sarathi-code-verify`, and
+  `sarathi-code-assess` under the same skill roots.
+- **Claude Code**: installs slash commands and the `sarathi` skill.
 - **Gemini CLI**: installs command TOML files.
 - **Claude and Pi**: exports prompt packs under `.ai-prompts/` for manual import or use.
 - **Checkers**: project-scoped package installs copy `checkers/` into the target workspace.
@@ -185,17 +187,20 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 
 Installed skill bundles are self-contained: the installer assembles each `sarathi` skill copy
 from the canonical `docs/`, `prompts/`, and `checkers/` sources, plus `SKILL.md` and agent
-config. Prompt commands or stage skill aliases are also installed separately where host tools
-can expose them directly.
+config. Prompt commands or explicit stage skills are also installed separately where host
+tools can expose them directly. Only the top-level `sarathi` skill permits implicit
+invocation, and only for Sarathi or managed delivery-workflow intent—not an ordinary
+code-generation request. Every `sarathi-*` stage skill must be named explicitly.
 
 Every dry or real install prints the destination folders before doing work.
 
-If an agent reports that `spec-create`, another stage prompt, or `checkers/check_*.py` are
-missing, the installed skill is incomplete or was copied from the wrong folder. A valid
-skill install should contain files such as `prompts/spec-create.prompt.md` and
-`checkers/check_spec.py` under the same `sarathi` skill directory. Re-run the
-installer, or install from this repository's `skills/sarathi` folder after
-updating to a version where that source folder is self-contained.
+Prefixed stage skills are expected only on agent skill surfaces where the installer exposes
+them; Codex-only, Claude Code, and Gemini installations use their native explicit commands.
+If an agent reports that bundled `prompts/spec-create.prompt.md`,
+`checkers/check_spec.py`, or another required file under the main `sarathi` skill is missing,
+the bundle is incomplete or was copied from the wrong folder. Re-run the installer, or install
+from this repository's `skills/sarathi` folder after updating to a version where that source
+folder is self-contained.
 
 ## Commands
 
@@ -208,25 +213,25 @@ The prompt set uses four verbs:
 
 The core stage names are:
 
-| Command | Purpose |
+| Explicit stage skill | Purpose |
 | --- | --- |
-| `/spec-create` | Define the problem, needs, features, use cases, functional and supplementary requirements, acceptance tests, and journeys. |
-| `/spec-verify` | Run automatic spec checks and report evidence. |
-| `/spec-review` | Independently review spec quality. |
-| `/spec-assess` | Run `/spec-verify` plus `/spec-review`. |
-| `/design-create` | Create or revise a Software Design Document and ADRs as needed. |
-| `/design-verify` | Run spec and design checks. |
-| `/design-review` | Independently review design quality and whether the spec is sufficient. |
-| `/design-assess` | Run `/design-verify` plus `/design-review`. |
-| `/plan-create` | Create a Breakdown or Implementation plan with an Impact Map, dependency graph, sequence, integration, safety, and proof. |
-| `/plan-verify` | Run checks for the spec, design, and plan. |
-| `/plan-review` | Independently review plan readiness, slicing, assignment, and sequencing. |
-| `/plan-assess` | Run `/plan-verify` plus `/plan-review`. |
-| `/code-create` | Implement an approved plan with focused tests and any planned logging, error-handling, documentation, build, or deployment work. |
-| `/code-verify` | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks. |
-| `/code-review` | Independently review code, tests, operational work, required project checks, and consistency with earlier documents. |
-| `/code-assess` | Run `/code-verify` plus `/code-review`. |
-| `/workflow-status` | Render project status as read-only HTML. |
+| `$sarathi-spec-create` | Define the problem, needs, features, use cases, functional and supplementary requirements, acceptance tests, and journeys. |
+| `$sarathi-spec-verify` | Run automatic spec checks and report evidence. |
+| `$sarathi-spec-review` | Independently review spec quality. |
+| `$sarathi-spec-assess` | Run specification checks plus independent review. |
+| `$sarathi-design-create` | Create or revise a Software Design Document and ADRs as needed. |
+| `$sarathi-design-verify` | Run spec and design checks. |
+| `$sarathi-design-review` | Independently review design quality and whether the spec is sufficient. |
+| `$sarathi-design-assess` | Run design checks plus independent review. |
+| `$sarathi-plan-create` | Create a Breakdown or Implementation plan with an Impact Map, dependency graph, sequence, integration, safety, and proof. |
+| `$sarathi-plan-verify` | Run checks for the spec, design, and plan. |
+| `$sarathi-plan-review` | Independently review plan readiness, slicing, assignment, and sequencing. |
+| `$sarathi-plan-assess` | Run plan checks plus independent review. |
+| `$sarathi-code-create` | Implement an approved plan with focused tests and any planned logging, error-handling, documentation, build, or deployment work. |
+| `$sarathi-code-verify` | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks. |
+| `$sarathi-code-review` | Independently review code, tests, operational work, required project checks, and consistency with earlier documents. |
+| `$sarathi-code-assess` | Run code checks plus independent review. |
+| `$sarathi-workflow-status` | Render project status as read-only HTML. |
 
 Generate the live status page and its linked static process guide directly with:
 
@@ -242,11 +247,12 @@ approval, and review state. Completion claims always name their exact scope.
 
 Exact invocation syntax depends on the host tool:
 
+- Agent skill surfaces: explicitly invoke `$sarathi-code-review`,
+  `$sarathi-code-assess`, or another prefixed stage skill. Ordinary coding requests do not
+  activate these skills.
 - Codex direct prompts: `/prompts:code-review`, `/prompts:code-assess`, and so on.
-- GitHub Copilot CLI: stage names are installed as skill aliases where supported, so try
-  `/code-review` or `/code-assess` after `/skills reload`. If the CLI surface rejects a
-  stage slash name, invoke by natural language: "Use the sarathi skill to run the
-  code-review stage."
+- GitHub Copilot CLI: reload skills with `/skills reload`, then explicitly select the
+  prefixed Sarathi stage skill using the syntax supported by that version.
 - VS Code Copilot Chat: use the installed prompt file from the prompt picker, or ask in
   natural language with the stage name.
 - Claude Code and Gemini: use their native command mechanisms.
@@ -274,7 +280,7 @@ compatibility:
 Documents say plainly whether the work is ready to implement and, when it is not, what
 specific question remains.
 
-`/code-create` runs from approved requirements and a specific implementation plan that is
+`$sarathi-code-create` runs from approved requirements and a specific implementation plan that is
 ready to implement.
 
 Start implementation when the approved requirements, design, and one specific plan make the
@@ -455,7 +461,7 @@ human review:
 - If important input is missing, the agent asks one focused question at a time.
 - After a document or code slice is generated, materially revised, reviewed, or assessed, the agent stops
   for human review.
-- For UI-facing products, `/spec-create` asks whether a mock UI is required. If the spec
+- For UI-facing products, `$sarathi-spec-create` asks whether a mock UI is required. If the spec
   records `UI Mock Preference: Required`, the mock UI requires explicit approval:
   later planning, code, and production UI work must wait for explicit user approval of
   the mock.
@@ -549,7 +555,7 @@ Test responsibility is split by document and code stage:
   within the current `PR-` and expected files and use a clear pass/fail check.
   If they imply new externally visible behavior, contract, UX/NFR, or scope, revise the
   controlling document first.
-- Test implementations are reviewed as code in `/code-review` and `/code-assess`: assertions,
+- Test implementations are reviewed as code in `$sarathi-code-review` and `$sarathi-code-assess`: assertions,
   fixtures, helpers, mocks, data, selectors, determinism, readability, maintainability, and
   false-positive/false-negative risk are judged, not just whether the tests pass.
 - Every executable test needs a clear pass/fail result: return value, state, persisted
@@ -561,17 +567,17 @@ Test responsibility is split by document and code stage:
   unrealistic mocks, or other latent spec/design/plan gaps.
 - Documentation, logging/telemetry, error-handling, build, and deployment checks are
   assigned through the same spec/design/plan chain and verified during code creation,
-  `/code-verify`, or `/code-assess` when planned. The same is true for environment-specific
+  `$sarathi-code-verify`, or `$sarathi-code-assess` when planned. The same is true for environment-specific
   checks and context-driven reviews/tests such as performance, security, privacy,
   accessibility, resilience, migration, compatibility, cost, and operational checks.
   Production-facing telemetry should include APM/application-performance signals when
   warranted: latency, throughput, error rate, saturation/resource use, critical spans, trace
   propagation, dashboards, alerts, and SLO/SLI signals.
 
-Use `/code-verify` when you simply want a confidence run after a change: planned tests,
+Use `$sarathi-code-verify` when you simply want a confidence run after a change: planned tests,
 pre-commit/equivalent gates, logging/error-handling checks, build checks,
 documentation checks, deployment dry-runs or smoke checks where planned, and `check_code.py`.
-Use `/code-review` when you want independent judgment. Use `/code-assess` when you want both
+Use `$sarathi-code-review` when you want independent judgment. Use `$sarathi-code-assess` when you want both
 in one gate.
 
 The checkers provide repeatable evidence about required structure and links:

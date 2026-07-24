@@ -10,10 +10,9 @@ impact, dependencies, sequence, integration, safety, and proof.
 
 ## Load And Gate
 
-Read `.sdlc/wip.md`, process decisions, accepted parent specs/designs/ADRs/prototypes, the existing plan, and
-repository delivery conventions. Load `docs/artifact-contracts.md`, `docs/document-locations.md`, and
-`docs/assurance-profiles.md`, `docs/simplicity-first.md`, `docs/human-first-artifacts.md`, `docs/test-ownership.md`, and
-`docs/work-decomposition.md`.
+Read `.sdlc/wip.md`, process decisions, accepted parent specs/designs/ADRs/prototypes, the existing plan, and repository delivery conventions.
+Load `docs/artifact-contracts.md`, `docs/document-locations.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`,
+`docs/human-first-artifacts.md`, `docs/test-ownership.md`, `docs/work-decomposition.md`, and `docs/result-reporting.md`.
 
 ## Triggered References
 
@@ -48,7 +47,7 @@ not authorize code.
 
 For a `Decision/evidence` work outcome, make the plan's done signal the named decision, not a
 shippable increment. State the question, decision owner, evidence method, boundaries,
-timebox or stop condition, and next action. Recommend `/code-create` only when a planned
+timebox or stop condition, and next action. Recommend `code-create` only when a planned
 prototype or experiment needs code; otherwise recommend the evidence-gathering or decision
 step.
 
@@ -109,12 +108,13 @@ Product/system, otherwise `<work-slug>.plan.md`, unless another path is named; d
 ## Verify And Handoff
 
 Run the earlier applicable checkers and `check_plan.py`. Run each repeatable check once for
-this revision. Then assess with a fresh checker and independent reviewer when
-available. After local fixes, use focused re-verification/re-review; restart the full pass
-only if requirements or scope changed.
-
-Record checker results, approvals, and workflow status together. Update `.sdlc/wip.md`, run
-simplify, and stop according to the recorded approval policy. Human checkpoints require
-explicit approval; automatic approval needs an eligible local policy and an explicit
-end-to-end instruction. Recommend `/code-create` only for a product increment or a planned
-code experiment; otherwise recommend the evidence-gathering or decision step.
+this revision. Then execute the assessment instructions from
+`prompts/plan-assess.prompt.md` with a fresh checker and independent reviewer when available.
+After local fixes, use focused re-verification/re-review; restart the full pass only if
+requirements or scope changed.
+Interpret checker results before raw metrics, run simplify, and give one plain-language
+handoff result with categorized problems, approvals, process status, and impact-ranked actions. Update WIP, then stop
+according to the recorded approval policy. Human checkpoints require explicit approval;
+automatic approval needs an eligible local policy and an explicit
+end-to-end instruction. Recommend `code-create` only for a product increment or planned code
+experiment; otherwise recommend the evidence-gathering or decision step.

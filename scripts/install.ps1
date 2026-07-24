@@ -227,6 +227,12 @@ function Get-CopilotSkillDestinations {
     )
 }
 
+function Get-LegacyStageSkillRoots {
+    foreach ($skillDest in Get-CopilotSkillDestinations) {
+        Split-Path -Parent $skillDest
+    }
+}
+
 function Write-DestinationSummary {
     param([string[]]$Entries)
     Write-Detail "Destination folders:"
@@ -245,12 +251,12 @@ function Write-DestinationSummary {
                 Write-Detail "  GitHub Copilot prompts -> $(Get-CopilotPromptDestination)"
                 foreach ($skillDest in Get-CopilotSkillDestinations) {
                     Write-Detail "  GitHub Copilot skill -> $skillDest"
-                    Write-Detail "  GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+                    Write-Detail "  Explicit Sarathi stage skills -> $(Split-Path -Parent $skillDest)"
                 }
                 if ($Scope -eq "user") {
                     Write-Detail "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
                 }
-                Write-Detail "    Copilot CLI direct stages are installed as skills such as /code-review and /code-assess."
+                Write-Detail "    Explicit stages use prefixed skills such as sarathi-code-review and sarathi-code-assess."
                 Write-Detail "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
             }
             "claude-code" {
@@ -358,16 +364,67 @@ function Copy-SkillFolder {
     }
 }
 
-function Copy-CopilotStageSkills {
+function Archive-RetiredUnprefixedStageSkills {
+    param(
+        [string]$SkillRoot,
+        [switch]$Preview
+    )
+
+    $archiveRoot = Join-Path (Split-Path -Parent $SkillRoot) "sarathi-retired-stage-skills"
+    Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
+        $stageName = Get-CommandName $_
+        $retired = Join-Path $SkillRoot $stageName
+        $skillFile = Join-Path $retired "SKILL.md"
+        if (-not (Test-Path -LiteralPath $skillFile -PathType Leaf)) {
+            return
+        }
+        $skillText = Get-Content -LiteralPath $skillFile -Raw
+        if (
+            $skillText -notmatch "(?m)^name: $([regex]::Escape($stageName))\r?$" -or
+            $skillText -notlike "*This is a direct GitHub Copilot CLI skill alias for the Sarathi $stageName stage.*"
+        ) {
+            return
+        }
+
+        $archived = Join-Path $archiveRoot $stageName
+        $archiveSuffix = 1
+        while (Test-Path -LiteralPath $archived) {
+            $archived = Join-Path $archiveRoot "$stageName-$archiveSuffix"
+            $archiveSuffix += 1
+        }
+
+        if ($Preview) {
+            Write-Host "Would archive retired unprefixed Sarathi stage skill -> $archived"
+        } else {
+            New-Item -ItemType Directory -Force -Path $archiveRoot | Out-Null
+            Move-Item -LiteralPath $retired -Destination $archived
+            Write-Detail "Archived retired unprefixed Sarathi stage skill -> $archived"
+        }
+    }
+}
+
+function Archive-RetiredStageSkillsForScope {
+    param([switch]$Preview)
+
+    foreach ($skillRoot in Get-LegacyStageSkillRoots) {
+        if (Test-Path -LiteralPath $skillRoot -PathType Container) {
+            Archive-RetiredUnprefixedStageSkills $skillRoot -Preview:$Preview
+        }
+    }
+}
+
+function Copy-ExplicitStageSkills {
     param([string]$MainSkillDestination)
 
     $skillRoot = Split-Path -Parent $MainSkillDestination
     Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" | ForEach-Object {
         $stageName = Get-CommandName $_
-        $stageDest = Join-Path $skillRoot $stageName
+        $skillName = "sarathi-$stageName"
+        $stageDest = Join-Path $skillRoot $skillName
         $promptFileName = $_.Name
         $description = (
-            "Sarathi stage skill for $stageName. " +
+            "Explicit-only Sarathi stage $stageName. " +
+            "Use only when the user explicitly invokes $skillName. " +
             (Get-PromptDescription $_.FullName)
         ).Replace('"', '\"')
 
@@ -375,13 +432,14 @@ function Copy-CopilotStageSkills {
 
         $stageSkill = @"
 ---
-name: $stageName
+name: $skillName
 description: "$description"
 ---
 
-# sarathi Stage: $stageName
+# Sarathi Stage: $stageName
 
-This is a direct GitHub Copilot CLI skill alias for the Sarathi $stageName stage.
+This is an agent-neutral, explicit-only entry point for the Sarathi $stageName stage.
+Do not invoke it implicitly for an ordinary coding request.
 
 Follow the bundled prompt file prompts/$promptFileName exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
@@ -390,11 +448,28 @@ Resolve any transitive prompts referenced as prompts/*.prompt.md from
 by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
 Keep required approvals, safety stops, declared file scope, test evidence, and independent
-review. For status and handoff responses, follow ../sarathi/docs/work-in-progress.md and
-report engineering state before process state. Do not start later work when the prompt says
-to stop for the user.
+review. For every result, status, or handoff response, follow
+../sarathi/docs/result-reporting.md and ../sarathi/docs/work-in-progress.md. Lead with one
+plain engineering outcome and explain secondary process status. Do not start later work
+when the prompt says to stop for the user.
 "@
         Set-AtomicUtf8File (Join-Path $stageDest "SKILL.md") $stageSkill
+
+        $agentDest = Join-Path $stageDest "agents"
+        if (Test-Path -LiteralPath $agentDest) {
+            Remove-Item -LiteralPath $agentDest -Recurse -Force
+        }
+        New-Item -ItemType Directory -Force -Path $agentDest | Out-Null
+        $agentMetadata = @"
+interface:
+  display_name: "Sarathi $stageName"
+  short_description: "Explicit Sarathi stage: $stageName"
+  default_prompt: "Use `$$skillName to run the Sarathi $stageName stage."
+
+policy:
+  allow_implicit_invocation: false
+"@
+        Set-AtomicUtf8File (Join-Path $agentDest "openai.yaml") $agentMetadata
 
         $promptDest = Join-Path $stageDest "prompts"
         if (Test-Path -LiteralPath $promptDest) {
@@ -413,6 +488,7 @@ to stop for the user.
                 Copy-Item -Destination $checkerDest -Force
         }
     }
+    Archive-RetiredUnprefixedStageSkills $skillRoot
     Remove-RetiredSrsAuthoring $skillRoot
 }
 
@@ -423,7 +499,7 @@ function Install-Copilot {
         Write-Detail "Would install GitHub Copilot prompts -> $dest"
         foreach ($skillDest in $skillDests) {
             Write-Detail "Would install GitHub Copilot skill -> $skillDest"
-            Write-Detail "Would install GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+            Write-Detail "Would install explicit Sarathi stage skills -> $(Split-Path -Parent $skillDest)"
         }
         return
     }
@@ -436,12 +512,12 @@ function Install-Copilot {
     foreach ($skillDest in $skillDests) {
         Copy-SkillFolder $skillDest
         Write-Detail "Installed GitHub Copilot skill -> $skillDest"
-        Copy-CopilotStageSkills $skillDest
-        Write-Detail "Installed GitHub Copilot direct stage skills -> $(Split-Path -Parent $skillDest)"
+        Copy-ExplicitStageSkills $skillDest
+        Write-Detail "Installed explicit Sarathi stage skills -> $(Split-Path -Parent $skillDest)"
     }
     Write-Detail "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
     Write-Detail "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
-    Write-Detail "Copilot CLI stage aliases are skills too, so /code-review, /code-verify, and /code-assess can be invoked where skill slash invocation is supported."
+    Write-Detail "Explicit stage skills use the sarathi- prefix, such as sarathi-code-review and sarathi-code-assess."
 }
 
 function Install-Codex {
@@ -672,6 +748,8 @@ $expandedTools = if ($Tool.Count -eq 0 -or $Tool -contains "all") {
 }
 
 Write-DestinationSummary $expandedTools
+
+Archive-RetiredStageSkillsForScope -Preview:$DryRun
 
 Copy-Checkers
 foreach ($entry in $expandedTools) {
