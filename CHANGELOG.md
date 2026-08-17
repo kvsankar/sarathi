@@ -23,6 +23,12 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   and `Current Command`; derive stage and action in workflow status while continuing to read
   legacy WIP state. Rename stage-action prompt and skill language to command terminology.
 
+### Fixed
+
+- Make checker tests use a platform-neutral success command, gate the Bash-only installer
+  test to POSIX environments, and keep local `docs/reviews/` working documents out of
+  installed skill bundles.
+
 ## 0.7.0 - 2026-07-24
 
 ### Changed

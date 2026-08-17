@@ -401,7 +401,11 @@ copy_skill_folder() {
 
   rm -rf "$dest/docs"
   mkdir -p "$dest/docs"
-  cp -R "$DOC_SOURCE"/. "$dest/docs/"
+  while IFS= read -r -d '' source_item; do
+    if [[ "$(basename "$source_item")" != "reviews" ]]; then
+      cp -R "$source_item" "$dest/docs/"
+    fi
+  done < <(find "$DOC_SOURCE" -mindepth 1 -maxdepth 1 -print0)
 
   rm -rf "$dest/prompts"
   mkdir -p "$dest/prompts"

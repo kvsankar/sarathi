@@ -343,6 +343,7 @@ function Copy-SkillFolder {
     }
     New-Item -ItemType Directory -Force -Path $docDest | Out-Null
     Get-ChildItem -Force -LiteralPath $DocSource |
+        Where-Object { $_.Name -ne "reviews" } |
         Copy-Item -Destination $docDest -Recurse -Force
 
     $promptDest = Join-Path $Destination "prompts"

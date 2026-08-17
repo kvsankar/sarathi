@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_REF = re.compile(r"prompts/[A-Za-z0-9._-]+\.prompt\.md")
 
@@ -388,7 +390,10 @@ This is a direct GitHub Copilot CLI skill alias for the Sarathi code-create stag
 def test_project_install_assembles_canonical_docs_into_skill(tmp_path: Path) -> None:
     run_project_copilot_install(tmp_path)
 
-    expected = sorted((ROOT / "docs").iterdir(), key=lambda path: path.name)
+    expected = sorted(
+        (path for path in (ROOT / "docs").iterdir() if path.name != "reviews"),
+        key=lambda path: path.name,
+    )
     for skill_root in (
         tmp_path / ".github" / "skills",
         tmp_path / ".agents" / "skills",
@@ -433,6 +438,10 @@ def test_project_install_rebuilds_owned_bundle_subdirectories(tmp_path: Path) ->
         assert (skill_root / "srs-authoring" / "SKILL.md").is_file()
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Bash installer behavior is exercised on POSIX; Windows uses install.ps1",
+)
 def test_bash_installer_removes_only_exact_retired_srs_authoring_variants(
     tmp_path: Path,
 ) -> None:
