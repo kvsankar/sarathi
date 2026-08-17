@@ -251,12 +251,12 @@ function Write-DestinationSummary {
                 Write-Detail "  GitHub Copilot prompts -> $(Get-CopilotPromptDestination)"
                 foreach ($skillDest in Get-CopilotSkillDestinations) {
                     Write-Detail "  GitHub Copilot skill -> $skillDest"
-                    Write-Detail "  Explicit Sarathi stage skills -> $(Split-Path -Parent $skillDest)"
+                    Write-Detail "  Explicit Sarathi command skills -> $(Split-Path -Parent $skillDest)"
                 }
                 if ($Scope -eq "user") {
                     Write-Detail "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
                 }
-                Write-Detail "    Explicit stages use prefixed skills such as sarathi-code-review and sarathi-code-assess."
+                Write-Detail "    Explicit commands use prefixed skills such as sarathi-code-review and sarathi-code-assess."
                 Write-Detail "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
             }
             "claude-code" {
@@ -394,11 +394,11 @@ function Archive-RetiredUnprefixedStageSkills {
         }
 
         if ($Preview) {
-            Write-Host "Would archive retired unprefixed Sarathi stage skill -> $archived"
+            Write-Host "Would archive retired unprefixed Sarathi command skill -> $archived"
         } else {
             New-Item -ItemType Directory -Force -Path $archiveRoot | Out-Null
             Move-Item -LiteralPath $retired -Destination $archived
-            Write-Detail "Archived retired unprefixed Sarathi stage skill -> $archived"
+            Write-Detail "Archived retired unprefixed Sarathi command skill -> $archived"
         }
     }
 }
@@ -423,7 +423,7 @@ function Copy-ExplicitStageSkills {
         $stageDest = Join-Path $skillRoot $skillName
         $promptFileName = $_.Name
         $description = (
-            "Explicit-only Sarathi stage $stageName. " +
+            "Explicit-only Sarathi command $stageName. " +
             "Use only when the user explicitly invokes $skillName. " +
             (Get-PromptDescription $_.FullName)
         ).Replace('"', '\"')
@@ -436,16 +436,18 @@ name: $skillName
 description: "$description"
 ---
 
-# Sarathi Stage: $stageName
+# Sarathi Command: $stageName
 
-This is an agent-neutral, explicit-only entry point for the Sarathi $stageName stage.
+This is an agent-neutral, explicit-only entry point for the Sarathi $stageName command.
 Do not invoke it implicitly for an ordinary coding request.
 
+First read ../sarathi/SKILL.md and apply its global operating rules, including revision
+classification. Keep this explicitly selected command; do not reroute to another command.
 Follow the bundled prompt file prompts/$promptFileName exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
 Resolve any transitive prompts referenced as prompts/*.prompt.md from
 ../sarathi/prompts/, and shared docs from ../sarathi/docs/. Load only the files triggered
-by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
+by the command; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
 Keep required approvals, safety stops, declared file scope, test evidence, and independent
 review. For every result, status, or handoff response, follow
@@ -463,8 +465,8 @@ when the prompt says to stop for the user.
         $agentMetadata = @"
 interface:
   display_name: "Sarathi $stageName"
-  short_description: "Explicit Sarathi stage: $stageName"
-  default_prompt: "Use `$$skillName to run the Sarathi $stageName stage."
+  short_description: "Explicit Sarathi command: $stageName"
+  default_prompt: "Use `$$skillName to run the Sarathi $stageName command."
 
 policy:
   allow_implicit_invocation: false
@@ -499,7 +501,7 @@ function Install-Copilot {
         Write-Detail "Would install GitHub Copilot prompts -> $dest"
         foreach ($skillDest in $skillDests) {
             Write-Detail "Would install GitHub Copilot skill -> $skillDest"
-            Write-Detail "Would install explicit Sarathi stage skills -> $(Split-Path -Parent $skillDest)"
+            Write-Detail "Would install explicit Sarathi command skills -> $(Split-Path -Parent $skillDest)"
         }
         return
     }
@@ -513,11 +515,11 @@ function Install-Copilot {
         Copy-SkillFolder $skillDest
         Write-Detail "Installed GitHub Copilot skill -> $skillDest"
         Copy-ExplicitStageSkills $skillDest
-        Write-Detail "Installed explicit Sarathi stage skills -> $(Split-Path -Parent $skillDest)"
+        Write-Detail "Installed explicit Sarathi command skills -> $(Split-Path -Parent $skillDest)"
     }
     Write-Detail "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
     Write-Detail "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
-    Write-Detail "Explicit stage skills use the sarathi- prefix, such as sarathi-code-review and sarathi-code-assess."
+    Write-Detail "Explicit command skills use the sarathi- prefix, such as sarathi-code-review and sarathi-code-assess."
 }
 
 function Install-Codex {

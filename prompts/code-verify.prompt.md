@@ -6,7 +6,7 @@ agent: agent
 # Code Verify
 
 Collect repeatable check results for implemented code. Do not edit code or judge overall
-quality. Use the `code-review` stage for judgment and `code-assess` to run both.
+quality. Use the `code-review` command for judgment and `code-assess` to run both.
 
 Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
 selected delivery assurance and additional checks. A compact or legacy plan may use approved
@@ -84,4 +84,4 @@ Start with one plain result:
 - missing verification and unavailable checks, separate from process/documentation problems;
 - evidence limits: commands do not prove that the design is suitable, tests are meaningful, or the change is simple,
   true stakeholder feedback, or human approval;
-- recommended next stage, `code-review` or `code-assess`, using the current host's explicit invocation form.
+- recommended next command, `code-review` or `code-assess`, using the current host's explicit invocation form.

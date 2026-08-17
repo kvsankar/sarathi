@@ -6,7 +6,7 @@ specification and learns through feedback; it is not a linear waterfall checklis
 ## Canonical Sources
 
 - `docs/`: shared process policy and user-facing guides.
-- `prompts/`: canonical stage prompts and command definitions.
+- `prompts/`: canonical command prompts.
 - `skills/`: skill-specific definitions and metadata. Installers assemble the `sarathi`
   bundle from canonical prompts, docs, and checkers at installation time.
 - `checkers/`: repeatable checks for required structure and links.
@@ -37,7 +37,7 @@ Command verbs are intentionally distinct:
 
 The stage sequence is `spec -> design -> plan -> code`, with matching `create`, `verify`,
 `review`, and `assess` commands. `$sarathi-workflow-status` is a read-only projection and never
-advances a gate. Canonical behavior lives in `prompts/<stage>.prompt.md`; shared behavior
+advances a gate. Canonical behavior lives in `prompts/<stage>-<action>.prompt.md`; shared behavior
 lives in `docs/` and must not be copied into every prompt.
 
 ## Delivery Model
@@ -168,7 +168,7 @@ use `spec.md`, `design.md`, and `plan.md`; smaller scopes use one descriptive wo
 every filename. Save direct review and assessment output as Markdown in that area's `reviews/`
 folder with the same naming rule.
 
-When `sarathi` is invoked generally, run only the next appropriate stage. After creating or
+When `sarathi` is invoked generally, run only the next appropriate command. After creating or
 materially revising a spec, design, ADR, plan, code slice, assessment, or review report:
 
 1. Update `.sdlc/wip.md`.

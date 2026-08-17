@@ -8,6 +8,21 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Changed
+
+- Define material revisions once in the always-loaded Sarathi router, distinguish material
+  re-review from non-material approval refresh, and make directly invoked stage skills load
+  those global operating rules before following their selected stage prompt.
+- Bound embedded spec, design, and plan creation assessments to one cycle, one safe fix set,
+  and one focused recheck; make the embedded run own the revision's assessment report and
+  reuse unchanged checker evidence instead of repeating it.
+- Define work target, scope, stage, action, command, work item, artifact, current activity,
+  and workflow status through one canonical worked example; route the always-loaded skill
+  and progressive-disclosure guidance through those terms.
+- Replace combined command values stored as `Current Stage` with `Work Target`, `Work Scope`,
+  and `Current Command`; derive stage and action in workflow status while continuing to read
+  legacy WIP state. Rename stage-action prompt and skill language to command terminology.
+
 ## 0.7.0 - 2026-07-24
 
 ### Changed

@@ -132,31 +132,25 @@ def test_assessments_compose_internal_passes_without_invoking_public_skills(
     assert f"$sarathi-{stage}-review" not in text
 
 
-@pytest.mark.parametrize("stage", ["spec", "design"])
+@pytest.mark.parametrize("stage", ["spec", "design", "plan"])
 def test_create_self_assessment_does_not_invoke_public_assessment_skill(
     stage: str,
 ) -> None:
     text = prompt_text(f"{stage}-create")
 
     assert f"prompts/{stage}-assess.prompt.md" in text
+    assert "one assessment cycle" in " ".join(text.split())
     assert f"run `$sarathi-{stage}-assess`" not in text
 
 
-def test_plan_create_composes_canonical_assessment_prompt() -> None:
-    text = prompt_text("plan-create")
-
-    assert "execute the assessment instructions from" in text
-    assert "prompts/plan-assess.prompt.md" in text
-
-
-def test_project_entry_keeps_internal_stage_value_unprefixed() -> None:
+def test_project_entry_keeps_internal_command_value_unprefixed() -> None:
     text = (ROOT / "docs" / "project-entry.md").read_text(encoding="utf-8")
 
-    assert 'next_recommended_stage: "spec-create"' in text
-    assert 'next_recommended_stage: "$sarathi-' not in text
+    assert 'next_recommended_command: "spec-create"' in text
+    assert 'next_recommended_command: "$sarathi-' not in text
 
 
-def test_canonical_prompts_use_host_neutral_stage_recommendations() -> None:
+def test_canonical_prompts_use_host_neutral_command_recommendations() -> None:
     for path in PROMPTS.glob("*.prompt.md"):
         assert "$sarathi-" not in path.read_text(encoding="utf-8"), path.name
 
@@ -165,7 +159,7 @@ def test_canonical_prompts_use_host_neutral_stage_recommendations() -> None:
     assert "Do not recommend an entry point that was not installed" in text
 
 
-def test_installer_generated_stage_skills_load_reporting_guidance() -> None:
+def test_installer_generated_command_skills_load_reporting_guidance() -> None:
     for path in (ROOT / "scripts" / "install.sh", ROOT / "scripts" / "install.ps1"):
         text = path.read_text(encoding="utf-8")
         assert "../sarathi/docs/result-reporting.md" in text

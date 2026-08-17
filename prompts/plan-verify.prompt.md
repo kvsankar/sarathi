@@ -7,28 +7,28 @@ agent: agent
 
 ## Workflow state
 
-At the start of this stage, follow `docs/work-in-progress.md` and load
+At the start of this command, follow `docs/work-in-progress.md` and load
 `docs/result-reporting.md`: read `.sdlc/wip.md` if it exists, check important claims against
 the named files, and use it only as a resume note.
-Before any hard stop, blocker report, or completed stage handoff, update `.sdlc/wip.md`
-with the current stage, document paths, decisions/assumptions, check results,
+Before any hard stop, blocker report, or completed command handoff, update `.sdlc/wip.md`
+with the current command, document paths, decisions/assumptions, check results,
 blockers/open questions, bootstrap status, and next recommended action. Do not store
 secrets or long command logs.
 
 ## Document formatting
 
-For Markdown documents and reports produced or revised in this stage, follow
+For Markdown documents and reports produced or revised by this command, follow
 `docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
 characters where practical, while allowing longer lines for tables, URLs, code/logs,
 paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
 or readability.
 
 Run repeatable checks for a work plan. This command collects evidence only; it does not
-judge whether the plan divides work well. Use the `plan-review` stage for independent judgment
+judge whether the plan divides work well. Use the `plan-review` command for independent judgment
 and `plan-assess` for checks plus review.
 
 If the host exposes sub-agent capability, run this verification in a fresh-context
-checker sub-agent. This is mandatory for verify stages. The checker reports repeatable
+checker sub-agent. This is mandatory for verify commands. The checker reports repeatable
 results only and does not judge overall quality. If sub-agents are unavailable, state that
 the host lacks sub-agent capability and run the same
 checks directly.
@@ -98,4 +98,4 @@ Start with one plain result from `docs/result-reporting.md`:
 - **Interpretation**: what the checks establish, before raw totals or JSON.
 - **Evidence limits**: format and link checks only; independent review is still required for
   scope, sequence, expected file changes, test quality, and risk.
-- **Recommended next stage**: `plan-review` or `plan-assess`, using the current host's explicit invocation form.
+- **Recommended next command**: `plan-review` or `plan-assess`, using the current host's explicit invocation form.

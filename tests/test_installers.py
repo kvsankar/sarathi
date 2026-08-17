@@ -116,7 +116,7 @@ def test_verbose_installer_reports_details_without_expected_warnings() -> None:
     assert f"Dry run complete for target: {ROOT}" in result.stdout
 
 
-def test_prefixed_stage_skills_are_explicit_agent_neutral_and_complete(
+def test_prefixed_command_skills_are_explicit_agent_neutral_and_complete(
     tmp_path: Path,
 ) -> None:
     run_project_copilot_install(tmp_path)
@@ -126,23 +126,28 @@ def test_prefixed_stage_skills_are_explicit_agent_neutral_and_complete(
         tmp_path / ".agents" / "skills",
     ):
         sarathi_prompts = skill_root / "sarathi" / "prompts"
-        stage_names = [
+        command_names = [
             f"{stage}-{action}"
             for stage in ("spec", "design", "plan", "code")
             for action in ("create", "verify", "review", "assess")
         ] + ["workflow-status"]
-        for stage_name in stage_names:
-            alias = skill_root / f"sarathi-{stage_name}"
+        for command_name in command_names:
+            alias = skill_root / f"sarathi-{command_name}"
             skill_text = (alias / "SKILL.md").read_text(encoding="utf-8")
             agent_text = (alias / "agents" / "openai.yaml").read_text(encoding="utf-8")
 
-            assert f"name: sarathi-{stage_name}" in skill_text
+            assert f"name: sarathi-{command_name}" in skill_text
             assert "agent-neutral, explicit-only" in skill_text
+            assert f"Explicit-only Sarathi command {command_name}" in skill_text
+            assert "Sarathi stage" not in skill_text
+            assert "First read ../sarathi/SKILL.md" in skill_text
+            assert "including revision\nclassification" in skill_text
+            assert "do not reroute to another command" in skill_text
             assert "GitHub" not in skill_text
             assert "Copilot" not in skill_text
             assert "allow_implicit_invocation: false" in agent_text
-            assert f"$sarathi-{stage_name}" in agent_text
-            assert not (skill_root / stage_name).exists()
+            assert f"$sarathi-{command_name}" in agent_text
+            assert not (skill_root / command_name).exists()
 
         for stage in ("spec", "design", "plan", "code"):
             alias = skill_root / f"sarathi-{stage}-assess"
@@ -343,7 +348,7 @@ This is a direct GitHub Copilot CLI skill alias for the Sarathi code-review stag
     result = subprocess.run(command, check=True, capture_output=True, text=True)
 
     assert (
-        f"Would archive retired unprefixed Sarathi stage skill -> {collision_free}"
+        f"Would archive retired unprefixed Sarathi command skill -> {collision_free}"
         in result.stdout
     )
     assert retired.is_dir()

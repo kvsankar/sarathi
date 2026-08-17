@@ -23,7 +23,7 @@ code, or delivery consequence:
 Label the result for the response, such as `Review result`, `Assessment result`, `Handoff
 result`, or `Status result`. Do not add a second headline verdict.
 
-Canonical prompts name a recommended next stage by its internal ID, such as `code-review`.
+Canonical prompts name a recommended next command by its internal ID, such as `code-review`.
 Render that recommendation using the explicit command or skill form available in the current
 host. Do not recommend an entry point that was not installed.
 
@@ -31,7 +31,7 @@ Name the scope and next step when `Ready` could be mistaken for release readines
 example, write `Assessment result: Ready.` and put `Ready for implementation planning, not
 release` in the next sentence. Keep the result itself to one of the four exact values.
 
-For a create-stage handoff, use the same language as `Handoff result`. For a verify-only
+For a create-command handoff, use the same language as `Handoff result`. For a verify-only
 command, which cannot judge overall readiness, use one plain result:
 
 - **Checks passed**: every required and applicable command completed and succeeded.

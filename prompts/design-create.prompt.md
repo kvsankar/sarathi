@@ -100,14 +100,17 @@ python checkers/check_spec.py <spec-path> --json
 python checkers/check_design.py <design-path> --spec <spec-path> --json
 ```
 
-Retry launchers when needed. For child documents, use checker feature/parent options. Then
-execute the assessment instructions from `prompts/design-assess.prompt.md`, with one fresh
-sub-agent for checks and another for independent review when available. Revise the design or
-requirements until Pass or explicitly accepted Pass-with-fixes.
+Retry launchers when needed. For child documents, use checker feature/parent options. Use
+those results as the check pass for one assessment cycle under
+`prompts/design-assess.prompt.md`; do not rerun unchanged checks. This embedded run is the
+official assessment for the current revision and owns its scope-appropriate assessment
+report. Apply safe in-scope findings once, then run one focused recheck/re-review. If a fix
+requires a material revision, stop instead of changing accepted intent. Hand off the current
+verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
 
 Run simplify, update `.sdlc/wip.md`, and stop according to the recorded approval policy.
 Human checkpoints require explicit approval; automatic approval needs an eligible local policy
 and an explicit end-to-end instruction before planning. Give one plain-language handoff
 result, then changed paths, interpreted evidence, categorized problems, impact-ranked
-actions, assumptions, risks, open questions, and recommended next stage `plan-create` using
+actions, assumptions, risks, open questions, and recommended next command `plan-create` using
 the current host's explicit invocation form.

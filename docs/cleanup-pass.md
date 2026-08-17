@@ -64,5 +64,5 @@ Before ending any `code-create` slice, the agent must:
 5. Re-run affected tests and the required local project checks after cleanup changes.
 6. Mention the cleanup pass in the handoff, including fixes made and any follow-up findings.
 
-Review and assessment stages must judge whether this pass actually happened and whether it
+Review and assess commands must judge whether this pass actually happened and whether it
 removed theater rather than creating more ceremony.

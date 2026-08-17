@@ -561,6 +561,8 @@ def parse_wip(root: Path) -> dict[str, Any]:
         return result
     text = read_text(path)
     for field in (
+        "Work Target",
+        "Current Command",
         "Current Stage",
         "Current Gate",
         "Project Entry Mode",
@@ -578,6 +580,15 @@ def parse_wip(root: Path) -> dict[str, Any]:
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match:
             result[field] = match.group(1).strip()
+    if not result.get("Current Command"):
+        legacy_command = str(result.get("Current Stage") or "").strip()
+        if re.fullmatch(
+            r"(?i)(?:spec|design|plan|code)-(?:create|verify|review|assess)"
+            r"|workflow-status",
+            legacy_command,
+        ):
+            result["Current Command"] = legacy_command
+            result["legacy_current_stage_command"] = True
     for field, key in WIP_LEARNING_FIELDS:
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match and key not in result["learning"]:
@@ -1037,6 +1048,23 @@ def build_model(root: Path) -> dict[str, Any]:
         for kind in ("spec", "design", "plan")
     }
     wip = parse_wip(root)
+    current_command = str(wip.get("Current Command") or "").strip()
+    command_match = re.fullmatch(
+        r"(?i)(spec|design|plan|code)-(create|verify|review|assess)",
+        current_command,
+    )
+    current_activity = {
+        "work_target": str(wip.get("Work Target") or "Not recorded").strip(),
+        "scope": str(wip.get("Work Scope") or "Not recorded").strip(),
+        "command": current_command or "Not recorded",
+        "stage": command_match.group(1).casefold()
+        if command_match
+        else "Not applicable",
+        "action": command_match.group(2).casefold()
+        if command_match
+        else "Not applicable",
+        "legacy_command_field": bool(wip.get("legacy_current_stage_command")),
+    }
     delivery_profile = str(
         wip.get("Delivery Assurance Profile")
         or wip.get("Review Level")
@@ -1270,6 +1298,7 @@ def build_model(root: Path) -> dict[str, Any]:
         "artifact_path_error": artifact_path_error,
         "stages": stages,
         "wip": wip,
+        "current_activity": current_activity,
         "delivery": {
             "profile": delivery_profile or "Not recorded",
             "approval_policy": approval_policy or "Not recorded",
@@ -2441,6 +2470,10 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 </header>
 <main>
   {product_snapshot}
+  <details class="read-note" open>
+    <summary>Current activity — {esc(model["current_activity"]["work_target"])} ({esc(model["current_activity"]["scope"])})</summary>
+    <p>Command: {esc(model["current_activity"]["command"])}. Stage: {esc(model["current_activity"]["stage"])}. Action: {esc(model["current_activity"]["action"])}.</p>
+  </details>
   <section class="executive" aria-labelledby="delivery-title">
     <div class="executive-head">
       <div>

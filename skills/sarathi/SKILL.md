@@ -14,17 +14,16 @@ orientation, resumption, or stage selection.
 accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
 ```
 
-## Direct Stage Skills
+## Workflow Terms And Direct Commands
 
-Where standalone agent skills are installed, they use `$sarathi-<stage>-<action>`, where
-stage is `spec`, `design`, `plan`, or `code`, and action is `create`, `verify`, `review`, or
-`assess`. `$sarathi-workflow-status` is read-only. Other hosts use their explicit native
-command form. Only this top-level `$sarathi` skill may be selected implicitly; never select a
-stage skill or direct command unless the user explicitly invokes its full installed name.
-Do not select `$sarathi` merely because an ordinary request asks an agent to generate code.
+Use `docs/workflow-terminology.md`: a work target and scope identify the subject; stage is
+`spec`, `design`, `plan`, or `code`; action is `create`, `verify`, `review`, or `assess`; and
+their pair is a command such as `design-review`. `workflow-status` is a projection command.
 
-When no stage skill was explicitly invoked, use this top-level router to select and load the
-canonical stage prompt. Do not implicitly invoke a stage skill or load every concern.
+Installed explicit command skills use `$sarathi-<stage>-<action>`. Only this router may be
+selected implicitly; never select a command skill unless the user names it. An ordinary code
+request does not invoke Sarathi. Without an explicit command, select and load one canonical
+command prompt; do not load every concern.
 
 ## Skill Maintenance
 
@@ -58,6 +57,13 @@ the smallest direct implementation, reuse existing-system tests, and avoid gener
 until a current need justifies them. Simplify when the solution is more complicated than the
 problem requires. Do not use LOC or PR-count targets.
 
+## Revision Classification
+
+A revision is material when it changes accepted behavior, scope, contracts, architecture,
+risk, evidence obligations, readiness, or approval basis. Editorial changes are non-material
+only if meaning is unchanged; when uncertain, treat it as material. See
+`docs/approval-gates.md`.
+
 ## Supporting Status Rule
 
 Follow `docs/result-reporting.md` for all human-facing results and handoffs. Lead with one
@@ -77,7 +83,7 @@ claim.
    confirmation of a project default, plus the work outcome. Never infer automatic approval.
 5. Select Lean, Standard, or High-assurance and additional checks. Record why and what would
    require stronger assurance. In YOLO mode, use Standard unless Lean is justified.
-6. Load only the selected `prompts/<stage>.prompt.md` and its triggered references.
+6. Load only the selected `prompts/<stage>-<action>.prompt.md` and its triggered references.
 
 ## Decompose Only When It Helps
 
@@ -101,7 +107,7 @@ After creating or materially revising a spec, design, ADR, plan, code change, as
 review report:
 
 1. Update `.sdlc/wip.md`.
-2. Report path, readiness/status, evidence, blockers/questions, and recommended next stage.
+2. Report path, readiness/status, evidence, blockers/questions, and recommended next command.
 3. End the turn before starting the next stage.
 
 Continue across stages only when the latest user request explicitly asks for end-to-end or

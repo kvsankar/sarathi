@@ -107,11 +107,11 @@ Product/system, otherwise `<work-slug>.plan.md`, unless another path is named; d
 
 ## Verify And Handoff
 
-Run the earlier applicable checkers and `check_plan.py`. Run each repeatable check once for
-this revision. Then execute the assessment instructions from
-`prompts/plan-assess.prompt.md` with a fresh checker and independent reviewer when available.
-After local fixes, use focused re-verification/re-review; restart the full pass only if
-requirements or scope changed.
+Run earlier applicable checkers and `check_plan.py` once for this revision. Use those results as
+the check pass for one assessment cycle under `prompts/plan-assess.prompt.md`; do not rerun unchanged checks.
+This embedded run is the official assessment for the current revision and owns its scope-appropriate assessment report.
+Apply safe in-scope findings once and run one focused recheck/re-review. If a fix requires a material revision, stop instead of changing accepted intent.
+Hand off the current verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
 Interpret checker results before raw metrics, run simplify, and give one plain-language
 handoff result with categorized problems, approvals, process status, and impact-ranked actions. Update WIP, then stop
 according to the recorded approval policy. Human checkpoints require explicit approval;

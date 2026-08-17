@@ -11,11 +11,11 @@ navigation note that can become stale.
 
 ## When To Read
 
-At the start of any SDLC stage or general SDLC request:
+At the start of any Sarathi command or general Sarathi request:
 
 - read `.sdlc/wip.md` if it exists;
 - read `.sdlc/process-decisions.yaml` if it exists;
-- use both only to choose the next stage and find relevant documents;
+- use both only to choose the next command and find relevant documents;
 - check important claims against the named files before acting.
 
 If `.sdlc/wip.md` conflicts with a source document or the user's latest instruction, the
@@ -89,7 +89,8 @@ Next Action: one executable action
 
 Last Updated: 2026-07-03T00:00:00Z
 Updated By: agent
-Current Stage: spec-create | spec-review | design-create | plan-create | code-create | ...
+Work Target: short human-readable name of the current subject
+Current Command: spec-create | spec-review | design-create | plan-create | code-create | ...
 Current Gate: none | human-review | blocked | approved-for-next-stage
 Project Entry Mode: greenfield | brownfield_baseline | brownfield_delta_only | unknown
 Work Scope: product/system | feature/component | slice/change | unknown
@@ -144,8 +145,10 @@ Add compact subsections only when they improve resumability. Keep the product sn
 enough to read in two minutes and the whole file short enough for a fresh context; prefer
 links to documents over copied content.
 
-The renderer also accepts the field names used by older WIP files. New files use the plain
-labels above.
+The renderer also accepts older WIP field names. In particular, a legacy combined value such
+as `Current Stage: code-create` is interpreted as `Current Command: code-create`. New files
+use `Work Target`, `Work Scope`, and `Current Command`; stage and action are derived from the
+command rather than stored as duplicate state. See `docs/workflow-terminology.md`.
 
 ## Fresh Context Resume Procedure
 
@@ -155,7 +158,7 @@ A fresh agent context should:
 2. Read the product snapshot in `.sdlc/wip.md`, then its process evidence.
 3. Read `.sdlc/process-decisions.yaml`, `.sdlc/approvals.yaml`,
    `.sdlc/code-assessments.yaml`, and `.sdlc/wave-checkpoints.yaml` when present.
-4. Load the selected stage prompt and triggered docs using `docs/progressive-disclosure.md`.
+4. Load the selected command prompt and triggered docs using `docs/progressive-disclosure.md`.
 5. Re-open the source document paths named in WIP before editing or judging them.
 6. Check feedback status, active learning dependencies, and parent-document outcomes before
    starting another slice.

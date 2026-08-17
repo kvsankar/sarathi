@@ -46,7 +46,7 @@ risk; approval policy and the intended work outcome are chosen separately. See
 Extra checks for specific risks are listed in
 [docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md). Prompt authors should use
 [docs/process-maintenance.md](docs/process-maintenance.md) to keep shared rules from bloating
-every stage prompt.
+every command prompt.
 
 ## Quick Install
 
@@ -175,7 +175,7 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
   `~/.agents/skills/sarathi`. Project scope installs prompts to
   `<project>/.github/prompts` and skills to `<project>/.github/skills/sarathi`
   plus `<project>/.agents/skills/sarathi`. The installer also creates agent-neutral,
-  explicit-only stage skills such as `sarathi-code-review`, `sarathi-code-verify`, and
+  explicit-only command skills such as `sarathi-code-review`, `sarathi-code-verify`, and
   `sarathi-code-assess` under the same skill roots.
 - **Claude Code**: installs slash commands and the `sarathi` skill.
 - **Gemini CLI**: installs command TOML files.
@@ -187,14 +187,14 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
 
 Installed skill bundles are self-contained: the installer assembles each `sarathi` skill copy
 from the canonical `docs/`, `prompts/`, and `checkers/` sources, plus `SKILL.md` and agent
-config. Prompt commands or explicit stage skills are also installed separately where host
+config. Prompt commands or explicit command skills are also installed separately where host
 tools can expose them directly. Only the top-level `sarathi` skill permits implicit
 invocation, and only for Sarathi or managed delivery-workflow intent—not an ordinary
-code-generation request. Every `sarathi-*` stage skill must be named explicitly.
+code-generation request. Every `sarathi-*` command skill must be named explicitly.
 
 Every dry or real install prints the destination folders before doing work.
 
-Prefixed stage skills are expected only on agent skill surfaces where the installer exposes
+Prefixed command skills are expected only on agent skill surfaces where the installer exposes
 them; Codex-only, Claude Code, and Gemini installations use their native explicit commands.
 If an agent reports that bundled `prompts/spec-create.prompt.md`,
 `checkers/check_spec.py`, or another required file under the main `sarathi` skill is missing,
@@ -213,7 +213,7 @@ The prompt set uses four verbs:
 
 The core stage names are:
 
-| Explicit stage skill | Purpose |
+| Explicit command skill | Purpose |
 | --- | --- |
 | `$sarathi-spec-create` | Define the problem, needs, features, use cases, functional and supplementary requirements, acceptance tests, and journeys. |
 | `$sarathi-spec-verify` | Run automatic spec checks and report evidence. |
@@ -248,11 +248,11 @@ approval, and review state. Completion claims always name their exact scope.
 Exact invocation syntax depends on the host tool:
 
 - Agent skill surfaces: explicitly invoke `$sarathi-code-review`,
-  `$sarathi-code-assess`, or another prefixed stage skill. Ordinary coding requests do not
+  `$sarathi-code-assess`, or another prefixed command skill. Ordinary coding requests do not
   activate these skills.
 - Codex direct prompts: `/prompts:code-review`, `/prompts:code-assess`, and so on.
 - GitHub Copilot CLI: reload skills with `/skills reload`, then explicitly select the
-  prefixed Sarathi stage skill using the syntax supported by that version.
+  prefixed Sarathi command skill using the syntax supported by that version.
 - VS Code Copilot Chat: use the installed prompt file from the prompt picker, or ask in
   natural language with the stage name.
 - Claude Code and Gemini: use their native command mechanisms.
@@ -612,7 +612,7 @@ completeness, and consistency across stages.
 
 ```text
 docs/      user-facing documentation and review notes
-prompts/   source stage prompt definitions
+prompts/   source command prompt definitions
 skills/    skill-specific definitions and metadata
 checkers/  repeatable structure and link checks
 scripts/   installers for Windows, macOS, Linux, and WSL

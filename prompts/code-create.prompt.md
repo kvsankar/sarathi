@@ -99,7 +99,7 @@ Update `.sdlc/wip.md` and report:
 - product/code problems, missing verification, and process/documentation problems kept
   separate;
 - assumptions, risks, relevant feedback, required earlier-document changes, impact-ranked
-  actions, and whether the `code-assess` stage can start.
+  actions, and whether the `code-assess` command can start.
 
 Stop according to the recorded approval policy after the code change. Human checkpoints
 require explicit approval; automatic approval needs an eligible local policy and a

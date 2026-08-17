@@ -40,3 +40,21 @@ def test_documented_local_references_resolve() -> None:
                 missing.append(f"{source}: {raw_target}")
 
     assert missing == []
+
+
+def test_workflow_terminology_has_one_canonical_example() -> None:
+    terminology = (ROOT / "docs" / "workflow-terminology.md").read_text(
+        encoding="utf-8"
+    )
+    normalized = " ".join(terminology.split())
+    skill = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+    disclosure = (ROOT / "docs" / "progressive-disclosure.md").read_text(
+        encoding="utf-8"
+    )
+
+    for label in ("Work target", "Scope", "Stage", "Action", "Command"):
+        assert f"**{label}:**" in terminology
+    assert "**Current activity:** Review the design" in normalized
+    assert "A stage is never a combined value" in normalized
+    assert "docs/workflow-terminology.md" in skill
+    assert "docs/workflow-terminology.md" in disclosure
