@@ -2013,7 +2013,7 @@ def test_approved_prototype_satisfies_ui_gate_across_checkers(
             "--design",
             "design.md",
             "--tests-argv",
-            '["/usr/bin/true"]',
+            json.dumps([sys.executable, "-c", "raise SystemExit(0)"]),
             "--require-approvals",
             "--json",
         ],

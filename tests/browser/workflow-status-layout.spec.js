@@ -118,7 +118,8 @@ Next Action: Run the five responsive browser checks.
 
 ## Process Snapshot
 
-Current Stage: code-create
+Work Target: Checkout retry payment safety
+Current Command: code-create
 Current Gate: feedback-checkpoint
 Learning Target: Verify that a long learning target remains contained on a narrow mobile viewport without hiding its evidence or controls.
 Feedback Target: Product stakeholder, accessibility reviewer, and observed responsive browser behavior.

@@ -74,3 +74,16 @@ def test_stage_prompts_use_document_areas_and_persist_reviews() -> None:
     assert "<work-slug>.code-assessment.md" in (
         PROMPTS / "code-assess.prompt.md"
     ).read_text(encoding="utf-8")
+
+
+def test_create_stage_assessment_cycles_are_bounded_and_owned() -> None:
+    for stage in ("spec", "design", "plan"):
+        text = (PROMPTS / f"{stage}-create.prompt.md").read_text(encoding="utf-8")
+        normalized = " ".join(text.split())
+
+        assert "one assessment cycle" in normalized
+        assert "official assessment for the current revision" in normalized
+        assert "one focused recheck/re-review" in normalized
+        assert "the agent does not accept" in normalized
+        assert "Revise until" not in text
+        assert "until Pass" not in text

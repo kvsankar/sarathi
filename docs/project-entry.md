@@ -55,7 +55,7 @@ or a prototype. If its result should ship, begin or revise product-increment req
 
 ## Find Existing Material
 
-For every mode, scan for useful existing material before choosing the next stage:
+For every mode, scan for useful existing material before choosing the next command:
 
 - requirements, specs, issue epics, product briefs, or acceptance criteria;
 - design docs, ADRs, architecture diagrams, API contracts, schemas, or interface docs;
@@ -145,7 +145,7 @@ project_entry:
     - "Existing behavior outside the requested delta is accepted as baseline."
   risks:
     - "Legacy requirements may remain incomplete until touched by a future delta."
-  next_recommended_stage: "spec-create"
+  next_recommended_command: "spec-create"
 delivery:
   assurance_profile: "lean | standard | high-assurance"
   work_outcome: "product_increment | decision_evidence"

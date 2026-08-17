@@ -5,7 +5,7 @@ must improve judgment without turning every prompt into a checklist wall.
 
 ## Prompt Budget
 
-- Keep stage prompts focused on stage-specific actions, gates, and stop conditions.
+- Keep command prompts focused on their action, gates, and stop conditions.
 - Keep Sarathi's identity anchored in [enduring-model.md](enduring-model.md). Treat status
   formats, identifier placement, compatibility rules, and checker fixes as supporting
   guidance rather than the top-level process story.
@@ -17,10 +17,10 @@ must improve judgment without turning every prompt into a checklist wall.
   [cross-cutting-concerns.md](cross-cutting-concerns.md),
   [work-decomposition.md](work-decomposition.md), and
   [feedback-and-learning.md](feedback-and-learning.md), and reference it from prompts.
-- Prefer one crisp stage instruction plus one shared reference over copying a concern into
+- Prefer one crisp command instruction plus one shared reference over copying a concern into
   every create, verify, review, and assess prompt.
 - Keep `SKILL.md` as the short instruction file that is always loaded. It should select the project entry
-  mode and stage, then load the selected stage prompt and triggered shared docs on demand.
+  mode and command, then load the selected command prompt and triggered shared docs on demand.
 - Enforce repository prompt budgets in tests. A budget increase requires an explicit
   rationale and removal or consolidation elsewhere; do not make the threshold advisory.
 - Keep the routing skill and repository agent instructions below their tested budgets.
@@ -44,18 +44,18 @@ product architecture, and new generic machinery requires concrete evidence.
 - Never soften `must`, `block`, `stop`, approval boundaries, evidence limits, or safety
   rules while simplifying the wording.
 
-## Stage Skill Exposure
+## Command Skill Exposure
 
 - Keep `sarathi` as the only skill eligible for implicit invocation.
 - Limit implicit `sarathi` selection to Sarathi or managed delivery-workflow intent; an
   ordinary code-generation request is not enough.
-- Name standalone stage skills `sarathi-<stage>-<action>` and require explicit invocation
+- Name standalone command skills `sarathi-<stage>-<action>` and require explicit invocation
   through agent metadata. Never install generic skill names such as `code-create`.
-- Compose stages internally by loading canonical `prompts/*.prompt.md` instructions. Do not
-  invoke another public explicit-only stage skill unless the user named it.
-- Keep generated stage skill instructions agent-neutral. Host-specific installation and
+- Compose commands internally by loading canonical `prompts/*.prompt.md` instructions. Do not
+  invoke another public explicit-only command skill unless the user named it.
+- Keep generated command skill instructions agent-neutral. Host-specific installation and
   reload guidance belongs in installer output or user documentation, not inside the skill.
-- Preserve internal prompt filenames and machine stage values such as `code-create`; the
+- Preserve internal prompt filenames and command values such as `code-create`; the
   prefix distinguishes public skills without migrating process records.
 
 ## Adding A Risk Check

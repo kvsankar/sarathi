@@ -46,6 +46,11 @@ eligible gates.
 Approval records refer to exact file bytes. If an approved document changes, its hash
 no longer matches and the approval is stale.
 
+Classify the revision using the always-loaded rule in `SKILL.md`. A material revision
+requires affected review and approval again. A non-material revision does not require
+substantive re-review, but the applicable approval authority must refresh or confirm the
+approval for the new file hash; an agent must not silently carry forward human approval.
+
 ## Approval Ledger
 
 ```yaml

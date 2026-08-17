@@ -62,11 +62,11 @@ attributes, UX, deployment posture, or public documentation, make that revision 
 
 ## Handoff Expectation
 
-Creation stages should mention the simplify pass in the handoff when it was relevant:
+Create commands should mention the simplify pass in the handoff when it was relevant:
 
 - What was simplified or intentionally left as-is.
 - Any complexity kept because it is justified by a requirement, risk, or constraint.
 - Any larger simplification deferred because it would exceed the current scope.
 
-Review and assessment stages should flag unjustified complexity as a finding, even when the
+Review and assess commands should flag unjustified complexity as a finding, even when the
 document has every required section and all checks pass.

@@ -19,6 +19,13 @@ After review findings are corrected locally, rerun affected checks and perform a
 re-review of those findings and changed boundaries. Do not restart a full independent review
 unless scope or controlling intent changed materially. Record which mode was used.
 
+When a create command embeds an assessment, its checker output is the check pass for one
+assessment cycle. That run is the official assessment for the resulting document revision
+and owns the scope-appropriate assessment report. Apply one safe, in-scope fix set and run
+one focused recheck/re-review, then hand off the current verdict. A later explicit assessment
+of unchanged document and dependency bytes reuses current checker evidence unless the user
+requests a fresh run; it updates the same report path rather than creating a second report.
+
 ## Check Pass
 
 | Assessment | Required evidence |
@@ -51,7 +58,7 @@ turns process requirements into product architecture, generalizes for hypothetic
 consumers, ignores existing compatibility evidence, or materially exceeds the user's
 mental model without approval.
 
-Stage-specific review prompts provide the remaining rubric. Do not load unrelated module
+Command-specific review prompts provide the remaining rubric. Do not load unrelated module
 criteria merely because they exist.
 
 ## Report

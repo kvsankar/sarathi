@@ -1,27 +1,28 @@
 # Loading Only Relevant Instructions
 
 Sarathi should load the smallest instruction set that can safely decide the next
-action, then load deeper instructions only when the selected stage or risk requires them.
-This keeps broad process policy from crowding out stage-specific judgment.
+command, then load deeper instructions only when the selected command or risk requires them.
+This keeps broad process policy from crowding out command-specific judgment.
 
 ## Instructions Always Loaded
 
 `SKILL.md` chooses the next action. It should contain only:
 
-- how to locate the bundled stage prompts, docs, agents, and checkers;
+- how to locate the bundled command prompts, docs, agents, and checkers;
+- work target, scope, stage, action, and command meanings;
 - command verb meanings: create, verify, review, assess;
 - project entry/adoption-mode routing;
 - resumable WIP state expectations;
 - consent-gated bootstrap-file instruction expectations;
-- stage selection and required approval rules;
-- non-negotiable operating constraints that affect every stage;
+- command selection and required approval rules;
+- non-negotiable operating constraints that affect every command;
 - what to do when a required checker is unavailable.
 
-Only the top-level `sarathi` skill is implicitly discoverable. Standalone stage skills use
+Only the top-level `sarathi` skill is implicitly discoverable. Standalone command skills use
 the `sarathi-<stage>-<action>` namespace and explicit-only agent metadata; their instructions
 remain agent-neutral.
 
-Do not copy full stage procedures, long cross-cutting concern lists, checker schemas, or
+Do not copy full command procedures, long cross-cutting concern lists, checker schemas, or
 review rubrics into `SKILL.md` when a referenced prompt or doc can carry them.
 
 ## On-Demand References
@@ -30,6 +31,7 @@ Load references only when their trigger applies:
 
 | Reference | Load When |
 | --- | --- |
+| `docs/workflow-terminology.md` | Routing, status, or explanation needs the work target, scope, stage, action, command, or work-item distinction. |
 | `docs/enduring-model.md` | Explaining Sarathi, orienting a new project, or deciding how delivery, decomposition, quality, continuity, and risk fit together. |
 | `docs/work-in-progress.md` | Starting, resuming, pausing, handing off, or blocking SDLC work in a project; reading or updating `.sdlc/wip.md`. |
 | `docs/result-reporting.md` | Reporting any stage result, verification, review, assessment, workflow status, pause, or handoff. |
@@ -41,7 +43,7 @@ Load references only when their trigger applies:
 | `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, existing compatibility proof, or PR breakdown. |
 | `docs/assurance-profiles.md` | Choosing or changing delivery assurance and extra checks for specific risks. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
-| `prompts/<stage>.prompt.md` | A specific stage is selected or directly invoked, such as `spec-create` or `code-review`. |
+| `prompts/<stage>-<action>.prompt.md` | A command is selected or directly invoked, such as `spec-create` or `code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
 | `docs/test-ownership.md` | Planning or implementing tests, including test-first behavior changes, or assigning acceptance, journey, or integration tests. |
 | `docs/work-decomposition.md` | Deciding whether complex work should be split, where to split it, or whether a child needs another document. |
@@ -56,13 +58,13 @@ If a referenced doc is not bundled in an installed skill, fall back to the repos
 when available. If neither exists and the missing reference governs the requested action,
 report the incomplete installation instead of silently relying on memory.
 
-## Stage Prompt Loading
+## Command Prompt Loading
 
-Stage prompts are authoritative only for their stage. When the user invokes the SDLC
-generally, first use `SKILL.md` to choose the next stage, then load exactly the selected
-stage prompt. Do not preload all stage prompts just because the workflow contains them.
+Command prompts are authoritative only for their command. When the user invokes Sarathi
+generally, first use `SKILL.md` to choose the next command, then load exactly its prompt. Do
+not preload every command prompt merely because the workflow contains them.
 
-When a stage prompt references another shared doc, load that doc only if the current work
+When a command prompt references another shared doc, load that doc only if the current work
 needs its details. For example, `spec-create` can cite project-entry rules while writing a
 greenfield product spec without loading code-review or plan-assess instructions.
 
@@ -75,8 +77,8 @@ For existing projects, start with discovery rather than the full stage stack:
 3. Inspect enough repository files to choose the starting mode and find existing material.
 4. Record or update `.sdlc/process-decisions.yaml` when the user chooses or confirms the
    entry mode, delivery assurance profile, approval policy, or work outcome.
-5. Load only the selected stage prompt.
-6. Load deeper docs or checker sources only when the stage reaches that concern.
+5. Load only the selected command prompt.
+6. Load deeper docs or checker sources only when the command reaches that concern.
 7. Update `.sdlc/wip.md` before stopping or handing off.
 
 This means a spec for a change to an existing system does not need plan or code instructions
@@ -102,7 +104,7 @@ does not weaken the check-plus-review assessment requirement.
 - New shared policy belongs in a focused `docs/*.md` file when more than one stage uses it.
 - New concerns become extra risk checks with explicit triggers; do not add them to every
   stage by default.
-- Stage prompts should carry stage-specific action, outputs, gates, and stop conditions, not
+- Command prompts should carry command-specific actions, outputs, gates, and stop conditions, not
   repeated global policy.
 - `SKILL.md` should point to shared docs by trigger and should not grow into a second copy
   of the prompts.

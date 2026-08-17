@@ -106,15 +106,14 @@ Run the repeatable format and link checker and fix failures:
 python checkers/check_spec.py <spec-path> --json
 ```
 
-Retry with `python3` or `uv run python` when needed. Then execute the assessment instructions
-from `prompts/spec-assess.prompt.md`; use one fresh sub-agent for checks and another for
-independent review when available. Without sub-agents, disclose non-independence and keep the passes separate.
+Retry launchers when needed. Use that result as the check pass for one assessment cycle under `prompts/spec-assess.prompt.md`; do not rerun unchanged checks.
+This embedded run is the official assessment for the current revision and owns its scope-appropriate assessment report.
+Apply safe in-scope findings once and run one focused recheck/re-review. If a fix requires a material revision, stop instead of changing accepted intent.
+Hand off the current verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
 
-Revise until the result is Pass or an explicitly accepted Pass-with-fixes. Update
-`.sdlc/wip.md` with the path, exact machine status fields, checks run, assumptions,
-blockers, and next action.
+Update `.sdlc/wip.md` with the path, machine status, checks, assumptions, blockers, and next action.
 
 Stop according to the recorded approval policy. Human checkpoints require explicit approval;
 automatic approval needs an eligible local policy and explicit end-to-end continuation before
 design. Give one plain-language handoff result, then the spec path, what it defines,
-interpreted checks, categorized problems, impact-ranked actions, and recommended next stage `design-create` in the current host's explicit invocation form.
+interpreted checks, categorized problems, impact-ranked actions, and recommended next command `design-create` in the current host's explicit invocation form.

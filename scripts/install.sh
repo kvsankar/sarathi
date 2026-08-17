@@ -265,12 +265,12 @@ write_destination_summary() {
         echo "  GitHub Copilot prompts -> $(copilot_prompt_dest)"
         while IFS= read -r skill_dest; do
           echo "  GitHub Copilot skill -> $skill_dest"
-          echo "  Explicit Sarathi stage skills -> $(dirname "$skill_dest")"
+          echo "  Explicit Sarathi command skills -> $(dirname "$skill_dest")"
         done < <(copilot_skill_dests)
         if [[ "$SCOPE" == "user" ]]; then
           echo "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
         fi
-        echo "    Explicit stages use prefixed skills such as sarathi-code-review and sarathi-code-assess."
+        echo "    Explicit commands use prefixed skills such as sarathi-code-review and sarathi-code-assess."
         echo "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
         ;;
       claude-code)
@@ -401,7 +401,11 @@ copy_skill_folder() {
 
   rm -rf "$dest/docs"
   mkdir -p "$dest/docs"
-  cp -R "$DOC_SOURCE"/. "$dest/docs/"
+  while IFS= read -r -d '' source_item; do
+    if [[ "$(basename "$source_item")" != "reviews" ]]; then
+      cp -R "$source_item" "$dest/docs/"
+    fi
+  done < <(find "$DOC_SOURCE" -mindepth 1 -maxdepth 1 -print0)
 
   rm -rf "$dest/prompts"
   mkdir -p "$dest/prompts"
@@ -433,11 +437,11 @@ archive_retired_unprefixed_stage_skills() {
       archive_suffix=$((archive_suffix + 1))
     done
     if [[ "$preview" -eq 1 ]]; then
-      echo "Would archive retired unprefixed Sarathi stage skill -> $archived" >&3
+      echo "Would archive retired unprefixed Sarathi command skill -> $archived" >&3
     else
       mkdir -p "$archive_root"
       mv "$retired" "$archived"
-      echo "Archived retired unprefixed Sarathi stage skill -> $archived"
+      echo "Archived retired unprefixed Sarathi command skill -> $archived"
     fi
   done
 }
@@ -463,7 +467,7 @@ copy_explicit_stage_skills() {
     skill_name="sarathi-$stage_name"
     stage_dest="$skill_root/$skill_name"
     prompt_file_name="$(basename "$file")"
-    description="$(printf 'Explicit-only Sarathi stage %s. Use only when the user explicitly invokes %s. %s' "$stage_name" "$skill_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+    description="$(printf 'Explicit-only Sarathi command %s. Use only when the user explicitly invokes %s. %s' "$stage_name" "$skill_name" "$(prompt_description "$file")" | sed 's/\\/\\\\/g; s/"/\\"/g')"
 
     mkdir -p "$stage_dest"
     stage_skill_temp="$(mktemp "$stage_dest/.SKILL.md.XXXXXX")"
@@ -473,16 +477,18 @@ name: $skill_name
 description: "$description"
 ---
 
-# Sarathi Stage: $stage_name
+# Sarathi Command: $stage_name
 
-This is an agent-neutral, explicit-only entry point for the Sarathi $stage_name stage.
+This is an agent-neutral, explicit-only entry point for the Sarathi $stage_name command.
 Do not invoke it implicitly for an ordinary coding request.
 
+First read ../sarathi/SKILL.md and apply its global operating rules, including revision
+classification. Keep this explicitly selected command; do not reroute to another command.
 Follow the bundled prompt file prompts/$prompt_file_name exactly. Use bundled checker scripts
 from checkers/ when the prompt calls for deterministic verification.
 Resolve any transitive prompts referenced as prompts/*.prompt.md from
 ../sarathi/prompts/, and shared docs from ../sarathi/docs/. Load only the files triggered
-by the stage; if the sibling Sarathi bundle is missing, report an incomplete installation.
+by the command; if the sibling Sarathi bundle is missing, report an incomplete installation.
 
 Keep required approvals, safety stops, declared file scope, test evidence, and independent
 review. For every result, status, or handoff response, follow
@@ -498,8 +504,8 @@ EOF
     cat > "$stage_agent_temp" <<EOF
 interface:
   display_name: "Sarathi $stage_name"
-  short_description: "Explicit Sarathi stage: $stage_name"
-  default_prompt: "Use \$$skill_name to run the Sarathi $stage_name stage."
+  short_description: "Explicit Sarathi command: $stage_name"
+  default_prompt: "Use \$$skill_name to run the Sarathi $stage_name command."
 
 policy:
   allow_implicit_invocation: false
@@ -527,7 +533,7 @@ install_copilot() {
     echo "Would install GitHub Copilot prompts -> $dest"
     while IFS= read -r skill_dest; do
       echo "Would install GitHub Copilot skill -> $skill_dest"
-      echo "Would install explicit Sarathi stage skills -> $(dirname "$skill_dest")"
+      echo "Would install explicit Sarathi command skills -> $(dirname "$skill_dest")"
     done < <(copilot_skill_dests)
     return
   fi
@@ -540,11 +546,11 @@ install_copilot() {
     copy_skill_folder "$skill_dest"
     echo "Installed GitHub Copilot skill -> $skill_dest"
     copy_explicit_stage_skills "$skill_dest"
-    echo "Installed explicit Sarathi stage skills -> $(dirname "$skill_dest")"
+    echo "Installed explicit Sarathi command skills -> $(dirname "$skill_dest")"
   done < <(copilot_skill_dests)
   echo "Copilot prompts are written in agent mode without a tools allowlist; restart VS Code to reload them."
   echo "Copilot CLI can load skills after a new session or /skills reload; check with /skills info sarathi."
-  echo "Explicit stage skills use the sarathi- prefix, such as sarathi-code-review and sarathi-code-assess."
+  echo "Explicit command skills use the sarathi- prefix, such as sarathi-code-review and sarathi-code-assess."
 }
 
 install_codex() {

@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_REF = re.compile(r"prompts/[A-Za-z0-9._-]+\.prompt\.md")
 
@@ -116,7 +118,7 @@ def test_verbose_installer_reports_details_without_expected_warnings() -> None:
     assert f"Dry run complete for target: {ROOT}" in result.stdout
 
 
-def test_prefixed_stage_skills_are_explicit_agent_neutral_and_complete(
+def test_prefixed_command_skills_are_explicit_agent_neutral_and_complete(
     tmp_path: Path,
 ) -> None:
     run_project_copilot_install(tmp_path)
@@ -126,23 +128,28 @@ def test_prefixed_stage_skills_are_explicit_agent_neutral_and_complete(
         tmp_path / ".agents" / "skills",
     ):
         sarathi_prompts = skill_root / "sarathi" / "prompts"
-        stage_names = [
+        command_names = [
             f"{stage}-{action}"
             for stage in ("spec", "design", "plan", "code")
             for action in ("create", "verify", "review", "assess")
         ] + ["workflow-status"]
-        for stage_name in stage_names:
-            alias = skill_root / f"sarathi-{stage_name}"
+        for command_name in command_names:
+            alias = skill_root / f"sarathi-{command_name}"
             skill_text = (alias / "SKILL.md").read_text(encoding="utf-8")
             agent_text = (alias / "agents" / "openai.yaml").read_text(encoding="utf-8")
 
-            assert f"name: sarathi-{stage_name}" in skill_text
+            assert f"name: sarathi-{command_name}" in skill_text
             assert "agent-neutral, explicit-only" in skill_text
+            assert f"Explicit-only Sarathi command {command_name}" in skill_text
+            assert "Sarathi stage" not in skill_text
+            assert "First read ../sarathi/SKILL.md" in skill_text
+            assert "including revision\nclassification" in skill_text
+            assert "do not reroute to another command" in skill_text
             assert "GitHub" not in skill_text
             assert "Copilot" not in skill_text
             assert "allow_implicit_invocation: false" in agent_text
-            assert f"$sarathi-{stage_name}" in agent_text
-            assert not (skill_root / stage_name).exists()
+            assert f"$sarathi-{command_name}" in agent_text
+            assert not (skill_root / command_name).exists()
 
         for stage in ("spec", "design", "plan", "code"):
             alias = skill_root / f"sarathi-{stage}-assess"
@@ -343,7 +350,7 @@ This is a direct GitHub Copilot CLI skill alias for the Sarathi code-review stag
     result = subprocess.run(command, check=True, capture_output=True, text=True)
 
     assert (
-        f"Would archive retired unprefixed Sarathi stage skill -> {collision_free}"
+        f"Would archive retired unprefixed Sarathi command skill -> {collision_free}"
         in result.stdout
     )
     assert retired.is_dir()
@@ -383,7 +390,10 @@ This is a direct GitHub Copilot CLI skill alias for the Sarathi code-create stag
 def test_project_install_assembles_canonical_docs_into_skill(tmp_path: Path) -> None:
     run_project_copilot_install(tmp_path)
 
-    expected = sorted((ROOT / "docs").iterdir(), key=lambda path: path.name)
+    expected = sorted(
+        (path for path in (ROOT / "docs").iterdir() if path.name != "reviews"),
+        key=lambda path: path.name,
+    )
     for skill_root in (
         tmp_path / ".github" / "skills",
         tmp_path / ".agents" / "skills",
@@ -428,6 +438,10 @@ def test_project_install_rebuilds_owned_bundle_subdirectories(tmp_path: Path) ->
         assert (skill_root / "srs-authoring" / "SKILL.md").is_file()
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Bash installer behavior is exercised on POSIX; Windows uses install.ps1",
+)
 def test_bash_installer_removes_only_exact_retired_srs_authoring_variants(
     tmp_path: Path,
 ) -> None:

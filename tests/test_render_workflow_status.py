@@ -86,7 +86,8 @@ Before Coding: Complete the target persistence review.
 Next Action: Run the target persistence assessment.
 
 ## Process Snapshot
-Current Stage: code-create
+Work Target: Report export delivery
+Current Command: code-create
 Delivery Assurance Profile: Standard
 Approval Policy: Human checkpoints
 Work Outcome: Product increment
@@ -108,6 +109,8 @@ Stop Conditions: Stop if the API changes.
 
     result = module.parse_wip(tmp_path)
 
+    assert result["Work Target"] == "Report export delivery"
+    assert result["Current Command"] == "code-create"
     assert result["Delivery Assurance Profile"] == "Standard"
     assert result["Approval Policy"] == "Human checkpoints"
     assert result["Work Outcome"] == "Product increment"
@@ -126,6 +129,38 @@ Stop Conditions: Stop if the API changes.
     assert result["learning"]["target"] == "Confirm the public behavior."
     assert result["learning"]["active_work_item"] == "WORK-DEMO-ALPHA"
     assert result["learning"]["stop_or_replan"] == "Stop if the API changes."
+
+
+def test_renderer_promotes_legacy_combined_stage_to_current_command(tmp_path):
+    module = load_renderer()
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# SDLC Work In Progress
+Work Scope: feature/component
+Current Stage: plan-review
+""",
+    )
+
+    model = module.build_model(tmp_path)
+    rendered = module.render_html(
+        model,
+        tmp_path,
+        tmp_path / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert model["wip"]["Current Command"] == "plan-review"
+    assert model["wip"]["legacy_current_stage_command"] is True
+    assert model["current_activity"] == {
+        "work_target": "Not recorded",
+        "scope": "feature/component",
+        "command": "plan-review",
+        "stage": "plan",
+        "action": "review",
+        "legacy_command_field": True,
+    }
+    assert "Current activity — Not recorded (feature/component)" in rendered
+    assert "Command: plan-review. Stage: plan. Action: review." in rendered
 
 
 def test_renderer_prefers_new_delivery_fields_and_renders_choices(tmp_path):
@@ -348,7 +383,8 @@ Before Coding: Approve the target persistence design.
 Next Action: Review the target persistence design.
 
 ## Process Snapshot
-Current Stage: plan-review
+Work Target: Target persistence design
+Current Command: plan-review
 Current Gate: human-review
 """,
     )
@@ -636,7 +672,7 @@ approvals:
         project / ".sdlc" / "wip.md",
         """# SDLC Work In Progress
 
-Current Stage: code-create
+Current Command: code-create
 Current Gate: human-review
 Delivery Assurance Profile: Standard
 Approval Policy: Human checkpoints
@@ -729,7 +765,7 @@ Stop/Replan Triggers: Replan if the first wave changes intent.
     write(
         project / ".sdlc" / "wip.md",
         """# SDLC Work In Progress
-Current Stage: code-create
+Current Command: code-create
 Current Gate: wave-checkpoint
 Active Learning Wave: WAVE-LEAF-BOUNDARY
 Active Slices: PR-LEAF-BOUNDARY
