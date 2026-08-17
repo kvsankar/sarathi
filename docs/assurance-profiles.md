@@ -41,7 +41,8 @@ be reused by one specific Implementation plan and proceed directly to code.
 
 At project entry, and when requirements begin for a feature, present the choices with a
 contextual recommendation. Record an explicit selection or confirmation of the project
-default; never silently infer an automatic approval policy from YOLO or unattended wording.
+default. Under explicit YOLO, infer the profile without stopping for confirmation and follow
+the automatic internal-gate policy in [approval-gates.md](approval-gates.md).
 
 State:
 

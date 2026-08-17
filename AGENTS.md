@@ -69,8 +69,9 @@ after a second concrete use case, and stop when conceptual complexity exceeds th
 mental model. If the solution is larger than the problem requires, simplify it. Sarathi has
 no LOC or PR-count constraints.
 
-At project entry and first requirements for a feature, present the profile and approval-policy
-options with a contextual recommendation. Record the explicit selection or confirmed default,
+At project entry and first requirements for a feature, normally present the profile and
+approval-policy options with a contextual recommendation. Under explicit YOLO, infer and
+record them without stopping for confirmation. Record the selection or confirmed default,
 work outcome, extra checks, reason, and escalation conditions in
 `.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the source document.
 
@@ -175,10 +176,11 @@ materially revising a spec, design, ADR, plan, code slice, assessment, or review
 2. Report document or code path, status/readiness, evidence, open questions, and next command.
 3. End the turn before starting the next stage.
 
-Continue across stages only when the latest user request explicitly asks for end-to-end or
+Continue across commands only when the latest request explicitly asks for end-to-end or
 unattended execution and the recorded approval policy permits the current gate. Human
-checkpoints always stop for explicit approval. YOLO permits reasonable assumptions but never
-selects automatic approval or bypasses readiness, touch-set, blockers, evidence, or safety.
+checkpoints stop for explicit approval. Explicit YOLO authorizes autonomous end-to-end work
+and automatic internal gates; follow the restrictions and protected boundaries in
+[docs/approval-gates.md](docs/approval-gates.md).
 
 Approval records use `.sdlc/approvals.yaml`; optional limited automatic approval policy uses
 `.sdlc/gates.yaml`. Follow [docs/approval-gates.md](docs/approval-gates.md).

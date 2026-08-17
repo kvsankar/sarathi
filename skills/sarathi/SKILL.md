@@ -46,11 +46,10 @@ Choose a delivery assurance profile with `docs/assurance-profiles.md`:
 - **High-assurance**: material security, privacy, safety, regulatory, availability,
   migration, or irreversible-data consequence.
 
-Choose an approval policy separately with `docs/approval-gates.md`: **Human checkpoints**
-stop for explicit approval at each material gate; **Automatic eligible gates** uses only an
-explicit local policy and never covers excluded safety or production gates. Work may deliver
-either a **Product increment** or **Decision/evidence**; this changes its done signal, not its
-required assurance or approval policy.
+Choose approval policy with `docs/approval-gates.md`: **Human checkpoints** stop at material
+gates; **Automatic eligible gates** uses local policy. Explicit YOLO selects automatic
+internal gates for end-to-end work but keeps its protected boundaries. **Product increment**
+or **Decision/evidence** changes the done signal, not required assurance or approval policy.
 
 Apply `docs/simplicity-first.md`: keep process records out of product architecture, start with
 the smallest direct implementation, reuse existing-system tests, and avoid general solutions
@@ -78,9 +77,9 @@ claim.
    baseline, or a change to an existing system.
 3. Infer Product/system, Feature/component, or Slice/change scope. Ask only when the answer
    would materially change the document.
-4. At project entry and first requirements for a feature, present the assurance profile and
-   approval policy choices with a contextual recommendation. Record the explicit choice or
-   confirmation of a project default, plus the work outcome. Never infer automatic approval.
+4. At project entry and first feature requirements, present profile and approval choices with
+   a recommendation; record the choice/default and work outcome. Under explicit YOLO, infer
+   and record them without confirmation using `docs/approval-gates.md`.
 5. Select Lean, Standard, or High-assurance and additional checks. Record why and what would
    require stronger assurance. In YOLO mode, use Standard unless Lean is justified.
 6. Load only the selected `prompts/<stage>-<action>.prompt.md` and its triggered references.
@@ -110,10 +109,9 @@ review report:
 2. Report path, readiness/status, evidence, blockers/questions, and recommended next command.
 3. End the turn before starting the next stage.
 
-Continue across stages only when the latest user request explicitly asks for end-to-end or
-unattended execution and the recorded approval policy permits the current gate. Human
-checkpoints always stop for explicit approval. YOLO permits assumptions but never selects
-automatic approval or bypasses readiness, declared scope, blockers, evidence, or safety stops.
+Continue across commands only when the request and recorded policy permit it. Human
+checkpoints stop. Explicit YOLO authorizes end-to-end work and automatic internal gates but
+keeps the restrictions and protected boundaries in `docs/approval-gates.md`.
 
 ## Evidence Invariants
 

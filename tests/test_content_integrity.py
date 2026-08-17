@@ -35,6 +35,24 @@ def test_sarathi_skill_has_valid_metadata() -> None:
     assert "<" not in description and ">" not in description
 
 
+def test_yolo_policy_is_canonical_and_selects_internal_auto_approval() -> None:
+    approval_policy = (ROOT / "docs" / "approval-gates.md").read_text(encoding="utf-8")
+    assert "An explicit YOLO request authorizes autonomous end-to-end execution" in (
+        approval_policy
+    )
+    assert "`automatic_eligible_gates`" in approval_policy
+    assert "live production deployment or production checks" in approval_policy
+
+    for path in (
+        ROOT / "AGENTS.md",
+        ROOT / "README.md",
+        ROOT / "skills" / "sarathi" / "SKILL.md",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "never selects automatic approval" not in text
+        assert "approval-gates.md" in text
+
+
 def test_stage_prompts_have_valid_frontmatter() -> None:
     for path in sorted((ROOT / "prompts").glob("*.prompt.md")):
         text = path.read_text(encoding="utf-8")

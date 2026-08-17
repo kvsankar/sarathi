@@ -24,6 +24,7 @@ Load only when the trigger applies:
 - `docs/srs-authoring.md`: reconstructed behavior, detailed use cases, measurable
   supplementary requirements, or terse requirements risk;
 - `docs/assurance-profiles.md`: selecting or changing delivery assurance or additional checks;
+- `docs/approval-gates.md`: selecting approval policy or using explicit YOLO;
 - `docs/simplicity-first.md`: proposed implementation machinery, reuse, or a refactor affects
   the requirement boundary;
 - `docs/cross-cutting-concerns.md`: an identified risk needs additional checks;
@@ -38,9 +39,9 @@ Infer and state Product/system, Feature/component, or Slice/change scope. At pro
 the first requirements for a feature, present a contextual recommendation and ask the user to
 select or confirm: Delivery Assurance Profile (Lean, Standard, High-assurance), Approval
 Policy (Human checkpoints, Automatic eligible gates), and Work Outcome (Product increment,
-Decision/evidence). Record the explicit choice or confirmed default in process metadata; never
-infer automatic approval from YOLO or unattended wording. Describe important risks and checks
-in ordinary language.
+Decision/evidence). Record the explicit choice or confirmed default in process metadata.
+Under explicit YOLO, infer and record these decisions without stopping, following
+`docs/approval-gates.md`. Describe important risks and checks in ordinary language.
 
 Before writing, understand the problem, affected stakeholders, success, non-goals,
 observable behavior, external boundaries, acceptance basis, and material constraints. Ask

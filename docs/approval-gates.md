@@ -17,9 +17,9 @@ See [feedback-and-learning.md](feedback-and-learning.md).
 
 ## Approval Policy
 
-At project entry, and when requirements begin for a feature, the agent must ask the user to
-select or confirm one policy. Show the practical difference in the current context and record
-the choice in `.sdlc/process-decisions.yaml` and `.sdlc/wip.md`.
+At project entry, and when requirements begin for a feature, the agent must normally ask the
+user to select or confirm one policy. Show the practical difference in the current context
+and record the choice in `.sdlc/process-decisions.yaml` and `.sdlc/wip.md`.
 
 - **Human checkpoints**: stop at every material approval gate for explicit human approval.
   This is the default.
@@ -27,16 +27,41 @@ the choice in `.sdlc/process-decisions.yaml` and `.sdlc/wip.md`.
   record automatic approvals only for its listed scopes and gates. It may support unattended
   delivery when the user explicitly requests it; it never means every gate is automatic.
 
-YOLO, “use your judgment,” or end-to-end wording never selects automatic approval. Release,
-production deployment, security/privacy risk acceptance, required UI approval, and any gate
-excluded by local policy still require the explicit approval their rule names.
+## YOLO
+
+An explicit YOLO request authorizes autonomous end-to-end execution. The agent selects
+`automatic_eligible_gates`, records that the user authorized it through YOLO, and creates or
+updates `.sdlc/gates.yaml` so Sarathi's internal document, UI-mock, plan, and code-slice gates
+can be recorded as `auto-approved`. The agent may infer the entry mode, assurance profile,
+work outcome, implementation decisions, and other reasonable defaults; record important
+assumptions, risks, and trade-offs.
+
+YOLO continues across commands and resolves failed checks or missing readiness evidence when
+it can do so safely within scope. It does not turn failed checks into passes, invent evidence,
+claim human or stakeholder approval, exceed the declared file or work scope, or ignore an
+unresolved blocker.
+
+YOLO stops at these protected boundaries unless the user gives the separate authorization
+required for that concrete action:
+
+- live production deployment or production checks;
+- destructive or irreversible data or infrastructure changes;
+- acceptance or waiver of unresolved security, privacy, safety, or regulatory risk;
+- credentials, permissions, secrets, or external access the agent does not have; and
+- communication, financial/legal commitment, or another consequential action affecting a
+  third party.
+
+Explicit user restrictions and repository policy further narrow YOLO. For example, `YOLO,
+but do not deploy`, `YOLO within these files`, or `YOLO, but stop before migration` must be
+recorded and obeyed. An ambiguous request merely to use judgment, make assumptions, or avoid
+unnecessary questions does not select YOLO; ask only if the distinction changes execution.
 
 When `.sdlc/process-decisions.yaml` records a policy, it is authoritative: checkers reject an
 `auto-approved` record unless the recorded policy is `automatic_eligible_gates`.
 `.sdlc/gates.yaml` then limits which automatic gates are eligible; it does not select
 automatic approval by itself. When no approval policy is recorded, the default is Human
 checkpoints and automatic records are rejected until the user explicitly selects automatic
-eligible gates.
+eligible gates or explicitly requests YOLO.
 
 ## Files
 
@@ -113,13 +138,15 @@ date -u +"%Y-%m-%dT%H:%M:%SZ"
 
 ## Auto Approval
 
-Use automatic approval only as an explicit local policy for eligible low-risk work.
+Use automatic approval only through an explicit local policy or explicit YOLO authorization.
+YOLO may enable every internal gate needed for its declared scope; repository policy and the
+protected boundaries above remain forbidden.
 
 ```yaml
 version: 1
 auto_approval:
   enabled: true
-  mode: internal-prototype
+  mode: yolo
   expires_at: "2026-07-08T14:32:18Z"
   allowed_scopes:
     - slice/change
@@ -128,6 +155,8 @@ auto_approval:
     - spec.approved
     - design.approved
     - plan.approved
+    - ux.mock.approved
+    - code_slice.approved
   forbidden_gates:
     - release.approved
     - production-deployment.approved

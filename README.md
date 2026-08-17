@@ -401,8 +401,8 @@ independent decisions: a delivery assurance profile, approval policy, and work o
 Lean suits small reversible work, Standard is the ordinary default or choice when risk is
 unclear, and High-assurance adds proof for material security, privacy, safety, regulatory,
 financial, availability, migration, or irreversible-data risk. Approval policy is either
-human checkpoints or automatic approval for locally eligible gates; YOLO and unattended
-language never choose automatic approval. Work is either a product increment or a
+human checkpoints or automatic approval for locally eligible gates; explicit YOLO selects
+automatic internal gates for autonomous end-to-end work. Work is either a product increment or a
 decision/evidence result. Add only checks relevant to the actual risk; none of these choices
 bypasses tests, feedback, safety limits, or protected approval gates. See
 [delivery assurance profiles](docs/assurance-profiles.md),
@@ -455,46 +455,12 @@ target-owned, adds genuinely new behavior, or defers non-blocking cleanup.
 
 ## Approval Policy And YOLO Mode
 
-Human checkpoints are the default approval policy. Under it, important transitions require
-human review:
-
-- If important input is missing, the agent asks one focused question at a time.
-- After a document or code slice is generated, materially revised, reviewed, or assessed, the agent stops
-  for human review.
-- For UI-facing products, `$sarathi-spec-create` asks whether a mock UI is required. If the spec
-  records `UI Mock Preference: Required`, the mock UI requires explicit approval:
-  later planning, code, and production UI work must wait for explicit user approval of
-  the mock.
-- Reviews stop when they discover issues in an earlier spec, design, or plan.
-
-With human checkpoints, a completed spec does not automatically flow into design; a completed
-design does not automatically flow into planning; a completed plan does not automatically
-flow into code; and an assessed code slice does not automatically flow into the next
-learning-dependent slice or release/deployment work until its feedback status and
-parent-document check are visible. The agent should end its turn with document paths,
-readiness/status, verification/review/assessment results, open questions, and the recommended
-next command.
-
-An explicit `automatic_eligible_gates` policy may cross only gates enabled by local
-`.sdlc/gates.yaml` and only during explicitly requested end-to-end continuation. It never
-crosses release or production deployment, security or privacy acceptance, required UI
-approval, locally excluded gates, or a stop caused by missing evidence, failed checks, or a
-learning dependency.
-
-You can opt into **YOLO mode** with phrases like:
-
-```text
-yolo
-use your judgment
-make reasonable assumptions
-proceed without questions
-```
-
-YOLO mode lets the agent make reasonable assumptions and continue, but it must record those
-assumptions, risks, and trade-offs. YOLO does not select automatic approval or bypass
-readiness checks, expected file changes, required tests, safety constraints, or protected
-approval gates. End-to-end continuation additionally needs the recorded automatic policy and
-an eligible local gate.
+Human checkpoints are the default and stop at material gates. Automatic approval crosses
+only eligible gates recorded in local policy. An explicit YOLO request selects automatic
+internal gates and authorizes autonomous end-to-end work; it still records assumptions,
+results, and `auto-approved` gates, and it stops at user/repository restrictions or protected
+external boundaries. See [approval gates](docs/approval-gates.md) for the canonical behavior
+and boundary list.
 
 ## Approval Records
 

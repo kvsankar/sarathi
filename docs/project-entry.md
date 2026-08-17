@@ -34,8 +34,9 @@ be inferred. Record non-standard canonical paths in `.sdlc/artifact-paths.yaml`.
 
 At project entry, present the delivery assurance profiles and approval policies with a
 recommendation grounded in the current scope and risks. When requirements begin for a feature,
-present the current project defaults and ask the user to confirm or override them. Do not infer
-automatic approval from YOLO, end-to-end, or unattended wording.
+present the current project defaults and ask the user to confirm or override them. Under an
+explicit YOLO request, infer and record these decisions without stopping; YOLO selects
+automatic approval for internal gates as defined in [approval-gates.md](approval-gates.md).
 
 Record three independent choices:
 
@@ -156,12 +157,14 @@ delivery:
     - "The change touches authentication or irreversible data migration."
 approval:
   policy: "human_checkpoints | automatic_eligible_gates"
+  authorization: "explicit_user_choice | explicit_yolo"
   rationale: "Feature changes pause for product review."
 ```
 
-If the agent infers a low-risk mode in YOLO mode, record `decided_by: "agent-inferred"` and
-list the assumption and risk. If the user later corrects the mode, update the record rather
-than silently relying on the stale decision.
+Under explicit YOLO, record inferred delivery decisions with `decided_by: "agent-inferred"`,
+record `approval.authorization: "explicit_yolo"`, and list important assumptions and risks.
+If the user later corrects a decision, update the record rather than silently relying on the
+stale choice.
 
 The starting mode says how Sarathi enters the repository. The assurance profile, approval
 policy, and work outcome describe how the current work proceeds.

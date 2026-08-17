@@ -31,6 +31,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Keep local commit hooks fast by reserving the full Python suite for explicit publication
   checks and CI. Run branch CI only for pull requests and `master`, validate Sarathi skill
   metadata in the Python suite, and install Chromium only for layout-related changes.
+- Define explicit YOLO as authorization for autonomous end-to-end execution and automatic
+  internal gates, while preserving auditable approval records, declared restrictions,
+  evidence requirements, and separately authorized protected external boundaries.
 
 ## 0.7.0 - 2026-07-24
 
