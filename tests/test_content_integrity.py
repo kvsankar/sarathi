@@ -1,10 +1,38 @@
 import re
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "sarathi"
 
 MARKDOWN_LINK = re.compile(r"\]\(([^)]+)\)")
+SKILL_FRONTMATTER = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+
+
+def test_sarathi_skill_has_valid_metadata() -> None:
+    text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+    match = SKILL_FRONTMATTER.match(text)
+    assert match is not None, "SKILL.md must start with YAML frontmatter"
+
+    metadata = yaml.safe_load(match.group(1))
+    assert isinstance(metadata, dict)
+    assert set(metadata) <= {
+        "name",
+        "description",
+        "license",
+        "allowed-tools",
+        "metadata",
+    }
+
+    name = metadata.get("name")
+    assert isinstance(name, str) and re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name)
+    assert len(name) <= 64
+
+    description = metadata.get("description")
+    assert isinstance(description, str) and description.strip()
+    assert len(description) <= 1024
+    assert "<" not in description and ">" not in description
 
 
 def test_stage_prompts_have_valid_frontmatter() -> None:

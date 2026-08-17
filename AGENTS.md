@@ -211,11 +211,13 @@ the passes separate. Stop assessment when an earlier required document is unfit.
 Run before publishing:
 
 ```powershell
-uv run pytest -q --cov=checkers --cov-report=term-missing
-npm run test:layout
 uv run pre-commit run --all-files
-uv run python C:\Users\kvsan\.codex\skills\.system\skill-creator\scripts\quick_validate.py skills\sarathi
+uv run pytest -q --cov=checkers --cov-report=term-missing
 ```
+
+Run `npm run test:layout` locally when changing the workflow-status renderer, its browser
+tests, or its JavaScript dependencies. The Python suite owns portable Sarathi skill metadata
+validation; PR CI runs that suite and installs Chromium only for layout-related changes.
 
 Use `scripts/install.ps1` or `scripts/install.sh`. User scope and all-agent installation are
 the defaults; do not pass a narrower tool target unless requested. Publish through a PR,

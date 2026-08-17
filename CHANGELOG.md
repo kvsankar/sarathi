@@ -28,6 +28,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Make checker tests use a platform-neutral success command, gate the Bash-only installer
   test to POSIX environments, and keep local `docs/reviews/` working documents out of
   installed skill bundles.
+- Keep local commit hooks fast by reserving the full Python suite for explicit publication
+  checks and CI. Run branch CI only for pull requests and `master`, validate Sarathi skill
+  metadata in the Python suite, and install Chromium only for layout-related changes.
 
 ## 0.7.0 - 2026-07-24
 
