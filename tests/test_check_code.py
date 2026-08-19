@@ -135,7 +135,9 @@ approvals:
     assert report["gates"]["required_approvals_present"] is True
 
 
-def test_check_code_reports_markers_without_blocking(tmp_path, monkeypatch, capsys):
+def test_check_code_omits_marker_candidates_from_verification_report(
+    tmp_path, monkeypatch, capsys
+):
     test_body = "def test_auth():\n    assert True  # TODO remove fixture shortcut\n"
     rc, report = run_check_code(
         tmp_path,
@@ -146,11 +148,27 @@ def test_check_code_reports_markers_without_blocking(tmp_path, monkeypatch, caps
     )
 
     assert rc == 0
-    assert report["code_markers"][0]["marker"] == "TODO"
-    assert report["marker_hits"] == 1
+    assert "review_context" not in report
 
 
-def test_check_code_reports_skips_and_expected_failures_without_blocking(
+def test_check_code_collects_markers_only_as_private_review_context(
+    tmp_path, monkeypatch, capsys
+):
+    test_body = "def test_auth():\n    assert True  # TODO remove fixture shortcut\n"
+    rc, report = run_check_code(
+        tmp_path,
+        [sys.executable, "-c", "pass"],
+        monkeypatch,
+        capsys,
+        test_body=test_body,
+        extra_args=["--review-context"],
+    )
+
+    assert rc == 0
+    assert report["review_context"]["marker_candidates"][0]["marker"] == "TODO"
+
+
+def test_check_code_collects_skips_for_private_review_context(
     tmp_path, monkeypatch, capsys
 ):
     test_body = """import pytest
@@ -173,11 +191,14 @@ def test_expected_failure():
         monkeypatch,
         capsys,
         test_body=test_body,
+        extra_args=["--review-context"],
     )
 
     assert rc == 0
     assert "skipped_tests_absent" not in report["gates"]
-    assert {hit["marker"] for hit in report["test_skip_markers"]} == {
+    assert {
+        hit["marker"] for hit in report["review_context"]["test_skip_candidates"]
+    } == {
         "SKIP",
         "SKIPIF",
         "XFAIL",
@@ -193,10 +214,11 @@ def test_check_code_allows_an_ordinary_production_skip_method(
         monkeypatch,
         capsys,
         source_body="def skip(item):\n    return item\n",
+        extra_args=["--review-context"],
     )
 
     assert rc == 0
-    assert report["test_skip_markers"] == []
+    assert report["review_context"]["test_skip_candidates"] == []
 
 
 def test_check_code_rejects_process_ids_in_source_and_tests(
@@ -330,10 +352,12 @@ def test_check_code_scans_a_supplied_test_file(tmp_path, monkeypatch, capsys):
         monkeypatch,
         capsys,
         test_inputs=[supplied_test],
+        extra_args=["--review-context"],
     )
 
     assert rc == 0
-    assert report["test_skip_markers"][0]["path"] == "test_environment.py"
+    candidates = report["review_context"]["test_skip_candidates"]
+    assert candidates[0]["path"] == "test_environment.py"
 
 
 def test_check_code_scans_a_supplied_directory_recursively(

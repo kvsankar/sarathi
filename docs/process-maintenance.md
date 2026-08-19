@@ -73,14 +73,20 @@ Before adding a new concern, decide:
 
 ## Sub-Agent Independence
 
-- Verification, review, and assessment prompts must require sub-agents when the host exposes
-  sub-agent capability.
-- Do not describe sub-agent use as optional, preferred, or "when convenient" for verify,
-  review, assess, or create-stage self-assessment loops.
-- If a host lacks sub-agent capability, prompts may allow a degraded same-agent path only
-  with explicit disclosure that the result was not independent.
+- Verification prompts run deterministic checkers directly in the active context. A fresh
+  context adds no independence to repeatable command execution.
+- Review prompts require a fresh reviewer sub-agent when the host exposes sub-agent
+  capability. Assessments and create-stage assessment loops run their check pass inline and
+  their judgment pass in a fresh reviewer context.
+- If a host lacks sub-agent capability, prompts may allow a same-agent review only with
+  explicit disclosure that the judgment was not independent.
 - Keep the canonical details in [review-verification-checklist.md](review-verification-checklist.md)
   and reference that shared rule instead of copying long sub-agent policy into every prompt.
+
+Deterministic verification reports pass, fail, and evidence limits. Non-blocking scans that
+need interpretation, such as TODO or skipped-test candidates, are private reviewer input;
+they are not a public warning category. A reviewer reports only candidates that become
+actionable findings.
 
 ## Evidence Language
 

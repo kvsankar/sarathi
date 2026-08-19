@@ -16,15 +16,14 @@ Assess the target design using two separate passes. Load
 Run full passes once per revision. After local finding corrections, rerun affected checks
 and focus review on those findings unless requirements or scope changed.
 
-1. **Check pass**: in a fresh sub-agent when available, execute the check instructions from
-   `prompts/design-verify.prompt.md`, including the spec checker, and return commands, IDs,
-   metrics, failures, and approval evidence only.
-2. **Review pass**: in a different fresh sub-agent when available, execute the review
+1. **Check pass**: execute `prompts/design-verify.prompt.md` inline, including the spec
+   checker, and preserve commands, IDs, metrics, failures, and approval evidence only.
+2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/design-review.prompt.md` using the design plus check results.
    Judge delivery assurance and additional checks, whether the requirements are sufficient,
    contracts, testability, decisions, risks, and readiness.
 
-If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
+If sub-agents are unavailable, disclose that the review was not independent and keep the
 passes separate. A failed or unfit spec blocks the design verdict.
 
 Report one plain-language assessment result, the main engineering consequence, categorized

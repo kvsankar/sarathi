@@ -17,16 +17,15 @@ Run full passes once for the current revision. After local finding corrections, 
 affected checks and focus review on those findings and changed boundaries unless
 requirements or scope changed.
 
-1. **Check pass**: in a fresh sub-agent when available, execute the check instructions from
-   `prompts/plan-verify.prompt.md`, including the earlier checkers, exact delivery IDs,
-   coverage, and ordered work-group membership. Return commands, metrics, IDs, failures, and
-   approval evidence only.
-2. **Review pass**: in a different fresh sub-agent when available, execute the review
+1. **Check pass**: execute `prompts/plan-verify.prompt.md` inline, including earlier
+   checkers, IDs, coverage, and work-group membership. Preserve commands, metrics, failures,
+   and approval evidence only.
+2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/plan-review.prompt.md` using the plan plus check results. Judge
    slicing, pass/fail checks, dependencies, feedback, parallel work, delivery assurance, and
    readiness.
 
-If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
+If sub-agents are unavailable, disclose that the review was not independent and keep the
 passes separate. Failed or unfit required earlier documents block the plan verdict. A Lean
 plan may combine technical decisions with planning; do not require a standalone design when
 the selected profile permits that path. Other compact plans may rely on approved parent

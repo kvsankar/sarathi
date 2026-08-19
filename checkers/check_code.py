@@ -2,8 +2,8 @@
 """Run a planned verification command and surface explicit code blockers.
 
 This checker records whether the supplied command passed. It can also require
-hash-current approvals, report TODO/FIXME/skip-style markers for review, and reject
-Sarathi process IDs embedded in the supplied source/test files or trees. Explicit
+hash-current approvals, optionally collect TODO/FIXME/skip-style reviewer context,
+and reject Sarathi process IDs embedded in supplied source/test files or trees. Explicit
 generated external traceability paths may be excluded with repeated
 ``--generated-traceability-path`` flags. It does not infer test quality from coverage or
 Git history.
@@ -247,6 +247,7 @@ def main() -> int:
         if extension.strip()
     }
     require_approvals = "--require-approvals" in sys.argv
+    include_review_context = "--review-context" in sys.argv
     approvals_path = (
         arg("--approvals", ".sdlc/approvals.yaml") or ".sdlc/approvals.yaml"
     )
@@ -279,10 +280,16 @@ def main() -> int:
         for path in {*test_files, *source_file_list}
         if not is_generated_traceability(path)
     )
-    code_markers = marker_hits(scanned_files, Path.cwd())
-    test_markers = marker_hits(
-        sorted(path for path in test_files if not is_generated_traceability(path)),
-        Path.cwd(),
+    code_markers = (
+        marker_hits(scanned_files, Path.cwd()) if include_review_context else []
+    )
+    test_markers = (
+        marker_hits(
+            sorted(path for path in test_files if not is_generated_traceability(path)),
+            Path.cwd(),
+        )
+        if include_review_context
+        else []
     )
     test_skip_markers = [
         hit for hit in test_markers if hit["marker"] in {"SKIP", "SKIPIF", "XFAIL"}
@@ -362,9 +369,6 @@ def main() -> int:
                 approval_context.get("invalid_records") if approval_context else []
             ),
         },
-        "code_markers": code_markers,
-        "marker_hits": len(code_markers),
-        "test_skip_markers": test_skip_markers,
         "scan_input_issues": scan_input_issues,
         "process_id_hits": source_process_ids,
         "generated_traceability_paths": [
@@ -374,6 +378,11 @@ def main() -> int:
         "passed": sum(gates.values()),
         "total": len(gates),
     }
+    if include_review_context:
+        report["review_context"] = {
+            "marker_candidates": code_markers,
+            "test_skip_candidates": test_skip_markers,
+        }
     if as_json:
         print(json.dumps(report, indent=2))
     else:
@@ -389,20 +398,6 @@ def main() -> int:
             print(
                 f"{'PASS' if value else 'FAIL'}  "
                 f"{labels.get(key, key.replace('_', ' '))}"
-            )
-        todo_markers = [
-            hit for hit in code_markers if hit["marker"] in {"TODO", "FIXME", "XXX"}
-        ]
-        if todo_markers:
-            print(
-                f"WARN  {len(todo_markers)} TODO, FIXME, or XXX marker"
-                f"{'s' if len(todo_markers) != 1 else ''} found; review before release"
-            )
-        if test_skip_markers:
-            print(
-                f"WARN  {len(test_skip_markers)} skip or expected-failure marker"
-                f"{'s' if len(test_skip_markers) != 1 else ''} found; review the "
-                "available execution evidence"
             )
         for issue in scan_input_issues:
             print(f"ERROR {issue['path']}: {issue['reason']}")

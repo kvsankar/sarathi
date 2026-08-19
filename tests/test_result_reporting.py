@@ -132,6 +132,32 @@ def test_assessments_compose_internal_passes_without_invoking_public_skills(
     assert f"$sarathi-{stage}-review" not in text
 
 
+@pytest.mark.parametrize("stage", ["spec", "design", "plan", "code"])
+def test_verify_runs_inline_and_assess_uses_fresh_reviewer(stage: str) -> None:
+    verify = prompt_text(f"{stage}-verify")
+    assess = prompt_text(f"{stage}-assess")
+
+    assert "directly in the active context" in verify
+    assert "checker sub-agent" not in verify
+    assert "mandatory for verify" not in verify
+    assert "Check pass" in assess and "inline" in assess
+    assert "Review pass" in assess and "fresh sub-agent" in assess
+
+
+def test_code_marker_candidates_are_private_review_input() -> None:
+    verify = prompt_text("code-verify")
+    assess = prompt_text("code-assess")
+    review = prompt_text("code-review")
+    verify_normalized = " ".join(verify.casefold().split())
+    assess_normalized = " ".join(assess.casefold().split())
+    review_normalized = " ".join(review.casefold().split())
+
+    assert "do not publish non-blocking marker candidates" in verify_normalized
+    assert "--review-context" in assess
+    assert "do not publish candidates" in assess_normalized
+    assert "never a warning section or marker inventory" in review_normalized
+
+
 @pytest.mark.parametrize("stage", ["spec", "design", "plan"])
 def test_create_self_assessment_does_not_invoke_public_assessment_skill(
     stage: str,

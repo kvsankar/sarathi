@@ -18,17 +18,19 @@ Run full passes once for the current revision. After local finding corrections, 
 affected checks and focus review on those findings and changed boundaries unless
 requirements or scope changed.
 
-1. **Check pass**: in a fresh sub-agent when available, execute the check instructions from
-   `prompts/code-verify.prompt.md`, including earlier checkers, planned tests, project checks,
-   and additional risk checks. Return commands and evidence only.
-2. **Review pass**: in a different fresh sub-agent when available, execute the review
+1. **Check pass**: execute `prompts/code-verify.prompt.md` inline, including earlier
+   checkers, planned tests, project checks, and additional risk checks. Add
+   `--review-context` to `check_code.py`; keep its candidate matches private.
+2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/code-review.prompt.md` using the code and check results. Judge
    correctness, test pass/fail checks, boundary realism, test-first evidence for behavior
    changes, plan fidelity, review evidence, production quality, feedback, and
    earlier-document changes.
 
-If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
-passes separate. Failed or unfit earlier documents produce `Blocked-upstream`.
+Pass the private review context to the reviewer. It reports only candidates that become
+actionable findings; do not publish candidates, counts, or a warning section. If sub-agents
+are unavailable, disclose that the review was not independent and keep the passes separate.
+Failed or unfit earlier documents produce `Blocked-upstream`.
 
 Report one plain-language assessment result and the main engineering consequence. Keep
 product/code problems, missing verification, and process/documentation problems separate;

@@ -12,8 +12,7 @@ Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository command
 selected delivery assurance and additional checks. A compact or legacy plan may use approved
 parent documents instead of unnecessary child spec/design files. Load
 `docs/document-locations.md`, `docs/project-quality-gates.md`, and
-`docs/result-reporting.md`. Use a fresh checker sub-agent when available;
-otherwise disclose that sub-agents are unavailable and run the same checks directly.
+`docs/result-reporting.md`. Run repeatable commands directly in the active context.
 
 ## Earlier Documents
 
@@ -50,12 +49,11 @@ Prefer `--tests-argv`; use `--tests-shell` only for trusted commands requiring s
 behavior. Add `--require-approvals` when implementation depends on an approved plan or
 mock. Retry with `python3` or `uv run python` when needed.
 
-Report exact commands, raw JSON, exits, passed/total, code markers, approval requirements,
-process-ID source hits, and the concrete test or command behind each claimed risk check.
-The checker records command outcomes; review judges whether the tests and evidence are
-meaningful. TODO/FIXME/XXX and skip/skipif/xfail markers are reported facts, not automatic
-failures; a failing verification command remains a failure. Do not require IDs inside
-source to establish coverage. Use an exact repeated
+Report exact commands, raw JSON, exits, passed/total, approval requirements, process-ID
+source hits, and the concrete test or command behind each claimed risk check. The checker
+records command outcomes; review judges whether the tests and evidence are meaningful. Do
+not publish non-blocking marker candidates or a warning section. A failing verification
+command remains a failure. Do not require IDs inside source to establish coverage. Use an exact repeated
 `--generated-traceability-path` only for explicit generated external ledger files, never to
 hide ordinary source pollution.
 

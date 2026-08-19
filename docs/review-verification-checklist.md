@@ -5,14 +5,14 @@ never the whole assessment. Run automatic checks once per document revision.
 
 ## Independent Passes
 
-When the host supports sub-agents, use two fresh contexts:
+Use two distinct passes:
 
-1. **Check pass**: runs repeatable checkers/commands and returns raw results, IDs, metrics,
-   and failures without judging overall quality.
-2. **Review pass**: receives the document/code plus check results and independently judges
-   it while looking for counterexamples.
+1. **Check pass**: the active agent runs repeatable checkers/commands inline and preserves
+   raw results, IDs, metrics, and failures without judging overall quality.
+2. **Review pass**: a fresh reviewer sub-agent receives the document/code plus check results
+   and independently judges it while looking for counterexamples.
 
-If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
+If sub-agents are unavailable, disclose that the review was not independent and keep the
 passes separate. A failed or unfit earlier document blocks the later verdict.
 
 After review findings are corrected locally, rerun affected checks and perform a focused
@@ -38,6 +38,10 @@ requests a fresh run; it updates the same report path rather than creating a sec
 Check results prove only what the command observes. They do not prove
 correctness, meaningful tests, stakeholder feedback, real-boundary execution, merge state,
 or human intent beyond a valid local approval record.
+
+Non-blocking deterministic scans may supply private candidates to the review pass. Do not
+publish a warning section, warning counts, or candidate inventory. The reviewer either turns
+a candidate into an actionable finding with context or omits it from the report.
 
 ## Review Pass
 

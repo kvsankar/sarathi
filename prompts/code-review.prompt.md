@@ -40,6 +40,9 @@ is made.
 Treat unexplained skips and expected failures as evidence gaps. An environment-specific
 skip is acceptable when another explicit command or CI job runs that boundary successfully;
 the marker inventory alone neither rejects the code nor proves the evidence sufficient.
+Use private marker candidates from the assessment when available; otherwise scan the changed
+source and tests privately. Report only candidates that become actionable findings, never a
+warning section or marker inventory.
 
 Start with simplification. Identify code, commands, tests, files, or PR boundaries that can
 be removed, collapsed, deferred, or proved by existing checks. A green, traceable implementation can still be

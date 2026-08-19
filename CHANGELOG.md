@@ -44,6 +44,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   Lean combines design decisions with an assessed Implementation plan, Standard retains
   separate spec/design/plan/code stages, and High-assurance adds risk-boundary breakdown and
   assessed code slices.
+- Run deterministic verification inline while preserving fresh-context independence for
+  review judgment. Keep non-blocking code-marker scans as private reviewer context and
+  publish only candidates that become actionable findings.
 
 ## 0.7.0 - 2026-07-24
 

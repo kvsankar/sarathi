@@ -141,10 +141,10 @@ keeps the restrictions and protected boundaries in `docs/approval-gates.md`.
 
 Run repeatable checks once per document revision. After local findings are fixed, recheck the
 affected boundary and focus independent review on them; restart full review only when
-requirements or scope changed. When sub-agents are available, use one fresh agent to run
-checks and another to independently judge the work. If unavailable, say the review is not
-independent and keep the two passes separate. Stop when an earlier required document is not
-fit. Use `docs/review-verification-checklist.md`.
+requirements or scope changed. Run deterministic checks inline. When sub-agents are
+available, use one fresh reviewer to independently judge the work and check results. If
+unavailable, say the review is not independent and keep the two passes separate. Stop when
+an earlier required document is not fit. Use `docs/review-verification-checklist.md`.
 
 ## Triggered References
 

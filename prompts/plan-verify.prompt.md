@@ -27,11 +27,8 @@ Run repeatable checks for a work plan. This command collects evidence only; it d
 judge whether the plan divides work well. Use the `plan-review` command for independent judgment
 and `plan-assess` for checks plus review.
 
-If the host exposes sub-agent capability, run this verification in a fresh-context
-checker sub-agent. This is mandatory for verify commands. The checker reports repeatable
-results only and does not judge overall quality. If sub-agents are unavailable, state that
-the host lacks sub-agent capability and run the same
-checks directly.
+Run the checks directly in the active context. Repeatable command execution does not require
+a fresh sub-agent and does not judge overall quality.
 
 Target the plan file the user provides; otherwise resolve the location with
 `docs/document-locations.md`: normally `docs/plan.md` for Product/system, otherwise the
