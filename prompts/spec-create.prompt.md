@@ -115,6 +115,6 @@ Hand off the current verdict even when it is `Needs rework`; the agent does not 
 Update `.sdlc/wip.md` with the path, machine status, checks, assumptions, blockers, and next action.
 
 Stop according to the recorded approval policy. Human checkpoints require explicit approval;
-automatic approval needs an eligible local policy and explicit end-to-end continuation before
-design. Give one plain-language handoff result, then the spec path, what it defines,
-interpreted checks, categorized problems, impact-ranked actions, and recommended next command `design-create` in the current host's explicit invocation form.
+automatic approval needs an eligible local policy and explicit end-to-end continuation.
+Give one plain-language handoff with the path, meaning, evidence, problems, and ranked
+actions. Recommend `plan-create` for Lean and `design-create` for the other profiles.

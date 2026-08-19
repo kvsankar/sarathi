@@ -40,8 +40,9 @@ automatic approval for internal gates as defined in [approval-gates.md](approval
 
 Record three independent choices:
 
-- **Delivery assurance profile**: Lean, Standard, or High-assurance. It determines the
-  strength of evidence and review; use [assurance-profiles.md](assurance-profiles.md).
+- **Delivery assurance profile**: Lean, Standard, or High-assurance. It determines the stage
+  path, decomposition bias, and review cadence; use
+  [assurance-profiles.md](assurance-profiles.md).
 - **Approval policy**: Human checkpoints or automatic approval for eligible gates. It
   determines whether the agent must wait at a material gate; use
   [approval-gates.md](approval-gates.md).
@@ -171,7 +172,16 @@ policy, and work outcome describe how the current work proceeds.
 
 ## Stage Rules
 
-- Greenfield work follows the normal spec-first sequence.
+- Greenfield work starts with a spec, then follows the selected profile path in
+  [assurance-profiles.md](assurance-profiles.md).
+- Lean proceeds from an assessed spec to an Implementation plan that contains the technical
+  decisions needed for safe implementation. A material unresolved boundary escalates the
+  work to Standard before code.
+- Standard uses separate spec, design, Implementation plan, and code stages. It introduces
+  a Breakdown plan only when the work is not one coherent unit.
+- High-assurance uses an assessed spec and design, then normally a Breakdown plan with
+  assessed child Implementation plans and assessed code slices. An already risk-bounded
+  single slice may omit a one-child Breakdown plan when its plan records why.
 - Existing-system baseline work may create retrospective specs and designs from observed
   behavior, docs, tests, and code. Mark reconstructed intent clearly and flag gaps where the
   current system's intended behavior cannot be inferred.
@@ -179,8 +189,9 @@ policy, and work outcome describe how the current work proceeds.
   review, name the decision record that permits skipping plan review, and avoid claiming
   conformance to a pre-approved implementation plan.
 - New implementation changes in any mode require approved requirements and a specific plan
-  that is ready to implement. Reuse existing approved specs and designs; create another
-  document only for a concrete unresolved decision or risk.
+  that is ready to implement. Reuse existing approved documents. Under Lean, the plan owns
+  the necessary technical decisions when no standalone design exists; otherwise create
+  another document only for a concrete unresolved decision or risk.
 - Existing documents can satisfy a gate only when they are classified as `adopt` or have
   been `adapt`ed into a fit earlier document. `background` evidence can inform judgment
   but cannot silently stand in for a missing gate.

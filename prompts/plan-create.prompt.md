@@ -1,18 +1,20 @@
 ---
-description: Turn an approved technical model into an executable delivery structure.
+description: Turn approved intent and technical decisions into an executable delivery structure.
 agent: agent
 ---
 
 # Plan Create
 
-Turn approved requirements and design into a Breakdown or Implementation plan with explicit
-impact, dependencies, sequence, integration, safety, and proof.
+Turn approved requirements and technical decisions into an executable Breakdown or
+Implementation plan.
 
 ## Load And Gate
 
-Read `.sdlc/wip.md`, process decisions, accepted parent specs/designs/ADRs/prototypes, the existing plan, and repository delivery conventions.
-Load `docs/artifact-contracts.md`, `docs/document-locations.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`,
-`docs/human-first-artifacts.md`, `docs/test-ownership.md`, `docs/work-decomposition.md`, and `docs/result-reporting.md`.
+Read WIP, process decisions, accepted specs and any required designs/ADRs/prototypes, the
+existing plan, and repository conventions. Load `docs/artifact-contracts.md`,
+`docs/document-locations.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`,
+`docs/human-first-artifacts.md`, `docs/test-ownership.md`, `docs/work-decomposition.md`, and
+`docs/result-reporting.md`.
 
 ## Triggered References
 
@@ -24,8 +26,8 @@ Load only when the trigger applies:
   delivery changes its language or tooling;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: before handoff.
 
-Block only on intent, architecture, approval, or risk gaps that make implementation unsafe.
-Do not treat scope size or document level as a blocker.
+Block only on gaps that make implementation unsafe; scope size or document level is not a
+blocker. Follow the selected profile path and escalation rules.
 
 ## Choose The Plan Shape
 
@@ -34,8 +36,8 @@ Ask one question:
 > Can a competent engineer understand, explain, review, and safely plan this work as one
 > coherent unit?
 
-- If yes, choose `Plan Type: Implementation` and map the outcome into PRs. A component or
-  feature may proceed directly at any delivery assurance profile.
+- If yes, choose `Plan Type: Implementation`. Under High-assurance, record why this is
+  already one independently safe slice and needs no one-child Breakdown wrapper.
 - If no, split along natural product or technical boundaries and choose `Plan Type:
   Breakdown` for the resulting independently useful child outcomes.
 
@@ -73,6 +75,8 @@ Do not present an existing capability as greenfield work.
 
 For an Implementation plan:
 
+- for Lean without a design, add concise Technical Decisions and map spec acceptance to
+  executable checks;
 - map the outcome into a PR dependency graph; one cohesive PR is a valid one-node graph and
   omits empty topology fields;
 - for each PR, state outcome, impact allocation, verification, and applicable rollback;
@@ -92,10 +96,6 @@ For an Implementation plan:
 - name realistic evidence for actual security, privacy, safety, persistence,
   accessibility, migration, or integration risks;
 - prefer one cohesive PR when it remains easy to review and test.
-
-For a small change, link the approved parent documents and include only the changed
-behavior, implementation steps, and verification. Existing legacy compact-plan markers
-remain parseable, but do not add them to new plans.
 
 For a Breakdown plan, create a dependency graph of independently useful `WORK-*` outcomes.
 Each item names its observable result, affected areas, owner, dependencies, readiness,

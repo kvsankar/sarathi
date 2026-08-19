@@ -27,8 +27,10 @@ requirements or scope changed.
    readiness.
 
 If sub-agents are unavailable, disclose degraded non-independent assessment and keep the
-passes separate. Failed or unfit earlier documents block the plan verdict. A compact plan
-may rely on approved parent documents; do not require unnecessary child spec/design files.
+passes separate. Failed or unfit required earlier documents block the plan verdict. A Lean
+plan may combine technical decisions with planning; do not require a standalone design when
+the selected profile permits that path. Other compact plans may rely on approved parent
+documents; do not require unnecessary child spec/design files.
 
 Report one plain-language assessment result, the main engineering consequence, categorized
 findings, interpreted check results, and impact-ranked actions. Preserve

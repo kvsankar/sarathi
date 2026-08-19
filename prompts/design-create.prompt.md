@@ -29,8 +29,8 @@ Load only when the trigger applies:
 Use the recorded assurance profile, approval policy, and work outcome unless new evidence
 requires a change. Keep exact process fields in metadata. For decision/evidence work, design
 only the method, boundaries, and credible proof needed for its decision; do not imply a
-shippable product increment. High-assurance requires stronger proof at important boundaries,
-not distant design work.
+shippable product increment. High-assurance requires explicit risk-boundary evidence and
+later review points, not distant design work or a different standard of reviewer care.
 
 Ask one focused question per turn only for a decision that materially changes architecture,
 contracts, risk, or readiness. In YOLO mode, record assumptions and trade-offs; do not

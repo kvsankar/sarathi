@@ -144,7 +144,9 @@ An existing approved prototype may instead be referenced as
 
 ## Plan Contract
 
-Planning turns an approved technical model into an executable delivery structure. Every
+Planning turns approved requirements and the applicable technical model into an executable
+delivery structure. Under Lean, the Implementation plan also records the technical
+decisions that a standalone design would otherwise own. Every
 plan makes the outcomes, impacted areas, dependencies, sequence, integration points,
 verification, safety, and feedback visible. It uses one of two shapes.
 
@@ -173,7 +175,7 @@ do not use LOC estimates as a substitute. A small local change needs only a few 
 
 Plans declare `Plan Type: Breakdown | Implementation`. They begin with **Implementation
 Approach**; existing documents may use the legacy **Implementation Crux** heading. Then
-record why that plan shape fits the approved requirements and design. Plans use this
+record why that plan shape fits the approved requirements and any standalone design. Plans use this
 checker-visible order:
 
 1. **Impact Map**: affected areas, nature and extent of change, consumers/owners, and
@@ -224,6 +226,13 @@ expected to change, focused verification, inherited IDs and pass/fail checks, an
 evidence that actually applies. The plan also records why the earlier documents are enough,
 how success will be checked, and what would require more design work.
 
+A Lean Implementation plan with no standalone design adds a concise **Technical Decisions**
+section before delivery allocation. It covers only the implementation-shaping structure,
+interfaces, data/state behavior, trade-offs, and test strategy needed for this change. It
+maps spec `AT-*` and `JT-*` obligations directly to executable checks. Do not invent a
+second requirements inventory or a design-shaped document inside the plan. If these
+decisions cannot stay concise and reviewable, create and assess a Standard design instead.
+
 When a Breakdown plan schedules near-term work, it declares one or more work groups. Each scheduled
 `WORK-*` appears exactly once in:
 
@@ -252,8 +261,8 @@ separate `plan.html` by default.
 
 ## Short Implementation Plan
 
-A feature or change may use one compact Implementation plan when approved earlier
-requirements and architecture are sufficient. It references those documents instead of
+A feature or change may use one compact Implementation plan when approved requirements and
+either an approved design or concise Lean technical decisions are sufficient. It references those documents instead of
 copying them, explains the outcome and exact change, names the files expected to change,
 and gives focused verification with clear pass/fail checks. Add another design document
 only when a specific unresolved boundary or risk blocks implementation.

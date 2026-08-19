@@ -7,6 +7,11 @@ Decomposition reduces mental load. Ask one question first:
 
 If yes, keep it together. If no, decompose it.
 
+The assurance profile sets the default path around this question. Lean strongly prefers one
+Implementation plan. Standard uses the coherence test directly. High-assurance normally
+uses a Breakdown plan to isolate material risk, recovery, feedback, and integration
+boundaries; an already independent safe slice need not create a one-child wrapper plan.
+
 ## Find A Natural Boundary
 
 Split along a boundary that makes each part easier to understand, such as:

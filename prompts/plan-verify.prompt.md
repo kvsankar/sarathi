@@ -39,7 +39,7 @@ work slug's `.plan.md` file. Do not edit it unless explicitly asked.
 
 ## Checks
 
-When checking a Standard plan, first run:
+For Standard or High-assurance, first run:
 
 ```pwsh
 python checkers/check_spec.py spec.md --json
@@ -52,10 +52,19 @@ Then run:
 python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
 ```
 
+For Lean without a standalone design, run the spec checker and then:
+
+```pwsh
+python checkers/check_plan.py plan.md --spec spec.md --json
+```
+
+The checker validates structure and spec coverage. Independently review the plan's required
+Technical Decisions; the absence of a design checker does not prove that reasoning sound.
+
 When checking a later gate that depends on approved earlier documents, add
 `--require-approvals`. This checks `.sdlc/approvals.yaml` for hash-matched `spec.approved`,
-`design.approved`, and, when applicable, `ux.mock.approved` records with UTC `approved_at`
-timestamps. Do not require approval while drafting; require it only when the plan is ready to
+  `design.approved` when a standalone design exists, and, when applicable,
+  `ux.mock.approved` records with UTC `approved_at` timestamps. Do not require approval while drafting; require it only when the plan is ready to
 advance and the recorded policy makes the gate applicable.
 
 For a compact plan that relies on approved parent documents, verify those documents first,

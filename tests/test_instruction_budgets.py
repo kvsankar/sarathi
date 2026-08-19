@@ -10,14 +10,21 @@ def size(path: Path) -> tuple[int, int]:
 
 def test_always_loaded_instruction_budgets() -> None:
     limits = {
-        ROOT / "AGENTS.md": (240, 14_000),
-        ROOT / "skills" / "sarathi" / "SKILL.md": (180, 10_000),
+        ROOT / "AGENTS.md": (100, 5_000),
+        ROOT / "skills" / "sarathi" / "SKILL.md": (165, 9_000),
     }
 
     for path, (line_limit, byte_limit) in limits.items():
         lines, bytes_ = size(path)
         assert lines <= line_limit, f"{path.name}: {lines} > {line_limit} lines"
         assert bytes_ <= byte_limit, f"{path.name}: {bytes_} > {byte_limit} bytes"
+
+
+def test_readme_budget() -> None:
+    lines, bytes_ = size(ROOT / "README.md")
+
+    assert lines <= 360, f"README.md: {lines} > 360 lines"
+    assert bytes_ <= 18_000, f"README.md: {bytes_} > 18000 bytes"
 
 
 def test_stage_prompt_budgets() -> None:

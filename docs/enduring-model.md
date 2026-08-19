@@ -28,7 +28,9 @@ graph, including impact, dependencies, sequence, integration, safety, and proof.
 tests produce working behavior through short Red-Green-Refactor cycles: observe the
 behavioral test fail, make the smallest change that passes it, and improve the code while
 the tests stay green. The result then confirms or changes the remaining work. The stages
-preserve decisions; they do not form a one-way waterfall.
+preserve decisions; they do not form a one-way waterfall. A profile may combine design with
+planning, but the resulting plan must still expose the technical decisions needed to
+implement safely.
 
 ## 2. Decompose When It Improves Delivery
 
@@ -66,12 +68,14 @@ evidence. A short current WIP note makes the work resumable without turning chat
 process bookkeeping into product truth. A new engineer or agent should be able to find the
 current boundary, the evidence behind it, and one executable next action.
 
-## 5. Match Assurance To Risk
+## 5. Match The Path And Review Cadence To Risk
 
 All production work keeps accepted intent, readiness to implement, credible tests, honest
-feedback, human approval points, and safety limits. Review becomes deeper only when the
-actual risks demand stronger evidence. High-assurance adds proof for material risk; it does
-not require the whole project to be designed up front.
+feedback, required approval points, and safety limits. Lean combines design with planning;
+Standard keeps spec, design, plan, and code separate; High-assurance reviews a full package
+and smaller risk-bounded increments. Every retained stage receives complete checks and
+independent judgment. Profiles change the path and timing of assurance, not the care applied
+inside a review.
 
 ## 6. Keep Supporting Rules In Their Place
 

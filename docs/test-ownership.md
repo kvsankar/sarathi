@@ -11,7 +11,7 @@ directly. Its PR may implement production code and executable tests whose approv
 requirements live in an earlier document.
 
 Test code is code. Approved requirements plus a specific Implementation plan authorize
-implementation. Earlier `AT-`, `JT-`, and design `TEST-` obligations must survive
+implementation. Earlier `AT-`, `JT-`, and any design `TEST-` obligations must survive
 allocation and become executable in PRs or explicitly justified non-code
 verification.
 
@@ -67,7 +67,7 @@ spec or design unless a named uncertainty requires one.
 
 ## Planning And Evidence
 
-Every parent `AT-`, `JT-`, and design `TEST-` obligation must be mapped to one or more child
+Every parent `AT-`, `JT-`, and any design `TEST-` obligation must be mapped to one or more child
 work items, implementation PRs, or justified non-code verification. A child implementation
 plan must preserve parent IDs in its Coverage Map and assign concrete test levels,
 environments, fixtures/contracts, and pass/fail checks.

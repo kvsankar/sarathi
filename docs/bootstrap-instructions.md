@@ -35,7 +35,7 @@ This project uses the Sarathi process. For SDLC work, first load the
 `.sdlc/process-decisions.yaml` if present. Resume from the WIP file's next recommended
 action, check claims against the named documents, and preserve the recorded approval gates.
 
-Do not skip required spec/design/plan/code gates for new implementation deltas. A
+Do not skip stages required by the selected assurance profile for new implementation deltas. A
 retrospective baseline review may skip plan creation only when `.sdlc/process-decisions.yaml`
 records that policy.
 <!-- sarathi:end -->

@@ -41,10 +41,13 @@ results, honest feedback, required approvals, and safety limits.
 
 Choose a delivery assurance profile with `docs/assurance-profiles.md`:
 
-- **Lean**: small, reversible, low-risk production change.
-- **Standard**: ordinary default or unclear risk.
-- **High-assurance**: material security, privacy, safety, regulatory, availability,
-  migration, or irreversible-data consequence.
+- **Lean**: assessed spec -> assessed plan with technical decisions -> assessed code.
+- **Standard**: assessed spec -> design -> plan -> code; the ordinary default.
+- **High-assurance**: the full path plus risk-boundary breakdown and assessed code slices.
+
+Profiles change the path, decomposition bias, and review cadence. They never weaken the
+check-plus-independent-review assurance applied at a retained stage. Choose approval policy
+separately.
 
 Choose approval policy with `docs/approval-gates.md`: **Human checkpoints** stop at material
 gates; **Automatic eligible gates** uses local policy. Explicit YOLO selects automatic
@@ -80,8 +83,9 @@ claim.
 4. At project entry and first feature requirements, present profile and approval choices with
    a recommendation; record the choice/default and work outcome. Under explicit YOLO, infer
    and record them without confirmation using `docs/approval-gates.md`.
-5. Select Lean, Standard, or High-assurance and additional checks. Record why and what would
-   require stronger assurance. In YOLO mode, use Standard unless Lean is justified.
+5. Select Lean, Standard, or High-assurance and additional checks. Follow that profile's
+   stage path and record why and what would require a longer path. In YOLO mode, use Standard
+   unless Lean is justified.
 6. Load only the selected `prompts/<stage>-<action>.prompt.md` and its triggered references.
 
 ## Decompose Only When It Helps
@@ -116,7 +120,8 @@ keeps the restrictions and protected boundaries in `docs/approval-gates.md`.
 ## Evidence Invariants
 
 - Specs own `AT-*` and `JT-*` descriptions of observable success.
-- Designs own `TEST-*` descriptions of what must be tested and where.
+- Standalone designs own `TEST-*` descriptions of what must be tested and where. A Lean
+  plan without a standalone design maps spec acceptance directly to executable checks.
 - Plans assign tests from parent and local documents to child work or PRs.
 - Behavior-changing code uses Red-Green-Refactor: observe the smallest meaningful test fail,
   make the minimum change that passes it, then improve the code while tests stay green.
@@ -145,23 +150,12 @@ fit. Use `docs/review-verification-checklist.md`.
 
 | Reference | Load when |
 | --- | --- |
-| `docs/enduring-model.md` | Explaining Sarathi, orienting a project, or relating delivery, decomposition, quality, continuity, and risk. |
-| `docs/requirements-model.md` | Specifications and their needs-to-evidence hierarchy. |
-| `docs/assurance-profiles.md` | Choosing delivery assurance or additional checks. |
-| `docs/simplicity-first.md` | Checking whether a solution or PR breakdown is no larger than needed. |
-| `docs/project-entry.md` | Starting in a new or existing codebase. |
+| `docs/workflow-terminology.md` | Routing needs work target, scope, stage, action, command, or work-item terms. |
 | `docs/work-in-progress.md` | Starting, resuming, blocking, handing off, or answering status and next-action questions. |
+| `docs/project-entry.md` | Starting in a new or existing codebase. |
+| `docs/approval-gates.md` | Choosing approval policy, using YOLO, or reading approval/auto-policy records. |
 | `docs/result-reporting.md` | Reporting any result, status, pause, or handoff. |
-| `docs/document-locations.md` | Choosing document/review-report paths or recording non-standard canonical paths. |
-| `docs/artifact-formatting.md` | Writing or materially revising Markdown documents. |
-| `docs/human-first-artifacts.md` | Creating or revising a spec, design, or plan; checking readability or source-ID cleanliness. |
-| `docs/cross-cutting-concerns.md` | Choosing checks for security, privacy, reliability, or other identified risks. |
-| `docs/test-ownership.md` | Planning or implementing tests, including test-first changes, or when test ownership spans children. |
-| `docs/work-decomposition.md` | Breakdown plans or child document chains are involved. |
-| `docs/feedback-and-learning.md` | Coordinating parallel work, feedback, or earlier-document changes. |
-| `docs/approval-gates.md` | Choosing approval policy or reading approval/auto-policy ledgers. |
-| `docs/cleanup-pass.md` and `docs/simplify-pass.md` | Handoff quality passes apply. |
-| `docs/workflow-status.md` | Rendering or interpreting workflow status. |
 
-Use `docs/progressive-disclosure.md` for the complete reference map. Use bundled
+After selecting a command, use its local trigger list and
+`docs/progressive-disclosure.md`, the complete shared-reference map. Use bundled
 `checkers/check_*.py` for deterministic verification and preserve raw evidence.

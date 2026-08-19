@@ -37,10 +37,10 @@ generalize when a second concrete use case reveals the right boundary.
 
 ## Before Adding Another Document
 
-If the approved requirements and design are enough to implement a safe change, write one
-specific implementation plan and start. Create another document only when a specific
-unanswered question blocks implementation. Keep that document focused on the question, then
-return to implementation when it is answered.
+If the approved requirements and applicable technical decisions are enough to implement a
+safe change, write one specific implementation plan and start. Create another document only
+when a specific unanswered question blocks implementation. Keep that document focused on
+the question, then return to implementation when it is answered.
 
 Record the result briefly in the plan. Refer to approved requirements, acceptance tests,
 design decisions, risks, interfaces, and prototypes instead of restating them. A feature may

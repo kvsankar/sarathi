@@ -1,214 +1,67 @@
 # AGENTS.md
 
-Guidance for coding agents maintaining this repository. Sarathi starts from an accepted
-specification and learns through feedback; it is not a linear waterfall checklist.
+Guidance for coding agents maintaining this repository.
 
 ## Canonical Sources
 
 - `docs/`: shared process policy and user-facing guides.
-- `prompts/`: canonical command prompts.
-- `skills/`: skill-specific definitions and metadata. Installers assemble the `sarathi`
-  bundle from canonical prompts, docs, and checkers at installation time.
-- `checkers/`: repeatable checks for required structure and links.
+- `prompts/`: canonical `<stage>-<action>` command prompts.
+- `skills/`: skill-specific definitions and metadata.
+- `checkers/`: repeatable structure, approval, and link checks.
 - `scripts/`: Windows, macOS, Linux, and WSL installers.
-- `tests/`: checker, bundle, renderer, prompt-budget, and browser regressions.
+- `tests/`: checker, bundle, renderer, instruction-budget, installer, and browser regressions.
+- `README.md`: installation, command orientation, and repository entry points.
 
 Do not treat `.github` as canonical source. `.github/prompts` is only a project-scoped
-GitHub Copilot installation target.
+GitHub Copilot installation target. Installers assemble the `sarathi` bundle from canonical
+prompts, docs, checkers, and skill-specific files.
 
 ## Repository Maintenance Is Not Self-Hosted
 
-Do not run Sarathi's stage workflow on this repository for ordinary maintenance. Do not
+Do not run Sarathi's delivery workflow on this repository for ordinary maintenance. Do not
 create or maintain root `.sdlc/` specs, plans, approvals, decisions, or WIP records here.
-Use the user's request, the working diff, focused tests, independent review when useful,
-and `CHANGELOG.md` as the maintenance evidence. The `.sdlc` behavior described below is
-product guidance for repositories using Sarathi, not state for this repository itself.
-Only run an explicit self-dogfooding experiment when the user asks for one, and keep its
-temporary state untracked.
+Use the user's request, the working diff, focused tests, independent review when useful, and
+`CHANGELOG.md` as maintenance evidence. Only run a self-dogfooding experiment when the user
+asks, and keep its temporary state untracked.
 
-## Command Contract
+## Product Policy Lives Elsewhere
 
-Command verbs are intentionally distinct:
+This file governs repository maintenance, not repositories that use Sarathi. Do not restate
+runtime policy here.
 
-- `create`: write or revise a document or code slice.
-- `verify`: run repeatable checks and report their limits.
-- `review`: independently judge quality and look for counterexamples.
-- `assess`: run verification and review together.
+- `skills/sarathi/SKILL.md` contains only always-loaded routing and operating constraints.
+- `prompts/<stage>-<action>.prompt.md` owns command behavior.
+- [docs/progressive-disclosure.md](docs/progressive-disclosure.md) maps every shared reference
+  and its loading trigger.
+- [docs/enduring-model.md](docs/enduring-model.md) owns the delivery model.
+- [docs/approval-gates.md](docs/approval-gates.md) owns approvals and YOLO.
+- [docs/review-verification-checklist.md](docs/review-verification-checklist.md) owns check and
+  review independence.
+- [docs/process-maintenance.md](docs/process-maintenance.md) owns process-editing rules.
 
-The stage sequence is `spec -> design -> plan -> code`, with matching `create`, `verify`,
-`review`, and `assess` commands. `$sarathi-workflow-status` is a read-only projection and never
-advances a gate. Canonical behavior lives in `prompts/<stage>-<action>.prompt.md`; shared behavior
-lives in `docs/` and must not be copied into every prompt.
-
-## Delivery Model
-
-All production work uses the same loop:
-
-```text
-approved requirements -> smallest useful change -> results -> feedback -> inspect/adapt
-```
-
-Use [docs/assurance-profiles.md](docs/assurance-profiles.md) to choose a delivery assurance
-profile:
-
-- **Lean** for small, reversible, low-risk production changes.
-- **Standard** as the ordinary default or when risk is unclear.
-- **High-assurance** when failure has material security, privacy, safety, regulatory,
-  financial, availability, migration, or irreversible-data consequences.
-
-Assurance profiles change evidence depth; they never waive approved requirements, readiness to
-implement, tests, honest feedback, earlier-document review, or safety limits. Choose approval
-policy separately: human checkpoints stop for explicit approval; automatic approval applies
-only to eligible gates under explicit local policy. Work may deliver a product increment or
-decision/evidence; its outcome does not lower required assurance or approval boundaries.
-
-Apply [docs/simplicity-first.md](docs/simplicity-first.md) as a hard design constraint.
-Process records must not become product architecture. Start with the smallest direct
-implementation, reuse existing suites and contracts as compatibility proof, generalize
-after a second concrete use case, and stop when conceptual complexity exceeds the user's
-mental model. If the solution is larger than the problem requires, simplify it. Sarathi has
-no LOC or PR-count constraints.
-
-At project entry and first requirements for a feature, normally present the profile and
-approval-policy options with a contextual recommendation. Under explicit YOLO, infer and
-record them without stopping for confirmation. Record the selection or confirmed default,
-work outcome, extra checks, reason, and escalation conditions in
-`.sdlc/process-decisions.yaml` when present, `.sdlc/wip.md`, and the source document.
-
-## Scope And Execution Readiness
-
-- **Product/system**: broad boundary and capabilities.
-- **Feature/component**: coherent capability or subsystem; may be ready to implement directly.
-- **Slice/change**: smallest implementable unit; normally ready to implement.
-
-`$sarathi-code-create` blocks without approved requirements and a specific plan that is ready to implement.
-
-At every planning boundary, ask whether a competent engineer can understand, explain,
-review, and safely plan the work as one coherent unit. If yes, use one Implementation plan.
-If not, split along a natural product or technical boundary until each part is
-understandable, testable, and safe to integrate. A split does not automatically require
-another spec or design. See [docs/work-decomposition.md](docs/work-decomposition.md).
-
-Breakdown plans use a work group only for near-term `WORK-*` children that share a real
-feedback or integration checkpoint; unscheduled children have no group. Implementation plans
-list the PRs for one child without assigning PRs to groups. Each group states what it should
-teach us, how much may run at once, when
-feedback and integration happen, and when to stop or replan. A
-`.sdlc/wave-checkpoints.yaml` record that matches the current plan closes only its group. See
-[docs/feedback-and-learning.md](docs/feedback-and-learning.md).
-
-## Non-Negotiable Evidence Rules
-
-- Requirements own black-box `AT-*` acceptance and `JT-*` journey intent.
-- Designs own executable `TEST-*` obligations and verification architecture.
-- Plans assign parent and local test obligations to child work or PRs.
-- Code implements assigned tests and reports exact commands, outcomes, and unavailable
-  evidence. Reviewers inspect test bodies and their pass/fail checks.
-- A primary external seam cannot rely only on a self-authored double without explicit
-  acceptance of the remaining risk. Prefer the real dependency or its official test
-  surface.
-- Build, deployment, environments, docs, observability, error handling, UI/accessibility,
-  security, privacy, resilience, performance/cost, and migration depth are activated by
-  accepted requirements or identified risks. Follow
-  [docs/cross-cutting-concerns.md](docs/cross-cutting-concerns.md).
-- Never infer passing tests, stakeholder feedback, merge state, or human
-  approval from an automatic checker or Git activity.
-- Live production deployment/checks require explicit user approval.
-
-Behavior-changing code has focused, meaningful verification. The implementation approach is
-chosen by the repository; review evaluates whether the resulting tests and commands are
-credible.
-
-Run focused cleanup and simplify passes before handoff. Fix in-scope oddities, avoid
-unrelated refactors, and revise earlier documents if simplification changes accepted
-behavior or contracts. See `docs/cleanup-pass.md` and `docs/simplify-pass.md`.
-
-## Feedback And Parallelism
-
-Approval means sufficient for the next change, not frozen forever. Every planned change
-states what it should demonstrate, who or what can judge the result, how feedback will be
-gathered, what result would change the plan, and which earlier documents may need revision.
-Feedback status is `received`, `requested`,
-`unavailable`, or `not-applicable`; never fabricate evidence.
-
-After each assessed slice, classify changes to parent documents as `no-change`, `revision-proposed`,
-`revision-required`, or `feedback-required`. Revise before affected work continues.
-
-Prefer sub-agent parallelism inside one change. Run independent changes concurrently only
-when one result cannot invalidate another, file ownership is clear, someone will combine
-the work, and conditions for stopping or replanning are recorded.
-
-## IDs
-
-- Specs, plans, and work groups: `KIND-AREA-NAME`, such as `FR-AUTH-SIGNIN`,
-  `PR-AUTH-SIGNIN`, and `WAVE-AUTH-BOUNDARY`.
-- Design entities: `KIND-SLUG`, such as `COMP-AUTH` and `IFACE-AUTH`.
-- Design tests: `TEST-AREA-NAME`.
-
-Tokens are uppercase slugs; numeric placeholder suffixes are invalid. Keep human-facing
-design labels readable and place machine IDs in annotations, glossaries, matrices, and
-required references. See [docs/slug-id-migration.md](docs/slug-id-migration.md).
-
-## Entry, WIP, And Required Reviews
-
-The rules in this section apply to target repositories using Sarathi; the maintenance
-exception above applies to this repository itself.
-
-Use [docs/project-entry.md](docs/project-entry.md) to choose how Sarathi starts in a new or
-existing system. Documenting an existing system reconstructs approved requirements; current
-code is evidence, not truth. A planless baseline review is a conformance audit and must be
-explicitly authorized in `.sdlc/process-decisions.yaml`.
-
-Read and maintain `.sdlc/wip.md` using [docs/work-in-progress.md](docs/work-in-progress.md).
-It is a resumable navigation note, not approval or product truth.
-
-Choose a context-appropriate document area with
-[docs/document-locations.md](docs/document-locations.md); use root `docs/` only when no
-more specific area can be inferred, never a root-file default. Only Product/system documents
-use `spec.md`, `design.md`, and `plan.md`; smaller scopes use one descriptive work slug in
-every filename. Save direct review and assessment output as Markdown in that area's `reviews/`
-folder with the same naming rule.
-
-When `sarathi` is invoked generally, run only the next appropriate command. After creating or
-materially revising a spec, design, ADR, plan, code slice, assessment, or review report:
-
-1. Update `.sdlc/wip.md`.
-2. Report document or code path, status/readiness, evidence, open questions, and next command.
-3. End the turn before starting the next stage.
-
-Continue across commands only when the latest request explicitly asks for end-to-end or
-unattended execution and the recorded approval policy permits the current gate. Human
-checkpoints stop for explicit approval. Explicit YOLO authorizes autonomous end-to-end work
-and automatic internal gates; follow the restrictions and protected boundaries in
-[docs/approval-gates.md](docs/approval-gates.md).
-
-Approval records use `.sdlc/approvals.yaml`; optional limited automatic approval policy uses
-`.sdlc/gates.yaml`. Follow [docs/approval-gates.md](docs/approval-gates.md).
-
-## Verification Independence
-
-When sub-agents are available, use fresh-context passes:
-
-- Check pass: repeatable checks and raw results.
-- Review pass: independent judgment using the document or code plus those results.
-
-An assessment runs both. If sub-agents are unavailable, disclose non-independence and keep
-the passes separate. Stop assessment when an earlier required document is unfit. Follow
-[docs/review-verification-checklist.md](docs/review-verification-checklist.md).
+When changing process behavior, edit the owning source and replace other copies with links.
+Keep command prompts local and concise; put shared judgment in one triggered reference and
+deterministic rules in checkers.
 
 ## Maintenance Rules
 
-- Read [docs/process-maintenance.md](docs/process-maintenance.md) before changing process
-  prompts, skills, policy, or checker behavior.
-- Keep global routing and stage contracts concise. Shared rules belong in one triggered
-  reference; deterministic rules belong in checkers.
-- Use `apply_patch` for manual edits. Do not overwrite user changes or generated consumer
-  documents.
-- Keep `skills/sarathi` limited to skill-specific files; make installers assemble canonical
-  prompts, checkers, and docs into each installed bundle.
+- Read [docs/process-maintenance.md](docs/process-maintenance.md) before changing prompts,
+  skills, policy, or checker behavior.
+- Apply [docs/simplicity-first.md](docs/simplicity-first.md): prefer deletion and direct
+  changes; do not add process machinery without a concrete need.
+- Use `apply_patch` for manual edits. Preserve unrelated user changes in a dirty worktree.
+- Keep `skills/sarathi` limited to skill-specific files. Installers assemble canonical docs,
+  prompts, and checkers into installed bundles.
+- Keep `sarathi` as the only implicitly invocable skill. Generated command skills remain
+  explicit, agent-neutral, and named `sarathi-<stage>-<action>`.
 - Update `CHANGELOG.md` for user-visible process, checker, installer, or skill changes.
 - Keep deterministic output free of timestamps, randomness, network assets, and
-  environment-dependent content unless the document schema explicitly requires them.
+  environment-dependent content unless its schema requires them.
+- Do not infer passing tests, approval, feedback, merge state, or production readiness from
+  checker or Git activity.
+- Live production deployment or checks require explicit user approval.
+
+## Verification And Publication
 
 Run before publishing:
 
@@ -217,10 +70,10 @@ uv run pre-commit run --all-files
 uv run pytest -q --cov=checkers --cov-report=term-missing
 ```
 
-Run `npm run test:layout` locally when changing the workflow-status renderer, its browser
-tests, or its JavaScript dependencies. The Python suite owns portable Sarathi skill metadata
-validation; PR CI runs that suite and installs Chromium only for layout-related changes.
+Run `npm run test:layout` when changing the workflow-status renderer, browser tests, or
+JavaScript dependencies. The Python suite owns portable skill metadata validation; CI
+installs Chromium only for layout-related changes.
 
 Use `scripts/install.ps1` or `scripts/install.sh`. User scope and all-agent installation are
-the defaults; do not pass a narrower tool target unless requested. Publish through a PR,
-wait for CI, merge, then deploy from the merged default branch.
+the defaults; do not pass a narrower tool target unless requested. Publish through a PR, wait
+for CI, merge, then deploy from the merged default branch.

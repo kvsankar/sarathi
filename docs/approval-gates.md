@@ -98,7 +98,9 @@ approvals:
 ## Approval Names
 
 - `spec.approved`: required before design gate checks.
-- `design.approved`: required before plan gate checks.
+- `design.approved`: required before plan gate checks when the selected profile has a
+  standalone design. Lean plans without one require the current `spec.approved` record and
+  expose their technical decisions to the plan assessment.
 - `plan.approved`: required before code gate checks.
 - `ux.mock.approved`: required before planning or production UI work when the spec says
   `UI Mock Preference: Required`.

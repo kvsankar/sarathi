@@ -34,6 +34,16 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Define explicit YOLO as authorization for autonomous end-to-end execution and automatic
   internal gates, while preserving auditable approval records, declared restrictions,
   evidence requirements, and separately authorized protected external boundaries.
+- Make `progressive-disclosure.md` the exhaustive shared-reference map, shrink the
+  always-loaded router to pre-command references, and fail content-integrity tests when a
+  canonical shared document is unmapped or duplicated.
+- Remove duplicated runtime policy from `README.md` and `AGENTS.md`; keep README focused on
+  installation and orientation, keep AGENTS focused on repository maintenance, and ratchet
+  their size budgets so canonical policy remains in prompts, the runtime skill, and `docs/`.
+- Make assurance profiles choose the path and review cadence rather than review quality:
+  Lean combines design decisions with an assessed Implementation plan, Standard retains
+  separate spec/design/plan/code stages, and High-assurance adds risk-boundary breakdown and
+  assessed code slices.
 
 ## 0.7.0 - 2026-07-24
 

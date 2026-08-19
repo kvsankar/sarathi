@@ -10,8 +10,9 @@ Review the target plan without editing it unless asked. Read earlier required do
 `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
 `docs/feedback-and-learning.md`, plus `docs/human-first-artifacts.md` and its first-page
 comprehension questions, plus `docs/work-decomposition.md`. Load
-`docs/test-ownership.md` and `docs/result-reporting.md`. Stop as `Blocked-upstream` when
-spec/design is unfit.
+`docs/test-ownership.md` and `docs/result-reporting.md`. Stop as `Blocked-upstream` when a
+required earlier document is unfit. A Lean plan without a standalone design is not blocked
+merely because that document does not exist.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
@@ -30,7 +31,11 @@ compatibility, ownership, and conflicts when applicable. Do not demand irrelevan
 or LOC estimates.
 
 First ask whether a competent engineer could understand, explain, review, and safely plan
-the work as one coherent unit. If so, reject an unnecessary Breakdown plan. If not, check
+the work as one coherent unit. For Lean, reject an unnecessary Breakdown plan and require
+concise, sufficient Technical Decisions when no design exists. For Standard, reject an
+unnecessary Breakdown plan. For High-assurance, require boundaries around material risks,
+recovery, feedback, and integration; accept a direct Implementation plan only when the work
+is already one independently safe slice and records why. Otherwise, check
 that the chosen boundaries make every child understandable, testable, and safe to
 integrate. For an Implementation plan, check that PR nodes have coherent outcomes, impact
 allocation, verification, and applicable rollback. When there is more than one PR, require

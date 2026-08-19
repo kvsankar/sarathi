@@ -27,7 +27,9 @@ review rubrics into `SKILL.md` when a referenced prompt or doc can carry them.
 
 ## On-Demand References
 
-Load references only when their trigger applies:
+Load references only when their trigger applies. This table classifies every canonical
+top-level `docs/*.md` instruction file; command prompts keep smaller local trigger lists for
+the references relevant to that command.
 
 | Reference | Load When |
 | --- | --- |
@@ -37,21 +39,31 @@ Load references only when their trigger applies:
 | `docs/result-reporting.md` | Reporting any stage result, verification, review, assessment, workflow status, pause, or handoff. |
 | `docs/project-entry.md` | Starting in a new or existing codebase, or deciding how much existing work to document. |
 | `docs/artifact-contracts.md` | Writing or revising a spec, design, plan, or code evidence record. |
+| `docs/artifact-formatting.md` | Writing or materially revising a Markdown document or its rendered companion. |
 | `docs/document-locations.md` | Choosing a document area, recording non-standard paths, or saving a review/assessment report. |
 | `docs/requirements-model.md` | Creating or reviewing a specification and preserving the hierarchy from stakeholder needs to observable evidence. |
+| `docs/srs-authoring.md` | Writing detailed use cases, measurable supplementary requirements, or reconstructed requirements for an existing system. |
 | `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; reviewing first-page comprehensibility; checking process IDs in source. |
+| `docs/design-principles.md` | Creating or reviewing architecture, detailed design, ADRs, interfaces, data ownership, or deployment topology. |
 | `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, existing compatibility proof, or PR breakdown. |
-| `docs/assurance-profiles.md` | Choosing or changing delivery assurance and extra checks for specific risks. |
+| `docs/cleanup-pass.md` | Running the focused pre-handoff cleanup pass or classifying cleanup findings. |
+| `docs/simplify-pass.md` | Running the post-cleanup simplification pass on documents, plans, or code. |
+| `docs/assurance-profiles.md` | Choosing or changing the stage path, decomposition bias, review cadence, or extra checks for specific risks. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>-<action>.prompt.md` | A command is selected or directly invoked, such as `spec-create` or `code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
 | `docs/test-ownership.md` | Planning or implementing tests, including test-first behavior changes, or assigning acceptance, journey, or integration tests. |
+| `docs/project-quality-gates.md` | Defining or reviewing repository quality gates, CI placement, merge requirements, or release evidence. |
 | `docs/work-decomposition.md` | Deciding whether complex work should be split, where to split it, or whether a child needs another document. |
 | `docs/feedback-and-learning.md` | Planning or completing changes; handling stakeholder feedback, updates to earlier documents, or parallel work. |
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs repeatable checks with independent review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |
+| `docs/workflow-status.md` | Rendering, interpreting, or troubleshooting workflow-status output. |
+| `docs/slug-id-migration.md` | Migrating legacy numeric IDs or checking slug-ID compatibility and grammar. |
+| `docs/progressive-disclosure.md` | Locating shared guidance or maintaining this reference-routing map. |
 | `docs/process-maintenance.md` | Modifying the SDLC process, prompts, skills, checker policy, or shared docs. |
 | `docs/release-process.md` | Preparing `CHANGELOG.md`, a version bump, release commit, or Git tag. |
+| `docs/sarathi-process-diagram-prompt.md` | Regenerating or materially revising the Sarathi process-diagram asset. |
 | `checkers/check_*.py` help/source | Running, troubleshooting, or changing deterministic verification. |
 
 If a referenced doc is not bundled in an installed skill, fall back to the repository copy

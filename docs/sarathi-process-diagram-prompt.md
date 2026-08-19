@@ -22,11 +22,11 @@ generic corporate flowchart, dashboard, web page, Mermaid diagram, UML export, o
 notes graphic.
 
 Composition/framing: wide landscape poster composed for documentation and presentation
-use; native generator dimensions may differ from 16:9. Use one visually dominant circular
-or rounded-rectangular delivery loop in the center, a conditional decomposition branch
-below planning, and two strong cross-stage quality rails immediately beneath the loop.
-Continuity, risk, and authoring rules remain quiet supporting material. Keep all connectors
-clean and avoid crossing arrows.
+use; native generator dimensions may differ from 16:9. Use one visually dominant adaptive
+delivery loop in the center, a clearly visible three-path profile selector, a conditional
+decomposition branch below planning, and two strong quality rails beneath the loop.
+Continuity and authoring rules remain quiet supporting material. Keep all connectors clean
+and avoid crossing arrows.
 
 1. TITLE AND ENDURING STATEMENT
    - Large title, verbatim: "sarathi — PRODUCTION SOFTWARE ENGINEERING WITH AI AGENTS"
@@ -35,8 +35,9 @@ clean and avoid crossing arrows.
    - Small badge: "Enduring model — not waterfall"
 
 2. CENTRAL DELIVERY LOOP — VISUALLY DOMINANT
-   Arrange four large connected panels from left to right, then curve a bold feedback arrow
-   from the final panel back toward any earlier panel. The panels are:
+   Arrange four large panels from left to right, then curve a bold feedback arrow from the
+   final panel back toward any earlier panel. Show that profiles select different routes
+   through these panels rather than implying one mandatory four-stage chain. The panels are:
 
    - "SPEC — DEFINE THE REQUIREMENTS"
      "Problem, stakeholders, scope"
@@ -113,7 +114,7 @@ clean and avoid crossing arrows.
    "Assess — checks + review"
 
    Caption, verbatim:
-   "Every stage is checked and independently reviewed before it is accepted for the next learning step."
+   "Every retained stage is checked and independently reviewed before the next learning step."
 
    Add a smaller clarification:
    "Automatic checks report facts. Review judges meaning, test adequacy, simplicity, and safety."
@@ -127,13 +128,16 @@ clean and avoid crossing arrows.
    Caption, verbatim:
    "A new engineer or agent can resume from source records and observed results."
 
-6. RISK CONTROLS — DEPTH FOLLOWS CONSEQUENCE
-   Show a compact rail titled "ASSURANCE FOLLOWS RISK" with three levels:
-   "Lean — small and reversible"
-   "Standard — ordinary default"
-   "High-assurance — stronger proof for material risk"
+6. PROFILE PATHS — ROUTE AND REVIEW CADENCE FOLLOW CONSEQUENCE
+   Show a compact but prominent route selector titled "ASSURANCE PROFILE" with three paths:
+   "Lean — Spec → Plan with technical decisions → Code"
+   "Standard — Spec → Design → Implementation plan → Code"
+   "High-assurance — Spec → Design → Breakdown → Child plans → Code slices"
 
-   Caption, verbatim: "High-assurance adds evidence, not up-front ceremony."
+   Show a complete quality-gate marker at every stage retained by each route. For
+   High-assurance, show review points before code and after each meaningful code slice.
+
+   Caption, verbatim: "Profiles change the path and review cadence, not review quality."
 
 7. SUPPORTING AUTHORING RULES — VISUALLY SECONDARY
    Use a narrow pale footer band titled "SUPPORTING RULES". Include only four short items:

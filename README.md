@@ -21,14 +21,12 @@ Its enduring delivery loop is:
 accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
 ```
 
-![sarathi production software engineering with AI agents](docs/sarathi-process-diagram.png)
-
 Specifications, designs, plans, and code preserve the decisions made along that loop; they
-do not form a one-way waterfall. Decompose when the work is too complex to understand and
-review safely as one coherent unit. Each stage can be
-created, verified, reviewed, or assessed independently. Delivery assurance follows actual
-risk; approval policy and the intended work outcome are chosen separately. See
-[sarathi's enduring model](docs/enduring-model.md).
+do not form a one-way waterfall. Lean combines design with planning, Standard keeps all four
+stages explicit, and High-assurance adds risk-boundary decomposition and more review points.
+Every retained stage receives full assurance. Approval policy and work outcome are separate.
+See [sarathi's enduring model](docs/enduring-model.md) and
+[delivery assurance profiles](docs/assurance-profiles.md).
 
 ## What You Get
 
@@ -301,278 +299,25 @@ suffixes such as `FR-AUTH-10` are rejected by the checkers.
 
 For older numbered IDs, see [docs/slug-id-migration.md](docs/slug-id-migration.md).
 
-## Builds And Deployment
+## Policy And Evidence
 
-Builds and deployment are covered from the beginning:
+Detailed workflow behavior is owned by the command prompts and shared documents rather than
+repeated here:
 
-- Specs capture externally relevant build, release, deployment, rollout, rollback,
-  migration, smoke-check, and operational acceptance needs.
-- Designs define deployable outputs, build/package strategy, release workflow,
-  environments, configuration/secrets, promotion, deployment topology, validation, and
-  ownership.
-- Plans assign build scripts, package manifests, generated outputs, CI/CD config, IaC or
-  deployment manifests, migration scripts, smoke checks, rollback checks, and release docs
-  to child work or PRs.
-- Code creates and verifies the planned build/deployment pieces. It should run the build,
-  verify the expected build output, validate deployment scripts/manifests with dry-run or lint
-  checks where possible, and avoid live production deployment unless explicitly requested.
+- [project entry](docs/project-entry.md), [delivery assurance](docs/assurance-profiles.md),
+  and [approval/YOLO policy](docs/approval-gates.md);
+- [document contracts](docs/artifact-contracts.md), [locations](docs/document-locations.md),
+  and [human-first formatting](docs/human-first-artifacts.md);
+- [work decomposition](docs/work-decomposition.md), [feedback and learning](docs/feedback-and-learning.md),
+  and [work-in-progress state](docs/work-in-progress.md);
+- [test ownership](docs/test-ownership.md), [risk-triggered checks](docs/cross-cutting-concerns.md),
+  and [review/verification](docs/review-verification-checklist.md); and
+- [simplicity](docs/simplicity-first.md), [cleanup](docs/cleanup-pass.md),
+  [simplification](docs/simplify-pass.md), and [result reporting](docs/result-reporting.md).
 
-Reviews stop when build or deployment intent is missing from the earlier document that
-should own it.
-
-## Test Environments
-
-The process treats test environments as design and planning decisions:
-
-- Specs capture externally relevant environment needs or non-goals when they affect
-  acceptance, release safety, data, integrations, or operations.
-- Designs always define the developer test environment and recommend additional
-  environments when context warrants them: shared integration/test, staging or
-  pre-production, production canary/smoke, and synthetic monitoring.
-- Plans assign setup, data/secrets handling, reset/cleanup, deployment validation, smoke/
-  canary/rollback checks, and ownership for each planned environment.
-- Code runs the planned environment checks. Live production checks require explicit user
-  approval.
-
-Not every product needs every environment. The design should explain which environments are
-required now, recommended later, deliberately deferred, or unnecessary, including residual
-risk.
-
-## Context-Driven Reviews And Tests
-
-At every phase, agents should ask what the context implies beyond the user's first words.
-Depending on the domain, data, users, integrations, platform, and deployment risk, the
-process may need dedicated performance/load tests, security review or threat modeling,
-privacy/compliance review, accessibility audit, resilience or disaster-recovery checks,
-backup/restore rehearsal, migration rehearsal, localization review, abuse/fraud/safety
-review, cost guardrails, compatibility tests, or operational reviews.
-
-Specs capture these as requirements, acceptance criteria, non-goals, assumptions, or open
-questions. Designs turn them into tactics, `TEST-` obligations, ADRs, or risks. Plans assign
-them to work items or PRs. Code runs the planned checks and stops to revise earlier documents
-if implementation reveals a material concern that was not planned.
-
-## User And Developer Documentation
-
-Documentation is also covered from the beginning:
-
-- Specs capture user and developer documentation audiences, tasks, onboarding, help,
-  API/reference, examples, runbooks, troubleshooting, release notes, accessibility, and
-  acceptance needs.
-- Designs define the documentation architecture: source locations, generated vs. written
-  docs, API/reference generation, examples, diagrams, publishing/versioning, ownership, and
-  validation checks.
-- Plans assign documentation work to PRs, including user guides, README/API docs, examples,
-  runbooks, troubleshooting, migration notes, release notes, generated docs, and link/doc
-  checks.
-- Code updates and verifies the planned docs with the implementation. Public docs should
-  match actual behavior and contracts, not describe unimplemented future behavior.
-
-Reviews stop when documentation intent is missing from the earlier document
-that should own it.
-
-## Logging, Telemetry, And Error Handling
-
-Diagnostics and failure behavior are covered across the lifecycle:
-
-- Specs capture externally relevant human/agent/operator diagnostics, telemetry,
-  application performance monitoring, support/debugging needs, privacy/redaction
-  constraints, user-facing error behavior, and boundary error contracts as requirements or
-  non-goals.
-- Designs define structured logging, correlation IDs, events, metrics, traces, sinks,
-  APM instrumentation, service/resource names, latency/throughput/error/saturation metrics,
-  dashboards, SLO/SLI signals, exporter/provider choices such as OpenTelemetry or New Relic,
-  retention/redaction, alert hooks, and how UI/API/domain/infrastructure errors are mapped,
-  recovered, retried, degraded, or surfaced.
-- Plans assign logging, telemetry, and error-handling work to PRs, including fixtures,
-  APM setup, dashboards/alerts, pass/fail checks, and tests for representative success/
-  failure paths.
-- Code implements and verifies the planned diagnostics and error handling without leaking
-  secrets, stack traces, raw objects, or unstable internals to users, logs, APM providers,
-  or agents.
-
-Reviews stop when logging, telemetry, or error-handling intent is missing from the earlier
-document that should own it.
-
-## Delivery Decisions
-
-At project entry and for the first requirements of a feature, choose and record three
-independent decisions: a delivery assurance profile, approval policy, and work outcome.
-Lean suits small reversible work, Standard is the ordinary default or choice when risk is
-unclear, and High-assurance adds proof for material security, privacy, safety, regulatory,
-financial, availability, migration, or irreversible-data risk. Approval policy is either
-human checkpoints or automatic approval for locally eligible gates; explicit YOLO selects
-automatic internal gates for autonomous end-to-end work. Work is either a product increment or a
-decision/evidence result. Add only checks relevant to the actual risk; none of these choices
-bypasses tests, feedback, safety limits, or protected approval gates. See
-[delivery assurance profiles](docs/assurance-profiles.md),
-[approval gates](docs/approval-gates.md), and [project entry](docs/project-entry.md).
-
-## General Cleanup
-
-Agents run a focused cleanup at suitable handoff points, and always before ending a code
-change, to remove odd issues such as tautological tests, mock-only confidence,
-stale requirement-to-test links, superficial security work, debug leftovers, and misleading docs.
-Cleanup stays inside the current scope; larger discoveries become follow-up findings or
-revisions to earlier documents.
-
-## Simplify Pass
-
-After cleanup when both apply, and before handoff for specs, designs, plans, and code
-changes, agents simplify the work. This removes over-engineered requirements, layers,
-abstractions, extension points, fixtures, checks, or code paths that are not justified by
-accepted scope, risk, constraints, or evidence. Necessary detail, reviewability,
-requirement links, and real boundaries stay intact; larger simplifications require changes
-to the controlling documents.
-
-Process links must not become product architecture. Work in an existing system reuses its
-compatibility suites by default, and generalization normally waits for a second concrete
-consumer. If the solution is larger than the problem requires, simplify it. See
-[docs/simplicity-first.md](docs/simplicity-first.md).
-
-## Feedback
-
-Specs, designs, and plans record the current agreed requirements and decisions; approval
-does not freeze them. After each change, record real feedback and update earlier documents
-when the result changes what should happen next.
-
-Parallel work is safe only when one result cannot invalidate another, file ownership is
-clear, and someone owns integration and review. See
-[docs/feedback-and-learning.md](docs/feedback-and-learning.md).
-
-## Human-first documents
-
-New and materially revised specs, designs, and plans lead with a plain-language Product
-Overview, Technical Approach, or Implementation Approach. Visible headings describe the product and architecture;
-stable process IDs live in structured comments and a final traceability appendix. Legacy
-documents remain parseable until materially revised. Production and test source stays free
-of Sarathi IDs added merely for traceability. See
-[Human-first documents](docs/human-first-artifacts.md).
-
-Plans also inspect the existing system and sibling services before describing work. Each
-delivery item says whether it reuses existing code, extracts then reuses it, remains
-target-owned, adds genuinely new behavior, or defers non-blocking cleanup.
-
-## Approval Policy And YOLO Mode
-
-Human checkpoints are the default and stop at material gates. Automatic approval crosses
-only eligible gates recorded in local policy. An explicit YOLO request selects automatic
-internal gates and authorizes autonomous end-to-end work; it still records assumptions,
-results, and `auto-approved` gates, and it stops at user/repository restrictions or protected
-external boundaries. See [approval gates](docs/approval-gates.md) for the canonical behavior
-and boundary list.
-
-## Approval Records
-
-Projects can make approvals automatically checkable with local YAML files:
-
-- `.sdlc/approvals.yaml` records local approvals, approvers, UTC timestamps, and
-  SHA-256 hashes.
-- `.sdlc/gates.yaml` optionally enables limited auto-approval for low-risk modes such as
-  internal prototypes.
-
-Checkers support `--require-approvals` for later gate runs. The approval is valid only when
-the entry matches the gate, document path, status, UTC `approved_at`, and current file hash.
-Stale hashes fail. No ticketing system is required. This proves structure and
-freshness of a local record, not human identity, intent, or external consent; reports must
-show whether a gate was approved by a named user or by local auto-approval policy.
-Approval is permission for the next learning step, not proof that a document is final,
-correct, or informed by end-user feedback. Feedback source and status are recorded
-separately.
-
-See [docs/approval-gates.md](docs/approval-gates.md).
-
-## Tests And Verification
-
-Test responsibility is split by document and code stage:
-
-- Specs define `AT-` acceptance criteria at product/system, feature/component, and
-  slice/change scope; the criteria become narrower as the scope narrows. Specs also define
-  `JT-` journey tests for long ordered stories that compose multiple `AT-` scenarios.
-- Designs define the test architecture and explicit `TEST-<AREA>-<NAME>` executable test
-  obligations for unit, component, contract, integration, UI, journey/e2e, quality,
-  docs/build/deploy, migration, and operational checks.
-- Designs also define the test environment strategy: developer environment always, plus
-  shared integration/test, staging/pre-production, production canary/smoke, and synthetic
-  monitoring when context warrants them.
-- External systems should be tested against the real dependency or its official conformance
-  surface whenever feasible. If a mock, fake, stub, local mirror, or locally re-declared
-  interface replaces the real system, the documents must flag that as a risk and
-  name the mitigation: real-boundary smoke/integration test, official conformance harness,
-  type-conformance check, generated schema/client, vendor sandbox/emulator, captured real
-  fixture, or explicit user-approved limitation. A primary integration seam should not be
-  covered only by a self-authored double.
-- Plans assign `AT-` acceptance coverage, `JT-` journey coverage, and `TEST-` obligations
-  to PRs.
-- Behavior-changing code follows Red-Green-Refactor: run the smallest meaningful behavioral
-  test and observe the expected failure, implement the minimum change that passes it, then
-  improve the code while the focused test and affected suite remain green. A test written
-  only after implementation is regression coverage, not evidence of test-first development.
-  When a failing automated test is not a sensible driver, use only the narrow cases and
-  replacement verification in [test ownership](docs/test-ownership.md).
-- Code writes the executable tests and implementation. This is where unit, component,
-  contract, integration, UI, journey/e2e, quality, migration, build/deploy, docs, and
-  operational test implementations are created when planned. A project may maintain a
-  requirement-to-test inventory when its audit or assurance needs justify it; reviewers
-  still inspect tests and their pass/fail checks.
-- Code may also add implementation-local supplemental tests, such as helper, pure-core,
-  parser, mapper, regression, characterization, table/property, adapter, or edge-case
-  tests. These supplement, never replace, planned `AT-`/`JT-`/`TEST-` coverage; they stay
-  within the current `PR-` and expected files and use a clear pass/fail check.
-  If they imply new externally visible behavior, contract, UX/NFR, or scope, revise the
-  controlling document first.
-- Test implementations are reviewed as code in `$sarathi-code-review` and `$sarathi-code-assess`: assertions,
-  fixtures, helpers, mocks, data, selectors, determinism, readability, maintainability, and
-  false-positive/false-negative risk are judged, not just whether the tests pass.
-- Every executable test needs a clear pass/fail result: return value, state, persisted
-  record, event, API response, DOM/accessibility output, screenshot/visual baseline,
-  generated file, structured log, metric, trace, deployment signal, or captured external call as
-  appropriate.
-- Defect remediation updates earlier documents first when the defect reveals missing UX
-  quality, unclear boundary contracts, missing logging/telemetry/error-handling intent,
-  unrealistic mocks, or other latent spec/design/plan gaps.
-- Documentation, logging/telemetry, error-handling, build, and deployment checks are
-  assigned through the same spec/design/plan chain and verified during code creation,
-  `$sarathi-code-verify`, or `$sarathi-code-assess` when planned. The same is true for environment-specific
-  checks and context-driven reviews/tests such as performance, security, privacy,
-  accessibility, resilience, migration, compatibility, cost, and operational checks.
-  Production-facing telemetry should include APM/application-performance signals when
-  warranted: latency, throughput, error rate, saturation/resource use, critical spans, trace
-  propagation, dashboards, alerts, and SLO/SLI signals.
-
-Use `$sarathi-code-verify` when you simply want a confidence run after a change: planned tests,
-pre-commit/equivalent gates, logging/error-handling checks, build checks,
-documentation checks, deployment dry-runs or smoke checks where planned, and `check_code.py`.
-Use `$sarathi-code-review` when you want independent judgment. Use `$sarathi-code-assess` when you want both
-in one gate.
-
-The checkers provide repeatable evidence about required structure and links:
-
-```powershell
-python checkers/check_spec.py spec.md --json
-python checkers/check_design.py design.md --json
-python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
-python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --json
-```
-
-If `python` is unavailable, try `python3`, then `uv run python`.
-
-Coverage targets and requirement-to-test inventories are project-level controls, not Sarathi
-defaults. When a project adopts them, document the purpose and owner in that project and
-review the resulting evidence; neither a percentage nor a mapping proves meaningful tests.
-Reviewability is judged by cohesive purpose, conceptual complexity, touch scope, evidence,
-and rollback. Sarathi does not impose source-file, module, diff, or PR line-count targets.
-TODO/FIXME/XXX/skip/xfail markers are surfaced with file, line, marker, and text. Do not
-add SDLC-specific annotations to app code. These markers are review warnings rather than
-automatic failures. Review treats unexplained skips and expected failures as evidence gaps,
-while an environment-specific skip may be supported by an explicit passing command or CI
-job for that boundary.
-
-The checkers do not prove that the work is correct. Assessment commands pair check results
-with independent review of requirements, design, plan quality, test implementation quality,
-pass/fail rigor, whether the implementation is suitable, logging/error-handling,
-documentation/build/deployment
-completeness, and consistency across stages.
+The selected command prompt says which references apply. Checkers provide repeatable evidence
+about structure, links, approval-record freshness, and declared test results; they do not prove
+correct meaning, stakeholder consent, or production readiness.
 
 ## Repository Layout
 

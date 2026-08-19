@@ -8,6 +8,7 @@ SKILL = ROOT / "skills" / "sarathi"
 
 MARKDOWN_LINK = re.compile(r"\]\(([^)]+)\)")
 SKILL_FRONTMATTER = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+REFERENCE_MAP_ROW = re.compile(r"^\| `(docs/[^`]+\.md)` \|", re.MULTILINE)
 
 
 def test_sarathi_skill_has_valid_metadata() -> None:
@@ -86,6 +87,51 @@ def test_documented_local_references_resolve() -> None:
                 missing.append(f"{source}: {raw_target}")
 
     assert missing == []
+
+
+def test_progressive_disclosure_maps_every_shared_document() -> None:
+    disclosure = (ROOT / "docs" / "progressive-disclosure.md").read_text(
+        encoding="utf-8"
+    )
+    on_demand = disclosure.split("## On-Demand References", 1)[1].split(
+        "## Command Prompt Loading", 1
+    )[0]
+    mapped = REFERENCE_MAP_ROW.findall(on_demand)
+    expected = sorted(f"docs/{path.name}" for path in (ROOT / "docs").glob("*.md"))
+
+    assert len(mapped) == len(set(mapped)), "reference map contains duplicate rows"
+    assert sorted(mapped) == expected
+
+
+def test_assurance_profiles_define_distinct_paths_with_full_stage_assessment() -> None:
+    profiles = (ROOT / "docs" / "assurance-profiles.md").read_text(encoding="utf-8")
+    normalized = " ".join(profiles.split())
+
+    assert "spec -> implementation plan -> code" in profiles
+    assert "spec -> design -> implementation plan -> code" in profiles
+    assert (
+        "spec -> design -> breakdown plan -> child implementation plan(s) "
+        "-> code slices" in profiles
+    )
+    assert "not by weakening checks or review" in normalized
+    assert "profile changes where assurance occurs" in normalized
+
+
+def test_stage_prompts_route_and_check_lean_without_standalone_design() -> None:
+    spec_create = (ROOT / "prompts" / "spec-create.prompt.md").read_text(
+        encoding="utf-8"
+    )
+    plan_create = (ROOT / "prompts" / "plan-create.prompt.md").read_text(
+        encoding="utf-8"
+    )
+    plan_verify = (ROOT / "prompts" / "plan-verify.prompt.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Recommend `plan-create` for Lean" in spec_create
+    assert "for Lean without a design" in plan_create
+    assert "For Lean without a standalone design" in plan_verify
+    assert "check_plan.py plan.md --spec spec.md --json" in plan_verify
 
 
 def test_workflow_terminology_has_one_canonical_example() -> None:
