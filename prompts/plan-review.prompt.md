@@ -18,7 +18,8 @@ Use a fresh reviewer sub-agent when available. Otherwise say that the review is 
 independent and seek counterexamples.
 
 For corrected findings, focus re-review on those findings and affected boundaries. Restart
-the full review only if requirements or scope changed.
+the full review only if requirements or scope changed. Apply the correction-closure
+procedure in `docs/review-verification-checklist.md`.
 
 ## Judge
 

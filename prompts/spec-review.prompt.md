@@ -17,7 +17,8 @@ Use a fresh reviewer sub-agent when available. Otherwise say that the review is 
 independent and actively seek counterexamples. Passing automatic checks is useful evidence,
 not proof that the requirements are good.
 For corrected findings, focus on those findings and affected boundaries; restart the full
-review only when requirements or scope changed.
+review only when requirements or scope changed. Apply the correction-closure procedure in
+`docs/review-verification-checklist.md`.
 
 ## Judge
 

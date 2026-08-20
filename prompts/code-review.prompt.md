@@ -19,7 +19,8 @@ independent and seek counterexamples. Do not rerun commands unless needed to
 resolve missing or contradictory evidence.
 
 For corrected findings, focus re-review on those findings and affected boundaries. Restart
-a full review only if requirements or scope changed.
+a full review only if requirements or scope changed. Apply the correction-closure procedure
+in `docs/review-verification-checklist.md`.
 
 ## Judge
 

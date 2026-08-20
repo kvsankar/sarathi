@@ -20,6 +20,23 @@ After review findings are corrected locally, rerun affected checks and perform a
 re-review of those findings and changed boundaries. Do not restart a full independent review
 unless scope or controlling intent changed materially. Record which mode was used.
 
+## Correction Closure
+
+Do not accept a claim that a finding was fixed without checking the expected positive
+result. For each claimed correction:
+
+1. State the result that should now be present.
+2. Inspect or execute that result directly.
+3. Record `confirmed`, `partial`, or `missing` beside the finding in the existing review or
+   assessment report, with the file location or executed evidence.
+
+For a document correction, locate the intended new or replacement content where it belongs.
+For a code correction, inspect the resulting implementation and run the focused test or
+counterexample that demonstrates the behavior. Absence of old text is sufficient only when
+deletion itself is the required result, and a generic passing suite does not prove that a
+specific correction landed. A partial or missing correction remains an open finding. Do not
+create a separate closure report or ledger.
+
 When a create command embeds an assessment, its checker output is the check pass for one
 assessment cycle. That run is the official assessment for the resulting document revision
 and owns the scope-appropriate assessment report. Apply one safe, in-scope fix set and run
