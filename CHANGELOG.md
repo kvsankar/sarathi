@@ -60,6 +60,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   an improvement in one dimension cannot hide an unacceptable regression in another.
 - Test concurrency-sensitive changes against correctness invariants, and default to
   synthetic test data with explicit safeguards for necessary production-derived data.
+- Verify changed user-facing flows in the running interface across relevant states,
+  responsive conditions, input methods, and accessibility behavior.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.

@@ -129,7 +129,7 @@ choices in `Extra Checks`. Older field names remain readable.
 | Data and migration | Schema/data conversion, destructive or hard-to-reverse state change. | Rehearsal, backup/restore, rollback, reconciliation, and integrity checks. |
 | Reliability and operations | Availability, concurrency, queues, recovery, on-call impact. | For each material retry, fallback, degraded mode, or recovery path, force it and verify recovery, side effects, and observability. |
 | Performance and cost | Material latency, throughput, scale, capacity, or spend risk. | Measure a small relevant set of outcomes across representative workload conditions. Compare them with accepted limits and, when claiming an improvement, with a baseline under the same conditions; improving one dimension must not conceal an unacceptable regression in another. |
-| UI and accessibility | User-facing workflows or presentation changes. | Approved mock when required, interaction states, accessibility and visual checks. |
+| UI and accessibility | User-facing workflows or presentation changes. | For each changed user-facing flow, exercise applicable loading, empty, error, and interaction states in the running interface; verify relevant viewport sizes, orientations, text scaling, keyboard and focus behavior, semantics, contrast, and a representative screen-reader path. |
 | Build and release | Packaging, CI/CD, infrastructure, rollout, or environment changes. | Build artifact, dry run, smoke, promotion, rollback, and release evidence. |
 | Documentation | Users, integrators, operators, support, or auditors depend on guidance. | Validated examples, links/build, runbook, migration or release documentation. |
 
