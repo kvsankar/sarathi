@@ -295,7 +295,8 @@ Specs and plans use descriptive slug-only IDs: `KIND-AREA-NAME`, for example
 `WAVE-AUTH-BOUNDARY`. Design
 entities keep the shorter `KIND-SLUG` form, for example `COMP-AUTH` and `IFACE-AUTH`.
 Design test obligations use `TEST-AREA-NAME`, for example `TEST-AUTH-POLICY`. Numeric
-suffixes such as `FR-AUTH-10` are rejected by the checkers.
+placeholders such as `FR-AUTH-10` are rejected by the checkers; meaningful digit-first terms
+such as `FR-AUTH-2FA` and `FR-PAY-3DS` are valid.
 
 For older numbered IDs, see [docs/slug-id-migration.md](docs/slug-id-migration.md).
 

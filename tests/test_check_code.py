@@ -271,8 +271,10 @@ def test_check_code_detects_only_canonical_process_ids(tmp_path, monkeypatch, ca
     "state": "test-state-token",
 }
 # FR-AUTH-LOGIN TEST-AUTH-SESSION COMP-AUTH
+# FR-AUTH-2FA COMP-3DS FR-AUTH-10
 """,
-        test_body="""def test_state_token_is_preserved():
+        test_body="""# FR_AUTH_2FA
+def test_state_token_is_preserved():
     assert True
 
 def test_client_id_is_sent():
@@ -283,6 +285,8 @@ def test_client_id_is_sent():
     assert rc == 1
     assert {hit["identifier"] for hit in report["process_id_hits"]} == {
         "COMP-AUTH",
+        "COMP-3DS",
+        "FR-AUTH-2FA",
         "FR-AUTH-LOGIN",
         "TEST-AUTH-SESSION",
     }

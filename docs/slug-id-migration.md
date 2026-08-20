@@ -34,8 +34,9 @@ RISK-AUTH
 ```
 
 Spec IDs, plan IDs, and design `TEST-` obligations use `KIND-AREA-NAME`. `AREA` and `NAME`
-are uppercase slug tokens, 2-32 characters each, using `A-Z` and digits only after the first
-character. Do not use trailing numbers or internal hyphens.
+are uppercase alphanumeric tokens, 2-32 characters each, containing at least one letter.
+Digit-first domain terms such as `2FA` and `3DS` are valid. Numeric-only placeholders such
+as `10`, and internal hyphens, remain invalid.
 
 ## Affected Kinds
 

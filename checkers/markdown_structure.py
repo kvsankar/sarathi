@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 
+from schemas import SLUG_TOKEN
+
 FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
 HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 FORMAT_MARKER = re.compile(
@@ -14,9 +16,9 @@ FORMAT_MARKER = re.compile(
 ANNOTATION = re.compile(r"<!--\s*sarathi:[a-z0-9_-]+\b(?P<attrs>.*?)-->", re.I)
 ANNOTATION_ATTR = re.compile(r'([A-Za-z_][A-Za-z0-9_-]*)="([^"]*)"')
 PROCESS_ID_HEADING = re.compile(
-    r"(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)-"
-    r"[A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)+|"
-    r"(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Z][A-Z0-9]*)",
+    rf"(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)-"
+    rf"{SLUG_TOKEN}-{SLUG_TOKEN}|"
+    rf"(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN})",
     re.I,
 )
 

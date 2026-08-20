@@ -10,6 +10,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Allow meaningful digit-first identifier tokens such as `2FA` and `3DS` while continuing
+  to reject numeric-only placeholders and preserving `KIND-AREA-NAME` structure.
 - Reduce `.sdlc/wip.md` to the current work, working result, relevant files, blockers,
   feedback, and next action. Keep project choices in `process-decisions.yaml`, keep
   change-specific choices in their source document, and continue reading older WIP notes.

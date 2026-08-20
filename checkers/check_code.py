@@ -28,6 +28,7 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
+from schemas import SLUG_TOKEN  # noqa: E402
 from workflow_state import validate_workflow_state  # noqa: E402
 
 MARKER_PATTERNS = (
@@ -52,17 +53,17 @@ UI_INTENT_ARTIFACT = re.compile(
 )
 PROCESS_ID = re.compile(
     r"(?<![A-Za-z0-9_-])(?:(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
-    r"-[A-Z][A-Z0-9]*-[A-Z][A-Z0-9]*|"
-    r"(?:LAYER|COMP|IFACE|DEC|RISK)-[A-Z][A-Z0-9]*|"
+    rf"-{SLUG_TOKEN}-{SLUG_TOKEN}|"
+    rf"(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN}|"
     r"(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
-    r"_[A-Z][A-Z0-9]*_[A-Z][A-Z0-9]*|"
-    r"(?:LAYER|COMP|IFACE|DEC|RISK)_[A-Z][A-Z0-9]*)(?![A-Za-z0-9_-])"
+    rf"_{SLUG_TOKEN}_{SLUG_TOKEN}|"
+    rf"(?:LAYER|COMP|IFACE|DEC|RISK)_{SLUG_TOKEN})(?![A-Za-z0-9_-])"
 )
 TEST_OBLIGATION_NAME = re.compile(
     r"\btest_(?P<identifier>(?:"
     r"(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST|MILE|WORK|PR|WAVE)"
-    r"_[A-Z][A-Z0-9]*_[A-Z][A-Z0-9]*|"
-    r"(?:LAYER|COMP|IFACE|DEC|RISK)_[A-Z][A-Z0-9]*))"
+    rf"_{SLUG_TOKEN}_{SLUG_TOKEN}|"
+    rf"(?:LAYER|COMP|IFACE|DEC|RISK)_{SLUG_TOKEN}))"
 )
 
 

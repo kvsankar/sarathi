@@ -95,7 +95,7 @@ IMPLEMENTATION_READINESS = re.compile(
     r"^\s*Implementation Readiness\s*:\s*(.+?)\s*$", re.I | re.M
 )
 PARENT_WORK_ITEM = re.compile(
-    r"^\s*Parent Work Item\s*:\s*(WORK-[A-Z][A-Z0-9]*-[A-Z][A-Z0-9]*)\s*$",
+    rf"^\s*Parent Work Item\s*:\s*(WORK-{SLUG_TOKEN}-{SLUG_TOKEN})\s*$",
     re.I | re.M,
 )
 EXTERNAL_DOUBLE = re.compile(

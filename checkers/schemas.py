@@ -2,7 +2,9 @@
 
 import re
 
-SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
+# Two to 32 uppercase alphanumerics with at least one letter. This permits
+# domain terms such as 2FA and 3DS while rejecting numeric placeholders.
+SLUG_TOKEN = r"(?=[A-Z0-9]{2,32}(?![A-Z0-9]))(?=[A-Z0-9]*[A-Z])[A-Z0-9]{2,32}"
 PLAN_ID_PATTERN = rf"(MILE|WORK|PR)-({SLUG_TOKEN})-({SLUG_TOKEN})"
 PLAN_ID = re.compile(rf"(?<![A-Za-z0-9-]){PLAN_ID_PATTERN}(?![A-Za-z0-9-])")
 PLAN_ID_FULL = re.compile(PLAN_ID_PATTERN)

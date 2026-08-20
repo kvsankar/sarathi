@@ -41,11 +41,11 @@ from markdown_structure import (  # noqa: E402
 from schemas import (  # noqa: E402
     HUMAN_FIRST_SPEC_SECTIONS,
     LEGACY_HUMAN_FIRST_SPEC_SECTIONS,
+    SLUG_TOKEN,
     SPEC_SECTIONS,
 )
 from workflow_state import validate_workflow_state  # noqa: E402
 
-SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT|JT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
 ID_CANDIDATE = re.compile(
     r"\b(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST)-[A-Za-z0-9]+-[A-Za-z0-9]+"

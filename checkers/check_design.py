@@ -39,10 +39,13 @@ from markdown_structure import (  # noqa: E402
     human_first_issues,
     primary_definition_ids,
 )
-from schemas import DESIGN_SECTIONS, HUMAN_FIRST_DESIGN_SECTIONS  # noqa: E402
+from schemas import (  # noqa: E402
+    DESIGN_SECTIONS,
+    HUMAN_FIRST_DESIGN_SECTIONS,
+    SLUG_TOKEN,
+)
 from workflow_state import validate_workflow_state  # noqa: E402
 
-SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(
     rf"\b(?:(?:LAYER|COMP|IFACE|DEC|RISK)-{SLUG_TOKEN}|"
     rf"TEST-{SLUG_TOKEN}-{SLUG_TOKEN})\b"
