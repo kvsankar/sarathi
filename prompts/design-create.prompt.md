@@ -110,7 +110,7 @@ verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fix
 
 Run simplify, update `.sdlc/wip.md`, and stop according to the recorded approval policy.
 Human checkpoints require explicit approval; automatic approval needs an eligible local policy
-and an explicit end-to-end instruction before planning. Give one plain-language handoff
-result, then changed paths, interpreted evidence, categorized problems, impact-ranked
+and an explicit end-to-end instruction before planning. Give one plain-language result,
+then changed paths, interpreted evidence, categorized problems, impact-ranked
 actions, assumptions, risks, open questions, and recommended next command `plan-create` using
 the current host's explicit invocation form.

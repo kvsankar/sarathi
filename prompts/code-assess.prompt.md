@@ -36,8 +36,8 @@ Report one plain-language assessment result and the main engineering consequence
 product/code problems, missing verification, and process/documentation problems separate;
 interpret automatic and project-check results; rank actions by impact; and include feedback
 and earlier-document changes. Preserve
-`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` only as the explained secondary
-process status.
+`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
+state; follow `docs/result-reporting.md` for chat.
 
 ## Stored Results
 

@@ -66,11 +66,11 @@ risk, evidence obligations, readiness, or approval basis. Editorial changes are 
 only if meaning is unchanged; when uncertain, treat it as material. See
 `docs/approval-gates.md`.
 
-## Supporting Status Rule
+## User-Facing Language
 
-Follow `docs/result-reporting.md` for all human-facing results and handoffs. Lead with one
-scoped engineering outcome, explain secondary process verdicts, and scope every completion
-claim.
+Use ordinary language. Hide internal IDs, hashes, records, verdicts, and workflow terms
+unless asked or they affect the next action; explain why first. Apply
+`docs/result-reporting.md` only to formal results and saved reports.
 
 ## Orient Before Acting
 
@@ -154,7 +154,7 @@ an earlier required document is not fit. Use `docs/review-verification-checklist
 | `docs/work-in-progress.md` | Starting, resuming, blocking, handing off, or answering status and next-action questions. |
 | `docs/project-entry.md` | Starting in a new or existing codebase. |
 | `docs/approval-gates.md` | Choosing approval policy, using YOLO, or reading approval/auto-policy records. |
-| `docs/result-reporting.md` | Reporting any result, status, pause, or handoff. |
+| `docs/result-reporting.md` | Formal results and saved reports. |
 
 After selecting a command, use its local trigger list and
 `docs/progressive-disclosure.md`, the complete shared-reference map. Use bundled

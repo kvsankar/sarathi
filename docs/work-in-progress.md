@@ -43,8 +43,8 @@ them. A completed prerequisite must never be described as a completed feature. E
 
 ## Product-first status
 
-For status, resume, handoff, remaining-work, readiness, and next-action requests, report
-engineering reality before process state and follow [result-reporting.md](result-reporting.md).
+For formal status, remaining-work, readiness, and next-action requests, report engineering
+reality first and follow [result-reporting.md](result-reporting.md).
 A reader should see, in order:
 
 - one plain-language status and its main engineering consequence;
@@ -58,10 +58,10 @@ A reader should see, in order:
 - exact blockers before coding; and
 - one next executable action.
 
-Use one plain-language result, ordinary technical names, categorized findings, and
-impact-ranked actions. Put document state, approvals, internal verdicts, IDs, hashes, and
-interpreted checker results afterward as supporting evidence. If `complete` could mean
-either a prerequisite or the broader feature, state both scopes explicitly.
+Use ordinary technical language and impact-ranked actions. Keep document state, approvals,
+internal verdicts, IDs, hashes, and checker fields out of the response unless the user asks
+or the detail changes what can happen next. If `complete` could mean either a prerequisite
+or the broader feature, state both scopes explicitly.
 
 ## Required Shape
 

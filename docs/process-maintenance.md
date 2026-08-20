@@ -44,9 +44,11 @@ generated behavior instead of the surrounding prose.
 ## Plain Language
 
 - Write for a capable software practitioner who has not learned Sarathi's vocabulary.
-- Follow [result-reporting.md](result-reporting.md) for every generated result or handoff:
-  one engineering outcome first, categorized findings, interpreted check evidence, explained
-  secondary process status, and actions ranked by practical impact.
+- Use ordinary language for discussion, questions, maintenance updates, and brief progress
+  reports. Keep internal IDs, hashes, record names, verdicts, and workflow terms out of chat
+  unless the user asks or the detail changes what can happen next.
+- Follow [result-reporting.md](result-reporting.md) for completed stage-command results and
+  saved review or assessment reports.
 - Prefer `document`, `check`, `review`, `parent`, `child`, `existing system`, and
   `pass/fail result` over `artifact`, `mechanical verification`, `qualitative judgment`,
   `ancestor`, `descendant`, `brownfield`, and `oracle` in explanatory prose.

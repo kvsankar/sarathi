@@ -36,7 +36,7 @@ the references relevant to that command.
 | `docs/workflow-terminology.md` | Routing, status, or explanation needs the work target, scope, stage, action, command, or work-item distinction. |
 | `docs/enduring-model.md` | Explaining Sarathi, orienting a new project, or deciding how delivery, decomposition, quality, continuity, and risk fit together. |
 | `docs/work-in-progress.md` | Starting, resuming, pausing, handing off, or blocking SDLC work in a project; reading or updating `.sdlc/wip.md`. |
-| `docs/result-reporting.md` | Reporting any stage result, verification, review, assessment, workflow status, pause, or handoff. |
+| `docs/result-reporting.md` | Reporting a completed stage command, workflow status, or saved review/assessment. |
 | `docs/project-entry.md` | Starting in a new or existing codebase, or deciding how much existing work to document. |
 | `docs/artifact-contracts.md` | Writing or revising a spec, design, plan, or code evidence record. |
 | `docs/artifact-formatting.md` | Writing or materially revising a Markdown document or its rendered companion. |

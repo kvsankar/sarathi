@@ -67,10 +67,11 @@ criteria merely because they exist.
 
 ## Report
 
-Follow `docs/result-reporting.md`. Lead with one plain-language engineering result, keep the
-machine verdict as a secondary explained process status, separate product/code problems,
-missing verification, and process/documentation problems, and interpret checker results
-before raw counts. Every non-blocked assessment reports:
+Follow `docs/result-reporting.md`. Lead with one plain-language engineering result, separate
+product/code problems, missing verification, and process/documentation problems, and
+interpret checker results before raw counts. Keep the exact machine verdict in the saved
+report and internal state; mention it in chat only when the user asks or it changes the next
+available action. Every non-blocked assessment reports:
 
 1. Check results with exact commands and evidence limits.
 2. What is clear, what is not, and whether the planned checking matches the actual risk.

@@ -116,5 +116,5 @@ Update `.sdlc/wip.md` with the path, machine status, checks, assumptions, blocke
 
 Stop according to the recorded approval policy. Human checkpoints require explicit approval;
 automatic approval needs an eligible local policy and explicit end-to-end continuation.
-Give one plain-language handoff with the path, meaning, evidence, problems, and ranked
+Give one plain-language result with the path, meaning, evidence, problems, and ranked
 actions. Recommend `plan-create` for Lean and `design-create` for the other profiles.

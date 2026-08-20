@@ -52,6 +52,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   risk without adding a stage or dedicated guidance artifact.
 - Prefer reproducible property-based or fuzz testing when example cases cannot credibly
   cover a parser, decoder, protocol handler, or highly variable untrusted-input boundary.
+- Keep Sarathi bookkeeping out of ordinary conversation: show IDs, hashes, record names,
+  and internal verdicts only when requested or when they change the user's next action.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.

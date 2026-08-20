@@ -87,11 +87,11 @@ Run cleanup then simplify. Remove debug leftovers, dead code, stale comments, br
 theatrical tests/checks, misleading docs, and unjustified abstractions within scope. Rerun
 affected checks.
 
-## Handoff
+## Result
 
 Update `.sdlc/wip.md` and report:
 
-- one plain-language handoff result and the main engineering consequence;
+- one plain-language result and the main engineering consequence;
 - changed paths and what they now do;
 - exact test and project-check commands with interpreted results;
 - the observed Red-Green-Refactor evidence, or the narrow reason and replacement check when

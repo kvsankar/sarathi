@@ -68,8 +68,8 @@ automatic checks pass.
 
 Report one plain-language result, categorized findings, interpreted evidence, what can be
 deleted, deferred, or reused, and impact-ranked fixes. Preserve
-`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` only as the explained secondary
-process status. Write/update
+`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
+state; follow `docs/result-reporting.md` for chat. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `plan-review.md` only for
 Product/system, otherwise `<work-slug>.plan-review.md`. Update WIP and stop according to the
 recorded approval policy. Human checkpoints require explicit approval; automatic approval

@@ -51,8 +51,8 @@ design, or plan; do not confine it to local refactoring.
 
 Report one plain-language result, categorized findings, interpreted evidence, what can be
 deleted, deferred, or reused, impact-ranked fixes, feedback, and earlier-document changes.
-Preserve `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` only as the explained
-secondary process status. Write/update
+Preserve `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and
+internal state; follow `docs/result-reporting.md` for chat. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `code-review.md` only for
 Product/system, otherwise `<work-slug>.code-review.md`. Update WIP and stop according to the
 recorded approval policy. Human checkpoints require explicit approval; automatic approval

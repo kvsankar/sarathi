@@ -3,7 +3,7 @@
 Sarathi can render a repeatable, read-only HTML page showing how parent intent has expanded
 into working code and tests. The page helps people find and understand the work. It is not
 an approval record, completion percentage, or substitute for checks and review.
-Human-facing status responses follow [result-reporting.md](result-reporting.md): one
+Formal status responses follow [result-reporting.md](result-reporting.md): one
 plain-language engineering result comes first, and internal document and approval states
 are explained afterward.
 

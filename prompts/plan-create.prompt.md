@@ -113,8 +113,8 @@ This embedded run is the official assessment for the current revision and owns i
 Apply safe in-scope findings once and run one focused recheck/re-review. If a fix requires a material revision, stop instead of changing accepted intent.
 Hand off the current verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
 Interpret checker results before raw metrics, run simplify, and give one plain-language
-handoff result with categorized problems, approvals, process status, and impact-ranked actions. Update WIP, then stop
-according to the recorded approval policy. Human checkpoints require explicit approval;
+result with categorized problems and impact-ranked actions. Update WIP, then stop according
+to the recorded approval policy. Human checkpoints require explicit approval;
 automatic approval needs an eligible local policy and an explicit
 end-to-end instruction. Recommend `code-create` only for a product increment or planned code
 experiment; otherwise recommend the evidence-gathering or decision step.

@@ -1,12 +1,13 @@
-# Plain-Language Results And Handoffs
+# Reporting Formal Sarathi Results
 
-Sarathi reports are written first for the person deciding whether the product work can
-continue. Internal verdicts, document state, approvals, hashes, checker fields, and workflow
-IDs remain available as supporting process evidence; they do not become the headline.
+Use this guidance for completed stage-command results, workflow-status responses, and saved
+review or assessment reports. It does not govern ordinary discussion, questions, repository
+maintenance conversation, or brief progress updates; use natural language for those.
 
-Use this guidance for specification, design, plan, code, verification, review, assessment,
-workflow-status, pause, resume, and handoff responses. Apply the same order in saved review
-and assessment reports.
+Internal verdicts, document state, approvals, hashes, checker fields, workflow IDs, and
+record names belong in the files that need them. Do not reproduce them in chat by default.
+Mention one only when the user asks or when it changes what can happen next, and explain the
+practical consequence before the internal term.
 
 ## Lead With One Outcome
 
@@ -20,8 +21,8 @@ code, or delivery consequence:
 - **Cannot assess yet**: missing or unfit prerequisite information prevents a responsible
   judgment.
 
-Label the result for the response, such as `Review result`, `Assessment result`, `Handoff
-result`, or `Status result`. Do not add a second headline verdict.
+Label a formal result for the response, such as `Review result`, `Assessment result`, or
+`Status result`. Do not add a second headline verdict.
 
 Canonical prompts name a recommended next command by its internal ID, such as `code-review`.
 Render that recommendation using the explicit command or skill form available in the current
@@ -31,8 +32,8 @@ Name the scope and next step when `Ready` could be mistaken for release readines
 example, write `Assessment result: Ready.` and put `Ready for implementation planning, not
 release` in the next sentence. Keep the result itself to one of the four exact values.
 
-For a create-command handoff, use the same language as `Handoff result`. For a verify-only
-command, which cannot judge overall readiness, use one plain result:
+For a create command, use `Result`. For a verify-only command, which cannot judge overall
+readiness, use one plain result:
 
 - **Checks passed**: every required and applicable command completed and succeeded.
 - **Checks failed**: at least one completed command found a concrete failure. This result
@@ -53,35 +54,16 @@ readiness status; record it under check evidence instead. The workflow-status pa
 only the recorded readiness result; it does not derive readiness from approvals, Git
 activity, or passing tests.
 
-## Keep The Machine Verdict Secondary
+## Keep Machine State In Its Files
 
-Reviews and assessments preserve the internal verdict exactly:
-`Pass | Pass-with-fixes | Needs rework | Blocked-upstream`. Put it after the engineering
-outcome on a secondary line:
+Reviews and assessments preserve `Pass | Pass-with-fixes | Needs rework |
+Blocked-upstream` in their saved report and internal state. Do not automatically repeat that
+value in chat. If an earlier document or approval prevents the requested next action, say
+what is missing and what the user needs to do. Include the exact internal value only when
+the user requests technical process details.
 
-```text
-Process status: Blocked-upstream — the implementation plan does not have a recorded
-approval for its current version, so Sarathi cannot mark the assessment complete.
-```
-
-`Blocked-upstream` means a required earlier document or approval record prevents the current
-stage from completing. “Recorded approval for its current version” is the ordinary-language
-explanation for a matching approval record and file hash; do not say only
-“hash-current approval.”
-
-Use this default mapping:
-
-| Internal verdict | User-facing result |
-| --- | --- |
-| `Pass` | Ready |
-| `Pass-with-fixes` | Ready after minor fixes |
-| `Needs rework` | Not ready |
-| `Blocked-upstream` | Cannot assess yet |
-
-A known direct defect can make the user-facing result `Not ready` even when the process
-status is `Blocked-upstream`. Explain that the process record is an additional completion
-block, not a competing engineering verdict. Never show `Needs rework` and
-`Blocked-upstream` as two unexplained conclusions or ask the reader to reconcile them.
+A direct product or code defect remains the headline even when an internal record is also
+incomplete. Do not make the user reconcile competing engineering and process verdicts.
 
 ## Separate What Must Change
 
@@ -92,7 +74,7 @@ After the opening explanation, group findings under these headings:
 2. **Missing verification**: tests, commands, environments, external-system checks,
    accessibility checks, or other evidence still needed.
 3. **Process/documentation problems**: missing or stale requirements, design, plan,
-   approval, traceability, feedback, local-check configuration, or handoff records.
+   approval, traceability, feedback, local-check configuration, or continuation notes.
 
 Omit an empty heading in a short chat response, or say `None found` when a saved report
 needs the distinction to remain explicit. Do not hide a product defect inside process
@@ -105,15 +87,15 @@ Prefer ordinary language. When an exact technical or machine term matters, expla
 first use. Examples:
 
 - “the implementation plan that controls this change,” not only “governing plan”;
-- “a recorded approval that matches the current file,” not only “hash-current approval”;
+- “the document changed after approval, so it needs approval again,” not only “stale”;
 - “the documented route and the implemented route differ,” not only “route drift”;
 - “the repository’s automated check command and pre-commit check,” not only
   “repository hook/gate”;
 - “a passing test or observed command result,” not only “positive evidence.”
 
 Do not assume that an ID, status value, checker key, or Sarathi command is self-explanatory.
-Exact machine-readable values may appear in parentheses or in a technical-evidence section
-after the plain explanation.
+Exact machine-readable values appear only when requested or needed to explain why a next
+action is unavailable.
 
 ## Recommended Report Shape
 
@@ -138,19 +120,16 @@ The most important engineering reason and its consequence.
 
 - Record or document gaps and what they prevent.
 
-Process status: `Blocked-upstream` — ordinary-language explanation, when applicable.
-
 ### Next actions
 
 1. Highest-impact corrective action.
 2. Next verification or process action in dependency order.
 
-Technical evidence: exact commands, interpreted checker results, then raw counts or record
-details when useful.
+Technical details: exact commands or record details when requested or needed for a decision.
 ```
 
 Use only the sections needed for a concise response, but preserve the ordering: engineering
-outcome, categorized findings, working evidence, process status, actions, technical detail.
+outcome, categorized findings, working evidence, actions, technical detail when needed.
 
 ## Example
 
@@ -178,12 +157,8 @@ The implementation builds successfully, and all 188 automated tests pass.
 
 ### Process/documentation problems
 
-The implementation plan does not yet have a recorded approval that matches its current
-version. This does not change the product defect above, but Sarathi cannot mark the work
-complete until that record is added.
-
-Process status: `Blocked-upstream` — the missing plan approval record prevents process
-completion; it does not replace the “Not ready” engineering result.
+The implementation plan changed after it was approved, so it needs approval again before
+implementation can continue. This does not change the product defect above.
 
 ### Next actions
 

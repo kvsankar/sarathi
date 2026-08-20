@@ -30,8 +30,8 @@ that the requirements are good.
 Stop as `Blocked-upstream` when the spec cannot be judged responsibly. Report one
 plain-language assessment result, the main engineering consequence, categorized findings,
 interpreted check results, and impact-ranked actions. Preserve
-`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` only as the explained secondary
-process status.
+`Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
+state; follow `docs/result-reporting.md` for chat.
 
 Write the scope-appropriate report from `docs/document-locations.md`: `spec-assessment.md`
 only for Product/system, otherwise `<work-slug>.spec-assessment.md`. Update `.sdlc/wip.md`
