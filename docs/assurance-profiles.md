@@ -123,7 +123,7 @@ choices in `Extra Checks`. Older field names remain readable.
 
 | Extra check | Use when | Additional evidence |
 | --- | --- | --- |
-| Security | Authentication, authorization, secrets, untrusted input, privilege. | Threat review, abuse cases, boundary tests, secure configuration evidence. |
+| Security | Authentication, authorization, secrets, untrusted input, privilege. | Apply [security-check.md](security-check.md): credible abuse cases, owned mitigations, real-boundary attempts, and explicit remaining risk. |
 | Privacy and compliance | Personal, regulated, retained, exported, or audited data. | Data-flow/retention decisions, consent or policy checks, audit evidence. |
 | External integration | Vendor API, event contract, RPC boundary, generated client. | Real/official conformance evidence, contract fixtures, drift controls. |
 | Data and migration | Schema/data conversion, destructive or hard-to-reverse state change. | Rehearsal, backup/restore, rollback, reconciliation, and integrity checks. |

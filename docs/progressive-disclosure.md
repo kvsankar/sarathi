@@ -52,6 +52,7 @@ the references relevant to that command.
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>-<action>.prompt.md` | A command is selected or directly invoked, such as `spec-create` or `code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
+| `docs/security-check.md` | The Security Extra Check is active or discovered evidence creates a material security risk. |
 | `docs/test-ownership.md` | Planning or implementing tests, including test-first behavior changes, or assigning acceptance, journey, or integration tests. |
 | `docs/project-quality-gates.md` | Defining or reviewing repository quality gates, CI placement, merge requirements, or release evidence. |
 | `docs/work-decomposition.md` | Deciding whether complex work should be split, where to split it, or whether a child needs another document. |
