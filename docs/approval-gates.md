@@ -19,7 +19,9 @@ See [feedback-and-learning.md](feedback-and-learning.md).
 
 At project entry, and when requirements begin for a feature, the agent must normally ask the
 user to select or confirm one policy. Show the practical difference in the current context
-and record the choice in `.sdlc/process-decisions.yaml` and `.sdlc/wip.md`.
+and record the project choice in `.sdlc/process-decisions.yaml`. Record a change-specific
+override in its spec or plan. The current-work note links to those sources instead of
+copying the policy.
 
 - **Human checkpoints**: stop at every material approval gate for explicit human approval.
   This is the default.

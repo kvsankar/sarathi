@@ -49,6 +49,11 @@ WIP_LEARNING_FIELDS = (
 )
 WIP_PRODUCT_FIELDS = (
     ("Goal", "goal"),
+    ("Working Result", "working_result"),
+    ("Blockers", "blockers"),
+    ("Next Action", "next_action"),
+)
+WIP_LEGACY_PRODUCT_FIELDS = (
     ("Working Today", "working_today"),
     ("Reusable Today", "reusable_today"),
     ("Current Increment", "current_increment"),
@@ -56,7 +61,6 @@ WIP_PRODUCT_FIELDS = (
     ("Target-Owned Work", "target_owned_work"),
     ("Deferred", "deferred"),
     ("Before Coding", "before_coding"),
-    ("Next Action", "next_action"),
 )
 WIP_STATUS_RESULTS = {
     "ready": "Ready",
@@ -221,6 +225,49 @@ def artifact_path_mapping(
         else {}
     )
     return canonical, children, None
+
+
+def process_delivery_choices(root: Path) -> tuple[dict[str, str], str | None]:
+    """Read project-wide delivery choices from their authoritative record."""
+    path = root / ".sdlc" / "process-decisions.yaml"
+    if not path.is_file():
+        return {}, None
+    try:
+        loaded = load_yaml_file(path)
+    except (OSError, ValueError) as exc:
+        return {}, str(exc)
+    if not isinstance(loaded, dict):
+        return {}, "process decisions must be a mapping"
+
+    delivery = loaded.get("delivery")
+    approval = loaded.get("approval")
+    delivery = delivery if isinstance(delivery, dict) else {}
+    approval = approval if isinstance(approval, dict) else {}
+    profile = {
+        "lean": "Lean",
+        "standard": "Standard",
+        "high-assurance": "High-assurance",
+        "high_assurance": "High-assurance",
+    }.get(str(delivery.get("assurance_profile") or "").casefold(), "")
+    policy = {
+        "human_checkpoints": "Human checkpoints",
+        "automatic_eligible_gates": "Automatic eligible gates",
+    }.get(str(approval.get("policy") or "").casefold(), "")
+    outcome = {
+        "product_increment": "Product increment",
+        "decision_evidence": "Decision/evidence",
+    }.get(str(delivery.get("work_outcome") or "").casefold(), "")
+    extra_checks = delivery.get("extra_checks")
+    if isinstance(extra_checks, list):
+        modules = ", ".join(str(item) for item in extra_checks)
+    else:
+        modules = str(extra_checks or "").strip()
+    return {
+        "profile": profile,
+        "approval_policy": policy,
+        "work_outcome": outcome,
+        "modules": modules,
+    }, None
 
 
 def load_approval_records(root: Path) -> tuple[list[dict[str, Any]], str | None]:
@@ -593,10 +640,17 @@ def parse_wip(root: Path) -> dict[str, Any]:
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match and key not in result["learning"]:
             result["learning"][key] = match.group(1).strip()
-    for field, key in WIP_PRODUCT_FIELDS:
+    for field, key in (*WIP_PRODUCT_FIELDS, *WIP_LEGACY_PRODUCT_FIELDS):
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match:
             result["product_status"][key] = match.group(1).strip()
+    product_status = result["product_status"]
+    if not product_status.get("working_result"):
+        product_status["working_result"] = product_status.get(
+            "working_today"
+        ) or product_status.get("current_increment", "")
+    if not product_status.get("blockers"):
+        product_status["blockers"] = product_status.get("before_coding", "")
     for field, key in (
         ("Status Result", "status_result"),
         ("Status Summary", "status_summary"),
@@ -604,7 +658,9 @@ def parse_wip(root: Path) -> dict[str, Any]:
         match = re.search(rf"(?mi)^{re.escape(field)}:\s*(.+?)\s*$", text)
         if match:
             result["product_status"][key] = match.group(1).strip()
-    current_artifacts = section(text, "Current Artifacts")
+    current_artifacts = section(text, "Relevant Files") or section(
+        text, "Current Artifacts"
+    )
     for line in current_artifacts.splitlines():
         if not line.strip().startswith("|"):
             continue
@@ -1048,6 +1104,7 @@ def build_model(root: Path) -> dict[str, Any]:
         for kind in ("spec", "design", "plan")
     }
     wip = parse_wip(root)
+    project_delivery, process_decisions_error = process_delivery_choices(root)
     current_command = str(wip.get("Current Command") or "").strip()
     command_match = re.fullmatch(
         r"(?i)(spec|design|plan|code)-(create|verify|review|assess)",
@@ -1065,17 +1122,21 @@ def build_model(root: Path) -> dict[str, Any]:
         else "Not applicable",
         "legacy_command_field": bool(wip.get("legacy_current_stage_command")),
     }
-    delivery_profile = str(
+    legacy_delivery_profile = str(
         wip.get("Delivery Assurance Profile")
         or wip.get("Review Level")
         or wip.get("Delivery Profile")
         or ""
     ).strip()
-    approval_policy = str(wip.get("Approval Policy") or "").strip()
-    work_outcome = str(wip.get("Work Outcome") or "").strip()
-    assurance_modules = str(
+    legacy_approval_policy = str(wip.get("Approval Policy") or "").strip()
+    legacy_work_outcome = str(wip.get("Work Outcome") or "").strip()
+    legacy_assurance_modules = str(
         wip.get("Extra Checks") or wip.get("Assurance Modules") or ""
     ).strip()
+    delivery_profile = ""
+    approval_policy = ""
+    work_outcome = ""
+    assurance_modules = ""
     for kind in ("plan", "design", "spec"):
         stage_metadata = stages[kind].get("metadata", {})
         if not delivery_profile:
@@ -1095,6 +1156,24 @@ def build_model(root: Path) -> dict[str, Any]:
                 or stage_metadata.get("Assurance Modules")
                 or ""
             ).strip()
+    delivery_profile = (
+        delivery_profile
+        or project_delivery.get("profile", "")
+        or legacy_delivery_profile
+    )
+    approval_policy = (
+        approval_policy
+        or project_delivery.get("approval_policy", "")
+        or legacy_approval_policy
+    )
+    work_outcome = (
+        work_outcome or project_delivery.get("work_outcome", "") or legacy_work_outcome
+    )
+    assurance_modules = (
+        assurance_modules
+        or project_delivery.get("modules", "")
+        or legacy_assurance_modules
+    )
     linked_artifacts = child_artifacts(root, paths)
     for identifier, mapped in mapped_children.items():
         linked_artifacts.setdefault(identifier, {}).update(mapped)
@@ -1332,6 +1411,7 @@ def build_model(root: Path) -> dict[str, Any]:
         "traceability_error": traceability_error,
         "assessment_error": assessment_error,
         "wave_checkpoint_error": checkpoint_error,
+        "process_decisions_error": process_decisions_error,
         "sources": [
             {"path": relative_path(path, root), "sha256": sha256_file(path)}
             for path in unique_sources

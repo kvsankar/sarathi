@@ -1,8 +1,7 @@
 # Work In Progress State
 
-Sarathi should keep resumable workflow state in `.sdlc/wip.md`. The file is a
-human-readable handoff note for fresh agent contexts. It lets a new context load current
-state and continue without depending on chat history.
+Sarathi should keep a short resumable note in `.sdlc/wip.md`. It lets a fresh agent context
+continue without depending on chat history.
 
 `wip.md` is not an approval record, a source of product truth, or proof that checks passed.
 Specs, designs, plans, code, tests, `.sdlc/process-decisions.yaml`, and
@@ -41,29 +40,25 @@ contradictory claims and link to approvals, assessments, and reviews rather than
 them. A completed prerequisite must never be described as a completed feature. Every use of
 `complete` names the exact product, feature, service, or slice that is complete.
 
-## Product-first status
+## What The Note Must Answer
 
 For formal status, remaining-work, readiness, and next-action requests, report engineering
 reality first and follow [result-reporting.md](result-reporting.md).
-A reader should see, in order:
+A reader should be able to answer six questions quickly:
 
-- one plain-language status and its main engineering consequence;
-- the end goal;
-- what works today and where;
-- what is reusable today;
-- the current increment;
-- shared work that remains;
-- target-owned implementation that remains;
-- deferred work that does not block the goal;
-- exact blockers before coding; and
-- one next executable action.
+- What are we working on?
+- What is done and working?
+- Which files matter?
+- What is blocking progress?
+- What feedback has arrived?
+- What happens next?
 
 Use ordinary technical language and impact-ranked actions. Keep document state, approvals,
 internal verdicts, IDs, hashes, and checker fields out of the response unless the user asks
 or the detail changes what can happen next. If `complete` could mean either a prerequisite
 or the broader feature, state both scopes explicitly.
 
-## Required Shape
+## Default Shape
 
 New files use this section order. Older WIP files remain readable and should be converted
 when they are materially updated:
@@ -71,36 +66,20 @@ when they are materially updated:
 ```markdown
 # SDLC Work In Progress
 
-## Product Snapshot
+## Current Work
 
 Status Result: Ready | Ready after minor fixes | Not ready | Cannot assess yet
 Status Summary: plain-language reason and consequence for the recorded status
 Goal: end capability and target system
-Working Today: capability and the system where it currently works
-Reusable Today: shared code or contracts usable without further extraction
-Current Increment: exact bounded slice and its state
-Remaining Shared Work: extraction or shared refactoring still required
-Target-Owned Work: target-specific adapters, persistence, APIs, or domain behavior
-Deferred: non-blocking cleanup or migration
-Before Coding: exact unresolved decisions, approvals, reviews, or merges; `none` when clear
+Working Result: what is done and where it works
+Work Target: short human-readable name of the current subject
+Work Scope: product/system | feature/component | slice/change | unknown
+Current Command: spec-create | spec-review | design-create | plan-create | code-create | ...
+Ready To Implement: Yes | No | unknown
+Blockers: exact unresolved decision, approval, review, dependency, or `none`
 Next Action: one executable action
 
-## Process Snapshot
-
-Last Updated: 2026-07-03T00:00:00Z
-Updated By: agent
-Work Target: short human-readable name of the current subject
-Current Command: spec-create | spec-review | design-create | plan-create | code-create | ...
-Current Gate: none | human-review | blocked | approved-for-next-stage
-Project Entry Mode: greenfield | brownfield_baseline | brownfield_delta_only | unknown
-Work Scope: product/system | feature/component | slice/change | unknown
-Ready To Implement: Yes | No | unknown
-Delivery Assurance Profile: Lean | Standard | High-assurance | unknown
-Approval Policy: Human checkpoints | Automatic eligible gates | unknown
-Work Outcome: Product increment | Decision/evidence | unknown
-Extra Checks: comma-separated checks or none
-
-## Current Artifacts
+## Relevant Files
 
 | Kind | Path | Status | Notes |
 | --- | --- | --- | --- |
@@ -117,51 +96,49 @@ Extra Checks: comma-separated checks or none
 
 - Command or review performed, date, result, and where details live.
 
-## Results And Feedback
+## Feedback
 
 Expected Result: what the current change should demonstrate
 Feedback From: person, real system, environment, or objective result that can judge it
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise remaining-risk note
-Current Work Group: exact WAVE-AREA-NAME, or none
-Current Work: exact selected WORK-AREA-NAME, or none
-Parallel Limit: positive integer or not-recorded
 What Changed: result that changed or confirmed the plan
 Documents To Update: earlier documents that need updating and their paths
 Stop Conditions: conditions that pause or cancel active parallel work
 
-## Open Questions And Blockers
+## Coordinated Work
 
-- Question or blocker, owner, and why it matters.
-
-## Bootstrap Status
-
-Bootstrap File: AGENTS.md | CLAUDE.md | .github/copilot-instructions.md | none
-Status: not-offered | offered | accepted | injected | declined | deferred
-Notes: ...
+Current Work Group: exact WAVE-AREA-NAME, or none
+Current Work: exact selected WORK-AREA-NAME, or none
+Parallel Limit: positive integer or not-recorded
 ```
 
-Add compact subsections only when they improve resumability. Keep the product snapshot short
-enough to read in two minutes and the whole file short enough for a fresh context; prefer
-links to documents over copied content.
+Omit `Feedback`, `Coordinated Work`, `Decisions And Assumptions`, or `Check And Review
+Evidence` when the section has nothing useful to say. Keep the whole file short enough to
+scan in two minutes and prefer links over copied content.
 
-The renderer also accepts older WIP field names. In particular, a legacy combined value such
-as `Current Stage: code-create` is interpreted as `Current Command: code-create`. New files
-use `Work Target`, `Work Scope`, and `Current Command`; stage and action are derived from the
-command rather than stored as duplicate state. See `docs/workflow-terminology.md`.
+Project-wide choices such as entry mode, the default assurance profile, approval policy,
+work outcome, and default extra checks belong in `.sdlc/process-decisions.yaml`. A
+change-specific choice belongs in its spec or plan. Do not copy either into a new WIP note;
+the note points to the relevant files. This avoids stale competing values.
+
+The renderer also accepts the former section headings and fields, including the expanded
+product snapshot, copied delivery choices, and a combined value such as `Current Stage:
+code-create`. New files use `Working Result`, `Relevant Files`, `Feedback`, `Work Target`,
+`Work Scope`, and `Current Command`; stage and action are derived from the command rather
+than stored as duplicate state. See `docs/workflow-terminology.md`.
 
 ## Fresh Context Resume Procedure
 
 A fresh agent context should:
 
 1. Read the repository bootstrap file, if present.
-2. Read the product snapshot in `.sdlc/wip.md`, then its process evidence.
+2. Read the current-work summary and relevant file paths in `.sdlc/wip.md`.
 3. Read `.sdlc/process-decisions.yaml`, `.sdlc/approvals.yaml`,
    `.sdlc/code-assessments.yaml`, and `.sdlc/wave-checkpoints.yaml` when present.
 4. Load the selected command prompt and triggered docs using `docs/progressive-disclosure.md`.
 5. Re-open the source document paths named in WIP before editing or judging them.
-6. Check feedback status, active learning dependencies, and parent-document outcomes before
-   starting another slice.
+6. Check feedback, blockers, and coordinated-work limits when they are recorded.
 7. Continue from `Next Action`, unless the user's latest instruction changes the stage or
    scope.
 

@@ -10,9 +10,8 @@ are explained afterward.
 ## What The View Shows
 
 - **Engineering snapshot first**: the explicitly recorded `Status Result` and
-  ordinary-language `Status Summary`, followed by the goal, working and reusable capability,
-  current increment, remaining shared and target-owned work, deferred work, coding blockers,
-  and next action from `.sdlc/wip.md`. Every completion claim names its exact scope.
+  ordinary-language `Status Summary`, followed by the goal, working result, blockers, and
+  next action from `.sdlc/wip.md`. Every completion claim names its exact scope.
 - **Document tree trunk**: product spec, design, and plan presence, readiness, and whether
   each approval matches the current file.
 - **Process state second**: current document approvals, delivery evidence, and the most
@@ -94,25 +93,16 @@ recorded:
 Status Result: Ready | Ready after minor fixes | Not ready | Cannot assess yet
 Status Summary: plain-language reason and consequence for the recorded status
 Goal: end capability and target system
-Working Today: capability and the system where it currently works
-Reusable Today: shared code usable without extraction
-Current Increment: exact bounded slice and state
-Remaining Shared Work: extraction or shared refactoring still required
-Target-Owned Work: target-specific implementation still required
-Deferred: non-blocking cleanup or migration
-Before Coding: exact blockers, or none
+Working Result: what is done and where it works
+Blockers: exact blockers, or none
 Next Action: one executable action
 ```
 
-Learning and process state follows the same evidence rule. The current loop comes only from
-these exact `.sdlc/wip.md` fields:
+Feedback and coordinated-work state follows the same evidence rule. The current loop comes
+only from these exact `.sdlc/wip.md` fields:
 
 ```text
 Expected Result: assumption, behavior, boundary, or risk under test
-Delivery Assurance Profile: Lean | Standard | High-assurance | unknown
-Approval Policy: Human checkpoints | Automatic eligible gates | unknown
-Work Outcome: Product increment | Decision/evidence | unknown
-Extra Checks: comma-separated checks or none
 Feedback From: stakeholder, real system, environment, or objective evidence source
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise remaining-risk note
@@ -123,6 +113,10 @@ What Changed: concise evidence-backed result
 Documents To Update: earlier documents that need updating and their paths
 Stop Conditions: conditions that pause or cancel active parallel work
 ```
+
+The display reads project-wide delivery choices from `.sdlc/process-decisions.yaml` and
+change-specific choices from the current spec or plan. It reads copied choices from older
+WIP notes only as a compatibility fallback.
 
 An explicit valid `WORK-*` in `Current Work` selects the branch opened as the current
 focus. Older field names remain readable. The renderer does not infer an

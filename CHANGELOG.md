@@ -10,6 +10,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Reduce `.sdlc/wip.md` to the current work, working result, relevant files, blockers,
+  feedback, and next action. Keep project choices in `process-decisions.yaml`, keep
+  change-specific choices in their source document, and continue reading older WIP notes.
 - Define material revisions once in the always-loaded Sarathi router, distinguish material
   re-review from non-material approval refresh, and make directly invoked stage skills load
   those global operating rules before following their selected stage prompt.

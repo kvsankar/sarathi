@@ -104,23 +104,20 @@ Stop/Replan Triggers: Stop if any wave member label, status badge, checkpoint, o
     ".sdlc/wip.md",
     `# SDLC Work In Progress
 
-## Product Snapshot
+## Current Work
 
+Status Result: Ready
+Status Summary: The status page is ready for responsive verification.
 Goal: Deliver a responsive project-status page that remains readable on mobile and desktop.
-Working Today: The status renderer already shows documents, work items, evidence, and approvals.
-Reusable Today: The existing workflow tree and responsive layout are reused directly.
-Current Increment: Product-first status layout is under browser verification.
-Remaining Shared Work: None for this bounded layout fixture.
-Target-Owned Work: None for this bounded layout fixture.
-Deferred: Visual polish outside overflow and readability is non-blocking.
-Before Coding: None; this fixture is already in verification.
+Working Result: The status renderer shows documents, work items, evidence, and approvals.
+Work Target: Checkout retry payment safety
+Work Scope: slice/change
+Current Command: code-create
+Ready To Implement: Yes
+Blockers: None; this fixture is already in verification.
 Next Action: Run the five responsive browser checks.
 
-## Process Snapshot
-
-Work Target: Checkout retry payment safety
-Current Command: code-create
-Current Gate: feedback-checkpoint
+## Feedback
 Learning Target: Verify that a long learning target remains contained on a narrow mobile viewport without hiding its evidence or controls.
 Feedback Target: Product stakeholder, accessibility reviewer, and observed responsive browser behavior.
 Feedback Status: requested

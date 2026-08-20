@@ -47,12 +47,10 @@ replacing it.
 
 ## Recording The Decision
 
-After offering bootstrap injection, update `.sdlc/wip.md`:
-
-- `Status: offered` when the user has not answered yet;
-- `Status: injected` when the block was added or updated;
-- `Status: declined` when the user says no;
-- `Status: deferred` when the user wants to decide later.
+After offering bootstrap injection, add one short entry under `.sdlc/wip.md`'s `Decisions And
+Assumptions` section with the target file and whether it was offered, injected, declined, or
+deferred. Do not add a dedicated bootstrap section or repeat the decision elsewhere in the
+note.
 
 If `.sdlc/process-decisions.yaml` exists, record a compact `bootstrap` entry when the user
 accepts, declines, or defers:

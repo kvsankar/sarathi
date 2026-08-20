@@ -100,7 +100,8 @@ State:
 - what would require a longer path or additional review point.
 
 Record the default in `.sdlc/process-decisions.yaml` when that file exists. Record a
-document or slice override in `.sdlc/wip.md` and the accepted spec or plan. In YOLO mode,
+document or slice override in the accepted spec or plan. Link that source from
+`.sdlc/wip.md` rather than copying the choice. In YOLO mode,
 use Standard when evidence is insufficient to justify Lean. A user may override the profile,
 but remaining risk must remain explicit.
 

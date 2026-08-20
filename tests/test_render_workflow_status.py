@@ -69,31 +69,29 @@ Scope: route password operations through the adapter.
     ]
 
 
-def test_renderer_accepts_plain_wip_field_names(tmp_path):
+def test_renderer_accepts_compact_wip_shape(tmp_path):
     module = load_renderer()
     write(
         tmp_path / ".sdlc" / "wip.md",
         """# SDLC Work In Progress
-## Product Snapshot
+## Current Work
+Status Result: Ready
+Status Summary: The reviewed export path is ready for implementation.
 Goal: Deliver report exports in the target service.
-Working Today: CSV and PDF exports run in the established service.
-Reusable Today: Shared renderers can be consumed directly.
-Current Increment: Shared renderer extraction: complete.
-Remaining Shared Work: Extract job-status coordination.
-Target-Owned Work: Add target-owned export jobs and API routes.
-Deferred: Legacy export-record migration is non-blocking.
-Before Coding: Complete the target persistence review.
+Working Result: CSV and PDF exports run in the established service.
+Work Target: Report export delivery
+Work Scope: feature/component
+Current Command: code-create
+Ready To Implement: Yes
+Blockers: Complete the target persistence review.
 Next Action: Run the target persistence assessment.
 
-## Process Snapshot
-Work Target: Report export delivery
-Current Command: code-create
-Delivery Assurance Profile: Standard
-Approval Policy: Human checkpoints
-Work Outcome: Product increment
-Extra Checks: documentation
+## Relevant Files
+| Kind | Path | Status | Notes |
+| --- | --- | --- | --- |
+| Plan | docs/export-plan.md | approved | Current implementation source. |
 
-## Results And Feedback
+## Feedback
 Expected Result: Confirm the public behavior.
 Feedback From: API consumer
 Feedback Status: requested
@@ -111,21 +109,15 @@ Stop Conditions: Stop if the API changes.
 
     assert result["Work Target"] == "Report export delivery"
     assert result["Current Command"] == "code-create"
-    assert result["Delivery Assurance Profile"] == "Standard"
-    assert result["Approval Policy"] == "Human checkpoints"
-    assert result["Work Outcome"] == "Product increment"
-    assert result["Extra Checks"] == "documentation"
     assert result["product_status"] == {
+        "status_result": "Ready",
+        "status_summary": "The reviewed export path is ready for implementation.",
         "goal": "Deliver report exports in the target service.",
-        "working_today": "CSV and PDF exports run in the established service.",
-        "reusable_today": "Shared renderers can be consumed directly.",
-        "current_increment": "Shared renderer extraction: complete.",
-        "remaining_shared_work": "Extract job-status coordination.",
-        "target_owned_work": "Add target-owned export jobs and API routes.",
-        "deferred": "Legacy export-record migration is non-blocking.",
-        "before_coding": "Complete the target persistence review.",
+        "working_result": "CSV and PDF exports run in the established service.",
+        "blockers": "Complete the target persistence review.",
         "next_action": "Run the target persistence assessment.",
     }
+    assert result["artifacts"]["docs/export-plan.md"]["status"] == "approved"
     assert result["learning"]["target"] == "Confirm the public behavior."
     assert result["learning"]["active_work_item"] == "WORK-DEMO-ALPHA"
     assert result["learning"]["stop_or_replan"] == "Stop if the API changes."
@@ -163,7 +155,7 @@ Current Stage: plan-review
     assert "Command: plan-review. Stage: plan. Action: review." in rendered
 
 
-def test_renderer_prefers_new_delivery_fields_and_renders_choices(tmp_path):
+def test_renderer_reads_delivery_choices_copied_into_legacy_wip(tmp_path):
     module = load_renderer()
     write(
         tmp_path / ".sdlc" / "wip.md",
@@ -194,6 +186,46 @@ Extra Checks: external integration
     assert "Verification depth (assurance profile): Standard." in rendered
     assert "Approval approach (approval policy): Automatic eligible gates." in rendered
     assert "Intended result (work outcome): Decision/evidence." in rendered
+
+
+def test_renderer_prefers_source_documents_then_project_choices_over_legacy_wip(
+    tmp_path,
+):
+    module = load_renderer()
+    write(
+        tmp_path / "docs" / "plan.md",
+        """# Delivery plan
+Delivery Assurance Profile: High-assurance
+""",
+    )
+    write(
+        tmp_path / ".sdlc" / "process-decisions.yaml",
+        """delivery:
+  assurance_profile: standard
+  work_outcome: product_increment
+  extra_checks: [security, accessibility]
+approval:
+  policy: human_checkpoints
+""",
+    )
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# Older current-work note
+Delivery Assurance Profile: Lean
+Approval Policy: Automatic eligible gates
+Work Outcome: Decision/evidence
+Extra Checks: none
+""",
+    )
+
+    model = module.build_model(tmp_path)
+
+    assert model["delivery"] == {
+        "profile": "High-assurance",
+        "approval_policy": "Human checkpoints",
+        "work_outcome": "Product increment",
+        "modules": "security, accessibility",
+    }
 
 
 def test_renderer_leads_with_recorded_plain_language_status(tmp_path):
