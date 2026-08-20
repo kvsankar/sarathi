@@ -10,6 +10,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Standardize new specs, designs, and plans on document format version 3 while continuing to
+  accept version-2 and unmarked documents.
 - Allow meaningful digit-first identifier tokens such as `2FA` and `3DS` while continuing
   to reject numeric-only placeholders and preserving `KIND-AREA-NAME` structure.
 - Reduce `.sdlc/wip.md` to the current work, working result, relevant files, blockers,

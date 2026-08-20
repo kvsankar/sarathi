@@ -335,7 +335,11 @@ def main() -> int:
     orphans = sorted(r for r in refs if r not in known)
     ext_double_mentions = external_double_mentions(text)
     format_name = artifact_format(text)
-    format_issues = human_first_issues(text, ("Technical Approach", "Technical Crux"))
+    format_issues = human_first_issues(
+        text,
+        ("Technical Approach", "Technical Crux"),
+        supported_formats=("human-first-v2", "human-first-v3"),
+    )
     risk_text = section_text(text, "Risks & Trade-offs")
     drift_risks = [
         risk
@@ -451,7 +455,7 @@ def main() -> int:
     if not component:
         required_sections = (
             HUMAN_FIRST_DESIGN_SECTIONS
-            if format_name == "human-first-v2"
+            if format_name in {"human-first-v2", "human-first-v3"}
             else DESIGN_SECTIONS
         )
         gates["sections_present"] = sections_present_in_order(text, required_sections)

@@ -17,15 +17,16 @@ markers enable the human-first checks:
 <!-- sarathi:artifact-format version="3" -->
 
 <!-- New designs -->
-<!-- sarathi:artifact-format version="2" -->
+<!-- sarathi:artifact-format version="3" -->
 
 <!-- New plans, including baseline-reuse classification -->
 <!-- sarathi:artifact-format version="3" -->
 ```
 
-Existing version-2 specs remain valid without the complete version-3 section check, and
-version-2 plans remain valid without the newer baseline classification. Unmarked documents
-use the legacy checker rules and remain parseable. When an agent
+Existing version-2 specs remain valid without the complete version-3 section check,
+version-2 designs retain their existing design contract, and version-2 plans remain valid
+without the newer baseline classification. Unmarked documents use the legacy checker rules
+and remain parseable. When an agent
 substantially revises one, it adds the marker and converts the document without changing the
 approved requirements merely for formatting. A checker cannot infer edit history from file
 contents, so creation and review instructions enforce that transition.

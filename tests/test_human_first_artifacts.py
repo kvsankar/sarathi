@@ -121,7 +121,7 @@ The accepted workload defines the response-time measurement.
 
 def human_first_design() -> str:
     return """# Authentication identities
-<!-- sarathi:artifact-format version="2" -->
+<!-- sarathi:artifact-format version="3" -->
 
 ## Technical Approach
 
@@ -337,7 +337,7 @@ Test, implement, and rerun the reset suite. Revert if issuance or responses chan
 def high_assurance_migration_design() -> str:
     return """# Account ownership migration
 
-<!-- sarathi:artifact-format version="2" -->
+<!-- sarathi:artifact-format version="3" -->
 
 ## Technical Approach
 
@@ -408,7 +408,9 @@ def test_version_two_accepts_documented_legacy_opening_headings(
         encoding="utf-8",
     )
     design_path.write_text(
-        human_first_design().replace("## Technical Approach", "## Technical Crux", 1),
+        human_first_design()
+        .replace('version="3"', 'version="2"', 1)
+        .replace("## Technical Approach", "## Technical Crux", 1),
         encoding="utf-8",
     )
 
@@ -430,6 +432,7 @@ def test_version_two_accepts_documented_legacy_opening_headings(
     assert spec_rc == 0
     assert spec_report["human_first_issues"] == []
     assert design_rc == 0
+    assert design_report["artifact_format"] == "human-first-v2"
     assert design_report["human_first_issues"] == []
 
 
@@ -459,6 +462,7 @@ def test_human_first_design_and_plan_accept_descriptive_headings(
     )
 
     assert design_rc == 0
+    assert design_report["artifact_format"] == "human-first-v3"
     assert design_report["gates"]["human_first_structure"] is True
     assert plan_rc == 0
     assert plan_report["counts"]["PR"] == 1

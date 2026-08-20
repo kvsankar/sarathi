@@ -8,12 +8,11 @@ Begin with the smallest direct implementation that satisfies the approved behavi
 Apply `docs/simplicity-first.md`; do not design product machinery to satisfy process
 requirement links, evidence, approval, or status needs.
 
-New and materially revised specs use format version 3; designs use format version 2; plans
-use format version 3. All follow
+New and materially revised specs, designs, and plans use format version 3. All follow
 `docs/human-first-artifacts.md`: put the plain-language overview or approach first,
 use descriptive visible headings, and keep machine mappings in structured comments and a
-final `## Traceability` section. Existing version-2 specs and plans and unmarked legacy
-documents retain their earlier contracts for backward compatibility.
+final `## Traceability` section. Existing version-2 documents and unmarked legacy documents
+retain their earlier contracts for backward compatibility.
 
 ## Common Metadata
 
