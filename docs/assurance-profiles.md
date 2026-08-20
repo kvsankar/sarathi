@@ -124,7 +124,7 @@ choices in `Extra Checks`. Older field names remain readable.
 | Extra check | Use when | Additional evidence |
 | --- | --- | --- |
 | Security | Authentication, authorization, secrets, untrusted input, privilege. | For each changed trust boundary, identify credible abuse cases, assign mitigations, test them through the real enforcement point, and state remaining risk. |
-| Privacy and compliance | Personal, regulated, retained, exported, or audited data. | Data-flow/retention decisions, consent or policy checks, audit evidence. |
+| Privacy and compliance | Personal, regulated, retained, exported, or audited data. | Use synthetic test data by default. When production-derived data is necessary, minimize and de-identify it, restrict access and retention, and prevent personal data from entering committed fixtures, logs, screenshots, or test output. |
 | External integration | Vendor API, event contract, RPC boundary, generated client. | Real/official conformance evidence, contract fixtures, drift controls. |
 | Data and migration | Schema/data conversion, destructive or hard-to-reverse state change. | Rehearsal, backup/restore, rollback, reconciliation, and integrity checks. |
 | Reliability and operations | Availability, concurrency, queues, recovery, on-call impact. | For each material retry, fallback, degraded mode, or recovery path, force it and verify recovery, side effects, and observability. |

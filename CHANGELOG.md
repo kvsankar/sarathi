@@ -58,6 +58,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   relevant security or license findings without requiring a new scanner or process option.
 - Judge performance, capacity, and cost across relevant outcomes and workload conditions so
   an improvement in one dimension cannot hide an unacceptable regression in another.
+- Test concurrency-sensitive changes against correctness invariants, and default to
+  synthetic test data with explicit safeguards for necessary production-derived data.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.

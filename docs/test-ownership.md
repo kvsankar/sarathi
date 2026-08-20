@@ -38,6 +38,10 @@ For parsers, decoders, protocol handlers, or highly variable untrusted input, us
 property-based or fuzz testing when example cases cannot credibly cover the input space;
 retain the seed or minimized failing input so failures are reproducible.
 
+When a change affects shared state or concurrent work, test the relevant interleavings or
+sustained contention at the narrowest realistic boundary and verify invariants such as no
+lost or duplicate work, deadlock, ordering corruption, or broken idempotency.
+
 ## Ownership Chain
 
 | Scope | Owns test intent | Typical executable evidence implemented by leaves |
