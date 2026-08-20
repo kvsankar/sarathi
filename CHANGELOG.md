@@ -54,6 +54,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   cover a parser, decoder, protocol handler, or highly variable untrusted-input boundary.
 - Keep Sarathi bookkeeping out of ordinary conversation: show IDs, hashes, record names,
   and internal verdicts only when requested or when they change the user's next action.
+- Review runtime and build dependency changes for necessity, resolved lockfile impact, and
+  relevant security or license findings without requiring a new scanner or process option.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.

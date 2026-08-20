@@ -24,6 +24,11 @@ behavior independently requires the same capability.
 Start every spec, design, and plan with the smallest implementation that satisfies current
 accepted behavior for current consumers.
 
+When adding or upgrading a runtime or build dependency, justify why it is preferable to
+existing code or dependencies, inspect the resolved lockfile change, and fix relevant
+security or license findings or explain why they are acceptable. Use existing repository
+audit tools; do not add a scanner solely for this rule.
+
 Before adding a framework, generator, registry, manifest format, schema system, extension
 point, generic harness, or generalized lifecycle, require at least one of:
 
