@@ -120,6 +120,11 @@ Product designs begin with **Technical Approach**. Existing documents may use th
 12. **Risks & Trade-offs**: `RISK-*`, mitigations, remaining risk, and when to strengthen review.
 13. **Traceability**: final links from requirements to components, interfaces, tests, and decisions.
 
+A standalone design, or a Lean plan's Technical Decisions, that changes a consumer-facing
+contract identifies affected consumers and whether the change remains compatible. For a
+breaking change, define supported versions, the migration path, how consumers will be
+notified, and when the old behavior may be removed.
+
 Feature and change designs may reference parent architecture and include only changed
 boundaries. Human-facing headings remain readable; machine IDs live in annotations and the
 final traceability appendix. Select suitable diagrams using `docs/design-principles.md`

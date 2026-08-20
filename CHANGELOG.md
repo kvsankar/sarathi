@@ -64,6 +64,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   responsive conditions, input methods, and accessibility behavior.
 - Route production incidents, support reports, and monitoring results back into development
   without expanding Sarathi into incident response or continuous product operations.
+- Require consumer impact, compatibility, migration, notification, and removal decisions
+  when a design or Lean plan changes a consumer-facing contract.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.
