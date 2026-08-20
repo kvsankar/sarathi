@@ -47,9 +47,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Run deterministic verification inline while preserving fresh-context independence for
   review judgment. Keep non-blocking code-marker scans as private reviewer context and
   publish only candidates that become actionable findings.
-- Add a trigger-loaded Security Extra Check method that turns protected assets, trust
-  boundaries, and credible abuse cases into owned mitigations and real-boundary evidence
-  without adding a stage or mandatory security artifact.
+- Keep Security and Resilience Extra Checks concise: test credible abuse through changed
+  enforcement boundaries, force material failure and recovery paths, and state remaining
+  risk without adding a stage or dedicated guidance artifact.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.

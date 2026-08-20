@@ -123,11 +123,11 @@ choices in `Extra Checks`. Older field names remain readable.
 
 | Extra check | Use when | Additional evidence |
 | --- | --- | --- |
-| Security | Authentication, authorization, secrets, untrusted input, privilege. | Apply [security-check.md](security-check.md): credible abuse cases, owned mitigations, real-boundary attempts, and explicit remaining risk. |
+| Security | Authentication, authorization, secrets, untrusted input, privilege. | For each changed trust boundary, identify credible abuse cases, assign mitigations, test them through the real enforcement point, and state remaining risk. |
 | Privacy and compliance | Personal, regulated, retained, exported, or audited data. | Data-flow/retention decisions, consent or policy checks, audit evidence. |
 | External integration | Vendor API, event contract, RPC boundary, generated client. | Real/official conformance evidence, contract fixtures, drift controls. |
 | Data and migration | Schema/data conversion, destructive or hard-to-reverse state change. | Rehearsal, backup/restore, rollback, reconciliation, and integrity checks. |
-| Reliability and operations | Availability, concurrency, queues, recovery, on-call impact. | Failure-path tests, observability, resilience, runbook and recovery evidence. |
+| Reliability and operations | Availability, concurrency, queues, recovery, on-call impact. | For each material retry, fallback, degraded mode, or recovery path, force it and verify recovery, side effects, and observability. |
 | Performance and cost | Material latency, throughput, scale, capacity, or spend risk. | Representative benchmarks, limits, budgets, and monitoring evidence. |
 | UI and accessibility | User-facing workflows or presentation changes. | Approved mock when required, interaction states, accessibility and visual checks. |
 | Build and release | Packaging, CI/CD, infrastructure, rollout, or environment changes. | Build artifact, dry run, smoke, promotion, rollback, and release evidence. |
