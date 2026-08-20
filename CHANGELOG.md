@@ -56,6 +56,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   and internal verdicts only when requested or when they change the user's next action.
 - Review runtime and build dependency changes for necessity, resolved lockfile impact, and
   relevant security or license findings without requiring a new scanner or process option.
+- Judge performance, capacity, and cost across relevant outcomes and workload conditions so
+  an improvement in one dimension cannot hide an unacceptable regression in another.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.
