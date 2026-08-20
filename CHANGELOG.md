@@ -8,6 +8,11 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Changed
+
+- Limit required earlier-document revisions to wrong or incomplete accepted obligations,
+  keep code defects as fixes against correct documents, and block only dependent work.
+
 ## 0.8.0 - 2026-08-20
 
 ### Changed

@@ -81,8 +81,10 @@ requires, simplify it.
 
 The simplify pass may and must reopen earlier documents when their accepted machinery is
 not justified by behavior, risk, constraints, or evidence. Classify the impact as
-`revision-required`; revise the controlling spec, design, and plan before continuing affected
-implementation. Do not preserve an overbuilt design merely because implementation started.
+`revision-required` only for the controlling document and obligations that require the
+machinery; revise them before continuing dependent implementation. Unrelated fixes may
+continue, and unchanged documents are not reassessed merely because another document
+changed. Do not preserve an overbuilt design merely because implementation started.
 
 ## Regression Example: Reusable Package Extraction
 

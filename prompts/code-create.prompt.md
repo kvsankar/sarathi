@@ -70,8 +70,10 @@ Stay inside the expected file scope. Stop to revise earlier documents when imple
 new user-visible behavior, changed contracts/UX/NFRs, material module risk, or invalidated
 assumptions. Never fabricate stakeholder, real-system, or execution evidence.
 If implementation exposes an overbuilt parent design or plan, record the exact machine
-status `revision-required` and simplify that document before continuing. Do not add product
-machinery merely to satisfy the process.
+status `revision-required` only for the exact obligations that make affected implementation
+unsafe to continue; unrelated fixes may proceed. When the accepted document is right and
+the code is wrong, fix the code without reopening the document. Do not add product machinery
+merely to satisfy the process.
 
 ## Verify The Boundary
 

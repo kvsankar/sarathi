@@ -34,6 +34,10 @@ verification.
 Confirm that changed files match the plan, the committed local gate and hook are suitable
 for the repository and passed, process IDs did not enter source, and the implementation is
 no more complicated than the requested behavior.
+Classify earlier-document impact using `docs/feedback-and-learning.md`. A defect where the
+accepted documents are right and the code is wrong is a code fix, not a required document
+revision. When an earlier document is genuinely wrong or incomplete, name the exact blocked
+obligations and continue reviewing unrelated fixes.
 For a Decision/evidence outcome, also confirm the code stays within the experimental boundary,
 the resulting evidence supports the named decision, and no product-ready or deployment claim
 is made.

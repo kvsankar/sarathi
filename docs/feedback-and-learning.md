@@ -64,6 +64,20 @@ Record one outcome per affected area:
   continues.
 - `feedback-required`: the next decision depends on feedback that has not arrived.
 
+Use `revision-required` only when the finding shows that an accepted document is wrong or
+incomplete in a way that changes behavior, scope, a contract, acceptance criteria,
+architecture, an evidence obligation, or risk posture. When the document is right and the
+implementation is wrong, record a code fix against the existing accepted documents and
+classify their impact as `no-change`. Use `revision-proposed` for consistency, explanation,
+or other useful updates that do not change what should be built.
+
+A required revision names the exact document and obligations that must change, the work
+whose correctness depends on them, and the work that may continue independently. It blocks
+only the affected work. Do not mark every earlier document for revision, halt unrelated
+fixes, or reassess an unchanged document merely because another document changed. Use
+`Blocked-upstream` only when the requested judgment cannot be made responsibly until the
+named obligations are corrected.
+
 Record the current state in `.sdlc/wip.md` using the fields from
 [work-in-progress.md](work-in-progress.md). When a slice receives a passing code assessment,
 preserve its completed learning evidence in an assessment record that matches the current

@@ -55,8 +55,9 @@ During the simplify pass, ask:
    sophisticated?
 
 If the answer is weak, simplify in scope. If the controlling document itself created the
-unjustified complexity, mark its parent-document impact as `revision-required`, revise
-that document, and then continue. Do not preserve an overbuilt spec/design/plan merely because
+unjustified complexity, mark only its affected obligations as `revision-required`, revise
+that document, and then continue dependent work. Unrelated fixes may proceed. Do not
+preserve an overbuilt spec/design/plan merely because
 implementation began. If simplification changes accepted behavior, contracts, quality
 attributes, UX, deployment posture, or public documentation, make that revision explicit.
 

@@ -13,7 +13,8 @@ Use two distinct passes:
    and independently judges it while looking for counterexamples.
 
 If sub-agents are unavailable, disclose that the review was not independent and keep the
-passes separate. A failed or unfit earlier document blocks the later verdict.
+passes separate. An earlier document blocks the later verdict only when the requested
+judgment depends on the obligations that are wrong or incomplete.
 
 After review findings are corrected locally, rerun affected checks and perform a focused
 re-review of those findings and changed boundaries. Do not restart a full independent review
@@ -80,7 +81,8 @@ available action. Every non-blocked assessment reports:
 5. Internal verdict: `Pass | Pass-with-fixes | Needs rework`.
 
 Use `Blocked-upstream` when a controlling parent document must be corrected before later
-judgment. Explain which earlier document is blocking judgment and what must change. Code
+judgment. Name the document, the specific obligations blocking judgment, and the affected
+work; unrelated fixes may continue. Code
 assessment also reports feedback and parent-document changes, and writes
 assessment and parallel-work ledgers only under the evidence rules in `docs/workflow-status.md`.
 Save the report in the matching document area's `reviews/` folder using

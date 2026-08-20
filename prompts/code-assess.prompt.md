@@ -30,7 +30,9 @@ requirements or scope changed.
 Pass the private review context to the reviewer. It reports only candidates that become
 actionable findings; do not publish candidates, counts, or a warning section. If sub-agents
 are unavailable, disclose that the review was not independent and keep the passes separate.
-Failed or unfit earlier documents produce `Blocked-upstream`.
+Use `Blocked-upstream` only when the assessment depends on specific wrong or incomplete
+obligations in an earlier document. Name those obligations and the affected work; assess
+unrelated corrective code against the unchanged accepted documents.
 
 Report one plain-language assessment result and the main engineering consequence. Keep
 product/code problems, missing verification, and process/documentation problems separate;
