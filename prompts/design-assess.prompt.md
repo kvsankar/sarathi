@@ -13,8 +13,9 @@ Assess the target design using two separate passes. Load
 
 ## Run
 
-Run full passes once per revision. After local finding corrections, rerun affected checks
-and focus review on those findings unless requirements or scope changed.
+Run full passes once per revision. After issues are fixed, rerun affected checks and review
+only those fixes. If a fix is incomplete, correct it and check it again. Repeat the full
+assessment only when a fix materially changes the document.
 
 1. **Check pass**: execute `prompts/design-verify.prompt.md` inline, including the spec
    checker, and preserve commands, IDs, metrics, failures, and approval evidence only.

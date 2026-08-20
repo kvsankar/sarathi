@@ -14,9 +14,9 @@ as `Blocked-upstream` when the spec is unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
-For corrected findings, focus on those findings and affected boundaries; restart the full
-review only when requirements or scope changed. Apply the correction-closure procedure in
-`docs/review-verification-checklist.md`.
+After issues are fixed, review only those fixes. If a fix is incomplete, correct it and
+check it again. Do not repeat the full review unless a fix materially changes the document.
+Apply the correction-closure procedure in `docs/review-verification-checklist.md`.
 
 ## Judge
 

@@ -13,9 +13,9 @@ Assess the target plan using two separate passes. Load `prompts/plan-verify.prom
 
 ## Run
 
-Run full passes once for the current revision. After local finding corrections, rerun only
-affected checks and focus review on those findings and changed boundaries unless
-requirements or scope changed.
+Run full passes once for the current revision. After issues are fixed, rerun affected checks
+and review only those fixes. If a fix is incomplete, correct it and check it again. Repeat
+the full assessment only when a fix materially changes the document.
 
 1. **Check pass**: execute `prompts/plan-verify.prompt.md` inline, including earlier
    checkers, IDs, coverage, and work-group membership. Preserve commands, metrics, failures,

@@ -16,9 +16,10 @@ If sub-agents are unavailable, disclose that the review was not independent and 
 passes separate. An earlier document blocks the later verdict only when the requested
 judgment depends on the obligations that are wrong or incomplete.
 
-After review findings are corrected locally, rerun affected checks and perform a focused
-re-review of those findings and changed boundaries. Do not restart a full independent review
-unless scope or controlling intent changed materially. Record which mode was used.
+After issues are fixed, review only those fixes. If a fix is incomplete, correct it and
+check it again. Do not repeat the full review unless a fix materially changes the
+requirements, scope, design, or implementation. Record whether the run was a full review or
+a check of fixes.
 
 ## Correction Closure
 

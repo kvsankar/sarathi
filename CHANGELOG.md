@@ -14,6 +14,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   keep code defects as fixes against correct documents, and block only dependent work.
 - Require positive, per-finding closure evidence for claimed corrections and keep partial or
   missing fixes open without creating another report or ledger.
+- Re-review only reported fixes after correction, repeat that check for incomplete fixes,
+  and run another full review only after a material change.
 
 ## 0.8.0 - 2026-08-20
 

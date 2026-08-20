@@ -17,9 +17,9 @@ merely because that document does not exist.
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
 
-For corrected findings, focus re-review on those findings and affected boundaries. Restart
-the full review only if requirements or scope changed. Apply the correction-closure
-procedure in `docs/review-verification-checklist.md`.
+After issues are fixed, review only those fixes. If a fix is incomplete, correct it and
+check it again. Do not repeat the full review unless a fix materially changes the document.
+Apply the correction-closure procedure in `docs/review-verification-checklist.md`.
 
 ## Judge
 

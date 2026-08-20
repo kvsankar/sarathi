@@ -14,9 +14,9 @@ Assess the implemented change using a separate check pass and review pass. Load
 
 ## Run
 
-Run full passes once for the current revision. After local finding corrections, rerun only
-affected checks and focus review on those findings and changed boundaries unless
-requirements or scope changed.
+Run full passes once for the current revision. After issues are fixed, rerun affected checks
+and review only those fixes. If a fix is incomplete, correct it and check it again. Repeat
+the full assessment only when a fix materially changes the implementation.
 
 1. **Check pass**: execute `prompts/code-verify.prompt.md` inline, including earlier
    checkers, planned tests, project checks, and additional risk checks. Add
