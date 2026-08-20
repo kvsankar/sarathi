@@ -81,10 +81,25 @@ def test_check_code_records_a_passing_verification_command(
     assert report["verification_command_passed"] is True
     assert report["verification_command_exit"] == 0
     assert report["gates"] == {
+        "workflow_state_valid": True,
         "verification_command_passed": True,
         "source_process_ids_absent": True,
         "scan_inputs_valid": True,
     }
+
+
+def test_check_code_rejects_invalid_workflow_state(tmp_path, monkeypatch, capsys):
+    write_path = tmp_path / ".sdlc" / "wip.md"
+    write_path.parent.mkdir(parents=True)
+    write_path.write_text("Current Command: coding\n", encoding="utf-8")
+
+    rc, report = run_check_code(
+        tmp_path, [sys.executable, "-c", "pass"], monkeypatch, capsys
+    )
+
+    assert rc == 1
+    assert report["gates"]["workflow_state_valid"] is False
+    assert report["workflow_state_issues"][0]["field"] == "Current Command"
 
 
 def test_check_code_fails_when_the_verification_command_fails(

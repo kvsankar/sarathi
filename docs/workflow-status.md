@@ -117,6 +117,8 @@ Stop Conditions: conditions that pause or cancel active parallel work
 The display reads project-wide delivery choices from `.sdlc/process-decisions.yaml` and
 change-specific choices from the current spec or plan. It reads copied choices from older
 WIP notes only as a compatibility fallback.
+If a machine-read value is malformed, the page names the file, field, invalid value, and
+expected shape. Missing optional fields still display `Not recorded` without an error.
 
 An explicit valid `WORK-*` in `Current Work` selects the branch opened as the current
 focus. Older field names remain readable. The renderer does not infer an

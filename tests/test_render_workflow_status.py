@@ -228,6 +228,32 @@ Extra Checks: none
     }
 
 
+def test_renderer_shows_invalid_workflow_state_values(tmp_path):
+    module = load_renderer()
+    write(
+        tmp_path / ".sdlc" / "wip.md",
+        """# Current work
+Current Command: coding
+Feedback Status: waiting
+""",
+    )
+
+    model = module.build_model(tmp_path)
+    rendered = module.render_html(
+        model,
+        tmp_path,
+        tmp_path / "docs" / "sdlc-status.html",
+        module.GUIDE_FILENAME,
+    )
+
+    assert {item["field"] for item in model["workflow_state_issues"]} == {
+        "Current Command",
+        "Feedback Status",
+    }
+    assert "Current-work or project-choice values need correction." in rendered
+    assert "expected a stage-action command such as plan-review" in rendered
+
+
 def test_renderer_leads_with_recorded_plain_language_status(tmp_path):
     module = load_renderer()
     write(

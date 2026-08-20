@@ -28,6 +28,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Fixed
 
+- Reject malformed machine-readable values in current-work and project-choice files from
+  every stage checker, and show the same concrete errors in workflow status. Optional fields,
+  legacy names, and free-form prose remain outside the gate.
 - Make checker tests use a platform-neutral success command, gate the Bash-only installer
   test to POSIX environments, and keep local `docs/reviews/` working documents out of
   installed skill bundles.

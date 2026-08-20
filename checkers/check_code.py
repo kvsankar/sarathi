@@ -28,6 +28,7 @@ from approvals import (  # noqa: E402
     approval_requirement,
     load_approval_context,
 )
+from workflow_state import validate_workflow_state  # noqa: E402
 
 MARKER_PATTERNS = (
     ("TODO", re.compile(r"\bTODO\b", re.I)),
@@ -345,7 +346,9 @@ def main() -> int:
                 }
             )
 
+    workflow_state_issues = validate_workflow_state(Path.cwd())
     gates = {
+        "workflow_state_valid": not workflow_state_issues,
         "verification_command_passed": tests_pass is True,
         "source_process_ids_absent": not source_process_ids,
         "scan_inputs_valid": not scan_input_issues,
@@ -374,6 +377,7 @@ def main() -> int:
         "generated_traceability_paths": [
             rel_path(path, Path.cwd()) for path in generated_traceability_paths
         ],
+        "workflow_state_issues": workflow_state_issues,
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),
@@ -387,6 +391,7 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
+            "workflow_state_valid": "Current-work and project-choice values are valid",
             "verification_command_passed": "Verification command passed",
             "source_process_ids_absent": (
                 "Source and tests contain no process identifiers"
@@ -398,6 +403,11 @@ def main() -> int:
             print(
                 f"{'PASS' if value else 'FAIL'}  "
                 f"{labels.get(key, key.replace('_', ' '))}"
+            )
+        for item in workflow_state_issues:
+            print(
+                f"ERROR {item['path']} {item['field']}: {item['reason']} "
+                f"(found {item['value']!r})"
             )
         for issue in scan_input_issues:
             print(f"ERROR {issue['path']}: {issue['reason']}")

@@ -128,6 +128,12 @@ code-create`. New files use `Working Result`, `Relevant Files`, `Feedback`, `Wor
 `Work Scope`, and `Current Command`; stage and action are derived from the command rather
 than stored as duplicate state. See `docs/workflow-terminology.md`.
 
+The spec, design, plan, and code checkers validate only the machine-read values in this note
+and `.sdlc/process-decisions.yaml`. They reject malformed commands, enumerated values, IDs,
+limits, and YAML shapes. Optional fields may be absent, legacy field names remain accepted,
+and free-form summaries are not judged by a checker. The status page shows the same concrete
+issues rather than silently treating an invalid value as missing.
+
 ## Fresh Context Resume Procedure
 
 A fresh agent context should:

@@ -56,6 +56,7 @@ from schemas import (  # noqa: E402
     SLUG_TOKEN,
 )
 from waves import parse_learning_waves  # noqa: E402
+from workflow_state import validate_workflow_state  # noqa: E402
 
 ID = PLAN_ID
 FR = re.compile(rf"\bFR-{SLUG_TOKEN}-{SLUG_TOKEN}\b")
@@ -570,7 +571,9 @@ def main() -> int:
         or wave_result["duplicate_members"]
         or wave_result["empty_members"]
     )
+    workflow_state_issues = validate_workflow_state(Path.cwd())
     gates = {
+        "workflow_state_valid": not workflow_state_issues,
         "has_delivery_items": bool(work_blocks or pr_blocks),
         "id_format_slug_only": not bad,
         "no_duplicates": not dupes,
@@ -707,6 +710,7 @@ def main() -> int:
         "bad_id_format": bad,
         "artifact_format": format_name,
         "human_first_issues": format_issues,
+        "workflow_state_issues": workflow_state_issues,
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),
@@ -715,6 +719,7 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
+            "workflow_state_valid": "Current-work and project-choice values are valid",
             "has_delivery_items": "At least one change is planned",
             "id_format_slug_only": "Identifiers use the supported format",
             "no_duplicates": "No duplicate identifiers",
@@ -737,6 +742,11 @@ def main() -> int:
         }
         for k, v in gates.items():
             print(f"{'PASS' if v else 'FAIL'}  {labels.get(k, k.replace('_', ' '))}")
+        for item in workflow_state_issues:
+            print(
+                f"ERROR {item['path']} {item['field']}: {item['reason']} "
+                f"(found {item['value']!r})"
+            )
         print(
             f"\nRequirements covered: {report['fr_coverage_pct']}%"
             f"  User outcomes covered: {report['uc_coverage_pct']}%"

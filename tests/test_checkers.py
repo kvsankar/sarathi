@@ -270,6 +270,48 @@ def test_check_spec_accepts_complete_structural_spec(tmp_path, monkeypatch, caps
     assert report["fr_at_coverage_pct"] == 100.0
 
 
+def test_document_checkers_reject_invalid_workflow_state(tmp_path, monkeypatch, capsys):
+    spec_path = tmp_path / "spec.md"
+    design_path = tmp_path / "design.md"
+    plan_path = tmp_path / "plan.md"
+    write_valid_spec(spec_path)
+    write_valid_design(design_path)
+    write_valid_plan(plan_path)
+    sdlc = tmp_path / ".sdlc"
+    sdlc.mkdir()
+    (sdlc / "process-decisions.yaml").write_text(
+        "delivery:\n  assurance_profile: stanard\n", encoding="utf-8"
+    )
+
+    invocations = (
+        ("check_spec", [str(spec_path), "--json"]),
+        (
+            "check_design",
+            [str(design_path), "--spec", str(spec_path), "--json"],
+        ),
+        (
+            "check_plan",
+            [
+                str(plan_path),
+                "--spec",
+                str(spec_path),
+                "--design",
+                str(design_path),
+                "--json",
+            ],
+        ),
+    )
+    for checker, arguments in invocations:
+        rc, report = run_main(
+            load_checker(checker), arguments, monkeypatch, capsys, tmp_path
+        )
+        assert rc == 1
+        assert report["gates"]["workflow_state_valid"] is False
+        assert report["workflow_state_issues"][0]["field"] == (
+            "delivery.assurance_profile"
+        )
+
+
 def test_wave_parser_accepts_plain_field_names():
     module = load_checker("waves")
     result = module.parse_learning_waves(

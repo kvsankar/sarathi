@@ -43,6 +43,7 @@ from schemas import (  # noqa: E402
     LEGACY_HUMAN_FIRST_SPEC_SECTIONS,
     SPEC_SECTIONS,
 )
+from workflow_state import validate_workflow_state  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(rf"\b(UN|FEAT|UC|FR|NFR|AT|JT)-({SLUG_TOKEN})-({SLUG_TOKEN})\b")
@@ -231,7 +232,9 @@ def main() -> int:
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
 
+    workflow_state_issues = validate_workflow_state(Path.cwd())
     gates = {
+        "workflow_state_valid": not workflow_state_issues,
         "id_format_slug_only": not bad_fmt,
         "no_duplicates": not dupes,
         "no_orphan_refs": not orphans,
@@ -273,6 +276,7 @@ def main() -> int:
         },
         "artifact_format": format_name,
         "human_first_issues": format_issues,
+        "workflow_state_issues": workflow_state_issues,
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),
@@ -281,6 +285,7 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
+            "workflow_state_valid": "Current-work and project-choice values are valid",
             "id_format_slug_only": "Identifiers use the supported format",
             "no_duplicates": "No duplicate identifiers",
             "no_orphan_refs": "All references resolve",
@@ -294,6 +299,11 @@ def main() -> int:
         }
         for k, v in gates.items():
             print(f"{'PASS' if v else 'FAIL'}  {labels.get(k, k.replace('_', ' '))}")
+        for item in workflow_state_issues:
+            print(
+                f"ERROR {item['path']} {item['field']}: {item['reason']} "
+                f"(found {item['value']!r})"
+            )
         uc_pct = report["uc_at_coverage_pct"]
         fr_pct = report["fr_at_coverage_pct"]
         print(f"\nUser outcomes covered: {uc_pct}%  Requirements covered: {fr_pct}%")

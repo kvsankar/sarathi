@@ -40,6 +40,7 @@ from markdown_structure import (  # noqa: E402
     primary_definition_ids,
 )
 from schemas import DESIGN_SECTIONS, HUMAN_FIRST_DESIGN_SECTIONS  # noqa: E402
+from workflow_state import validate_workflow_state  # noqa: E402
 
 SLUG_TOKEN = r"[A-Z][A-Z0-9]{1,31}"
 ID = re.compile(
@@ -420,7 +421,9 @@ def main() -> int:
     def pct(a, b):
         return round(100 * len(a) / len(b), 1) if b else 100.0
 
+    workflow_state_issues = validate_workflow_state(Path.cwd())
     gates = {
+        "workflow_state_valid": not workflow_state_issues,
         "id_format_slug_only": not bad_fmt,
         "no_duplicates": not dupes,
         "no_orphan_refs": not orphans,
@@ -482,6 +485,7 @@ def main() -> int:
         "iface_owner_issues": sorted(iface_owner_issues),
         "artifact_format": format_name,
         "human_first_issues": format_issues,
+        "workflow_state_issues": workflow_state_issues,
         "gates": gates,
         "passed": sum(gates.values()),
         "total": len(gates),
@@ -490,6 +494,7 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
+            "workflow_state_valid": "Current-work and project-choice values are valid",
             "id_format_slug_only": "Identifiers use the supported format",
             "no_duplicates": "No duplicate identifiers",
             "no_orphan_refs": "All references resolve",
@@ -507,6 +512,11 @@ def main() -> int:
         }
         for k, v in gates.items():
             print(f"{'PASS' if v else 'FAIL'}  {labels.get(k, k.replace('_', ' '))}")
+        for item in workflow_state_issues:
+            print(
+                f"ERROR {item['path']} {item['field']}: {item['reason']} "
+                f"(found {item['value']!r})"
+            )
         print(
             f"\nComponents linked to requirements: {report['comp_req_coverage_pct']}%"
             f"  Components linked to tests: {report['comp_test_coverage_pct']}%"

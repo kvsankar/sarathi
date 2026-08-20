@@ -23,6 +23,7 @@ from approvals import load_approval_context, load_yaml_file  # noqa: E402
 from markdown_structure import annotation_attrs  # noqa: E402
 from schemas import PLAN_ID_CANDIDATE, is_plan_id, is_wave_id  # noqa: E402
 from waves import parse_learning_waves  # noqa: E402
+from workflow_state import validate_workflow_state  # noqa: E402
 
 APPROVED_STATUSES = {"approved", "auto-approved"}
 FEEDBACK_STATUSES = {"received", "requested", "unavailable", "not-applicable"}
@@ -1104,6 +1105,7 @@ def build_model(root: Path) -> dict[str, Any]:
         for kind in ("spec", "design", "plan")
     }
     wip = parse_wip(root)
+    workflow_state_issues = validate_workflow_state(root)
     project_delivery, process_decisions_error = process_delivery_choices(root)
     current_command = str(wip.get("Current Command") or "").strip()
     command_match = re.fullmatch(
@@ -1377,6 +1379,7 @@ def build_model(root: Path) -> dict[str, Any]:
         "artifact_path_error": artifact_path_error,
         "stages": stages,
         "wip": wip,
+        "workflow_state_issues": workflow_state_issues,
         "current_activity": current_activity,
         "delivery": {
             "profile": delivery_profile or "Not recorded",
@@ -2272,6 +2275,18 @@ def render_html(
         if model.get("wave_checkpoint_error")
         else ""
     )
+    state_note = ""
+    if model.get("workflow_state_issues"):
+        state_items = "".join(
+            f"<li>{esc(item['path'])}: {esc(item['field'])} "
+            f"{esc(item['reason'])}; found {esc(item['value'])}</li>"
+            for item in model["workflow_state_issues"]
+        )
+        state_note = (
+            '<aside class="validation-warning" role="alert">'
+            "<strong>Current-work or project-choice values need correction.</strong>"
+            f"<ul>{state_items}</ul></aside>"
+        )
     guide_link = (
         f'<a class="process-guide" href="{esc(guide_href)}">Process guide</a>'
         if guide_href
@@ -2586,6 +2601,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
     </div>
   </section>
   {malformed_warning}
+  {state_note}
   <details class="read-note">
     <summary>Delivery choices</summary>
     <p>Verification depth (assurance profile): {esc(model["delivery"]["profile"])}. Approval approach (approval policy): {esc(model["delivery"]["approval_policy"])}. Intended result (work outcome): {esc(model["delivery"]["work_outcome"])}. Additional required checks: {esc(model["delivery"]["modules"])}.</p>
