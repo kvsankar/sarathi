@@ -10,6 +10,10 @@ mean the document is final, complete, or presumed correct. Approval should consi
 available feedback from appropriate stakeholders, record feedback not yet obtained, and
 expect revision when implementation, integration, deployment, or use produces new evidence.
 
+Production incidents, support reports, and monitoring results may start new work or revise
+existing requirements; Sarathi does not manage incident response or continuous product
+operations.
+
 An approval record proves only that the required fields are present and its saved hash
 matches the current file. It does not prove that feedback occurred, that an approver
 represents end users, or that the document will remain correct after the next slice.
