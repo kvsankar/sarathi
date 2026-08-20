@@ -110,6 +110,23 @@ irreversibility, uncertainty, external-boundary risk, or legal/safety consequenc
 Reducing assurance requires evidence and must not remove obligations accepted by a parent
 document.
 
+Match the process to the work being done now. A disposable change that uses fake data, a
+temporary database, no external writes, and no real users normally does not need
+production-level evidence yet. It still receives meaningful tests and independent review.
+
+Increase assurance before the work first:
+
+- uses real or production-derived data;
+- writes to an external, persistent, or shared system;
+- serves more than one real user;
+- changes authentication or authorization behavior;
+- changes what audit records mean, contain, retain, or guarantee; or
+- performs an irreversible migration or production deployment.
+
+Do not postpone an early decision when it would make one of these later steps unsafe or hard
+to change. Record the future risk now, but require its expensive evidence when the work
+actually reaches that risk.
+
 A compact implementation plan is expected for coherent Lean work, allowed for coherent
 Standard work when an approved design already exists, and allowed for High-assurance only
 when the accepted work is already one independently safe slice. A decision/evidence plan

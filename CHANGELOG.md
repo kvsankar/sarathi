@@ -18,6 +18,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   and run another full review only after a material change.
 - Before re-review, sweep relevant documents and code for other occurrences of corrected
   statements or behavior and confirm every intended addition is present.
+- Use lighter evidence while work is disposable and isolated, then increase assurance when
+  it reaches real data, shared writes, multiple users, access control, durable audit meaning,
+  irreversible migration, or production deployment.
 
 ## 0.8.0 - 2026-08-20
 
