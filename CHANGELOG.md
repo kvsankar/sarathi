@@ -8,6 +8,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.8.0 - 2026-08-20
+
 ### Changed
 
 - Consolidate artifact path choices into `process-decisions.yaml` and code-assessment and
@@ -35,6 +37,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Fixed
 
+- Keep release distributions on Core Metadata 2.4 until the locked publishing toolchain
+  supports Metadata 2.5.
 - Reject malformed machine-readable values in current-work and project-choice files from
   every stage checker, and show the same concrete errors in workflow status. Optional fields,
   legacy names, and free-form prose remain outside the gate.

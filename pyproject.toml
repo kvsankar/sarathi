@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling>=1.27"]
+requires = ["hatchling>=1.27,<1.32"]
 build-backend = "hatchling.build"
 
 [project]
 name = "sarathi-sdlc"
-version = "0.7.0"
+version = "0.8.0"
 description = "Production software engineering workflows for AI coding agents"
 readme = "README.md"
 requires-python = ">=3.10"
