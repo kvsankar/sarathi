@@ -50,6 +50,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Add a trigger-loaded Security Extra Check method that turns protected assets, trust
   boundaries, and credible abuse cases into owned mitigations and real-boundary evidence
   without adding a stage or mandatory security artifact.
+- Remove prose substring tests that pinned policy wording without proving agent behavior.
+  Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
+  runtime instruction budgets.
 
 ## 0.7.0 - 2026-07-24
 

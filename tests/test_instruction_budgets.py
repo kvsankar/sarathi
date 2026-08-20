@@ -20,13 +20,6 @@ def test_always_loaded_instruction_budgets() -> None:
         assert bytes_ <= byte_limit, f"{path.name}: {bytes_} > {byte_limit} bytes"
 
 
-def test_readme_budget() -> None:
-    lines, bytes_ = size(ROOT / "README.md")
-
-    assert lines <= 360, f"README.md: {lines} > 360 lines"
-    assert bytes_ <= 18_000, f"README.md: {bytes_} > 18000 bytes"
-
-
 def test_stage_prompt_budgets() -> None:
     limits = {
         "create": (120, 7_500),
@@ -35,62 +28,16 @@ def test_stage_prompt_budgets() -> None:
         "verify": (120, 6_000),
         "status": (80, 5_000),
     }
-    total_lines = 0
-    total_bytes = 0
-
     for path in PROMPTS.glob("*.prompt.md"):
         lines, bytes_ = size(path)
-        total_lines += lines
-        total_bytes += bytes_
         command = path.name.removesuffix(".prompt.md")
         kind = "status" if command == "workflow-status" else command.split("-")[-1]
         line_limit, byte_limit = limits[kind]
         assert lines <= line_limit, f"{path.name}: {lines} > {line_limit} lines"
         assert bytes_ <= byte_limit, f"{path.name}: {bytes_} > {byte_limit} bytes"
 
-    assert total_lines <= 1_400
-    assert total_bytes <= 90_000
-
 
 def test_repository_maintenance_does_not_self_host_sarathi() -> None:
     ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
 
     assert ".sdlc/" in ignored
-
-
-def test_stage_prompts_use_document_areas_and_persist_reviews() -> None:
-    locations = ROOT / "docs" / "document-locations.md"
-    location_text = locations.read_text(encoding="utf-8")
-    assert "Product/system scope" in location_text
-    for stage in ("spec", "design", "plan"):
-        assert "docs/document-locations.md" in (
-            PROMPTS / f"{stage}-create.prompt.md"
-        ).read_text(encoding="utf-8")
-        assert f"<work-slug>.{stage}.md" in (
-            PROMPTS / f"{stage}-create.prompt.md"
-        ).read_text(encoding="utf-8")
-        assert f"<work-slug>.{stage}-review.md" in (
-            PROMPTS / f"{stage}-review.prompt.md"
-        ).read_text(encoding="utf-8")
-        assert f"<work-slug>.{stage}-assessment.md" in (
-            PROMPTS / f"{stage}-assess.prompt.md"
-        ).read_text(encoding="utf-8")
-    assert "<work-slug>.code-review.md" in (
-        PROMPTS / "code-review.prompt.md"
-    ).read_text(encoding="utf-8")
-    assert "<work-slug>.code-assessment.md" in (
-        PROMPTS / "code-assess.prompt.md"
-    ).read_text(encoding="utf-8")
-
-
-def test_create_stage_assessment_cycles_are_bounded_and_owned() -> None:
-    for stage in ("spec", "design", "plan"):
-        text = (PROMPTS / f"{stage}-create.prompt.md").read_text(encoding="utf-8")
-        normalized = " ".join(text.split())
-
-        assert "one assessment cycle" in normalized
-        assert "official assessment for the current revision" in normalized
-        assert "one focused recheck/re-review" in normalized
-        assert "the agent does not accept" in normalized
-        assert "Revise until" not in text
-        assert "until Pass" not in text

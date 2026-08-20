@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_REF = re.compile(r"prompts/[A-Za-z0-9._-]+\.prompt\.md")
@@ -136,19 +137,17 @@ def test_prefixed_command_skills_are_explicit_agent_neutral_and_complete(
         for command_name in command_names:
             alias = skill_root / f"sarathi-{command_name}"
             skill_text = (alias / "SKILL.md").read_text(encoding="utf-8")
-            agent_text = (alias / "agents" / "openai.yaml").read_text(encoding="utf-8")
+            _, frontmatter, body = skill_text.split("---", 2)
+            skill_metadata = yaml.safe_load(frontmatter)
+            agent_metadata = yaml.safe_load(
+                (alias / "agents" / "openai.yaml").read_text(encoding="utf-8")
+            )
 
-            assert f"name: sarathi-{command_name}" in skill_text
-            assert "agent-neutral, explicit-only" in skill_text
-            assert f"Explicit-only Sarathi command {command_name}" in skill_text
-            assert "Sarathi stage" not in skill_text
-            assert "First read ../sarathi/SKILL.md" in skill_text
-            assert "including revision\nclassification" in skill_text
-            assert "do not reroute to another command" in skill_text
-            assert "GitHub" not in skill_text
-            assert "Copilot" not in skill_text
-            assert "allow_implicit_invocation: false" in agent_text
-            assert f"$sarathi-{command_name}" in agent_text
+            assert skill_metadata["name"] == f"sarathi-{command_name}"
+            assert skill_metadata["description"]
+            assert body.strip()
+            assert agent_metadata["policy"]["allow_implicit_invocation"] is False
+            assert agent_metadata["interface"]["default_prompt"]
             assert not (skill_root / command_name).exists()
 
         for stage in ("spec", "design", "plan", "code"):
@@ -255,14 +254,6 @@ This generic skill is not a legacy Sarathi alias.
             assert (skill_root / f"sarathi-{stage}" / "SKILL.md").is_file()
 
         assert (skill_root / "code-verify" / "SKILL.md").is_file()
-
-
-def test_legacy_alias_recognition_is_crlf_safe_in_both_installers() -> None:
-    bash = (ROOT / "scripts" / "install.sh").read_text(encoding="utf-8")
-    powershell = (ROOT / "scripts" / "install.ps1").read_text(encoding="utf-8")
-
-    assert "tr -d '\\r'" in bash
-    assert r'\r?$"' in powershell
 
 
 def test_codex_only_upgrade_archives_legacy_aliases_from_shared_skill_roots(

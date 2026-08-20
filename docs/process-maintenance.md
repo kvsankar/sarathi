@@ -29,6 +29,18 @@ must improve judgment without turning every prompt into a checklist wall.
 - Apply [simplicity-first.md](simplicity-first.md): process requirements stay outside
 product architecture, and new generic machinery requires concrete evidence.
 
+## Test Executable Contracts, Not Policy Prose
+
+Automate only behavior a program or host can observe. Appropriate tests cover checkers,
+parsers, renderers, installers, bundle contents, schemas/frontmatter, file and link
+integrity, and instruction sizes that consume runtime context.
+
+Do not add substring or exact-wording assertions merely to preserve a policy decision,
+example, heading, recommendation, or prompt sentence. Such tests neither prove that the
+guidance is correct nor that an agent follows it. Protect prose policy through focused
+review. When wording is also a machine-consumed field or grammar, test the parser or
+generated behavior instead of the surrounding prose.
+
 ## Plain Language
 
 - Write for a capable software practitioner who has not learned Sarathi's vocabulary.
