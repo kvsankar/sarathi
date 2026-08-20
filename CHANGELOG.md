@@ -10,6 +10,9 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ### Changed
 
+- Consolidate artifact path choices into `process-decisions.yaml` and code-assessment and
+  work-group checkpoint entries into `delivery-records.yaml`. Continue reading legacy state
+  files and keep migration guidance on demand.
 - Standardize new specs, designs, and plans on document format version 3 while continuing to
   accept version-2 and unmarked documents.
 - Allow meaningful digit-first identifier tokens such as `2FA` and `3DS` while continuing

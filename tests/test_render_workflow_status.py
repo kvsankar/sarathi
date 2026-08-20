@@ -228,6 +228,37 @@ Extra Checks: none
     }
 
 
+def test_renderer_reads_artifact_paths_from_process_decisions(tmp_path):
+    module = load_renderer()
+    write(tmp_path / "docs" / "features" / "auth.spec.md", spec_text())
+    write(
+        tmp_path / ".sdlc" / "process-decisions.yaml",
+        """artifact_paths:
+  canonical:
+    spec: docs/features/auth.spec.md
+""",
+    )
+
+    model = module.build_model(tmp_path)
+
+    assert model["stages"]["spec"]["path"] == "docs/features/auth.spec.md"
+
+
+def test_renderer_still_reads_legacy_artifact_paths(tmp_path):
+    module = load_renderer()
+    write(tmp_path / "docs" / "features" / "auth.spec.md", spec_text())
+    write(
+        tmp_path / ".sdlc" / "artifact-paths.yaml",
+        """canonical:
+  spec: docs/features/auth.spec.md
+""",
+    )
+
+    model = module.build_model(tmp_path)
+
+    assert model["stages"]["spec"]["path"] == "docs/features/auth.spec.md"
+
+
 def test_renderer_shows_invalid_workflow_state_values(tmp_path):
     module = load_renderer()
     write(
@@ -1130,10 +1161,11 @@ def test_hash_current_passing_code_assessment_marks_work_assessed(tmp_path):
     project = make_decomposed_project(tmp_path)
     child = project / "docs" / "plans" / "work_alpha.md"
     write(
-        project / ".sdlc" / "code-assessments.yaml",
+        project / ".sdlc" / "delivery-records.yaml",
         f"""version: 1
-assessments:
-  - id: ASSESS-CODE-DEMO-ALPHA
+records:
+  - kind: code_assessment
+    id: ASSESS-CODE-DEMO-ALPHA
     work_item: WORK-DEMO-ALPHA
     plan:
       path: demo/docs/plans/work_alpha.md
@@ -1190,10 +1222,11 @@ def test_hash_current_wave_checkpoint_closes_one_wave_only(tmp_path):
     project = make_decomposed_project(tmp_path)
     child = project / "docs" / "plans" / "work_alpha.md"
     write(
-        project / ".sdlc" / "wave-checkpoints.yaml",
+        project / ".sdlc" / "delivery-records.yaml",
         f"""version: 1
-checkpoints:
-  - id: CHECK-WAVE-DEMO-FIRST
+records:
+  - kind: wave_checkpoint
+    id: CHECK-WAVE-DEMO-FIRST
     wave: WAVE-DEMO-FIRST
     plan:
       path: demo/docs/plans/work_alpha.md

@@ -25,13 +25,14 @@ documents merely to match this convention. Record the chosen repository-relative
 and pass those exact paths to checkers rather than relying on their legacy root-file defaults.
 
 When more than one candidate exists or the area is non-standard, record the renderer's
-canonical paths in `.sdlc/artifact-paths.yaml`:
+canonical paths under `artifact_paths` in `.sdlc/process-decisions.yaml`:
 
 ```yaml
-canonical:
-  spec: docs/features/auth/auth-signin.spec.md
-  design: docs/features/auth/auth-signin.design.md
-  plan: docs/features/auth/auth-signin.plan.md
+artifact_paths:
+  canonical:
+    spec: docs/features/auth/auth-signin.spec.md
+    design: docs/features/auth/auth-signin.design.md
+    plan: docs/features/auth/auth-signin.plan.md
 ```
 
 Use its `children` mapping for work-item-specific paths when applicable. See

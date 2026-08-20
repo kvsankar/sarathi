@@ -60,6 +60,7 @@ the references relevant to that command.
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |
 | `docs/workflow-status.md` | Rendering, interpreting, or troubleshooting workflow-status output. |
 | `docs/slug-id-migration.md` | Migrating legacy numeric IDs or checking slug-ID compatibility and grammar. |
+| `docs/state-file-migration.md` | Migrating legacy Sarathi state files after they are detected or when migration is explicitly requested. |
 | `docs/progressive-disclosure.md` | Locating shared guidance or maintaining this reference-routing map. |
 | `docs/process-maintenance.md` | Modifying the SDLC process, prompts, skills, checker policy, or shared docs. |
 | `docs/release-process.md` | Preparing `CHANGELOG.md`, a version bump, release commit, or Git tag. |

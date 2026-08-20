@@ -28,7 +28,8 @@ files are not a fourth mode. They are discovered inputs that can appear in any m
 Before creating a new controlling document, choose its documentation area with
 [document-locations.md](document-locations.md). Reuse the closest established `docs/` area
 for the current work, or use repository-root `docs/` only when no more specific location can
-be inferred. Record non-standard canonical paths in `.sdlc/artifact-paths.yaml`.
+be inferred. Record non-standard canonical paths under `artifact_paths` in
+`.sdlc/process-decisions.yaml`.
 
 ## Choose Delivery Decisions
 

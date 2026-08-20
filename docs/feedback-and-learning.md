@@ -101,9 +101,9 @@ Breakdown plans may schedule near-term child work in a `Work Groups` section. Ea
 a scheduled child belongs to exactly one group, while an unscheduled child has no group. An
 Implementation plan lists the PRs for one child; PRs do not belong to groups.
 
-The current group and active members live in `.sdlc/wip.md`. A completed checkpoint lives in
-`.sdlc/wave-checkpoints.yaml` and binds the group ID and exact members to the current governing
-plan SHA-256. It records `status: completed`, completion time, feedback evidence, what the
+The current group and active members live in `.sdlc/wip.md`. A completed checkpoint is a
+`wave_checkpoint` entry in `.sdlc/delivery-records.yaml` and binds the group ID and exact
+members to the current governing plan SHA-256. It records `status: completed`, completion time, feedback evidence, what the
 feedback changed, and earlier-document impact. This records the end of one group; it is not a
 full code assessment, human approval, merge claim, or authorization to begin the next group.
 Changing the plan or group membership makes the checkpoint stale.

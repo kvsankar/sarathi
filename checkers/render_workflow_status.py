@@ -194,15 +194,29 @@ def artifact_path_mapping(
     root: Path,
 ) -> tuple[dict[str, Path], dict[str, dict[str, Path]], str | None]:
     """Load optional repository-owned canonical and child artifact paths."""
-    path = root / ".sdlc" / "artifact-paths.yaml"
-    if not path.is_file():
+    decisions_path = root / ".sdlc" / "process-decisions.yaml"
+    legacy_path = root / ".sdlc" / "artifact-paths.yaml"
+    loaded: Any = None
+    if decisions_path.is_file():
+        try:
+            decisions = load_yaml_file(decisions_path)
+        except (OSError, ValueError) as exc:
+            return {}, {}, str(exc)
+        if not isinstance(decisions, dict):
+            return {}, {}, "process decisions must be a mapping"
+        loaded = decisions.get("artifact_paths")
+        if loaded is not None and not isinstance(loaded, dict):
+            return {}, {}, "artifact_paths must be a mapping"
+
+    if loaded is None and legacy_path.is_file():
+        try:
+            loaded = load_yaml_file(legacy_path)
+        except (OSError, ValueError) as exc:
+            return {}, {}, str(exc)
+        if not isinstance(loaded, dict):
+            return {}, {}, "artifact paths must be a mapping"
+    if loaded is None:
         return {}, {}, None
-    try:
-        loaded = load_yaml_file(path)
-    except (OSError, ValueError) as exc:
-        return {}, {}, str(exc)
-    if not isinstance(loaded, dict):
-        return {}, {}, "artifact paths must be a mapping"
 
     def resolve_group(raw: Any) -> dict[str, Path]:
         if not isinstance(raw, dict):
@@ -285,36 +299,68 @@ def load_approval_records(root: Path) -> tuple[list[dict[str, Any]], str | None]
     return [record for record in records if isinstance(record, dict)], None
 
 
-def load_code_assessment_records(
-    root: Path,
+def load_legacy_delivery_records(
+    root: Path, filename: str, key: str
 ) -> tuple[list[dict[str, Any]], str | None]:
-    path = root / ".sdlc" / "code-assessments.yaml"
+    path = root / ".sdlc" / filename
     if not path.is_file():
         return [], None
     try:
         loaded = load_yaml_file(path)
     except (OSError, ValueError) as exc:
         return [], str(exc)
-    records = loaded.get("assessments") if isinstance(loaded, dict) else None
+    records = loaded.get(key) if isinstance(loaded, dict) else None
     if not isinstance(records, list):
-        return [], "assessments must be a list"
+        return [], f"{key} must be a list"
     return [record for record in records if isinstance(record, dict)], None
 
 
-def load_wave_checkpoint_records(
+def load_delivery_records(
     root: Path,
-) -> tuple[list[dict[str, Any]], str | None]:
-    path = root / ".sdlc" / "wave-checkpoints.yaml"
-    if not path.is_file():
-        return [], None
-    try:
-        loaded = load_yaml_file(path)
-    except (OSError, ValueError) as exc:
-        return [], str(exc)
-    records = loaded.get("checkpoints") if isinstance(loaded, dict) else None
-    if not isinstance(records, list):
-        return [], "checkpoints must be a list"
-    return [record for record in records if isinstance(record, dict)], None
+) -> tuple[
+    list[dict[str, Any]],
+    str | None,
+    list[dict[str, Any]],
+    str | None,
+]:
+    """Load consolidated records, with per-kind legacy fallbacks."""
+    path = root / ".sdlc" / "delivery-records.yaml"
+    records: list[dict[str, Any]] = []
+    load_error: str | None = None
+    if path.is_file():
+        try:
+            loaded = load_yaml_file(path)
+        except (OSError, ValueError) as exc:
+            load_error = str(exc)
+        else:
+            raw_records = loaded.get("records") if isinstance(loaded, dict) else None
+            if not isinstance(raw_records, list):
+                load_error = "records must be a list"
+            elif any(not isinstance(record, dict) for record in raw_records):
+                load_error = "each delivery record must be a mapping"
+            else:
+                records = raw_records
+
+    if load_error:
+        return [], load_error, [], load_error
+
+    assessments = [
+        record for record in records if record.get("kind") == "code_assessment"
+    ]
+    checkpoints = [
+        record for record in records if record.get("kind") == "wave_checkpoint"
+    ]
+    assessment_error = None
+    checkpoint_error = None
+    if not assessments:
+        assessments, assessment_error = load_legacy_delivery_records(
+            root, "code-assessments.yaml", "assessments"
+        )
+    if not checkpoints:
+        checkpoints, checkpoint_error = load_legacy_delivery_records(
+            root, "wave-checkpoints.yaml", "checkpoints"
+        )
+    return assessments, assessment_error, checkpoints, checkpoint_error
 
 
 def compact_value(value: Any) -> str | None:
@@ -1093,8 +1139,12 @@ def build_model(root: Path) -> dict[str, Any]:
         for item in approval_context["invalid_records"]
         if item["id"] in auto_approval_ids
     }
-    assessment_records, assessment_error = load_code_assessment_records(root)
-    checkpoint_records, checkpoint_error = load_wave_checkpoint_records(root)
+    (
+        assessment_records,
+        assessment_error,
+        checkpoint_records,
+        checkpoint_error,
+    ) = load_delivery_records(root)
     mapped_paths, mapped_children, artifact_path_error = artifact_path_mapping(root)
     paths = {
         kind: mapped_paths.get(kind) or canonical_artifact(root, kind)
@@ -1363,6 +1413,8 @@ def build_model(root: Path) -> dict[str, Any]:
         root / ".sdlc" / "process-decisions.yaml",
         root / ".sdlc" / "wip.md",
         root / ".sdlc" / "test-traceability.yaml",
+        root / ".sdlc" / "delivery-records.yaml",
+        root / ".sdlc" / "artifact-paths.yaml",
         root / ".sdlc" / "code-assessments.yaml",
         root / ".sdlc" / "wave-checkpoints.yaml",
     ):

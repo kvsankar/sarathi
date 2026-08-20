@@ -42,12 +42,13 @@ state; follow `docs/result-reporting.md` for chat.
 ## Stored Results
 
 For `Pass` with a known parent `WORK-*` and child implementation plan, create/update the
-hash-current `.sdlc/code-assessments.yaml` record defined in
+hash-current `code_assessment` entry in `.sdlc/delivery-records.yaml` as defined in
 `docs/workflow-status.md`. Record the exact work item, plan path/SHA-256, UTC assessment
 time, and the feedback or test result that supports the outcome. Do not record other
 verdicts as Pass. This is a project record, not approval.
 
-Close an active work group in `.sdlc/wave-checkpoints.yaml` only when every exact declared member
+Close an active work group with a `wave_checkpoint` entry in
+`.sdlc/delivery-records.yaml` only when every exact declared member
 has reached its boundary and feedback/integration plus parent-document decisions are complete.
 Do not create a checkpoint for an unscheduled child. Bind exact ordered members to the current
 plan SHA-256. Do not close when required feedback, work to combine parallel changes, or

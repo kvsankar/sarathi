@@ -293,8 +293,8 @@ cleanup, and simplify. Coverage or detailed test-link inventories are used only 
 project or accepted risk profile calls for them. Report unavailable evidence as unavailable,
 not passing.
 
-The `code-assess` command may write a `.sdlc/code-assessments.yaml` Pass record that matches the current plan using the
-schema in `docs/workflow-status.md`. When every exact group member, review point, and
-earlier-document decision is complete, it may write a
-`.sdlc/wave-checkpoints.yaml` record that matches the current plan. Neither file is human
-approval.
+The `code-assess` command may write a `code_assessment` entry in
+`.sdlc/delivery-records.yaml` that records a Pass matching the current plan using the schema
+in `docs/workflow-status.md`. When every exact group member, review point, and
+earlier-document decision is complete, it may write a `wave_checkpoint` entry in the same
+file that matches the current plan. Neither record is human approval.

@@ -36,15 +36,15 @@ are explained afterward.
 - **Checks-and-review learning evidence**: a branch whose code checks and review passed can
   show the learning and next decisions recorded in a matching code-assessment record.
 
-The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; use
-`.sdlc/artifact-paths.yaml` when [document-locations.md](document-locations.md) selected a
-non-standard or ambiguous area. Child specs,
+The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; use the
+`artifact_paths` section of `.sdlc/process-decisions.yaml` when
+[document-locations.md](document-locations.md) selected a non-standard or ambiguous area. Child specs,
 designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
 the first heading. A compact implementation plan that reuses approved earlier documents is
 shown without false missing-spec/design nodes; older marker fields remain readable. It also reads
 Breakdown-plan `Work Groups` sections; `.sdlc/approvals.yaml`; `.sdlc/gates.yaml`;
 `.sdlc/process-decisions.yaml`;
-`.sdlc/code-assessments.yaml`; `.sdlc/wave-checkpoints.yaml`; `.sdlc/wip.md`; and
+`.sdlc/delivery-records.yaml`; `.sdlc/wip.md`; and
 `.sdlc/test-traceability.yaml` when a project voluntarily maintains one. It ignores common
 dependency, cache, and VCS directories.
 
@@ -61,7 +61,7 @@ dependency, cache, and VCS directories.
 | Child plan found | A parent `WORK-` item has a child implementation plan. |
 | PRs planned | A child plan declares PR slices without linked executable tests. |
 | Tests linked | At least one child `PR-` has entries in the test-link file. |
-| Code checks and review passed | A `.sdlc/code-assessments.yaml` entry matching the current plan records `Pass` for the child plan and `WORK-*` item. |
+| Code checks and review passed | A `code_assessment` entry in `.sdlc/delivery-records.yaml` matches the current plan and records `Pass` for the child plan and `WORK-*` item. |
 | Approved for the next integration step | A matching `code_slice.approved` record approves the child plan for handoff. It does not complete its parent feature. |
 | Child work reviewed or approved for the next step | Every discovered child slice passed its code assessment or was approved for handoff; the parent feature has no inferred completion state. |
 | Not yet broken down | A parent `WORK-` item has no child implementation plan. |
@@ -146,12 +146,15 @@ has no group. A change can contain one or more `PR-*` entries, but PRs are not s
 independently. Later groups are provisional, not promises. Existing Implementation-plan group
 declarations remain readable for older projects but are not the format for new plans.
 
-A completed group is recorded separately from full code assessment or human approval:
+A completed group is recorded separately from full code assessment or human approval. Both
+group checkpoints and code assessments use `.sdlc/delivery-records.yaml`; the `kind` field
+distinguishes them:
 
 ```yaml
 version: 1
-checkpoints:
-  - id: CHECK-WAVE-AUTH-BOUNDARY
+records:
+  - kind: wave_checkpoint
+    id: CHECK-WAVE-AUTH-BOUNDARY
     wave: WAVE-AUTH-BOUNDARY
     plan:
       path: docs/plan.md
@@ -187,8 +190,9 @@ A passing code assessment can be recorded without conflating it with human appro
 
 ```yaml
 version: 1
-assessments:
-  - id: ASSESS-CODE-AUTH-SIGNIN
+records:
+  - kind: code_assessment
+    id: ASSESS-CODE-AUTH-SIGNIN
     work_item: WORK-AUTH-SIGNIN
     plan:
       path: docs/plans/work_auth_signin.md
@@ -216,6 +220,10 @@ integration step” state additionally requires a `code_slice.approved` record t
 the current child implementation plan; it does not complete its parent feature.
 Legacy passing assessment records without a `learning` mapping remain valid and display
 `Not recorded in assessment`; the renderer does not invent a story from unrelated state.
+Legacy `.sdlc/artifact-paths.yaml`, `.sdlc/code-assessments.yaml`, and
+`.sdlc/wave-checkpoints.yaml` files remain readable. New work uses the consolidated files;
+load [state-file-migration.md](state-file-migration.md) only when migrating an existing
+project.
 
 ## Generate And Check
 

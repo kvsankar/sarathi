@@ -140,8 +140,8 @@ A fresh agent context should:
 
 1. Read the repository bootstrap file, if present.
 2. Read the current-work summary and relevant file paths in `.sdlc/wip.md`.
-3. Read `.sdlc/process-decisions.yaml`, `.sdlc/approvals.yaml`,
-   `.sdlc/code-assessments.yaml`, and `.sdlc/wave-checkpoints.yaml` when present.
+3. Read `.sdlc/process-decisions.yaml`, `.sdlc/approvals.yaml`, and
+   `.sdlc/delivery-records.yaml` when present.
 4. Load the selected command prompt and triggered docs using `docs/progressive-disclosure.md`.
 5. Re-open the source document paths named in WIP before editing or judging them.
 6. Check feedback, blockers, and coordinated-work limits when they are recorded.
