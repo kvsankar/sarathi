@@ -104,7 +104,8 @@ Retry launchers when needed. For child documents, use checker feature/parent opt
 those results as the check pass for one assessment cycle under
 `prompts/design-assess.prompt.md`; do not rerun unchanged checks. This embedded run is the
 official assessment for the current revision and owns its scope-appropriate assessment
-report. Apply safe in-scope findings once, then run one focused recheck/re-review. If a fix
+report. Apply safe in-scope findings once using the correction-propagation rule in
+`docs/review-verification-checklist.md`, then run one focused recheck/re-review. If a fix
 requires a material revision, stop instead of changing accepted intent. Hand off the current
 verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
 

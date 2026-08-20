@@ -16,6 +16,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
   missing fixes open without creating another report or ledger.
 - Re-review only reported fixes after correction, repeat that check for incomplete fixes,
   and run another full review only after a material change.
+- Before re-review, sweep relevant documents and code for other occurrences of corrected
+  statements or behavior and confirm every intended addition is present.
 
 ## 0.8.0 - 2026-08-20
 

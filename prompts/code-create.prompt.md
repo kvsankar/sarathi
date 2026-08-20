@@ -85,7 +85,8 @@ requires it.
 Do not run live production deployment or checks without explicit user approval. Report
 unavailable checks and remaining risk rather than treating them as passed.
 
-Run cleanup then simplify. Remove debug leftovers, dead code, stale comments, brittle or
+Run cleanup then simplify, using the correction-propagation rule in
+`docs/review-verification-checklist.md` for review fixes. Remove debug leftovers, dead code, stale comments, brittle or
 theatrical tests/checks, misleading docs, and unjustified abstractions within scope. Rerun
 affected checks.
 

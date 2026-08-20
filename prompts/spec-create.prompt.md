@@ -109,7 +109,7 @@ python checkers/check_spec.py <spec-path> --json
 
 Retry launchers when needed. Use that result as the check pass for one assessment cycle under `prompts/spec-assess.prompt.md`; do not rerun unchanged checks.
 This embedded run is the official assessment for the current revision and owns its scope-appropriate assessment report.
-Apply safe in-scope findings once and run one focused recheck/re-review. If a fix requires a material revision, stop instead of changing accepted intent.
+Apply safe in-scope findings once, use the correction-propagation rule in `docs/review-verification-checklist.md`, and run one focused recheck/re-review. If a fix requires a material revision, stop instead of changing accepted intent.
 Hand off the current verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
 
 Update `.sdlc/wip.md` with the path, machine status, checks, assumptions, blockers, and next action.

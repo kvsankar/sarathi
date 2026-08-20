@@ -38,6 +38,12 @@ deletion itself is the required result, and a generic passing suite does not pro
 specific correction landed. A partial or missing correction remains an open finding. Do not
 create a separate closure report or ledger.
 
+Before asking for re-review, search the relevant documents and code for other places with
+the same outdated statement or behavior. Update every place that should change, including
+affected comments, fixtures, examples, and user documentation. Confirm that intended new
+content is present where it belongs. The reviewer checks this sweep while checking the fix;
+it does not require another report, state file, or checker.
+
 When a create command embeds an assessment, its checker output is the check pass for one
 assessment cycle. That run is the official assessment for the resulting document revision
 and owns the scope-appropriate assessment report. Apply one safe, in-scope fix set and run
