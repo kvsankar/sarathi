@@ -50,6 +50,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Keep Security and Resilience Extra Checks concise: test credible abuse through changed
   enforcement boundaries, force material failure and recovery paths, and state remaining
   risk without adding a stage or dedicated guidance artifact.
+- Prefer reproducible property-based or fuzz testing when example cases cannot credibly
+  cover a parser, decoder, protocol handler, or highly variable untrusted-input boundary.
 - Remove prose substring tests that pinned policy wording without proving agent behavior.
   Retain tests for executable checkers, parsers, renderers, installers, metadata, links, and
   runtime instruction budgets.

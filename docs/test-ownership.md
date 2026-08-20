@@ -34,6 +34,10 @@ unchanged legacy behavior—name the reason and run the closest repeatable valid
 use an exception for ordinary feature behavior, defect fixes, contracts, validation,
 security rules, or error behavior.
 
+For parsers, decoders, protocol handlers, or highly variable untrusted input, use
+property-based or fuzz testing when example cases cannot credibly cover the input space;
+retain the seed or minimized failing input so failures are reproducible.
+
 ## Ownership Chain
 
 | Scope | Owns test intent | Typical executable evidence implemented by leaves |
