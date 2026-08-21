@@ -285,15 +285,16 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
-            "workflow_state_valid": "Current-work and project-choice values are valid",
+            "workflow_state_valid": "Saved work status and project settings are valid",
             "id_format_slug_only": "Identifiers use the supported format",
             "no_duplicates": "No duplicate identifiers",
-            "no_orphan_refs": "All references resolve",
+            "no_orphan_refs": "Every referenced ID exists",
             "uc_at_coverage_100": "User outcomes have acceptance coverage",
             "fr_at_coverage_100": "Requirements have acceptance coverage",
             "required_approvals_present": "Required approvals are current",
             "human_first_structure": (
-                "Plain-language opening and traceability are present"
+                "The document starts with a plain summary and ends with links "
+                "between related items"
             ),
             "sections_present": "Required sections are present",
         }

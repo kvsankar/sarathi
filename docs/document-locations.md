@@ -47,10 +47,15 @@ reports use the document's work slug, such as `auth-signin.spec-review.md`; asse
 `auth-signin.<stage>-assessment.md` with separate **Check Pass** and **Review Pass** sections.
 For a child, use that child's document area, not a repository-wide review folder.
 
-Each report follows [result-reporting.md](result-reporting.md): one plain-language result,
-categorized findings, interpreted evidence, practical next actions, and then the exact
-internal verdict as process status. It also states the target paths and revisions or hashes
-when available, scope, commands, independence limits, simplifications considered, and open
-follow-ups. It is an evidence record, not approval or proof of stakeholder feedback. Update
-the current report for the reviewed revision; link earlier reports when history matters
-instead of duplicating their contents.
+Each report follows [result-reporting.md](result-reporting.md) and states:
+
+- one plain-language result;
+- important findings and practical next actions;
+- checks run and what they could not prove;
+- the reviewed files, their revision or hash when available, scope, and commands;
+- whether the reviewer was independent;
+- simplifications considered and unresolved items; and
+- the exact internal verdict.
+
+A report is not approval or proof of stakeholder feedback. Update the current report for the
+reviewed revision. Link older reports when history matters instead of copying them.

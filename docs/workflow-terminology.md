@@ -35,9 +35,9 @@ exists.
 
 The level at which the work target is being handled:
 
-- `product/system`: a broad product or system boundary;
+- `product/system`: a broad product or system;
 - `feature/component`: one coherent capability or subsystem;
-- `slice/change`: the smallest bounded implementation or evidence change.
+- `slice/change`: the smallest code change, experiment, inspection, or decision.
 
 Scope belongs to the work target, not to the command. The same `design-review`
 command can review a product/system design or a slice/change design.
@@ -65,15 +65,9 @@ such as `$sarathi-code-assess`.
 
 ### Work item
 
-A planned child with a `WORK-*` identifier allocated by a Breakdown plan. A
+A planned child with a `WORK-*` identifier created by a Breakdown plan. A
 work item may be the current work target, but many work targets have no
 `WORK-*` ID. Do not invent a work item merely to name ordinary work.
-
-### Artifact
-
-A document, code change, report, ledger, or other evidence produced or examined
-for the work target. An artifact is an output or record, not the work target
-itself.
 
 ### Current activity
 
@@ -82,15 +76,14 @@ language; use the command as a compact machine or invocation name.
 
 ### Workflow status
 
-A projection of recorded work and process state. `workflow-status` is a
-projection command, not a delivery stage or action, and it never advances a
-gate.
+A read-only view of recorded work and process state. `workflow-status` is not a
+delivery stage or action, and it never approves work or moves it forward.
 
 ## One Target Across Commands
 
 The example target may use `spec-create`, `spec-assess`, `design-create`,
-`design-review`, `plan-create`, `code-create`, and `code-assess` as evidence and
-feedback require. This does not mean every target must execute every command or
+`design-review`, `plan-create`, `code-create`, and `code-assess` as results and
+feedback require. This does not mean every target must run every command or
 create every document. The stage and action can change while the work target and
 scope remain stable.
 

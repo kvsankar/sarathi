@@ -13,21 +13,22 @@ Assess the target design using two separate passes. Load
 
 ## Run
 
-Run full passes once per revision. After local finding corrections, rerun affected checks
-and focus review on those findings unless requirements or scope changed.
+Run full passes once per revision. After issues are fixed, rerun affected checks and review
+only those fixes. If a fix is incomplete, leave the issue open. After it is corrected, check
+only that fix again. Repeat the full assessment only when a fix materially changes the document.
 
-1. **Check pass**: execute `prompts/design-verify.prompt.md` inline, including the spec
-   checker, and preserve commands, IDs, metrics, failures, and approval evidence only.
+1. **Check pass**: run `prompts/design-verify.prompt.md` here, including the spec checker.
+   Keep commands, IDs, results, failures, and approval records separate from quality judgment.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/design-review.prompt.md` using the design plus check results.
-   Judge delivery assurance and additional checks, whether the requirements are sufficient,
-   contracts, testability, decisions, risks, and readiness.
+   Ask whether the requirements are sufficient and whether contracts, tests, decisions, and
+   risks are clear enough to continue. Apply only the extra checks this work needs.
 
 If sub-agents are unavailable, disclose that the review was not independent and keep the
-passes separate. A failed or unfit spec blocks the design verdict.
+passes separate. Failed spec checks or an unfit spec block the verdict.
 
-Report one plain-language assessment result, the main engineering consequence, categorized
-findings, interpreted check results, and impact-ranked actions. Preserve
+State the result first. List problems by severity, explain the check results, and rank next
+actions by impact. Preserve
 `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
 state; follow `docs/result-reporting.md` for chat.
 

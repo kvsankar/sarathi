@@ -420,7 +420,8 @@ def main() -> int:
                         "approval_id": None,
                         "status": None,
                         "issues": [
-                            "Approved UI intent artifact is required by the spec"
+                            "The spec requires an approved UI mockup or prototype, "
+                            "but no file was listed"
                         ],
                     }
                 )
@@ -501,10 +502,10 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
-            "workflow_state_valid": "Current-work and project-choice values are valid",
+            "workflow_state_valid": "Saved work status and project settings are valid",
             "id_format_slug_only": "Identifiers use the supported format",
             "no_duplicates": "No duplicate identifiers",
-            "no_orphan_refs": "All references resolve",
+            "no_orphan_refs": "Every referenced ID exists",
             "comp_req_coverage_100": "Components link to requirements",
             "comp_test_coverage_100": "Components link to tests",
             "test_obligations_declared": "Required tests are described",
@@ -513,7 +514,8 @@ def main() -> int:
             "no_dependency_cycles": "No dependency cycles",
             "required_approvals_present": "Required approvals are current",
             "human_first_structure": (
-                "Plain-language opening and traceability are present"
+                "The document starts with a plain summary and ends with links "
+                "between related items"
             ),
             "sections_present": "Required sections are present",
         }

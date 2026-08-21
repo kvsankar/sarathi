@@ -183,9 +183,9 @@ Extra Checks: external integration
         "modules": "external integration",
     }
     assert "Delivery choices" in rendered
-    assert "Verification depth (assurance profile): Standard." in rendered
-    assert "Approval approach (approval policy): Automatic eligible gates." in rendered
-    assert "Intended result (work outcome): Decision/evidence." in rendered
+    assert "Delivery path: Standard." in rendered
+    assert "Approvals: Automatic eligible gates." in rendered
+    assert "Intended result: Decision/evidence." in rendered
 
 
 def test_renderer_prefers_source_documents_then_project_choices_over_legacy_wip(
@@ -282,7 +282,7 @@ Feedback Status: waiting
         "Feedback Status",
     }
     assert "Current-work or project-choice values need correction." in rendered
-    assert "expected a stage-action command such as plan-review" in rendered
+    assert "expected a command such as plan-review" in rendered
 
 
 def test_renderer_leads_with_recorded_plain_language_status(tmp_path):
@@ -311,7 +311,9 @@ Goal: Release the reviewed screen safely.
     assert "Status result: Not ready" in rendered
     assert "The release build still exposes an internal review screen." in rendered
     assert "This is a project-authored status snapshot" in rendered
-    assert rendered.index("Status result: Not ready") < rendered.index("Process state")
+    assert rendered.index("Status result: Not ready") < rendered.index(
+        "Delivery progress"
+    )
 
 
 def test_renderer_does_not_infer_a_green_status_when_none_is_recorded(tmp_path):
@@ -487,7 +489,7 @@ Current Gate: human-review
     )
 
     assert rendered.index("Status result: Cannot assess yet") < rendered.index(
-        "Documents and delivery evidence"
+        "Documents, code, and reviews"
     )
     assert "Target persistence and API work has not started." in rendered
     assert "Renderer extraction: complete." in rendered
@@ -887,7 +889,7 @@ Active Slices: PR-LEAF-BOUNDARY
     assert model["summary"]["pr_slices"] == 2
     assert waves[0]["member_states"][0]["state"] == "in-progress"
     assert waves[1]["member_states"][0]["state"] == "not-started"
-    assert "Documents and delivery evidence" in rendered
+    assert "Documents, code, and reviews" in rendered
     assert "Slice workflow" in rendered
     assert "No valid decomposition discovered" not in rendered
     assert "WAVE-LEAF-BOUNDARY" in rendered
@@ -966,7 +968,7 @@ def test_decomposition_expands_into_child_plan_prs_and_evidence(tmp_path):
         {
             "id": "PR-ALPHA-ONE",
             "state": "evidence",
-            "detail": "1 mapped tests",
+            "detail": "1 linked tests",
         }
     ]
     assert sequence["waves"][1]["active"] is True
@@ -1151,7 +1153,10 @@ Implementation Readiness: Code-ready
 
     assert parent["state"] == "children-assessed"
     assert parent["children"][0]["state"] == "slice-handed-off"
-    assert "Child work reviewed or approved for the next step" in rendered
+    assert (
+        "Child work passed checks and review or was approved for the next step"
+        in rendered
+    )
     assert "Approved for the next integration step" in rendered
     assert ">Completed<" not in rendered
 
@@ -1295,7 +1300,7 @@ checkpoints:
     )
 
     assert model["summary"]["completed_waves"] == 0
-    assert "wave checkpoint plan hash is stale" in rendered
+    assert "work-group checkpoint is for an earlier plan version" in rendered
 
 
 def test_malformed_wave_declaration_stays_visible_for_repair(tmp_path):
@@ -1421,8 +1426,8 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert "<script> - Sarathi" not in first
     assert "Example &lt;script&gt;" in first
     assert "Project-reported engineering status" in first
-    assert "Process state" in first
-    assert "Documents and delivery evidence" in first
+    assert "Delivery progress" in first
+    assert "Documents, code, and reviews" in first
     assert "WORK-DEMO-ALPHA" in first
     assert 'aria-label="Workflow details"' in first
     assert "validate the public API boundary" in first
@@ -1435,12 +1440,12 @@ def test_output_is_deterministic_escaped_and_checkable(tmp_path, monkeypatch):
     assert '<dialog id="approval-details"' in first
     assert 'id="approval-details-trigger"' in first
     assert "APR-SPEC covers an earlier version" in first
-    assert "review the current document and approve this version" in first
+    assert "Review and approve the current version" in first
     assert 'class="operational-details"' not in first
     assert "Workflow and learning details" not in first
     assert ">Work</h2>" in first
-    assert "mapped test" in first
-    assert "Evidence mapped" in first
+    assert "linked test" in first
+    assert "Tests linked" in first
     assert 'class="waves-view"' not in first
     assert re.search(
         r'<details class="tree-branch"[^>]*data-state="evidence"[^>]* open>', first

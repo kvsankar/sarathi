@@ -10,10 +10,9 @@ implemented is usually a slice/change, but a sufficiently small feature may be i
 directly. Its PR may implement production code and executable tests whose approved
 requirements live in an earlier document.
 
-Test code is code. Approved requirements plus a specific Implementation plan authorize
-implementation. Earlier `AT-`, `JT-`, and any design `TEST-` obligations must survive
-allocation and become executable in PRs or explicitly justified non-code
-verification.
+Test code is code. Approved requirements plus a specific Implementation plan authorize it.
+Every earlier `AT-`, `JT-`, and design `TEST-` item must be assigned to a PR and become an
+executable check, unless the plan gives a clear reason to verify it without code.
 
 ## Test-First Implementation
 
@@ -28,11 +27,10 @@ The failing result matters: it shows that the test can detect the missing or inc
 behavior. A test added only after the implementation is useful regression coverage, but it
 is not evidence of test-first development.
 
-When a failing automated test is not a sensible driver—such as docs or formatting only,
-generated output, build/deployment configuration validation, or characterization of
-unchanged legacy behavior—name the reason and run the closest repeatable validation. Do not
-use an exception for ordinary feature behavior, defect fixes, contracts, validation,
-security rules, or error behavior.
+Sometimes a failing automated test is not a useful starting point, such as for prose,
+formatting, generated output, build configuration, or recording unchanged legacy behavior.
+State why and run the closest repeatable check. This exception does not apply to normal
+feature behavior, defect fixes, contracts, validation, security rules, or error behavior.
 
 For parsers, decoders, protocol handlers, or highly variable untrusted input, use
 property-based or fuzz testing when example cases cannot credibly cover the input space;
@@ -42,50 +40,50 @@ When a change affects shared state or concurrent work, test the relevant interle
 sustained contention at the narrowest realistic boundary and verify invariants such as no
 lost or duplicate work, deadlock, ordering corruption, or broken idempotency.
 
-## Ownership Chain
+## What Each Scope Defines
 
-| Scope | Owns test intent | Typical executable evidence implemented by leaves |
+| Scope | Defines | Tests normally run for that scope |
 | --- | --- | --- |
-| Product/system | Representative product `AT-`, cross-feature `JT-`, system NFR and operational acceptance intent. | System acceptance, cross-feature journey/e2e/API workflow, deployment smoke, and system quality-attribute tests. |
-| Feature/component | Specific feature `AT-`/`JT-` requirements and design obligations for feature composition and boundaries. | Feature acceptance, component integration, contract, API workflow, and feature journey tests. |
-| Slice/change | Exact behavior-delta `AT-`/`JT-` intent and local design obligations. | Slice acceptance, unit, component, contract, adapter/infrastructure integration, and regression tests. |
+| Product/system | Representative product `AT-`, cross-feature `JT-`, system NFR, and operational acceptance criteria. | System acceptance, cross-feature journeys, API workflows, deployment smoke tests, and system quality tests. |
+| Feature/component | Feature `AT-` and `JT-` requirements plus design tests for how the feature's parts work together. | Feature acceptance, component integration, contracts, API workflows, and feature journeys. |
+| Slice/change | The exact changed behavior and its local design tests. | Acceptance, unit, component, contract, adapter or infrastructure integration, and regression tests. |
 
-An `AT-` is an externally observable acceptance criterion, not automatically an integration
-test. Design chooses the executable level and records a `TEST-` obligation and pass/fail check when
-needed. Plan assigns that obligation to a child `WORK-` item or `PR-`; `code-create`
-implements it in the assigned change.
+An `AT-` is an observable acceptance criterion, not automatically an integration test. The
+design chooses the right test level and records a `TEST-` item that says what counts as pass or fail when
+needed. The plan assigns that test to a child `WORK-` item or `PR-`; `code-create` implements
+it in that change.
 
 ## Integration Placement
 
-Do not defer all integration to one final phase. Allocate integration evidence at the
-narrowest level that can prove the behavior:
+Do not leave all integration until the end. Run integration tests at the smallest level that
+can prove the behavior:
 
 1. Boundary-facing slice PRs add contract and focused adapter/infrastructure integration
    tests as the boundary is introduced.
-2. Feature composition leaves verify collaboration among that feature's slices and execute
-   assigned feature `AT-`/`JT-` obligations.
-3. Product composition leaves verify cross-feature journeys, system acceptance, deployment
-   behavior, and system quality attributes once their dependencies exist.
+2. Feature-level changes test how that feature's slices work together and run assigned
+   feature `AT-` and `JT-` checks.
+3. Product-level changes test cross-feature journeys, system acceptance, deployment, and
+   system quality once their dependencies exist.
 
-A Breakdown plan creates an explicit integration/acceptance `WORK-` item only when an
-obligation spans multiple children and cannot be honestly owned by one existing child. That
+A Breakdown plan creates an integration or acceptance `WORK-` item only when a required test
+spans several children and does not belong to one of them. That
 work item follows [work-decomposition.md](work-decomposition.md): name its child scope and
 minimum required document, normally one specific Implementation plan. Do not create a child
 spec or design unless a named uncertainty requires one.
 
-## Planning And Evidence
+## Assigning And Running Tests
 
-Every parent `AT-`, `JT-`, and any design `TEST-` obligation must be mapped to one or more child
-work items, implementation PRs, or justified non-code verification. A child implementation
-plan must preserve parent IDs in its Coverage Map and assign concrete test levels,
-environments, fixtures/contracts, and pass/fail checks.
+Every parent `AT-`, `JT-`, and design `TEST-` item must be assigned to one or more child work
+items, PRs, or a justified non-code check. A child Implementation plan keeps the parent IDs
+in its Coverage Map and states the test level, environment, fixtures or contracts, and what
+counts as pass or fail.
 
 Keep these states distinct:
 
-- **Declared**: the spec or design names the obligation.
+- **Declared**: the spec or design names the required test.
 - **Allocated**: a Breakdown or Implementation plan assigns an owner.
-- **Implemented**: executable test code exists and its requirement link names the source obligation.
-- **Executed**: a command or environment run produced evidence.
+- **Implemented**: executable test code exists and links to the source requirement.
+- **Executed**: the test was run and its result was recorded.
 - **Passing/blocked**: observed results establish the current outcome.
 
 A project may maintain a requirement-to-test inventory for audit or assurance needs. It does

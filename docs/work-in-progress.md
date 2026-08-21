@@ -3,7 +3,8 @@
 Sarathi should keep a short resumable note in `.sdlc/wip.md`. It lets a fresh agent context
 continue without depending on chat history.
 
-`wip.md` is not an approval record, a source of product truth, or proof that checks passed.
+`wip.md` is not an approval record, a source of truth about the product or work, or proof that
+checks passed.
 Specs, designs, plans, code, tests, `.sdlc/process-decisions.yaml`, and
 `.sdlc/approvals.yaml` remain the source records. Treat `.sdlc/wip.md` as a current
 navigation note that can become stale.
@@ -58,10 +59,11 @@ internal verdicts, IDs, hashes, and checker fields out of the response unless th
 or the detail changes what can happen next. If `complete` could mean either a prerequisite
 or the broader feature, state both scopes explicitly.
 
-## Default Shape
+## Default Content
 
-New files use this section order. Older WIP files remain readable and should be converted
-when they are materially updated:
+New files use this section order. `Status Result` is the overall readiness value,
+`Status Summary` explains that value, and `Working Result` says what is already working.
+Older WIP files remain readable and should be converted when they are materially updated:
 
 ```markdown
 # SDLC Work In Progress
@@ -101,7 +103,7 @@ Next Action: one executable action
 Expected Result: what the current change should demonstrate
 Feedback From: person, real system, environment, or objective result that can judge it
 Feedback Status: received | requested | unavailable | not-applicable
-Feedback Evidence: path, review, observation, or concise remaining-risk note
+Feedback Evidence: path, review, observation, or short note about remaining risk
 What Changed: result that changed or confirmed the plan
 Documents To Update: earlier documents that need updating and their paths
 Stop Conditions: conditions that pause or cancel active parallel work
@@ -122,11 +124,10 @@ work outcome, and default extra checks belong in `.sdlc/process-decisions.yaml`.
 change-specific choice belongs in its spec or plan. Do not copy either into a new WIP note;
 the note points to the relevant files. This avoids stale competing values.
 
-The renderer also accepts the former section headings and fields, including the expanded
-product snapshot, copied delivery choices, and a combined value such as `Current Stage:
+The renderer also accepts older section headings and fields, including `Current Stage:
 code-create`. New files use `Working Result`, `Relevant Files`, `Feedback`, `Work Target`,
-`Work Scope`, and `Current Command`; stage and action are derived from the command rather
-than stored as duplicate state. See `docs/workflow-terminology.md`.
+`Work Scope`, and `Current Command`. The command supplies the stage and action, so do not
+store them again. See `docs/workflow-terminology.md`.
 
 The spec, design, plan, and code checkers validate only the machine-read values in this note
 and `.sdlc/process-decisions.yaml`. They reject malformed commands, enumerated values, IDs,
@@ -134,7 +135,7 @@ limits, and YAML shapes. Optional fields may be absent, legacy field names remai
 and free-form summaries are not judged by a checker. The status page shows the same concrete
 issues rather than silently treating an invalid value as missing.
 
-## Fresh Context Resume Procedure
+## Resuming In A Fresh Agent Context
 
 A fresh agent context should:
 

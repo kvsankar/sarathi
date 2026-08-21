@@ -87,7 +87,7 @@ def validate_wip(path: Path) -> list[dict[str, Any]]:
                         ".sdlc/wip.md",
                         field,
                         value,
-                        "expected a stage-action command such as plan-review",
+                        "expected a command such as plan-review",
                     )
                 )
     for field in ("Current Work Group", "Active Learning Wave"):
@@ -149,7 +149,9 @@ def mapping(value: Any, path: str, field: str, issues: list[dict[str, Any]]) -> 
     if value is None:
         return {}
     if not isinstance(value, dict):
-        issues.append(issue(path, field, value, "expected a mapping"))
+        issues.append(
+            issue(path, field, value, "expected a YAML section with named fields")
+        )
         return {}
     return value
 
@@ -185,7 +187,14 @@ def validate_process_decisions(path: Path) -> list[dict[str, Any]]:
     except (OSError, ValueError) as exc:
         return [issue(display_path, "file", None, str(exc))]
     if not isinstance(loaded, dict):
-        return [issue(display_path, "document", loaded, "expected a mapping")]
+        return [
+            issue(
+                display_path,
+                "document",
+                loaded,
+                "expected a YAML section with named fields",
+            )
+        ]
 
     issues: list[dict[str, Any]] = []
     project = mapping(

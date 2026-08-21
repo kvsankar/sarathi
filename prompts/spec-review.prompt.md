@@ -16,24 +16,25 @@ cases and supplementary requirements need detailed review.
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and actively seek counterexamples. Passing automatic checks is useful evidence,
 not proof that the requirements are good.
-For corrected findings, focus on those findings and affected boundaries; restart the full
-review only when requirements or scope changed.
+After issues are fixed, review only those fixes. If a fix is incomplete, leave the issue open.
+After it is corrected, check only that fix again. Do not repeat the full review unless a fix
+materially changes the document.
+Apply the correction-closure procedure in `docs/review-verification-checklist.md`.
 
 ## Judge
 
-After the plain-language review result, report concrete problems. Check that the opening page lets an engineer explain the
-problem, affected users, required behavior, non-goals, success, and important failures.
-Then check that each requirement is observable and testable, external contracts are
-credible, links to later work resolve, and stronger checks are limited to real risks.
+State the result first, then report concrete problems. Ask: Can an engineer explain the
+problem, affected users, required behavior, non-goals, success, and important failures from
+the opening page? Is each requirement observable and testable? Are external contracts clear?
+Do links to later work resolve? Are stronger checks limited to real risks?
 For a Decision/evidence outcome, check the stated question, decision owner, evidence method,
 boundaries, stop condition or timebox, and decision/next action instead of product readiness.
 
-Check the requirements derivation, not merely the presence of sections: stakeholder needs
-must justify features; use cases must explain the main behavior plus meaningful alternate
-and failure paths; functional and supplementary requirements must make the behavior and
-qualities precise; acceptance tests must prove individual outcomes; journeys must cover
-important ordered stories; and traceability must connect the chain without replacing its
-meaning. Missing or cosmetic links require `Needs rework`.
+Check meaning, not merely section names. Do user needs justify the features? Do use cases
+cover the main behavior and important failure paths? Are requirements precise? Do acceptance
+tests prove each outcome? Do journeys cover important end-to-end stories? Do the links
+connect these parts without replacing their explanation? Missing or cosmetic links require
+`Needs rework`.
 
 Start with simplification: identify requirements, roles, qualities, documents, or future
 behaviors that can be deleted, deferred, or proven by existing evidence. A spec with every
@@ -44,8 +45,8 @@ traceability and return
 `Needs rework`. If an engineer must decode IDs to understand the product, rewrite it in
 plain technical language even when automatic checks pass.
 
-Report one plain-language result, categorized findings, interpreted evidence, what can be
-deleted, deferred, or proved by existing evidence, and impact-ranked fixes. Preserve
+Report the result first. List problems by severity, explain what the checks prove, say what
+can be deleted or deferred, and rank fixes by impact. Preserve
 `Pass | Pass-with-fixes | Needs rework` in the saved report and internal state; follow
 `docs/result-reporting.md` for chat. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `spec-review.md` only for

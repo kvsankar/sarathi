@@ -8,6 +8,24 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.9.0 - 2026-08-21
+
+### Changed
+
+- Limit required earlier-document revisions to wrong or incomplete accepted obligations,
+  keep code defects as fixes against correct documents, and block only dependent work.
+- Require positive, per-finding closure evidence for claimed corrections and keep partial or
+  missing fixes open without creating another report or ledger.
+- Re-review only reported fixes after correction, repeat that check for incomplete fixes,
+  and run another full review only after a material change.
+- Before re-review, sweep relevant documents and code for other occurrences of corrected
+  statements or behavior and confirm every intended addition is present.
+- Use lighter evidence while work is disposable and isolated, then increase assurance when
+  it reaches real data, shared writes, multiple users, access control, durable audit meaning,
+  irreversible migration, or production deployment.
+- Rewrite documentation, prompts, status output, checker messages, and installer text in
+  simpler language without changing machine contracts, workflow policy, or safety rules.
+
 ## 0.8.0 - 2026-08-20
 
 ### Changed

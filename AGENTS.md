@@ -2,7 +2,7 @@
 
 Guidance for coding agents maintaining this repository.
 
-## Canonical Sources
+## Source Files
 
 - `docs/`: shared process policy and user-facing guides.
 - `prompts/`: canonical `<stage>-<action>` command prompts.
@@ -16,7 +16,7 @@ Do not treat `.github` as canonical source. `.github/prompts` is only a project-
 GitHub Copilot installation target. Installers assemble the `sarathi` bundle from canonical
 prompts, docs, checkers, and skill-specific files.
 
-## Repository Maintenance Is Not Self-Hosted
+## Do Not Run Sarathi On Itself
 
 Do not run Sarathi's delivery workflow on this repository for ordinary maintenance. Do not
 create or maintain root `.sdlc/` specs, plans, approvals, decisions, or WIP records here.
@@ -24,15 +24,15 @@ Use the user's request, the working diff, focused tests, independent review when
 `CHANGELOG.md` as maintenance evidence. Only run a self-dogfooding experiment when the user
 asks, and keep its temporary state untracked.
 
-## Product Policy Lives Elsewhere
+## Where Product Rules Belong
 
-This file governs repository maintenance, not repositories that use Sarathi. Do not restate
-runtime policy here.
+This file governs maintenance of Sarathi itself. It does not define how Sarathi behaves in
+other repositories. Do not copy those product rules here.
 
-- `skills/sarathi/SKILL.md` contains only always-loaded routing and operating constraints.
+- `skills/sarathi/SKILL.md` contains only the short rules needed on every invocation.
 - `prompts/<stage>-<action>.prompt.md` owns command behavior.
 - [docs/progressive-disclosure.md](docs/progressive-disclosure.md) maps every shared reference
-  and its loading trigger.
+  and when to read it.
 - [docs/enduring-model.md](docs/enduring-model.md) owns the delivery model.
 - [docs/approval-gates.md](docs/approval-gates.md) owns approvals and YOLO.
 - [docs/review-verification-checklist.md](docs/review-verification-checklist.md) owns check and
@@ -40,8 +40,8 @@ runtime policy here.
 - [docs/process-maintenance.md](docs/process-maintenance.md) owns process-editing rules.
 
 When changing process behavior, edit the owning source and replace other copies with links.
-Keep command prompts local and concise; put shared judgment in one triggered reference and
-deterministic rules in checkers.
+Keep command prompts short and specific. Put shared guidance in one document that is read
+when needed. Put rules that a program can check in checkers.
 
 ## Maintenance Rules
 
@@ -52,10 +52,10 @@ deterministic rules in checkers.
 - Use `apply_patch` for manual edits. Preserve unrelated user changes in a dirty worktree.
 - Keep `skills/sarathi` limited to skill-specific files. Installers assemble canonical docs,
   prompts, and checkers into installed bundles.
-- Keep `sarathi` as the only implicitly invocable skill. Generated command skills remain
-  explicit, agent-neutral, and named `sarathi-<stage>-<action>`.
+- Only `sarathi` may start without being named. Generated command skills must be named
+  explicitly, work across agent hosts, and use `sarathi-<stage>-<action>`.
 - Update `CHANGELOG.md` for user-visible process, checker, installer, or skill changes.
-- Keep deterministic output free of timestamps, randomness, network assets, and
+- Keep repeatable output free of timestamps, randomness, network assets, and
   environment-dependent content unless its schema requires them.
 - Do not infer passing tests, approval, feedback, merge state, or production readiness from
   checker or Git activity.

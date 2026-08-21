@@ -1,7 +1,7 @@
 # Feedback And Learning
 
-Sarathi is iterative. Specs, designs, and plans record the current agreed requirements and
-decisions. They are not a one-way handoff chain, and approval does not freeze them.
+Sarathi expects plans to change when real results teach us something. Specs, designs, and
+plans record the current agreed requirements and decisions. Approval does not freeze them.
 
 ## Approval Meaning
 
@@ -18,7 +18,7 @@ An approval record proves only that the required fields are present and its save
 matches the current file. It does not prove that feedback occurred, that an approver
 represents end users, or that the document will remain correct after the next slice.
 
-## Planning feedback
+## Plan For Feedback
 
 For each change, answer three questions:
 
@@ -38,10 +38,10 @@ Record one feedback status when the change is complete:
 Never invent stakeholder feedback. Technical checks can support a decision, but they do not
 stand in for end-user or stakeholder judgment when the change needs it.
 
-For approved-prototype UI work, the prototype is inherited UI intent. Do not create another
-product-wide mock or respecify the complete feature before the first slice. Implement a
-prototype-matching UI slice, run its checks, and stop for stakeholder UI review. That review
-is mandatory after every completed UI slice before learning-dependent UI work continues.
+For UI work based on an approved prototype, use that prototype instead of creating another
+product-wide mock or rewriting the whole feature. Implement one UI change that matches the
+prototype, run its checks, and stop for stakeholder review. Review each completed UI change
+before starting UI work that depends on its result.
 
 ## Inspect And Adapt
 
@@ -51,7 +51,7 @@ Check the affected earlier documents and other active work:
 | Area | Ask |
 | --- | --- |
 | Spec | Did observed behavior or feedback change a need, acceptance criterion, non-goal, or constraint? |
-| Design | Did implementation or integration reveal a different boundary, tactic, interface, risk, or test obligation? |
+| Design | Did implementation or integration reveal a different interface, technical approach, risk, or required test? |
 | Plan | Should remaining slices be reordered, split, cancelled, combined, or newly created? |
 | Code and integration | Did the slice expose compatibility, migration, deployment, observability, or cross-slice work? |
 | Process | Did a checker, prompt, fixture, or evidence rule encourage waste or a false claim? |
@@ -59,10 +59,22 @@ Check the affected earlier documents and other active work:
 Record one outcome per affected area:
 
 - `no-change`: current accepted documents still fit; cite the evidence.
-- `revision-proposed`: a useful change is identified but does not block safe learning.
-- `revision-required`: revise and reassess the controlling document before affected work
+- `revision-proposed`: a useful document change is identified but does not block safe work.
+- `revision-required`: revise and reassess the document before affected work
   continues.
 - `feedback-required`: the next decision depends on feedback that has not arrived.
+
+Use `revision-required` only when the accepted document itself must change—for example, its
+behavior, scope, contract, acceptance criteria, architecture, required proof, or stated risk.
+If the document is right and the code is wrong, fix the code and record `no-change` for the
+document. Use `revision-proposed` for useful wording or consistency changes that do not
+change what should be built.
+
+A required revision names the exact document and requirements or decisions that must change.
+It also names the work that depends on them and must wait, and the work that may continue.
+Do not mark every earlier document for revision, stop unrelated fixes, or reassess an
+unchanged document merely because another document changed. Use `Blocked-upstream` only when
+the named problems prevent a safe, sound judgment of the requested work.
 
 Record the current state in `.sdlc/wip.md` using the fields from
 [work-in-progress.md](work-in-progress.md). When a slice receives a passing code assessment,
@@ -70,8 +82,8 @@ preserve its completed learning evidence in an assessment record that matches th
 plan so workflow status can show branch history without treating WIP or Git activity as
 proof.
 
-The agent performs this scan and may draft evidence-backed revisions. It must not silently
-redefine accepted product behavior, contracts, safety posture, or scope. Material revisions
+The agent performs this check and may draft revisions supported by observed results. It must
+not silently change accepted product behavior, contracts, safety rules, or scope. Material revisions
 go through the matching create/assess command and recorded approval policy. Small factual updates
 that preserve approved behavior may be included in the current change when they stay within
 the files expected to change.
@@ -101,17 +113,16 @@ Breakdown plans may schedule near-term child work in a `Work Groups` section. Ea
 a scheduled child belongs to exactly one group, while an unscheduled child has no group. An
 Implementation plan lists the PRs for one child; PRs do not belong to groups.
 
-The current group and active members live in `.sdlc/wip.md`. A completed checkpoint is a
-`wave_checkpoint` entry in `.sdlc/delivery-records.yaml` and binds the group ID and exact
-members to the current governing plan SHA-256. It records `status: completed`, completion time, feedback evidence, what the
-feedback changed, and earlier-document impact. This records the end of one group; it is not a
-full code assessment, human approval, merge claim, or authorization to begin the next group.
-Changing the plan or group membership makes the checkpoint stale.
+The current group and active members live in `.sdlc/wip.md`. When a group finishes, a
+`wave_checkpoint` entry in `.sdlc/delivery-records.yaml` records the group ID, exact members,
+current plan SHA-256, `status: completed`, completion time, feedback, and document changes.
+It marks only that group as finished. It is not a code assessment, human approval, merge
+claim, or permission to start the next group. Changing the plan or group membership makes
+the checkpoint stale.
 
-Batch checker execution, approval recording, status rendering, and ledger updates as one
-automatic bookkeeping step at the boundary. Do not introduce repeated user-facing pauses
-between them. Historical approvals remain history and must not be reported repeatedly as
-current invalid-record noise after an approved revision.
+Run checks, record approvals, update status, and update the records together as one automatic
+step. Do not pause the user between these bookkeeping actions. Keep old approvals as history,
+but do not repeatedly report them as current errors after a document is revised and approved.
 
 Unattended or end-to-end mode may cross a collaboration pause only when the recorded approval
 policy permits automatic approval for that local gate. It does not remove learning

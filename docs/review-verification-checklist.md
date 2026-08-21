@@ -12,19 +12,44 @@ Use two distinct passes:
 2. **Review pass**: a fresh reviewer sub-agent receives the document/code plus check results
    and independently judges it while looking for counterexamples.
 
-If sub-agents are unavailable, disclose that the review was not independent and keep the
-passes separate. A failed or unfit earlier document blocks the later verdict.
+If sub-agents are unavailable, say that the review was not independent and keep the two
+passes separate. An earlier document blocks the review only when its error prevents a sound
+judgment of the current work.
 
-After review findings are corrected locally, rerun affected checks and perform a focused
-re-review of those findings and changed boundaries. Do not restart a full independent review
-unless scope or controlling intent changed materially. Record which mode was used.
+After issues are fixed, review only those fixes. If a fix is incomplete, correct it and
+check it again. Do not repeat the full review unless a fix materially changes the
+requirements, scope, design, or implementation. Record whether the run was a full review or
+a check of fixes.
 
-When a create command embeds an assessment, its checker output is the check pass for one
-assessment cycle. That run is the official assessment for the resulting document revision
-and owns the scope-appropriate assessment report. Apply one safe, in-scope fix set and run
-one focused recheck/re-review, then hand off the current verdict. A later explicit assessment
-of unchanged document and dependency bytes reuses current checker evidence unless the user
-requests a fresh run; it updates the same report path rather than creating a second report.
+## Check The Fixes
+
+Do not accept a claim that an issue was fixed without checking the result. For each claimed
+fix:
+
+1. State the result that should now be present.
+2. Inspect or execute that result directly.
+3. Record `confirmed`, `partial`, or `missing` beside the issue in the existing review or
+   assessment report. Include the file location or command result.
+
+For a document correction, locate the intended new or replacement content where it belongs.
+For a code correction, inspect the resulting implementation and run the focused test or
+counterexample that demonstrates the behavior. Absence of old text is sufficient only when
+deletion itself is the required result, and a generic passing suite does not prove that a
+specific correction landed. A partial or missing correction remains open. A read-only review
+does not fix it. After the correction is made, check only that fix again. Do not create a
+separate closure report or ledger.
+
+Before asking for another review, search the relevant documents and code for other places with
+the same outdated statement or behavior. Update every place that should change, including
+affected comments, fixtures, examples, and user documentation. Confirm that intended new
+content is present where it belongs. The reviewer confirms this while checking the fix;
+it does not require another report, state file, or checker.
+
+If creation includes an assessment, save its checks and review in the normal assessment
+report. Apply one safe set of fixes within the current scope, rerun affected checks, and
+review only those fixes before reporting the current result. If the document and the files
+it depends on have not changed, reuse the existing check results unless the user asks to run
+them again. Update the same report instead of creating another one.
 
 ## Check Pass
 
@@ -49,8 +74,8 @@ Every reviewer judges:
 
 - approved requirements, scope/readiness, and whether earlier documents are sufficient;
 - selected delivery assurance profile and only the extra risk checks triggered by context;
-- clear pass/fail checks, real-boundary confidence, risks, and remaining uncertainty;
-- feedback/learning dependencies and changes to parent documents where applicable;
+- clear pass/fail checks, tests of important real systems, risks, and remaining uncertainty;
+- feedback that could change later work and any required parent-document changes;
 - simplicity using `docs/simplicity-first.md`.
 - whether the chosen verification is focused, meaningful, and proportionate to risk.
 - whether a specific unanswered question truly requires another document; recommending a
@@ -79,9 +104,9 @@ available action. Every non-blocked assessment reports:
 4. Top fixes ranked by impact.
 5. Internal verdict: `Pass | Pass-with-fixes | Needs rework`.
 
-Use `Blocked-upstream` when a controlling parent document must be corrected before later
-judgment. Explain which earlier document is blocking judgment and what must change. Code
-assessment also reports feedback and parent-document changes, and writes
-assessment and parallel-work ledgers only under the evidence rules in `docs/workflow-status.md`.
+Use `Blocked-upstream` only when an earlier document must be fixed before this review can be
+completed. Name the document, the exact problem, and the work it affects; unrelated fixes
+may continue. A code assessment also reports feedback and parent-document changes. It writes
+assessment and parallel-work records only under the rules in `docs/workflow-status.md`.
 Save the report in the matching document area's `reviews/` folder using
 `docs/document-locations.md`; do not leave review conclusions only in chat.

@@ -5,34 +5,34 @@ diagram, layers, vocabulary, or framework.
 
 ## Enduring Principles
 
-1. **Requirements and stakeholder concerns drive design.** Tie choices to accepted
-   behavior, quality attributes, constraints, risks, and operational realities.
-2. **Context before internals.** Establish the system boundary, actors, external systems,
-   ownership, trust, and consequential contracts before decomposing components.
-3. **Quality attributes are architectural drivers.** Address material performance,
+1. **Start from requirements and real concerns.** Tie choices to accepted behavior, quality
+   goals, constraints, risks, and operating needs.
+2. **Explain the outside before the inside.** Establish the users, external systems,
+   ownership, trust, and important contracts before splitting the system into components.
+3. **Design for the qualities that matter.** Address material performance,
    availability, security, privacy, usability, accessibility, observability,
    modifiability, deployability, interoperability, and cost with concrete trade-offs.
-4. **Appropriate views and proportionate detail.** Show only the structure, runtime, data,
+4. **Show only useful views and detail.** Show only the structure, runtime, data,
    deployment, and operational views needed to explain important decisions and risks.
 5. **High cohesion and low coupling.** Give components clear responsibilities, hide
    volatile details, depend on stable contracts, and avoid accidental dependency cycles.
-6. **Functional core, imperative shell.** Keep business rules, validation, policies, state
+6. **Separate decisions from external effects.** Keep business rules, validation, policies, state
    transitions, calculations, and other deterministic decisions separate from I/O,
    persistence, messaging, frameworks, clocks, randomness, navigation, and device or
-   network APIs. Keep the shell explicit and observable. Use an equivalent explicit
-   decision/effect boundary when this vocabulary does not fit the system.
-7. **Interface-first collaboration.** Treat APIs, events, schemas, protocols, errors,
+   network APIs. Keep the code that performs these external effects explicit and observable.
+   This is often called a functional core and imperative shell.
+7. **Design shared interfaces early.** Treat APIs, events, schemas, protocols, errors,
    ownership, compatibility, and service expectations as design work, not implementation
    detail.
-8. **Data and lifecycle awareness.** Make state ownership, identity, validation,
+8. **Explain data ownership and lifecycle.** Make state ownership, identity, validation,
    consistency, transactions, retention, migration, recovery, and privacy explicit where
    they affect correctness.
-9. **Testability and operability by design.** Explain how decisions, components, contracts,
+9. **Explain how the design will be tested and operated.** Explain how decisions, components, contracts,
    real external boundaries, failures, and quality attributes can be checked and observed.
 10. **Decisions carry rationale and consequences.** Compare realistic alternatives and
     record benefits, costs, reversibility, risks, and revisit conditions for material
     choices.
-11. **Least sufficient mechanism.** Prefer the smallest direct design that satisfies
+11. **Use the smallest design that works.** Prefer the smallest direct design that satisfies
     current needs. Apply single responsibility, information hiding, dependency inversion,
     useful DRY, and fail-safe behavior as review lenses—not reasons to manufacture layers,
     interfaces, or abstractions.
@@ -69,14 +69,14 @@ Do not select an architecture by fashion or name recognition. Select an approach
 its problem is present, record the expected benefit and cost, and keep the simplest viable
 alternative visible.
 
-- **Domain-Driven Design (DDD):** use when domain language, rules, invariants, ownership, or
-  model boundaries are genuinely complex. Define a ubiquitous language and bounded
-  contexts first; introduce aggregates, repositories, domain services, or domain events
-  only where they protect a concrete invariant or boundary. Do not wrap straightforward
-  CRUD in ceremonial domain layers.
+- **Domain-Driven Design (DDD):** use when business language, rules, ownership, or model
+  divisions are genuinely complex. First agree on terms and divide the business areas
+  clearly. Add aggregates, repositories, domain services, or domain events only when they
+  protect a specific rule. Do not wrap straightforward CRUD in domain layers merely to
+  follow the pattern.
 - **Clean Architecture or Hexagonal Architecture:** use when dependency direction and
   isolation from several real external adapters improve testability or expected change.
-  Add ports at actual seams and keep adapters thin. Do not create one interface and mapping
+  Add interfaces at real external connections and keep adapters thin. Do not create one interface and mapping
   layer per class merely to match a diagram.
 - **Behavior-Driven Development (BDD):** use examples and shared behavioral language when
   requirements or boundary behavior need clarification. Build on the spec's acceptance and
@@ -90,10 +90,10 @@ alternative visible.
   a simpler state model cannot provide. Record consistency, migration, replay, and
   operational costs explicitly.
 
-SOLID names can help reviewers discuss responsibility, substitutability, interface size,
-and dependency direction. They are heuristics, not a requirement to introduce interfaces,
+SOLID terms can help reviewers discuss responsibility, substitutability, interface size,
+and dependency direction. They are prompts for thought, not a requirement to introduce interfaces,
 factories, inheritance, or indirection without a concrete consumer or change pressure.
 
-For every material pattern choice, the design or ADR states the problem, adoption signal,
-chosen extent, rejected simpler option, consequences, verification approach, and condition
-for removing or revisiting it.
+For every important pattern choice, the design or ADR states the problem, why the pattern
+fits, how much of it will be used, the simpler option that was rejected, its consequences,
+how it will be checked, and when it should be removed or reconsidered.

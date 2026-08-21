@@ -5,23 +5,10 @@ agent: agent
 
 # Plan Verify
 
-## Workflow state
-
-At the start of this command, follow `docs/work-in-progress.md` and load
-`docs/result-reporting.md`: read `.sdlc/wip.md` if it exists, check important claims against
-the named files, and use it only as a resume note.
-Before any hard stop, blocker report, or completed command handoff, update `.sdlc/wip.md`
-with the current command, document paths, decisions/assumptions, check results,
-blockers/open questions, bootstrap status, and next recommended action. Do not store
-secrets or long command logs.
-
-## Document formatting
-
-For Markdown documents and reports produced or revised by this command, follow
-`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
-characters where practical, while allowing longer lines for tables, URLs, code/logs,
-paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
-or readability.
+Read `.sdlc/wip.md` as a resume note when it exists. Follow
+`docs/work-in-progress.md`, `docs/artifact-formatting.md`, and `docs/result-reporting.md`.
+Before stopping, update WIP with the current command, files, results, open problems, and next
+action. Do not store secrets or long logs.
 
 Run repeatable checks for a work plan. This command collects evidence only; it does not
 judge whether the plan divides work well. Use the `plan-review` command for independent judgment
@@ -77,22 +64,23 @@ if that is unavailable, retry with `uv run python`.
 Report:
 
 - Exact commands executed.
-- Document format and human-first structure issues: Implementation Approach placement (or
-  legacy Implementation Crux), machine-only visible headings, final traceability,
-  annotation/table resolution, and descriptive hidden-ID work-group/delivery parsing. Unmarked
-  legacy files stay legacy.
+- Document structure problems, including Implementation Approach placement (or legacy
+  Implementation Crux), visible machine-only headings, final traceability, references that do
+  not resolve between annotations and tables, and work-group parsing. Do not apply the new
+  format to an unmarked legacy file.
 - Raw checker JSON.
 - Exit codes.
 - `passed/total`.
 - Any spec/design failures.
-- Any bad IDs, duplicates, orphan refs, uncovered FR/AT/JT/COMP/TEST refs, forward
-  dependencies, or vague hits.
-- Declared work groups, malformed or duplicate `WAVE-*` IDs/orders, missing required group fields,
-  invalid parallel-work limits, and unknown or duplicate members. Unscheduled `WORK-*` items are valid.
-- `external_double_mentions` and `external_double_mitigation_present`. If a plan uses a
-  mock/fake/stub/test double for an external system, report what remains untested and the
-  command or accepted mitigation that ties it to the real dependency or official test
-  interface.
+- Every failure category reported by the checker, including invalid or duplicate IDs, broken
+  references, uncovered `FR-*`, `AT-*`, `JT-*`, `COMP-*`, or `TEST-*` links, dependencies on
+  later work, and vague wording hits.
+- Every declared work group and any invalid or duplicate `WAVE-*` ID or order, missing group
+  field, invalid parallel-work limit, or unknown or duplicate member. Unscheduled `WORK-*`
+  items are valid.
+- The `external_double_mentions` and `external_double_mitigation_present` totals.
+- When an external dependency is mocked, what remains untested and how the plan checks it
+  against the real dependency or its official test interface.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 

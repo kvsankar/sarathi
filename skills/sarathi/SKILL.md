@@ -1,24 +1,24 @@
 ---
 name: sarathi
-description: sarathi manages structured production delivery with specifications, designs, plans, approvals, checks, reviews, and test evidence. Use for Sarathi or managed delivery-workflow requests, not ordinary code generation.
+description: Use Sarathi for managed software delivery with specifications, designs, plans, approvals, checks, reviews, and test evidence. Do not use it for ordinary coding requests.
 ---
 
 # sarathi
 
-Sarathi turns accepted intent into the smallest safe working change, preserves the decisions
-and evidence needed to judge it, and adapts remaining work from real feedback. It guides the
-next appropriate step, not a linear waterfall or document factory. Use `$sarathi` for
-orientation, resumption, or stage selection.
+Sarathi helps an agent turn approved requirements into the smallest safe working change. It
+chooses the next useful step, checks the result, gets an independent review, and adjusts the
+remaining work from real feedback. Use `$sarathi` to start, continue, or choose the next
+command.
 
 ```text
-accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
+approved requirements -> smallest safe change -> working software -> checks and review -> feedback -> adapt
 ```
 
 ## Workflow Terms And Direct Commands
 
-Use `docs/workflow-terminology.md`: a work target and scope identify the subject; stage is
-`spec`, `design`, `plan`, or `code`; action is `create`, `verify`, `review`, or `assess`; and
-their pair is a command such as `design-review`. `workflow-status` is a projection command.
+Use `docs/workflow-terminology.md` when these terms need explanation. A stage is `spec`,
+`design`, `plan`, or `code`. An action is `create`, `verify`, `review`, or `assess`. Together
+they name a command such as `design-review`. `workflow-status` only reports current status.
 
 Installed explicit command skills use `$sarathi-<stage>-<action>`. Only this router may be
 selected implicitly; never select a command skill unless the user names it. An ordinary code
@@ -32,27 +32,27 @@ without approval. Respect `SARATHI_UPDATE_CHECK=0`; missing bundle files mean in
 
 ## Enduring Model
 
-Decompose when a competent engineer cannot understand and review the work safely as one
-coherent unit. Specification, design, plan, and code preserve decisions along the loop; they
-are not a one-way waterfall. Load `docs/enduring-model.md` when explaining the whole process.
+Split work when one engineer cannot understand, review, test, and integrate it safely.
+Requirements, design, plans, and code may change as the team learns. Load
+`docs/enduring-model.md` when explaining the whole process.
 
 Production work must preserve approved requirements, useful tests with clear pass/fail
 results, honest feedback, required approvals, and safety limits.
 
 Choose a delivery assurance profile with `docs/assurance-profiles.md`:
 
-- **Lean**: assessed spec -> assessed plan with technical decisions -> assessed code.
-- **Standard**: assessed spec -> design -> plan -> code; the ordinary default.
-- **High-assurance**: the full path plus risk-boundary breakdown and assessed code slices.
+- **Lean**: requirements -> technical plan -> code.
+- **Standard**: requirements -> design -> plan -> code; the ordinary default.
+- **High-assurance**: the Standard path, with risky work split into smaller reviewed changes.
 
-Profiles change the path, decomposition bias, and review cadence. They never weaken the
-check-plus-independent-review assurance applied at a retained stage. Choose approval policy
-separately.
+Every stage that remains is checked and independently reviewed. Profiles change which stages
+are used, how work is split, and when reviews happen. Choose approval policy separately.
 
-Choose approval policy with `docs/approval-gates.md`: **Human checkpoints** stop at material
-gates; **Automatic eligible gates** uses local policy. Explicit YOLO selects automatic
-internal gates for end-to-end work but keeps its protected boundaries. **Product increment**
-or **Decision/evidence** changes the done signal, not required assurance or approval policy.
+Choose approval policy with `docs/approval-gates.md`. **Human checkpoints** stop at required
+approval points. **Automatic eligible gates** follows local policy.
+Explicit YOLO allows automatic internal approvals for end-to-end work, but not the protected
+actions in that document. **Product increment** and **Decision/evidence** define the intended
+result; they do not change review quality or approval rules.
 
 Apply `docs/simplicity-first.md`: keep process records out of product architecture, start with
 the smallest direct implementation, reuse existing-system tests, and avoid general solutions
@@ -61,10 +61,10 @@ problem requires. Do not use LOC or PR-count targets.
 
 ## Revision Classification
 
-A revision is material when it changes accepted behavior, scope, contracts, architecture,
-risk, evidence obligations, readiness, or approval basis. Editorial changes are non-material
-only if meaning is unchanged; when uncertain, treat it as material. See
-`docs/approval-gates.md`.
+A change is material if it changes what must be built, scope, a contract, the design,
+risk, required proof, readiness to continue, or an approval decision. Editing is
+non-material only when meaning stays the same. When uncertain, treat the change as material.
+See `docs/approval-gates.md`.
 
 ## User-Facing Language
 
@@ -76,10 +76,10 @@ unless asked or they affect the next action; explain why first. Apply
 
 1. Read `.sdlc/wip.md` and `.sdlc/process-decisions.yaml` when present. Check important claims
    against source documents.
-2. Use `docs/project-entry.md` if it is unclear whether this is a new project, an existing
-   baseline, or a change to an existing system.
-3. Infer Product/system, Feature/component, or Slice/change scope. Ask only when the answer
-   would materially change the document.
+2. Use `docs/project-entry.md` if it is unclear whether this is a new project, documentation
+   of the current system, or a change to an existing system.
+3. Choose the scope: Product/system, Feature/component, or Slice/change. Ask only when the
+   answer would materially change the document.
 4. At project entry and first feature requirements, present profile and approval choices with
    a recommendation; record the choice/default and work outcome. Under explicit YOLO, infer
    and record them without confirmation using `docs/approval-gates.md`.
@@ -94,15 +94,16 @@ unless asked or they affect the next action; explain why first. Apply
 ready to implement. Do not write another document when the approved requirements and one short
 plan are enough to start safely.
 
-If a competent engineer can understand, explain, review, and safely plan the work as one
-coherent unit, keep it together. Otherwise split it along a natural product or technical
-boundary until each part is understandable, testable, and safe to integrate. A split does not
-require a new document chain. Use `docs/work-decomposition.md`.
+Keep the work together if one engineer can understand, explain, review, and safely plan it as
+one unit. Otherwise split it at a natural product or technical boundary until every part is
+understandable, testable, and safe to integrate. A split does not require a new spec and
+design for each part. Use `docs/work-decomposition.md`.
 
-Breakdown plans use a work group only for near-term `WORK-*` children that share a feedback or
-integration check; unscheduled children have no group. Implementation plans list the PRs that
-implement one child; PRs do not belong to groups. Use `docs/feedback-and-learning.md`. A
-matching checkpoint closes one group only; it does not approve the whole plan or next group.
+Use a work group (`WAVE-*`) only for near-term `WORK-*` items that share one feedback or
+integration checkpoint. Unscheduled work has no group. An Implementation plan lists the PRs
+for one work item; those PRs do not belong to a work group. A checkpoint closes only its
+group. It does not approve the whole plan or the next group. See
+`docs/feedback-and-learning.md`.
 
 ## When To Stop
 
@@ -110,41 +111,42 @@ After creating or materially revising a spec, design, ADR, plan, code change, as
 review report:
 
 1. Update `.sdlc/wip.md`.
-2. Report path, readiness/status, evidence, blockers/questions, and recommended next command.
+2. Report the path, whether the work can continue, check and review results, open problems,
+   and the recommended next command.
 3. End the turn before starting the next stage.
 
 Continue across commands only when the request and recorded policy permit it. Human
 checkpoints stop. Explicit YOLO authorizes end-to-end work and automatic internal gates but
 keeps the restrictions and protected boundaries in `docs/approval-gates.md`.
 
-## Evidence Invariants
+## What Each Stage Must Prove
 
-- Specs own `AT-*` and `JT-*` descriptions of observable success.
-- Standalone designs own `TEST-*` descriptions of what must be tested and where. A Lean
-  plan without a standalone design maps spec acceptance directly to executable checks.
-- Plans assign tests from parent and local documents to child work or PRs.
+- Specs define observable success in `AT-*` and `JT-*` descriptions.
+- Standalone designs define what must be tested and where in `TEST-*` descriptions. A Lean
+  plan without a separate design maps spec acceptance directly to executable checks.
+- Plans assign those tests to work items or PRs.
 - Behavior-changing code uses Red-Green-Refactor: observe the smallest meaningful test fail,
   make the minimum change that passes it, then improve the code while tests stay green.
 - Code implements assigned tests and reports the commands and outcomes that exercised them.
-- Process IDs stay in document traceability and external records, never in production/test
-  source merely to create a link. Test names describe behavior.
+- Keep process IDs in document links and records. Do not add them to production or test source
+  merely to create a link. Test names describe behavior.
 - Format checks and optional requirement-to-test links do not prove correct meaning,
   stakeholder feedback, real-dependency execution, merge state, or human approval.
-- A primary external boundary cannot rely only on a self-authored test double unless the user
-  explicitly accepts the remaining risk. Test an important dependency through the real system
-  or its official test interface, or state what the mock leaves untested.
+- Do not test a primary external boundary only with a test double created by the agent or
+  project unless the user explicitly accepts the remaining risk. Prefer the real dependency
+  or its official test interface, and state what the test double leaves untested.
 - Live production deployment or production checks require explicit user approval.
-- Run cleanup and simplify passes before handoff; do not use them for unrelated churn or hidden
-  behavior changes.
+- Clean up and simplify before reporting the result. Do not make unrelated or hidden behavior
+  changes.
 
 ## Verification Independence
 
-Run repeatable checks once per document revision. After local findings are fixed, recheck the
-affected boundary and focus independent review on them; restart full review only when
-requirements or scope changed. Run deterministic checks inline. When sub-agents are
-available, use one fresh reviewer to independently judge the work and check results. If
-unavailable, say the review is not independent and keep the two passes separate. Stop when
-an earlier required document is not fit. Use `docs/review-verification-checklist.md`.
+Run automatic checks once for each revision. Use a fresh reviewer to judge the work and look
+for counterexamples. After issues are fixed, rerun affected checks and review only those
+fixes. Repeat the full review only if requirements or scope changed. If no fresh reviewer is
+available, say the review is not independent and keep checks and review separate. Stop when
+a required earlier document is not fit for the current judgment. See
+`docs/review-verification-checklist.md`.
 
 ## Triggered References
 

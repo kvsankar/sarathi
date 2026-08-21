@@ -5,16 +5,14 @@ agent: agent
 
 # Spec Create
 
-Create or revise the requirements document that controls the work. Requirements define
-intent, not implementation architecture.
+Create or revise the requirements document. Requirements define intent, not implementation.
 
 ## Load
 
 Read `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, existing documents, and relevant
 repository evidence. Load `docs/artifact-contracts.md`, `docs/document-locations.md`, and
 `docs/human-first-artifacts.md` for the Spec contract, narrative, and traceability layers.
-Load `docs/requirements-model.md` for the requirements hierarchy and
-`docs/result-reporting.md` for the handoff.
+Load `docs/requirements-model.md` for requirements and `docs/result-reporting.md` for the report.
 
 ## Triggered References
 
@@ -28,7 +26,7 @@ Load only when the trigger applies:
 - `docs/simplicity-first.md`: proposed implementation machinery, reuse, or a refactor affects
   the requirement boundary;
 - `docs/cross-cutting-concerns.md`: an identified risk needs additional checks;
-- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before handoff.
+- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before reporting.
 
 If a required reference cannot be found in the active skill bundle or canonical repo,
 report an incomplete installation instead of recreating policy from memory.
@@ -94,12 +92,12 @@ Apply these requirements rules:
 - Do not turn process links, evidence, approval, or status needs into product requirements.
   Do not specify hypothetical future consumers.
 
-Use the scope-appropriate name from `docs/document-locations.md`: `spec.md` only for
+Use the name for this scope from `docs/document-locations.md`: `spec.md` only for
 Product/system, otherwise `<work-slug>.spec.md`, unless another path is named. Child specs
 include `Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec when
 approved parent documents and one short plan are enough.
 
-## Verify And Handoff
+## Check And Report
 
 Run the repeatable format and link checker and fix failures:
 
@@ -107,14 +105,16 @@ Run the repeatable format and link checker and fix failures:
 python checkers/check_spec.py <spec-path> --json
 ```
 
-Retry launchers when needed. Use that result as the check pass for one assessment cycle under `prompts/spec-assess.prompt.md`; do not rerun unchanged checks.
-This embedded run is the official assessment for the current revision and owns its scope-appropriate assessment report.
-Apply safe in-scope findings once and run one focused recheck/re-review. If a fix requires a material revision, stop instead of changing accepted intent.
-Hand off the current verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
+Retry launchers when needed. Use the result as the check pass for one assessment under
+`prompts/spec-assess.prompt.md`; do not rerun unchanged checks. This is the official
+assessment for this revision and uses the normal assessment report. Apply one set of safe,
+in-scope fixes, update every affected copy, and have a fresh reviewer check only those fixes.
+If a fix requires any material revision, stop instead of changing approved requirements.
+Report the current result even when it is `Needs rework`; do not accept `Pass-with-fixes`.
 
 Update `.sdlc/wip.md` with the path, machine status, checks, assumptions, blockers, and next action.
 
 Stop according to the recorded approval policy. Human checkpoints require explicit approval;
 automatic approval needs an eligible local policy and explicit end-to-end continuation.
-Give one plain-language result with the path, meaning, evidence, problems, and ranked
-actions. Recommend `plan-create` for Lean and `design-create` for the other profiles.
+State the result first. Give the path, check and review results, problems by severity, and
+next actions. Recommend `plan-create` for Lean and `design-create` for the other profiles.

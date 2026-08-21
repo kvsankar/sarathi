@@ -398,7 +398,7 @@ def test_check_spec_requires_hash_matched_approval_when_enabled(
     assert rc == 1
     assert report["gates"]["required_approvals_present"] is False
     assert report["approval_requirements"][0]["issues"] == [
-        "approval ledger missing: .sdlc/approvals.yaml"
+        "approval file not found: .sdlc/approvals.yaml"
     ]
 
     write_approval_ledger(
@@ -456,7 +456,7 @@ def test_check_spec_rejects_stale_or_non_utc_approval(tmp_path, monkeypatch, cap
 
     assert rc == 1
     issues = report["approval_requirements"][0]["issues"]
-    assert "artifact hash is stale: spec.md" in issues
+    assert "approval is for an earlier version of: spec.md" in issues
     assert "approved_at must be UTC ISO-8601 like 2026-07-01T14:32:18Z" in issues
 
 

@@ -13,23 +13,24 @@ delivery assurance profile and additional checks from `docs/assurance-profiles.m
 
 ## Run
 
-Run full passes once per revision. After local finding corrections, rerun affected checks
-and focus review on those findings unless requirements or scope changed.
+Run full passes once per revision. After issues are fixed, rerun affected checks and review
+only those fixes. If a fix is incomplete, leave the issue open. After it is corrected, check
+only that fix again. Repeat the full assessment only when a fix materially changes the document.
 
-1. **Check pass**: execute `prompts/spec-verify.prompt.md` inline and preserve its command,
-   IDs, metrics, failures, and approval evidence without judging overall quality.
+1. **Check pass**: run `prompts/spec-verify.prompt.md` here. Keep its command, IDs, results,
+   failures, and approval records separate from quality judgment.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/spec-review.prompt.md` using the spec and check results. Judge
-   depth against the selected assurance profile and additional checks, not a universal concern
-   list.
+   the spec against the selected assurance profile and additional checks. Do not apply a list
+   of risks that do not affect this work.
 
 If sub-agents are unavailable, disclose that the review was not independent, keep the
 passes separate, and actively look for counterexamples. Never treat checker JSON as proof
 that the requirements are good.
 
-Stop as `Blocked-upstream` when the spec cannot be judged responsibly. Report one
-plain-language assessment result, the main engineering consequence, categorized findings,
-interpreted check results, and impact-ranked actions. Preserve
+Use `Blocked-upstream` when missing or unreliable requirements prevent a responsible review.
+State the result first. List problems by severity, explain the check results, and rank next
+actions by impact. Preserve
 `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
 state; follow `docs/result-reporting.md` for chat.
 

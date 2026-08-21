@@ -1,8 +1,8 @@
 # sarathi's Enduring Model
 
-Sarathi turns accepted intent into the smallest safe working increment, preserves the
-decisions and evidence needed to review it, decomposes work that is too complex to reason
-about safely as one unit, and adapts the remaining work from real feedback.
+Sarathi turns agreed requirements into the smallest safe working change. It keeps the
+decisions and results needed for review, splits work only when one change would be too hard
+to understand safely, and changes the remaining plan when real feedback arrives.
 
 The name comes from the Mahabharata, where Krishna serves as Arjuna's *sarathi*—his
 charioteer and counsel. Krishna helps Arjuna see clearly and act with purpose without
@@ -18,19 +18,20 @@ checker behavior support it; they are not the identity of the process.
 accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
 ```
 
-Specification turns a problem and stakeholder needs into an agreed, testable model of
-required behavior: needs lead to features, use cases explain behavior in context,
-functional and supplementary requirements make it precise, and acceptance tests and
-journeys define observable proof. Design turns accepted requirements and constraints into
-an implementable, evolvable technical model. Planning turns the approved
-technical model into an executable delivery structure through a Breakdown plan or a PR
-graph, including impact, dependencies, sequence, integration, safety, and proof. Code and
-tests produce working behavior through short Red-Green-Refactor cycles: observe the
-behavioral test fail, make the smallest change that passes it, and improve the code while
-the tests stay green. The result then confirms or changes the remaining work. The stages
-preserve decisions; they do not form a one-way waterfall. A profile may combine design with
-planning, but the resulting plan must still expose the technical decisions needed to
-implement safely.
+The spec says what must work and how people can observe success.
+
+The design explains how the important parts of the system will support those requirements.
+
+The plan says what will change, in what order, what depends on what, and how success will be
+checked. It may keep one coherent change together or split broad work into useful children.
+
+Code and tests make the change work through short Red-Green-Refactor cycles: see a meaningful
+test fail, make the smallest change that passes it, then improve the code while tests stay
+green.
+
+The result may confirm or change what comes next. The stages preserve decisions; they are
+not a one-way waterfall. A profile may combine design with planning, but the plan must still
+state the technical decisions needed for safe implementation.
 
 ## 2. Decompose When It Improves Delivery
 
@@ -50,9 +51,8 @@ Each stage can be created, verified, reviewed, or assessed:
 - **Review** independently judges whether the result is clear, correct, simple, and safe.
 - **Assess** combines verification and review.
 
-This is a gate around every stage, not a footer after implementation. Specifications,
-designs, plans, and code each receive repeatable checks and independent judgment before
-their result is treated as sufficient for the next learning step.
+This happens throughout the work, not only after implementation. Specs, designs, plans, and
+code each receive repeatable checks and independent review before dependent work begins.
 
 Testing also runs through the whole delivery loop: specifications define observable
 acceptance, designs choose the test architecture, plans assign that evidence to delivery
@@ -61,21 +61,19 @@ items, and code develops the behavior test-first and records exact results.
 Automatic checks establish only the facts they can observe. They never manufacture human
 approval, stakeholder feedback, semantic correctness, or evidence from a real system.
 
-## 4. Preserve Continuity
+## 4. Make Work Easy To Resume
 
-The accepted documents preserve intent and decisions. Tests and assessment records preserve
-evidence. A short current WIP note makes the work resumable without turning chat history or
-process bookkeeping into product truth. A new engineer or agent should be able to find the
-current boundary, the evidence behind it, and one executable next action.
+Accepted documents keep the requirements and decisions. Tests and assessment records keep
+the observed results. A short WIP note lets a new engineer or agent find what is happening,
+why, and what to do next without relying on chat history.
 
-## 5. Match The Path And Review Cadence To Risk
+## 5. Match The Path And Review Timing To Risk
 
-All production work keeps accepted intent, readiness to implement, credible tests, honest
-feedback, required approval points, and safety limits. Lean combines design with planning;
+All production work keeps approved requirements, a code-ready plan, meaningful tests, honest
+feedback, required approvals, and safety limits. Lean combines design with planning;
 Standard keeps spec, design, plan, and code separate; High-assurance reviews a full package
-and smaller risk-bounded increments. Every retained stage receives complete checks and
-independent judgment. Profiles change the path and timing of assurance, not the care applied
-inside a review.
+and smaller changes around important risks. Every stage in the chosen path receives complete
+checks and independent review. Profiles change the path and review timing, not reviewer care.
 
 ## 6. Keep Supporting Rules In Their Place
 

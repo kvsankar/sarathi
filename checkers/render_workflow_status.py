@@ -434,17 +434,20 @@ def wave_checkpoint_for(
             continue
         plan = record.get("plan")
         if not isinstance(plan, dict):
-            return None, "wave checkpoint has no plan record"
+            return None, "work-group checkpoint has no plan record"
         resolved = resolve_ledger_path(root, str(plan.get("path", "")))
         if resolved is None or resolved.resolve() != plan_path.resolve():
             continue
         if plan.get("sha256") != current_hash:
-            return None, "wave checkpoint plan hash is stale"
+            return None, "work-group checkpoint is for an earlier plan version"
         if str(record.get("status", "")).casefold() != "completed":
-            return None, f"latest wave checkpoint status is {record.get('status')}"
+            return (
+                None,
+                f"latest work-group checkpoint status is {record.get('status')}",
+            )
         members = record.get("members")
         if not isinstance(members, list) or list(map(str, members)) != wave["members"]:
-            return None, "wave checkpoint members do not match the current plan"
+            return None, "checkpoint members do not match the current plan"
         return (
             {
                 "state": "completed",
@@ -888,7 +891,7 @@ def wave_member_state(
         return {
             "id": identifier,
             "state": "completed",
-            "detail": "Wave checkpoint complete",
+            "detail": "Group checkpoint finished",
         }
     if identifier in work_by_id:
         item = work_by_id[identifier]
@@ -901,7 +904,7 @@ def wave_member_state(
             return {
                 "id": identifier,
                 "state": "evidence",
-                "detail": "Evidence mapped",
+                "detail": "Tests linked",
             }
         return {"id": identifier, "state": "not-started", "detail": "Not started"}
     if identifier in pr_by_id:
@@ -918,7 +921,7 @@ def wave_member_state(
             return {
                 "id": identifier,
                 "state": "evidence",
-                "detail": f"{pr['evidence_count']} mapped tests",
+                "detail": f"{pr['evidence_count']} linked tests",
             }
         return {"id": identifier, "state": "not-started", "detail": "Not started"}
     return {"id": identifier, "state": "unknown", "detail": "Member not discovered"}
@@ -1024,7 +1027,7 @@ def build_learning_wave_model(
             if checkpoint and unknown_members:
                 checkpoint = None
                 checkpoint_issue = (
-                    "completed wave checkpoint references undiscovered members: "
+                    "finished work-group checkpoint names items that were not found: "
                     + ", ".join(unknown_members)
                 )
             members = [
@@ -1506,7 +1509,7 @@ def render_product_snapshot(wip: dict[str, Any]) -> str:
     ]
     note = (
         '<p class="product-status-warning">This project has not recorded a complete '
-        "product snapshot. Process state below cannot establish product completion.</p>"
+        "project status. The records below cannot prove that the product is complete.</p>"
         if missing
         else ""
     )
@@ -1539,17 +1542,19 @@ def state_label(state: str) -> str:
     return {
         "approved": "Approved",
         "unapproved": "Present",
-        "stale": "Approval stale",
+        "stale": "Approval out of date",
         "missing": "Not yet done",
-        "frontier": "Not yet decomposed",
-        "expanded": "Plan expanded",
+        "frontier": "No detailed plan yet",
+        "expanded": "Detailed plan found",
         "started": "Documents started",
-        "evidence": "Evidence mapped",
+        "evidence": "Tests linked",
         "planned": "PRs planned",
         "assessed": "Code checks and review passed",
-        "children-assessed": "Child work reviewed or approved for the next step",
+        "children-assessed": (
+            "Child work passed checks and review or was approved for the next step"
+        ),
         "slice-handed-off": "Approved for the next integration step",
-        "completed": "Review point closed",
+        "completed": "Group checkpoint finished",
     }.get(state, state.replace("-", " ").title())
 
 
@@ -1607,14 +1612,12 @@ def render_parent_approval_dialog(
             detail = (
                 f"{esc(approval.get('id') or 'The latest approval')} covers an earlier version"
                 f" from {esc(approval.get('approved_at') or 'an unrecorded time')}. "
-                "Needed: review the current document and approve this version."
+                "Review and approve the current version."
             )
         elif state == "unapproved":
-            detail = "No approval was found. Needed: review and approve the current document."
+            detail = "No approval was found. Review and approve the current document."
         else:
-            detail = (
-                "The document is missing. Needed: create it before requesting approval."
-            )
+            detail = "The document is missing. Create it before requesting approval."
         hashes = ""
         if state == "stale":
             hashes = (
@@ -1634,7 +1637,7 @@ def render_parent_approval_dialog(
     return f"""
 <dialog id="approval-details" class="approval-dialog" aria-labelledby="approval-details-title">
   <form method="dialog">
-    <div class="approval-dialog-head"><div><h2 id="approval-details-title">Parent approvals</h2><p>Each approval applies only to the exact current document version.</p></div><button class="dialog-close" value="close" aria-label="Close approval details">Close</button></div>
+    <div class="approval-dialog-head"><div><h2 id="approval-details-title">Document approvals</h2><p>An approval applies only to the document version that was reviewed.</p></div><button class="dialog-close" value="close" aria-label="Close approval details">Close</button></div>
     <ol class="approval-rows">{"".join(rows)}</ol>
   </form>
 </dialog>"""
@@ -1781,7 +1784,7 @@ def render_code_node(item: dict[str, Any]) -> str:
     {badge(state)}
   </div>
   <strong>Delivered by child slices</strong>
-  <div class="node-detail">{assessed} of {len(children)} child slice{"s" if len(children) != 1 else ""} passed code checks and review or were approved for the next integration step</div>
+  <div class="node-detail">{assessed} of {len(children)} child slice{"s" if len(children) != 1 else ""} passed checks and review or were approved for the next step</div>
 </div>"""
     prs = item["prs"]
     evidence_count = item["evidence_count"]
@@ -1880,10 +1883,10 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
                 checkpoint_record = wave.get("checkpoint_record") or {}
                 checkpoint_learning = checkpoint_record.get("learning") or {}
                 checkpoint_label = {
-                    "complete": "Checkpoint complete",
-                    "pending": "Checkpoint pending",
-                    "open": "Checkpoint open",
-                    "not-started": "Checkpoint not started",
+                    "complete": "Group checkpoint finished",
+                    "pending": "Group checkpoint pending",
+                    "open": "Group checkpoint open",
+                    "not-started": "Group checkpoint not started",
                 }[wave["checkpoint_state"]]
                 status_label = {
                     "completed": "Group closed",
@@ -1896,7 +1899,7 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
                         ("Work limit", wave.get("wip_limit")),
                         ("Review point", wave.get("checkpoint")),
                         ("When to change course", wave.get("stop_or_replan")),
-                        ("Review status", checkpoint_label),
+                        ("Checkpoint status", checkpoint_label),
                         ("Feedback", checkpoint_learning.get("feedback_status")),
                         (
                             "Evidence",
@@ -1920,7 +1923,9 @@ def render_learning_waves(model: dict[str, Any], root: Path, output: Path) -> st
                 feedback_html = (
                     feedback_badge(checkpoint_learning.get("feedback_status"))
                     if checkpoint_record
-                    else badge("missing", "Feedback checkpoint not assessed")
+                    else badge(
+                        "missing", "Feedback or integration checkpoint not completed"
+                    )
                 )
                 open_attribute = " open" if wave["state"] == "in-progress" else ""
                 cards.append(
@@ -2092,7 +2097,7 @@ def render_tree_branch(
         )
     claim = item.get("wip_claim") or {}
     claim_html = (
-        f'<p class="wip-claim">WIP claim: {esc(claim.get("status"))}</p>'
+        f'<p class="wip-claim">Recorded status: {esc(claim.get("status"))}</p>'
         if claim.get("status")
         else ""
     )
@@ -2117,7 +2122,9 @@ def render_tree_branch(
     branch_status = {
         "frontier": "Not started",
         "assessed": "Code checks and review passed",
-        "children-assessed": "Child work reviewed or approved for the next step",
+        "children-assessed": (
+            "Child work passed checks and review or was approved for the next step"
+        ),
         "slice-handed-off": "Approved for the next integration step",
     }.get(item["state"], "In progress")
     open_attribute = " open" if is_focus else ""
@@ -2308,22 +2315,24 @@ def render_html(
         parent_state = "missing"
     approval_dialog = render_parent_approval_dialog(stages, root, output)
     approval_note = (
-        f'<p class="warning">Approval ledger could not be parsed: {esc(model["approval_error"])}</p>'
+        f'<p class="warning">Could not read approvals: {esc(model["approval_error"])}</p>'
         if model.get("approval_error")
         else ""
     )
     traceability_note = (
-        f'<p class="warning">Traceability ledger could not be parsed: {esc(model["traceability_error"])}</p>'
+        f'<p class="warning">Could not read test links: {esc(model["traceability_error"])}</p>'
         if model.get("traceability_error")
         else ""
     )
     assessment_note = (
-        f'<p class="warning">Code-assessment ledger could not be parsed: {esc(model["assessment_error"])}</p>'
+        f'<p class="warning">Could not read code checks and review results: {esc(model["assessment_error"])}</p>'
         if model.get("assessment_error")
         else ""
     )
     wave_checkpoint_note = (
-        f'<p class="warning">Wave-checkpoint ledger could not be parsed: {esc(model["wave_checkpoint_error"])}</p>'
+        '<p class="warning">Could not read work-group checkpoints for feedback, '
+        "integration, and parent-document decisions: "
+        f"{esc(model['wave_checkpoint_error'])}</p>"
         if model.get("wave_checkpoint_error")
         else ""
     )
@@ -2611,7 +2620,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <div><div class="eyebrow">sarathi workflow status</div><h1>{esc(model["project"])}</h1></div>
+    <div><div class="eyebrow">Sarathi project status</div><h1>{esc(model["project"])}</h1></div>
     <div class="topbar-meta">{guide_link}</div>
   </div>
 </header>
@@ -2624,11 +2633,11 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   <section class="executive" aria-labelledby="delivery-title">
     <div class="executive-head">
       <div>
-        <div class="executive-kicker">Process state</div>
-        <h2 id="delivery-title">Documents and delivery evidence</h2>
+        <div class="executive-kicker">Delivery progress</div>
+        <h2 id="delivery-title">Documents, code, and reviews</h2>
       </div>
     </div>
-    <p class="delivery-intro">Approvals and recorded evidence support the engineering snapshot; they do not establish feature completion. Select a scope to open its detailed tree below.</p>
+    <p class="delivery-intro">These records support the project status above. They do not prove that the feature is complete. Select an area to see its details below.</p>
     <div class="delivery-rows">
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#product-workflow" data-level-filter="">Documents</a></div>
@@ -2637,18 +2646,18 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="feature">Features</a></div>
-        <div class="delivery-states">{feature_rollup["handed_off"]} of {feature_rollup["total"]} approved for the next integration step | {feature_rollup["assessed"]} passed code review or completed child review/handoff | {feature_rollup["in_progress"]} in progress | {feature_rollup["planned"]} planned next | {feature_rollup["not_planned"]} not yet planned</div>
-        <div class="delivery-total">Feature work is planned through child records and delivery evidence.</div>
+        <div class="delivery-states">{feature_rollup["handed_off"]} of {feature_rollup["total"]} approved for the next integration step &middot; {feature_rollup["assessed"]} passed code checks and review, or all child work passed checks and review or was approved for the next integration step &middot; {feature_rollup["in_progress"]} in progress &middot; {feature_rollup["planned"]} planned next &middot; {feature_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-total">Feature progress is based on its plans, code, tests, and reviews.</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Feature slices</a></div>
-        <div class="delivery-states">{feature_slice_rollup["handed_off"]} of {feature_slice_rollup["total"]} approved for the next integration step | {feature_slice_rollup["assessed"]} passed code review or completed child review/handoff | {feature_slice_rollup["in_progress"]} in progress | {feature_slice_rollup["planned"]} planned next | {feature_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-states">{feature_slice_rollup["handed_off"]} of {feature_slice_rollup["total"]} approved for the next integration step &middot; {feature_slice_rollup["assessed"]} passed code checks and review, or all child work passed checks and review or was approved for the next integration step &middot; {feature_slice_rollup["in_progress"]} in progress &middot; {feature_slice_rollup["planned"]} planned next &middot; {feature_slice_rollup["not_planned"]} not yet planned</div>
         <div class="delivery-total">Feature-owned slices are shown with their feature prefix.</div>
       </div>
       <div class="delivery-row">
         <div class="delivery-scope"><a href="#work-items" data-level-filter="slice">Product-owned slices</a></div>
-        <div class="delivery-states">{product_slice_rollup["handed_off"]} of {product_slice_rollup["total"]} approved for the next integration step | {product_slice_rollup["assessed"]} passed code review or completed child review/handoff | {product_slice_rollup["in_progress"]} in progress | {product_slice_rollup["planned"]} planned next | {product_slice_rollup["not_planned"]} not yet planned</div>
-        <div class="delivery-total">Product-owned slices cover cross-feature integration and release work.</div>
+        <div class="delivery-states">{product_slice_rollup["handed_off"]} of {product_slice_rollup["total"]} approved for the next integration step &middot; {product_slice_rollup["assessed"]} passed code checks and review, or all child work passed checks and review or was approved for the next integration step &middot; {product_slice_rollup["in_progress"]} in progress &middot; {product_slice_rollup["planned"]} planned next &middot; {product_slice_rollup["not_planned"]} not yet planned</div>
+        <div class="delivery-total">These slices cover work shared across features or needed for release.</div>
       </div>
     </div>
   </section>
@@ -2656,7 +2665,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   {state_note}
   <details class="read-note">
     <summary>Delivery choices</summary>
-    <p>Verification depth (assurance profile): {esc(model["delivery"]["profile"])}. Approval approach (approval policy): {esc(model["delivery"]["approval_policy"])}. Intended result (work outcome): {esc(model["delivery"]["work_outcome"])}. Additional required checks: {esc(model["delivery"]["modules"])}.</p>
+    <p>Delivery path: {esc(model["delivery"]["profile"])}. Approvals: {esc(model["delivery"]["approval_policy"])}. Intended result: {esc(model["delivery"]["work_outcome"])}. Extra checks: {esc(model["delivery"]["modules"])}.</p>
   </details>
   <div class="tree-heading">
     <div><h2>Work</h2><p id="tree-description">Open an item to see its documents and evidence.</p></div>
@@ -2684,7 +2693,7 @@ h2 {{ font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }}
   <section class="technical-details" aria-label="Workflow details">
     <details class="read-note">
       <summary>How to read this status</summary>
-      <p>Green checks mean a document is approved, a code change passed its checks and review, a slice was approved for the next integration step, or a review point was closed. They do not mean the enclosing feature is complete. Amber dots mean work or evidence exists. Gray circles mean not started. Status is shown only when it is explicitly recorded; it is never guessed from Git or passing tests.</p>
+      <p>Green checks mean a document is approved, a code change passed its checks and review, a slice is approved for the next integration step, or a group checkpoint finished. They do not mean that the whole feature is complete. Amber dots mean work or supporting records exist. Gray circles mean not started. The page shows only recorded status; it does not guess from Git or passing tests.</p>
       {approval_note}
       {traceability_note}
       {assessment_note}
@@ -2825,10 +2834,13 @@ def main() -> int:
         return 2
     if args.check:
         if not output.is_file() or output.read_bytes() != rendered:
-            print(f"stale generated workflow status: {output}", file=sys.stderr)
+            print(f"status page is out of date; regenerate: {output}", file=sys.stderr)
             return 1
         if not guide_output.is_file() or guide_output.read_bytes() != guide_bytes:
-            print(f"stale static process guide: {guide_output}", file=sys.stderr)
+            print(
+                f"copied process guide is out of date; regenerate: {guide_output}",
+                file=sys.stderr,
+            )
             return 1
         return 0
     output.parent.mkdir(parents=True, exist_ok=True)

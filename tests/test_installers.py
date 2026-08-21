@@ -112,7 +112,7 @@ def test_verbose_installer_reports_details_without_expected_warnings() -> None:
     result = run_installer_dry_run(verbose=True)
 
     assert result.stderr == ""
-    assert "Note: " in result.stdout
+    assert "You are installing into Sarathi's own source folder." in result.stdout
     assert "Warning:" not in result.stdout
     assert "Destination folders:" in result.stdout
     assert "Would install Codex skill" in result.stdout

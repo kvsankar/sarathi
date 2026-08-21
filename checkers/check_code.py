@@ -341,8 +341,8 @@ def main() -> int:
                     "approval_id": None,
                     "status": None,
                     "issues": [
-                        "UI work requires an approved mock or prototype artifact, "
-                        "but none was found"
+                        "UI work needs an approved mockup or prototype, "
+                        "but no file was listed"
                     ],
                 }
             )
@@ -392,10 +392,10 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
-            "workflow_state_valid": "Current-work and project-choice values are valid",
+            "workflow_state_valid": "Saved work status and project settings are valid",
             "verification_command_passed": "Verification command passed",
             "source_process_ids_absent": (
-                "Source and tests contain no process identifiers"
+                "Product code and tests do not contain Sarathi tracking IDs"
             ),
             "scan_inputs_valid": "Source and test inputs are valid",
             "required_approvals_present": "Required approvals are current",

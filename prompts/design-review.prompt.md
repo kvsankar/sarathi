@@ -9,33 +9,33 @@ Review the target design without editing it unless asked. Read the accepted requ
 `.sdlc/wip.md`, available check results, `docs/artifact-contracts.md`, `docs/document-locations.md`,
 `docs/design-principles.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`, and
 `docs/human-first-artifacts.md`. Follow `docs/result-reporting.md` for the report. Answer
-its first-page comprehension questions. Stop
-as `Blocked-upstream` when the spec is unfit.
+its first-page comprehension questions. Use `Blocked-upstream` when the spec is unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples.
-For corrected findings, focus on those findings and affected boundaries; restart the full
-review only when requirements or scope changed.
+After issues are fixed, review only those fixes. If a fix is incomplete, leave the issue open.
+After it is corrected, check only that fix again. Do not repeat the full review unless a fix
+materially changes the document.
+Apply the correction-closure procedure in `docs/review-verification-checklist.md`.
 
 ## Judge
 
-After the plain-language review result, report concrete problems. Check that the opening page makes the architectural drivers,
-system boundary, technical model, responsibilities, consequential interfaces and data,
-important decisions and trade-offs, and test approach clear. For an existing-system change,
-also check the relevant current state, target state, compatibility, unchanged boundaries,
-and migration. Then check that the design selects the important boundaries for its context,
-using the examples in `docs/artifact-contracts.md`. Backend designs must make applicable API
-and database-schema boundaries reviewable. Tests must be able to prove the design, and the
-solution must be no more complicated than current needs require.
+State the result first, then report concrete problems. Ask: Can an engineer explain why this
+design was chosen? Are component responsibilities, interfaces, data, important decisions,
+trade-offs, and tests clear? For an existing system, are the current state, intended change,
+compatibility, unchanged parts, and migration clear? Can tests prove the important behavior?
+Is the solution any more complicated than it needs to be? Use the relevant examples in
+`docs/artifact-contracts.md`; backend designs must make applicable APIs and database schemas
+clear enough to review.
 For a Decision/evidence outcome, judge whether the method can credibly answer the stated
 question and preserve its decision boundary; do not require a shippable implementation.
 
-Apply the enduring principles in `docs/design-principles.md`. Treat named approaches as
-conditional: require a concrete adoption signal, justified extent, simpler alternative,
-cost, and verification strategy. Flag ceremonial DDD, ports, layers, interfaces, CQRS,
+Apply `docs/design-principles.md`. For each named approach, ask what current problem requires
+it, how much is needed, whether a simpler option works, what it costs, and how it will be
+tested. Flag ceremonial DDD, ports, layers, interfaces, CQRS,
 event sourcing, BDD tooling, unjustified vertical slices, or SOLID-driven factories,
 inheritance, and indirection that do not solve a present problem. Confirm the design has an
-explicit decision/effect boundary even when it uses different vocabulary.
+clear separation between decisions and side effects, even if it uses different words.
 Check whether a missing diagram leaves an important relationship, dependency, runtime
 interaction, state transition, data flow, or deployment decision hard to review. Also flag
 diagrams that add no information or disagree with the design.
@@ -49,8 +49,8 @@ model, boundaries, decisions, trade-offs, or change-specific explanation, move t
 traceability and return `Needs rework`. If an
 engineer must decode IDs to understand the architecture, rewrite it in plain language.
 
-Report one plain-language result, categorized findings, interpreted evidence, what can be
-deleted, deferred, or reused, and impact-ranked fixes. Preserve
+Report the result first. List problems by severity, explain what the checks prove, say what
+can be deleted, deferred, or reused, and rank fixes by impact. Preserve
 `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
 state; follow `docs/result-reporting.md` for chat. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `design-review.md` only for

@@ -14,46 +14,49 @@ Assess the implemented change using a separate check pass and review pass. Load
 
 ## Run
 
-Run full passes once for the current revision. After local finding corrections, rerun only
-affected checks and focus review on those findings and changed boundaries unless
-requirements or scope changed.
+Run full passes once for the current revision. After issues are fixed, rerun affected checks
+and review only those fixes. If a fix is incomplete, leave the issue open. After it is
+corrected, check only that fix again. Repeat the full assessment only when a fix materially
+changes the implementation.
 
-1. **Check pass**: execute `prompts/code-verify.prompt.md` inline, including earlier
+1. **Check pass**: run `prompts/code-verify.prompt.md` here, including earlier
    checkers, planned tests, project checks, and additional risk checks. Add
    `--review-context` to `check_code.py`; keep its candidate matches private.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/code-review.prompt.md` using the code and check results. Judge
-   correctness, test pass/fail checks, boundary realism, test-first evidence for behavior
-   changes, plan fidelity, review evidence, production quality, feedback, and
-   earlier-document changes.
+   correctness, test results, credible external-dependency testing, test-first evidence for
+   behavior changes, fit with the plan, production quality, feedback, and changes needed in
+   earlier documents.
 
 Pass the private review context to the reviewer. It reports only candidates that become
 actionable findings; do not publish candidates, counts, or a warning section. If sub-agents
 are unavailable, disclose that the review was not independent and keep the passes separate.
-Failed or unfit earlier documents produce `Blocked-upstream`.
+Use `Blocked-upstream` only when the assessment depends on specific wrong or incomplete
+obligations in an earlier document, such as behavior, scope, contracts, acceptance criteria,
+tests, or risk. Name them and the affected work; assess unrelated corrective code against
+the unchanged accepted documents.
 
-Report one plain-language assessment result and the main engineering consequence. Keep
-product/code problems, missing verification, and process/documentation problems separate;
-interpret automatic and project-check results; rank actions by impact; and include feedback
-and earlier-document changes. Preserve
+State the result first. Keep code problems, missing checks, and document problems separate.
+Explain automatic and project-check results, rank actions by impact, and note feedback or
+changes needed in earlier documents. Preserve
 `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
 state; follow `docs/result-reporting.md` for chat.
 
 ## Stored Results
 
-For `Pass` with a known parent `WORK-*` and child implementation plan, create/update the
-hash-current `code_assessment` entry in `.sdlc/delivery-records.yaml` as defined in
-`docs/workflow-status.md`. Record the exact work item, plan path/SHA-256, UTC assessment
-time, and the feedback or test result that supports the outcome. Do not record other
-verdicts as Pass. This is a project record, not approval.
+After a `Pass`, create or update a `code_assessment` entry only when the work has a known
+parent `WORK-*` item and child Implementation plan. Follow `docs/workflow-status.md` for the
+exact work item, current plan path and SHA-256, UTC assessment time, supporting feedback or
+test result, and other matching fields. Never record another result as `Pass`. This record is
+not an approval.
 
-Close an active work group with a `wave_checkpoint` entry in
-`.sdlc/delivery-records.yaml` only when every exact declared member
-has reached its boundary and feedback/integration plus parent-document decisions are complete.
-Do not create a checkpoint for an unscheduled child. Bind exact ordered members to the current
-plan SHA-256. Do not close when required feedback, work to combine parallel changes, or
-`revision-required` work remains. The checkpoint closes one group only; it does not assess the
-enclosing plan, approve the next group, or prove merge/release.
+Record a completed work group's `wave_checkpoint` only when every exact scheduled member has
+reached its boundary, the applicable feedback or integration review is complete, and all
+parent-document decisions are complete. Do not create a checkpoint for unscheduled work.
+Match the ordered members and current plan SHA-256 exactly. Do not close a group while
+required feedback, work to combine parallel changes, or `revision-required` work remains. A
+checkpoint does not assess the whole plan, approve the next group, merge, release, or deploy
+work.
 
 Write the scope-appropriate report from `docs/document-locations.md`: `code-assessment.md`
 only for Product/system, otherwise `<work-slug>.code-assessment.md`. Update `.sdlc/wip.md`

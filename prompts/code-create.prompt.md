@@ -14,7 +14,7 @@ current code/tests, and repository check commands. A compact plan may link appro
 documents instead of repeating them. Load `docs/artifact-contracts.md` for the Code and
 Evidence contract, `docs/test-ownership.md` for test-first implementation, and
 `docs/feedback-and-learning.md` when coordinated work is active. Load
-`docs/result-reporting.md` for the handoff.
+`docs/result-reporting.md` for the final report.
 
 ## Triggered References
 
@@ -27,17 +27,18 @@ Load only when the trigger applies:
 - `docs/simplicity-first.md`: implementation exposes unnecessary machinery, a refactor, or a
   simplification decision;
 - `docs/cleanup-pass.md`, `docs/simplify-pass.md`, and `docs/artifact-formatting.md`:
-  immediately before handoff.
+  immediately before reporting.
 
-Block unless the plan is specific enough to implement, required approvals exist, and earlier documents are
-fit. A feature/component plan may authorize code directly without a `WORK-*` allocation.
+Block unless the plan clearly says what to build, required approvals exist, and required
+earlier documents are fit. A feature/component plan may authorize code directly without a
+`WORK-*` allocation.
 When one exists, `.sdlc/wip.md` selects it. If coordinated work has a declared limit or
 checkpoint, enforce it. Confirm the expected files, first failing tests, smallest intended
-implementation, required behavior/tests, pass/fail checks, risks, who or what will review the result,
-dependencies, and reasons to stop or replan.
+change, required behavior and tests, how each check will pass or fail, risks, reviewer,
+dependencies, and reasons to stop or change the plan.
 
 For a `Decision/evidence` outcome, implement only the planned experiment or prototype within
-its stated boundaries. Record the evidence, decision, and next action; do not claim product
+its stated limits. Record the result, decision, and next action; do not claim product
 readiness or deploy the result without new product-increment requirements.
 
 Inspect the repository's documented local gate and hook. Reuse them when present. When
@@ -70,10 +71,12 @@ Stay inside the expected file scope. Stop to revise earlier documents when imple
 new user-visible behavior, changed contracts/UX/NFRs, material module risk, or invalidated
 assumptions. Never fabricate stakeholder, real-system, or execution evidence.
 If implementation exposes an overbuilt parent design or plan, record the exact machine
-status `revision-required` and simplify that document before continuing. Do not add product
-machinery merely to satisfy the process.
+status `revision-required` only for the exact obligations that make affected implementation
+unsafe to continue; unrelated fixes may proceed. When the accepted document is right and
+the code is wrong, fix the code without reopening the document. Do not add product machinery
+merely to satisfy the process.
 
-## Verify The Boundary
+## Check The Change
 
 Run focused and full planned tests, the project gate required by
 `docs/project-quality-gates.md`, build/docs/deployment/environment checks, and all additional checks
@@ -83,7 +86,8 @@ requires it.
 Do not run live production deployment or checks without explicit user approval. Report
 unavailable checks and remaining risk rather than treating them as passed.
 
-Run cleanup then simplify. Remove debug leftovers, dead code, stale comments, brittle or
+Clean up and simplify, using the correction rule in
+`docs/review-verification-checklist.md` for review fixes. Remove debug leftovers, dead code, stale comments, brittle or
 theatrical tests/checks, misleading docs, and unjustified abstractions within scope. Rerun
 affected checks.
 
@@ -91,15 +95,15 @@ affected checks.
 
 Update `.sdlc/wip.md` and report:
 
-- one plain-language result and the main engineering consequence;
+- the result and what it means for the product;
 - changed paths and what they now do;
-- exact test and project-check commands with interpreted results;
+- exact test and project-check commands, with a plain explanation of the results;
 - the observed Red-Green-Refactor evidence, or the narrow reason and replacement check when
   a failing test was not a sensible driver;
 - product/code problems, missing verification, and process/documentation problems kept
   separate;
-- assumptions, risks, relevant feedback, required earlier-document changes, impact-ranked
-  actions, and whether the `code-assess` command can start.
+- assumptions, risks, feedback, required changes to earlier documents, next actions in
+  priority order, and whether `code-assess` can start.
 
 Stop according to the recorded approval policy after the code change. Human checkpoints
 require explicit approval; automatic approval needs an eligible local policy and a

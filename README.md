@@ -1,11 +1,8 @@
-# sarathi — Production Software Engineering with AI Agents
+# sarathi — Build Production Software with AI Agents
 
-A disciplined, adaptive workflow for building production software with AI coding agents.
-
-sarathi helps AI coding agents and software teams turn accepted intent into the smallest safe
-working increment, preserves the decisions and evidence needed to review it, decomposes work
-that is too complex to reason about safely as one unit, and adapts the remaining work from
-real feedback.
+Sarathi helps coding agents turn approved requirements into the smallest safe working change
+through clear requirements, design, planning, coding, automatic checks, and independent
+review. It keeps the next step clear and adjusts the remaining work from real feedback.
 
 ## Why sarathi?
 
@@ -15,16 +12,16 @@ and act with purpose. sarathi takes its name from that partnership: it helps eng
 AI agents navigate complex software decisions and reach production with evidence,
 discipline, and human judgment intact.
 
-Its enduring delivery loop is:
+Its basic loop is:
 
 ```text
-accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
+approved requirements -> smallest safe change -> checks and review -> feedback -> adapt
 ```
 
-Specifications, designs, plans, and code preserve the decisions made along that loop; they
-do not form a one-way waterfall. Lean combines design with planning, Standard keeps all four
-stages explicit, and High-assurance adds risk-boundary decomposition and more review points.
-Every retained stage receives full assurance. Approval policy and work outcome are separate.
+Requirements, designs, plans, and code may change as the team learns. Lean combines design
+with planning. Standard keeps a separate design. High-assurance splits risky work into
+smaller changes with more review points. Every stage that remains is checked and independently
+reviewed. Approval rules are chosen separately.
 See [sarathi's enduring model](docs/enduring-model.md) and
 [delivery assurance profiles](docs/assurance-profiles.md).
 
@@ -86,7 +83,7 @@ uvx --from sarathi-sdlc sarathi-sdlc install \
 uvx --from sarathi-sdlc sarathi-sdlc install --tools codex,claude-code
 ```
 
-## Keep The Installer CLI
+## Optional: Keep The Installer Command
 
 Install `sarathi-sdlc` permanently only when you want its installer, version, and update
 commands to remain on your `PATH`:
@@ -103,12 +100,12 @@ Alternatively, use `pipx install sarathi-sdlc`. After upgrading the package, rer
 most once per 24 hours and report newer releases without blocking work or updating
 automatically. Set `SARATHI_UPDATE_CHECK=0` to disable that check.
 
-An upgrade rebuilds Sarathi's bundled `docs/`, `prompts/`, and `checkers/` subdirectories, so
-retired bundled files do not remain. It preserves other files in the installed `sarathi`
-folder and only removes the retired standalone `srs-authoring` bundle when it exactly matches
-the historical Sarathi-owned files. Recognizable older unprefixed stage aliases are moved
-intact to a sibling `sarathi-retired-stage-skills/` archive outside skill discovery; unrelated
-generic skills are not moved.
+An upgrade rebuilds Sarathi's bundled `docs/`, `prompts/`, and `checkers/` folders while
+preserving other files in the installed `sarathi` folder. It removes the retired
+`srs-authoring` bundle only when that bundle exactly matches Sarathi's historical files. It
+moves recognized older unprefixed stage aliases, unchanged, to a sibling
+`sarathi-retired-stage-skills/` archive outside skill discovery. It does not move unrelated
+generic skills.
 
 ## Install From A Source Checkout
 
@@ -202,12 +199,12 @@ folder is self-contained.
 
 ## Commands
 
-The prompt set uses four verbs:
+Commands combine a stage (`spec`, `design`, `plan`, or `code`) with one of four actions:
 
 - `create`: write or revise a document or code slice.
 - `verify`: run repeatable checks and report what they prove and do not prove.
 - `review`: independently judge quality and look for counterexamples.
-- `assess`: run `verify` first, then `review`.
+- `assess`: run automatic checks, then an independent review.
 
 The core stage names are:
 
@@ -221,13 +218,13 @@ The core stage names are:
 | `$sarathi-design-verify` | Run spec and design checks. |
 | `$sarathi-design-review` | Independently review design quality and whether the spec is sufficient. |
 | `$sarathi-design-assess` | Run design checks plus independent review. |
-| `$sarathi-plan-create` | Create a Breakdown or Implementation plan with an Impact Map, dependency graph, sequence, integration, safety, and proof. |
+| `$sarathi-plan-create` | Plan the impact, dependencies, order, integration, safety, and proof for a Breakdown or Implementation plan. |
 | `$sarathi-plan-verify` | Run checks for the spec, design, and plan. |
-| `$sarathi-plan-review` | Independently review plan readiness, slicing, assignment, and sequencing. |
+| `$sarathi-plan-review` | Independently review whether the plan is clear, safe, testable, and ordered well. |
 | `$sarathi-plan-assess` | Run plan checks plus independent review. |
 | `$sarathi-code-create` | Implement an approved plan with focused tests and any planned logging, error-handling, documentation, build, or deployment work. |
 | `$sarathi-code-verify` | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks. |
-| `$sarathi-code-review` | Independently review code, tests, operational work, required project checks, and consistency with earlier documents. |
+| `$sarathi-code-review` | Independently review code, tests, operational work, required project checks, and fit with earlier documents. |
 | `$sarathi-code-assess` | Run code checks plus independent review. |
 | `$sarathi-workflow-status` | Render project status as read-only HTML. |
 
@@ -237,11 +234,10 @@ Generate the live status page and its linked static process guide directly with:
 python checkers/render_workflow_status.py . --output docs/sdlc-status.html
 ```
 
-See [docs/workflow-status.md](docs/workflow-status.md) for discovery rules, evidence
-semantics, deterministic output, guide publication, and CI freshness checks.
-The page leads with engineering state—what works, what is reusable, what remains shared or
-target-owned, what is deferred, coding blockers, and one next action—before showing document,
-approval, and review state. Completion claims always name their exact scope.
+See [docs/workflow-status.md](docs/workflow-status.md) for details. The page starts with what
+works, what can be reused, what remains, what blocks coding, and the next action. It then
+shows document, approval, and review status. Every completion claim says exactly what is
+complete.
 
 Exact invocation syntax depends on the host tool:
 
@@ -257,15 +253,12 @@ Exact invocation syntax depends on the host tool:
 
 ## Workflow Model
 
-The core model is [accepted intent, the smallest safe increment, evidence, feedback, and
-adaptation](docs/enduring-model.md). Specifications use a
-[needs-to-evidence requirements model](docs/requirements-model.md): problems and stakeholder
-needs lead to features, use cases, functional and supplementary requirements, acceptance
-tests, and journeys. Designs turn accepted requirements and constraints into an
-implementable, evolvable technical model. Plans structure delivery through impact analysis,
-breakdown or a PR dependency graph, sequencing, integration, safety, and proof. Code plus
-tests produce working behavior through short Red-Green-Refactor cycles. Repeatable checks
-and independent review gate every stage; they are not deferred until implementation ends.
+The core model is [approved requirements, useful changes, checks, review, and
+feedback](docs/enduring-model.md). Requirements explain the problem, user needs, behavior,
+constraints, acceptance tests, and important user journeys. Designs explain how the system
+will meet them. Plans say what will change, in what order, and how it will be tested. Code is
+built in short Red-Green-Refactor cycles. Each stage is checked and independently reviewed
+before the work moves on.
 
 Work uses three levels. The paired terms below are retained as machine-readable values for
 compatibility:

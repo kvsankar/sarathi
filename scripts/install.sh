@@ -38,15 +38,15 @@ usage() {
 Usage: scripts/install.sh [options]
 
 Options:
-  --target <dir>        Target product workspace. Default: current directory.
+  --target <dir>        Project folder. Default: current directory.
   --scope <project|user>
-                        Install project-local commands or user-global commands.
+                        Install commands for this project or the current user.
                         Default: user.
   --tools <list>        Optional comma-separated subset:
                         codex,copilot,claude-code,gemini,claude,pi.
                         Default: install all tools.
   --no-checkers         Do not copy checkers/ into the target workspace.
-  --no-cross-install    Do not install companion targets across Windows/WSL.
+  --no-cross-install    Do not also install Sarathi on Windows or WSL.
   --dry-run             Show what would be installed without writing files.
   -v, --verbose         Show destinations, per-tool actions, and install notes.
   -h, --help            Show this help.
@@ -64,7 +64,7 @@ Notes:
   - Gemini CLI commands install to <target>/.gemini/commands or ~/.gemini/commands.
   - Claude and Pi exports install to .ai-prompts/ because they do not expose a stable
     local slash-command folder.
-  - When run in WSL, this script also installs Windows companion targets if
+  - When run in WSL, this script also installs Sarathi on Windows if
     powershell.exe is available. Use --no-cross-install to disable that.
 EOF
 }
@@ -119,13 +119,12 @@ fi
 TARGET_ROOT="$(cd "$TARGET_ROOT" && pwd)"
 
 if [[ "$TARGET_ROOT" == "$REPO_ROOT" ]]; then
-  echo "Note: target is the commands repository itself."
-  echo "This is okay for dogfooding, but project-local artifacts such as GitHub Copilot"
-  echo "prompts and checkers will be installed into the source checkout."
-  echo "Use --target <product-workspace> for a product."
+  echo "You are installing into Sarathi's own source folder."
+  echo "This is useful for testing Sarathi, but it will add prompts and checkers here."
+  echo "Use --target <project-folder> to install into a product project."
 fi
 if [[ "$DRY_RUN" -eq 1 ]]; then
-  echo "Dry run: no files will be written and no companion install will be executed."
+  echo "Dry run: no files will be written and nothing will be installed on Windows."
 fi
 
 if [[ ! -d "$PROMPT_SOURCE" ]]; then
@@ -268,7 +267,7 @@ write_destination_summary() {
           echo "  Explicit Sarathi command skills -> $(dirname "$skill_dest")"
         done < <(copilot_skill_dests)
         if [[ "$SCOPE" == "user" ]]; then
-          echo "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
+          echo "    VS Code prompts and Copilot skills for the current user."
         fi
         echo "    Explicit commands use prefixed skills such as sarathi-code-review and sarathi-code-assess."
         echo "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
@@ -321,7 +320,7 @@ copy_checkers() {
   fi
   local dest="$TARGET_ROOT/checkers"
   if [[ "$SCOPE" == "user" ]]; then
-    echo "Note: checkers are project-local; installing them to $dest even though scope is user."
+    echo "Checkers belong in a project folder. They will be installed in $dest."
     echo "Use --no-checkers to skip them."
   fi
   if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -479,22 +478,21 @@ description: "$description"
 
 # Sarathi Command: $stage_name
 
-This is an agent-neutral, explicit-only entry point for the Sarathi $stage_name command.
-Do not invoke it implicitly for an ordinary coding request.
+This skill runs the Sarathi $stage_name command. Use it only when the user asks for that
+command.
 
-First read ../sarathi/SKILL.md and apply its global operating rules, including revision
-classification. Keep this explicitly selected command; do not reroute to another command.
-Follow the bundled prompt file prompts/$prompt_file_name exactly. Use bundled checker scripts
-from checkers/ when the prompt calls for deterministic verification.
-Resolve any transitive prompts referenced as prompts/*.prompt.md from
-../sarathi/prompts/, and shared docs from ../sarathi/docs/. Load only the files triggered
-by the command; if the sibling Sarathi bundle is missing, report an incomplete installation.
+Read ../sarathi/SKILL.md, including its rules for deciding when earlier documents must
+change. Then follow prompts/$prompt_file_name exactly. Use this command; do not switch to
+another one. If it links to another prompt or document, read that file from the Sarathi
+bundle. Read only the files this command or its linked instructions require. When the prompt
+asks for a checker, use the bundled checker in ../sarathi/checkers/. If a required file is
+missing, say that the installation is incomplete.
 
-Keep required approvals, safety stops, declared file scope, test evidence, and independent
-review. For every result, status, or handoff response, follow
-../sarathi/docs/result-reporting.md and ../sarathi/docs/work-in-progress.md. Lead with one
-plain engineering outcome and explain secondary process status. Do not start later work
-when the prompt says to stop for the user.
+Respect approvals, safety limits, the file scope declared by the command, actual test
+evidence, and independent review. Follow ../sarathi/docs/result-reporting.md and
+../sarathi/docs/work-in-progress.md when reporting the result. Start with what changed or
+what was found, then explain any Sarathi status. When the prompt tells you to wait for the
+user, stop and do not start later work.
 EOF
     mv -f "$stage_skill_temp" "$stage_dest/SKILL.md"
 
@@ -677,18 +675,18 @@ install_windows_companion() {
     return
   fi
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    echo "Would install Windows companion targets if running in WSL with powershell.exe available."
+    echo "Would also install Sarathi on Windows if powershell.exe is available."
     return
   fi
   if ! is_wsl; then
     return
   fi
   if ! command -v powershell.exe >/dev/null 2>&1; then
-    echo "powershell.exe not available; skipping Windows companion install."
+    echo "powershell.exe is not available; skipping the Windows installation."
     return
   fi
   if ! command -v wslpath >/dev/null 2>&1; then
-    echo "wslpath not available; skipping Windows companion install."
+    echo "wslpath is not available; skipping the Windows installation."
     return
   fi
 
@@ -714,7 +712,7 @@ install_windows_companion() {
     args+=(-v)
   fi
 
-  echo "Installing Windows companion targets via $script_win"
+  echo "Installing Sarathi on Windows via $script_win"
   powershell.exe "${args[@]}"
 }
 

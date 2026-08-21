@@ -126,8 +126,8 @@ def main() -> int:
             f"Sarathi SDLC {latest} is available; installed version is {current}. "
             "Ask for explicit user approval before updating. If approved, install "
             f"the exact version with `uvx --from sarathi-sdlc=={latest} "
-            "sarathi-sdlc install`, verify the installed manifest, and reload the "
-            "agent tools."
+            "sarathi-sdlc install`, check that manifest.json shows the approved "
+            "version, then reload or restart the agent tools."
         )
     elif latest is None and args.verbose:
         print("Sarathi SDLC update status unavailable.")

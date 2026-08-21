@@ -5,13 +5,13 @@ section and still fail when it turns a limited change into unnecessary machinery
 
 ## Keep Process Machinery Out Of Product Code
 
-Sarathi's requirement links, approvals, evidence records, parallel-work state, and status reporting
+Sarathi's requirement links, approvals, test results, parallel-work records, and status reporting
 manage delivery. They must not become product architecture unless accepted product
 behavior independently requires the same capability.
 
 - Keep process metadata in documents and `.sdlc/` files.
 - Reuse existing tests, schemas, contracts, CI, deployment checks, and reporting tools.
-- Do not add runtime registries, manifests, generators, schema systems, evidence stores,
+- Do not add runtime registries, manifests, generators, schema systems, result stores,
   resource frameworks, extension points, or generic harnesses merely to make Sarathi easier
   to verify.
 - Production and test source must not carry Sarathi IDs in names, comments, docstrings,
@@ -54,8 +54,8 @@ be ready to implement directly; several screens do not require separate document
 ## Reuse Proof From The Existing System
 
 For refactors in an existing system, its functional, acceptance, schema, OpenAPI, CI,
-build, deployment, and operational tests are the default compatibility proof. Treat
-current passing behavior as evidence constrained by the approved requirements.
+build, deployment, and operational tests are the default way to check compatibility. Treat
+current passing behavior as useful information, limited by the approved requirements.
 
 Add only focused tests for the boundary being changed, a missing pass/fail check, or a demonstrated
 risk. Do not reproduce existing compatibility evidence in a new generated contract or
@@ -79,10 +79,11 @@ requires, simplify it.
 
 ## Simplify Earlier Documents Too
 
-The simplify pass may and must reopen earlier documents when their accepted machinery is
-not justified by behavior, risk, constraints, or evidence. Classify the impact as
-`revision-required`; revise the controlling spec, design, and plan before continuing affected
-implementation. Do not preserve an overbuilt design merely because implementation started.
+The simplify pass must reopen an earlier document when that document requires unnecessary
+machinery. Use `revision-required` only for the requirements or decisions that require that
+machinery, and revise them before continuing work that depends on them. Unrelated fixes may
+continue, and unchanged documents are not reassessed merely because another document
+changed. Do not preserve an overbuilt design merely because implementation started.
 
 ## Regression Example: Reusable Package Extraction
 
@@ -95,7 +96,7 @@ scaffold/parity/routing PRs. It fails because process evidence became product ar
 future consumers were hypothetical, existing suites were ignored, and conceptual
 complexity exceeded the user's model.
 
-A proportionate plan is approximately:
+A simpler plan is:
 
 1. **Neutral package and current contracts**: move the reusable behavior behind the
    smallest package boundary; preserve current public behavior.
