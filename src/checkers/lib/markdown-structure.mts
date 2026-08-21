@@ -134,7 +134,7 @@ export function definitionId(
   if (line.trimStart().startsWith("|")) {
     const cells = line
       .trim()
-      .replace(/^\||\|$/g, "")
+      .replace(/^\|+|\|+$/g, "")
       .split("|")
       .map((cell) => cell.trim().replaceAll("`", ""));
     if (cells[0] && fullMatch(idPattern, cells[0])) return cells[0];

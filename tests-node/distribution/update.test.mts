@@ -134,4 +134,5 @@ test("versions compare lexicographically and update notice pins npx", () => {
   const notice = updateNotice("0.9.0", "0.10.0");
   assert.match(notice, /explicit user approval/u);
   assert.match(notice, /`npx --yes sarathi-sdlc@0\.10\.0 install`/u);
+  assert.match(notice, /manifest\.json shows the approved version/u);
 });

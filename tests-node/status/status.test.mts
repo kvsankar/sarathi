@@ -10,6 +10,9 @@ import test from "node:test";
 import { runStatus } from "../../src/status/cli.mjs";
 import {
   buildModel,
+  compactValue,
+  discover,
+  metadata,
   parseWip,
   planPrs,
   workItems,
@@ -302,6 +305,44 @@ test("status parsers preserve descriptive work and PR names", () => {
   ]);
 });
 
+test("legacy ID names and multiline fields preserve Python behavior", () => {
+  const plan = `- WORK-AUTH-SIGNIN
+  Scope: line one
+  continues here
+  notes: something
+`;
+  assert.deepEqual(
+    workItems(plan)[0].map(({ name, scope }) => ({ name, scope })),
+    [
+      {
+        name: "Auth Signin",
+        scope: "line one continues here notes: something",
+      },
+    ],
+  );
+});
+
+test("status path and object ordering uses Unicode code points", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sarathi-status-order-"));
+  try {
+    await write(join(root, "a-b", "plan.md"), "# Hyphen\n");
+    await write(join(root, "ab", "plan.md"), "# Plain\n");
+    assert.deepEqual(
+      (await discover(root, "plan.md")).map((path) =>
+        path.slice(root.length + 1).replaceAll("\\", "/"),
+      ),
+      ["a-b/plan.md", "ab/plan.md"],
+    );
+    assert.equal(compactValue({ ab: 2, "a-b": 1 }), "a-b: 1; ab: 2");
+    assert.equal(compactValue({ enabled: true }), "enabled: True");
+    assert.deepEqual(metadata("Work Scope: feature...\n"), {
+      "Work Scope": "feature",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("HTML is deterministic, escaped, standalone, and check detects staleness", async () => {
   const root = await fixture();
   try {
@@ -470,7 +511,24 @@ test("compiled CLI preserves root, output, guide-source, and check behavior", as
       encoding: "utf8",
     });
     assert.equal(checked.status, 0, checked.stderr);
-    assert.match(checked.stdout, /status page is current/);
+    assert.equal(checked.stdout, "");
+
+    const equalsOutput = join(root, "published", "equals-status.html");
+    const equals = spawnSync(
+      process.execPath,
+      [
+        cli,
+        root,
+        `--output=${equalsOutput}`,
+        `--guide-source=${join(repositoryRoot, "docs", "sarathi.html")}`,
+      ],
+      { cwd: repositoryRoot, encoding: "utf8" },
+    );
+    assert.equal(equals.status, 0, equals.stderr);
+    assert.equal(
+      await readFile(equalsOutput).then((value) => value.length > 0),
+      true,
+    );
     await writeFile(output, "stale\n", "utf8");
     const stale = spawnSync(process.execPath, [...args, "--check"], {
       cwd: repositoryRoot,
@@ -1101,6 +1159,53 @@ test("renderer reads artifact paths from process decisions", async () => {
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("null project artifact paths fall back to the legacy mapping", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sarathi-node-null-paths-"));
+  try {
+    await write(
+      join(root, "docs", "auth.spec.md"),
+      "# Auth - Software Requirements Specification\n",
+    );
+    await write(
+      join(root, ".sdlc", "process-decisions.yaml"),
+      "artifact_paths: null\n",
+    );
+    await write(
+      join(root, ".sdlc", "artifact-paths.yaml"),
+      "canonical:\n  spec: docs/auth.spec.md\n",
+    );
+    assert.equal(
+      (await buildModel(root)).stages.spec.path,
+      "docs/auth.spec.md",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("empty WIP aliases remain present and block later aliases", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sarathi-node-empty-wip-"));
+  try {
+    await write(
+      join(root, ".sdlc", "wip.md"),
+      "Feedback From:   \nFeedback Target: later\n",
+    );
+    assert.deepEqual((await parseWip(root)).learning, { feedback_target: "" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("repeated outer table pipes are stripped like Python", () => {
+  assert.deepEqual(
+    workItems("|||WORK-AUTH-SIGNIN|Sign in|||\n")[0].map(({ id, name }) => ({
+      id,
+      name,
+    })),
+    [{ id: "WORK-AUTH-SIGNIN", name: "Sign in" }],
+  );
 });
 
 test("renderer shows invalid workflow state values", async () => {

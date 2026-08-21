@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   compareCodePoints,
   normalizePath,
+  pythonReportJson,
   splitLines,
   stableJson,
   uniqueSorted,
@@ -59,5 +60,22 @@ test("stable JSON uses Python ordinal key order and exact large integers", () =>
   assert.equal(
     stableJson({ text: "café\u007f" }),
     '{\n  "text": "caf\\u00e9\\u007f"\n}\n',
+  );
+});
+
+test("checker JSON preserves Python floats, ASCII escaping, and large integers", () => {
+  const output = `${pythonReportJson({
+    coverage_pct: 100,
+    text: "café",
+    large: 9007199254740993n,
+  })}\n${pythonReportJson({
+    values: [null, true, false, 2, Number.NaN, undefined],
+    empty: [],
+    omitted: undefined,
+  })}\n`;
+  assert.equal(
+    output,
+    '{\n  "coverage_pct": 100.0,\n  "text": "caf\\u00e9",\n  "large": 9007199254740993\n}\n' +
+      '{\n  "values": [\n    null,\n    true,\n    false,\n    2,\n    null,\n    null\n  ],\n  "empty": []\n}\n',
   );
 });

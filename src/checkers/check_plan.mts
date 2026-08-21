@@ -88,7 +88,8 @@ const LEAD = /^[\s#>\-*+0-9.)]*/,
   DEF_MARKER = /^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+)/;
 const WORK_FIELDS: [string[], string][] = [
   ["Parent scope"],
-  ["Child scope", "Scope"],
+  ["Child scope"],
+  ["Scope"],
   ["Parent IDs / inherited obligations"],
   ["Required child artifacts", "Required child documents"],
 ].map((labels, index) => [
@@ -96,6 +97,7 @@ const WORK_FIELDS: [string[], string][] = [
   [
     "parent_scope",
     "child_scope",
+    "scope",
     "parent_obligations",
     "required_child_artifacts",
   ][index]!,
@@ -266,10 +268,9 @@ export async function checkPlan(
         values: [],
       };
     else {
-      const values = allMatches(block, CLASSIFICATION).map(
-        (value) => CLASSIFICATION.exec(value)?.[1]?.trim() ?? value,
+      const values = [...block.matchAll(CLASSIFICATION)].map((match) =>
+        match[1]!.trim(),
       );
-      CLASSIFICATION.lastIndex = 0;
       if (values.length !== 1)
         classificationIssues[id] = {
           reason: "exactly_one_classification_required",
@@ -340,12 +341,10 @@ export async function checkPlan(
     if (id && !(line.trimStart().startsWith("|") && primary.has(id)))
       definitionIds.push(id);
   }
-  const duplicates = sorted(
-      new Set(
-        definitionIds.filter(
-          (id, index) => definitionIds.indexOf(id) !== index,
-        ),
-      ),
+  const duplicates = definitionIds.filter(
+      (id, index) =>
+        definitionIds.indexOf(id) === index &&
+        definitionIds.lastIndexOf(id) !== index,
     ),
     candidates = new Set([
       ...allMatches(text, PLAN_ID_CANDIDATE),
@@ -362,9 +361,9 @@ export async function checkPlan(
     ),
     mitigation = !externalMentions.length || REAL_BOUNDARY.test(deliveryText),
     unknownInherited = Object.fromEntries(
-      Object.entries(cited).map(([key, values]) => [
+      ["fr", "uc", "nfr", "at", "jt", "comp", "test"].map((key) => [
         key,
-        sorted([...values].filter((id) => !required[key]?.has(id))),
+        sorted([...(cited[key] ?? [])].filter((id) => !required[key]?.has(id))),
       ]),
     );
   const waveInvalid =

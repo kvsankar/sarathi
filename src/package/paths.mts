@@ -1,4 +1,5 @@
 import { access } from "node:fs/promises";
+import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -20,7 +21,13 @@ export async function resolveBundleRoot(
   moduleUrl = import.meta.url,
 ): Promise<string> {
   if (override) {
-    const selected = resolve(override);
+    const expanded =
+      override === "~"
+        ? homedir()
+        : override.startsWith("~/") || override.startsWith("~\\")
+          ? resolve(homedir(), override.slice(2))
+          : override;
+    const selected = resolve(expanded);
     if (!(await isDirectory(selected)))
       throw new Error(`bundle root does not exist: ${selected}`);
     return selected;

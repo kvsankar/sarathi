@@ -50,11 +50,11 @@
     "lint": "eslint src tests-node eslint.config.mjs playwright.config.mjs",
     "lint:markdown": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#.sdlc\" \"#.node-test-dist\" \"#.pytest_cache\" \"#.venv\" \"#.worktrees\" \"#bundle\" \"#dist\" \"#docs/reviews\"",
     "test:foundation": "npm run build:test && node --experimental-test-coverage --test-coverage-include=.node-test-dist/src/**/*.mjs --test-coverage-lines=80 .node-test-dist/tests-node/run-foundation.mjs",
-    "test:checkers": "npm run build:test && node --experimental-test-coverage --test-coverage-include=.node-test-dist/src/checkers/check_*.mjs --test-coverage-lines=80 .node-test-dist/tests-node/run-checkers.mjs",
+    "test:checkers": "npm run build:test && node --experimental-test-coverage --test-coverage-include=.node-test-dist/src/checkers/**/*.mjs --test-coverage-lines=80 --test-coverage-branches=80 .node-test-dist/tests-node/run-checkers.mjs",
     "test:distribution": "npm run build && npm run build:test && node .node-test-dist/tests-node/run-distribution.mjs",
     "test:installers": "npm run build && npm run build:test && node .node-test-dist/tests-node/run-installers.mjs",
     "test:layout": "npm run build && playwright test tests/browser/workflow-status-layout.spec.js --workers=1",
-    "test:status": "npm run build:test && node --experimental-test-coverage --test-coverage-include=.node-test-dist/src/status/**/*.mjs --test-coverage-lines=70 .node-test-dist/tests-node/run-status.mjs",
+    "test:status": "npm run build:test && node --experimental-test-coverage --test-coverage-include=.node-test-dist/src/status/**/*.mjs --test-coverage-lines=80 --test-coverage-branches=80 .node-test-dist/tests-node/run-status.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tests.json --noEmit",
     "verify:release": "npm run build && node dist/package/verify-release.mjs",
     "prepack": "npm run build"

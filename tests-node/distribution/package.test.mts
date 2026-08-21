@@ -105,6 +105,10 @@ test("packed package has an allowlisted, Python-free, dependency-free runtime", 
     false,
   );
   assert.equal(
+    paths.some((path) => path.startsWith("bundle/docs/research/")),
+    false,
+  );
+  assert.equal(
     paths.some((path) => path.includes("assemble")),
     false,
   );
@@ -159,6 +163,11 @@ test("packed package has an allowlisted, Python-free, dependency-free runtime", 
   });
   assert.equal(version.status, 0, version.stderr);
   assert.equal(version.stdout.trim(), String(packageJson.version));
+  const nestedVersion = run(process.execPath, [cli, "install", "--version"], {
+    cwd: application,
+  });
+  assert.equal(nestedVersion.status, 0, nestedVersion.stderr);
+  assert.equal(nestedVersion.stdout.trim(), String(packageJson.version));
 
   const cache = resolve(scratch, "update.json");
   const updateEnvironment = {
@@ -166,11 +175,12 @@ test("packed package has an allowlisted, Python-free, dependency-free runtime", 
     SARATHI_UPDATE_CACHE: cache,
     SARATHI_UPDATE_CHECK: "0",
   };
-  const update = run(process.execPath, [cli, "check-update", "--verbose"], {
+  const update = run(process.execPath, [cli, "check-update"], {
     cwd: application,
     env: updateEnvironment,
   });
   assert.equal(update.status, 0, update.stderr);
+  assert.equal(update.stdout.trim(), "Sarathi SDLC update status unavailable.");
 
   const installTarget = resolve(scratch, "cli-install-target");
   await mkdir(installTarget, { recursive: true });

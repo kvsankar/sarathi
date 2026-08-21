@@ -238,8 +238,9 @@ function positiveInteger(value: string | null): number | null {
 }
 
 function duplicates(values: readonly string[]): string[] {
-  return uniqueSorted(
-    values.filter((value, index) => values.indexOf(value) !== index),
+  return values.filter(
+    (value, index) =>
+      values.indexOf(value) === index && values.lastIndexOf(value) !== index,
   );
 }
 

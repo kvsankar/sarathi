@@ -38,6 +38,19 @@ function parseArgs(argv: string[]): Options {
       else guideSource = value;
       continue;
     }
+    if (
+      argument.startsWith("--output=") ||
+      argument.startsWith("--guide-source=")
+    ) {
+      const [option, value] = argument.split("=", 2);
+      if (!value)
+        throw new Error(
+          `argument ${option ?? "option"}: expected one argument`,
+        );
+      if (option === "--output") output = value;
+      else guideSource = value;
+      continue;
+    }
     if (argument.startsWith("-"))
       throw new Error(`unrecognized argument: ${argument}`);
     if (root !== undefined)
@@ -119,11 +132,10 @@ export async function runStatus(argv = process.argv.slice(2)): Promise<number> {
       }
       if (!(await matches(guideOutput, guide))) {
         console.error(
-          `process guide is out of date; regenerate: ${guideOutput}`,
+          `copied process guide is out of date; regenerate: ${guideOutput}`,
         );
         return 1;
       }
-      console.log(`status page is current: ${output}`);
       return 0;
     }
     await mkdir(dirname(output), { recursive: true });

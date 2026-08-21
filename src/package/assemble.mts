@@ -13,7 +13,8 @@ async function copyTree(source: string, destination: string): Promise<void> {
     filter: (path) =>
       extname(path).toLowerCase() !== ".py" &&
       basename(path) !== "__pycache__" &&
-      !path.includes(`${sep}docs${sep}reviews`),
+      !path.includes(`${sep}docs${sep}reviews`) &&
+      !path.includes(`${sep}docs${sep}research`),
   });
 }
 

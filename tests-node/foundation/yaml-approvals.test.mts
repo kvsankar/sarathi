@@ -44,6 +44,11 @@ records:
   });
 });
 
+test("directory artifact paths are reported as missing files", async () => {
+  const root = await testTemp("directory-artifact");
+  assert.equal(await sha256File(root), null);
+});
+
 test("UTC timestamps are strict and exact file bytes determine SHA-256", async () => {
   assert.equal(validUtcTimestamp("2026-08-21T10:20:30Z"), true);
   assert.equal(validUtcTimestamp("2026-02-30T10:20:30Z"), false);

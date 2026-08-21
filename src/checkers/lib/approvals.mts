@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
 
 import { compareCodePoints, normalizePath, splitLines } from "./output.mjs";
@@ -195,6 +195,7 @@ export async function loadYamlFile(path: string): Promise<YamlValue> {
 
 export async function sha256File(path: string): Promise<string | null> {
   try {
+    if (!(await stat(path)).isFile()) return null;
     return createHash("sha256")
       .update(await readFile(path))
       .digest("hex");

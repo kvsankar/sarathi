@@ -155,7 +155,7 @@ async function runInstall(options: InstallOptions): Promise<number> {
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
   try {
-    if (argv.length === 1 && argv[0] === "--version") {
+    if (argv.includes("--version")) {
       console.log(await version());
       return 0;
     }
@@ -166,7 +166,14 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     }
     if (command === "check-update") {
       const root = await resolveBundleRoot();
-      return await runUpdateCheck(argv.slice(1), {
+      const updateArguments = argv.slice(1);
+      if (
+        !updateArguments.includes("--verbose") &&
+        !updateArguments.includes("--help") &&
+        !updateArguments.includes("-h")
+      )
+        updateArguments.push("--verbose");
+      return await runUpdateCheck(updateArguments, {
         manifestPath: resolve(root, "manifest.json"),
       });
     }

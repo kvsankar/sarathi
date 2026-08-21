@@ -8,4 +8,6 @@ bundle/
 dist/
 test-results/
 playwright-report/
+artifacts/
 .sdlc/
+docs/research/

@@ -75,6 +75,11 @@ jobs:
 
       - name: Publish npm package with provenance
         run: npm publish artifacts/*.tgz --access public --provenance
+        env:
+          # Bootstrap only: npm requires a package to exist before trusted publishing can
+          # be configured. Delete the NPM_TOKEN environment secret after the first release;
+          # npm will then authenticate this same job through OIDC.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   github-release:
     needs: publish

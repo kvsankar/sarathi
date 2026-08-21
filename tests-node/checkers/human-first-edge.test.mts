@@ -184,6 +184,82 @@ test("human-first plan rejects an unsupported work classification", async () => 
   });
 });
 
+test("classification diagnostics report every captured value", async () => {
+  const text = humanFirstPlan.replace(
+    "Work Classification: target-owned implementation",
+    `Work Classification: reuse directly
+  Work Classification: deferred cleanup`,
+  );
+  await withFiles({ "plan.md": text }, async (paths, root) => {
+    const result = await checkPlan([paths["plan.md"]!, "--json"], root);
+    const issues = nested(nested(result.report, "baseline_reuse"), "issues");
+    assert.deepEqual(nested(issues, "PR-AUTH-COMPAT").values, [
+      "reuse directly",
+      "deferred cleanup",
+    ]);
+  });
+});
+
+test("breakdown work requires child scope and scope as separate fields", async () => {
+  const allocation = `Plan Type: Breakdown
+- WORK-AUTH-FIRST
+  Parent scope: feature
+  Scope: deliver sign-in
+  Parent IDs / inherited obligations: FR-AUTH-SIGNIN
+  Required child artifacts: plan
+`;
+  await withFiles({ "plan.md": allocation }, async (paths, root) => {
+    let result = await checkPlan([paths["plan.md"]!, "--json"], root);
+    assert.deepEqual(result.report.incomplete_work_allocations, {
+      "WORK-AUTH-FIRST": ["child_scope"],
+    });
+
+    await writeFile(
+      paths["plan.md"]!,
+      allocation.replace("  Scope:", "  Child scope: slice\n  Scope:"),
+    );
+    result = await checkPlan([paths["plan.md"]!, "--json"], root);
+    assert.deepEqual(result.report.incomplete_work_allocations, {});
+
+    await writeFile(
+      paths["plan.md"]!,
+      allocation.replace(
+        "  Scope: deliver sign-in\n",
+        "  Child scope: slice\n",
+      ),
+    );
+    result = await checkPlan([paths["plan.md"]!, "--json"], root);
+    assert.deepEqual(result.report.incomplete_work_allocations, {
+      "WORK-AUTH-FIRST": ["scope"],
+    });
+  });
+});
+
+test("duplicate reports retain first-definition order", async () => {
+  const text = `- FR-AUTH-FIRST
+- FR-AUTH-SECOND
+- FR-AUTH-SECOND
+- FR-AUTH-FIRST
+`;
+  await withFiles({ "spec.md": text }, async (paths, root) => {
+    const result = await checkSpec([paths["spec.md"]!, "--json"], root);
+    assert.deepEqual(result.report.duplicates, [
+      "FR-AUTH-FIRST",
+      "FR-AUTH-SECOND",
+    ]);
+  });
+});
+
+test("inherited reference groups retain Python key order", async () => {
+  await withFiles({ "plan.md": "- PR-AUTH-FIRST\n" }, async (paths, root) => {
+    const result = await checkPlan([paths["plan.md"]!, "--json"], root);
+    assert.deepEqual(
+      Object.keys(nested(result.report, "unknown_inherited_refs")),
+      ["fr", "uc", "nfr", "at", "jt", "comp", "test"],
+    );
+  });
+});
+
 test("new format rejects machine-only visible headings", async () => {
   const text = humanFirstPlan.replace(
     "### Route password operations through the adapter\n",

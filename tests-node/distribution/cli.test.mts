@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
 
@@ -97,4 +97,5 @@ test("bundle-root override is resolved and validated", async () => {
     resolveBundleRoot(resolve(directory, "missing")),
     /bundle root does not exist/u,
   );
+  assert.equal(await resolveBundleRoot("~"), resolve(homedir()));
 });

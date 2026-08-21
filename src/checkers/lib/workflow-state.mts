@@ -63,7 +63,7 @@ const WIP_ENUMS: Record<string, ReadonlySet<string>> = {
   ]),
 };
 const COMMAND =
-  /^(?:spec|design|plan|code)-(?:create|verify|review|assess)|workflow-status$/i;
+  /^(?:(?:spec|design|plan|code)-(?:create|verify|review|assess)|workflow-status)$/i;
 const OTHER_WIP_FIELDS = [
   "Current Command",
   "Current Stage",

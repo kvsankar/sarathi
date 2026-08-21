@@ -145,9 +145,10 @@ export async function discover(
       relative(root, right).split(sep).length;
     return (
       depth ||
-      left
-        .toLocaleLowerCase("en-US")
-        .localeCompare(right.toLocaleLowerCase("en-US"), "en-US")
+      compareCodePoints(
+        left.toLocaleLowerCase("en-US"),
+        right.toLocaleLowerCase("en-US"),
+      )
     );
   });
 }
@@ -163,7 +164,7 @@ export function metadata(text: string): Record<string, string> {
       `^${escapeRegex(field)}:\\s*(.+?)\\s*$`,
       "im",
     ).exec(text);
-    if (match?.[1]) result[field] = match[1].trim().replace(/\.$/, "");
+    if (match?.[1]) result[field] = match[1].trim().replace(/\.+$/, "");
   }
   return result;
 }
@@ -240,7 +241,11 @@ async function artifactPathMapping(
       const decisions = asRecord(await loadYamlFile(decisionsPath));
       if (!decisions) return [{}, {}, "process decisions must be a mapping"];
       const artifactPaths = decisions.artifact_paths;
-      if (artifactPaths !== undefined && !asRecord(artifactPaths))
+      if (
+        artifactPaths !== undefined &&
+        artifactPaths !== null &&
+        !asRecord(artifactPaths)
+      )
         return [{}, {}, "artifact_paths must be a mapping"];
       loaded = asRecord(artifactPaths);
     }
@@ -399,9 +404,10 @@ export function compactValue(value: unknown): string | null {
     return (
       Object.keys(record)
         .sort((a, b) =>
-          a
-            .toLocaleLowerCase("en-US")
-            .localeCompare(b.toLocaleLowerCase("en-US"), "en-US"),
+          compareCodePoints(
+            a.toLocaleLowerCase("en-US"),
+            b.toLocaleLowerCase("en-US"),
+          ),
         )
         .flatMap((key) => {
           const rendered = compactValue(record[key]);
@@ -409,6 +415,7 @@ export function compactValue(value: unknown): string | null {
         })
         .join("; ") || null
     );
+  if (typeof value === "boolean") return value ? "True" : "False";
   return String(value).trim() || null;
 }
 
@@ -469,9 +476,9 @@ async function approvalFor(
     const resolved = await resolveLedgerPath(root, stringValue(artifact.path));
     if (resolved && resolve(resolved) === resolve(path)) matches.push(record);
   }
-  matches.sort((a, b) =>
-    stringValue(b.approved_at).localeCompare(stringValue(a.approved_at)),
-  );
+  const approvalTime = (record: StatusValue): string =>
+    record.approved_at === null ? "None" : stringValue(record.approved_at);
+  matches.sort((a, b) => compareCodePoints(approvalTime(b), approvalTime(a)));
   for (const record of matches) {
     const artifact = asRecord(record.artifact)!;
     if (
@@ -541,9 +548,9 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function titleCase(value: string): string {
-  return value.replace(/(^|[ -])\p{L}/gu, (part) =>
-    part.toLocaleUpperCase("en-US"),
-  );
+  return value
+    .toLocaleLowerCase("en-US")
+    .replace(/(^|[ -])\p{L}/gu, (part) => part.toLocaleUpperCase("en-US"));
 }
 function errorCode(error: unknown): unknown {
   return error && typeof error === "object" && "code" in error
@@ -565,7 +572,7 @@ function section(text: string, heading: string): string {
 function paragraphField(block: string, label: string): string | null {
   const multiline = new RegExp(
     `(?:^|\\n)\\s{2}${escapeRegex(label)}:\\s*(.+?)(?=\\n\\s{2}[A-Z][A-Za-z /-]+:\\s|(?![\\s\\S]))`,
-    "is",
+    "s",
   ).exec(block);
   if (multiline?.[1])
     return splitLines(multiline[1])
@@ -618,7 +625,7 @@ function annotatedDeliveryStarts(
     if (line.trimStart().startsWith("|")) {
       const cells = line
         .trim()
-        .replace(/^\||\|$/g, "")
+        .replace(/^\|+|\|+$/g, "")
         .split("|")
         .map((cell) => cell.trim().replaceAll("`", ""));
       const candidate = cells[0];
@@ -701,10 +708,11 @@ export async function parseWip(root: string): Promise<StatusValue> {
     "Extra Checks",
     "Assurance Modules",
   ]) {
-    const value = new RegExp(`^${escapeRegex(field)}:\\s*(.+?)\\s*$`, "im")
-      .exec(text)?.[1]
-      ?.trim();
-    if (value) result[field] = value;
+    const match = new RegExp(
+      `^${escapeRegex(field)}:[ \\t]*(.*?)[ \\t]*$`,
+      "im",
+    ).exec(text);
+    if (match?.[1] !== undefined) result[field] = match[1].trim();
   }
   if (!result["Current Command"]) {
     const legacy = stringValue(result["Current Stage"]).trim();
@@ -718,19 +726,22 @@ export async function parseWip(root: string): Promise<StatusValue> {
     }
   }
   for (const [field, key] of WIP_LEARNING_FIELDS) {
-    const value = new RegExp(`^${escapeRegex(field)}:\\s*(.+?)\\s*$`, "im")
-      .exec(text)?.[1]
-      ?.trim();
-    if (value && !(key in result.learning)) result.learning[key] = value;
+    const match = new RegExp(
+      `^${escapeRegex(field)}:[ \\t]*(.*?)[ \\t]*$`,
+      "im",
+    ).exec(text);
+    if (match?.[1] !== undefined && !(key in result.learning))
+      result.learning[key] = match[1].trim();
   }
   for (const [field, key] of [
     ...WIP_PRODUCT_FIELDS,
     ...WIP_LEGACY_PRODUCT_FIELDS,
   ]) {
-    const value = new RegExp(`^${escapeRegex(field)}:\\s*(.+?)\\s*$`, "im")
-      .exec(text)?.[1]
-      ?.trim();
-    if (value) result.product_status[key] = value;
+    const match = new RegExp(
+      `^${escapeRegex(field)}:[ \\t]*(.*?)[ \\t]*$`,
+      "im",
+    ).exec(text);
+    if (match?.[1] !== undefined) result.product_status[key] = match[1].trim();
   }
   result.product_status.working_result ||=
     result.product_status.working_today ||
@@ -752,7 +763,7 @@ export async function parseWip(root: string): Promise<StatusValue> {
     if (!line.trim().startsWith("|")) continue;
     const cells = line
       .trim()
-      .replace(/^\||\|$/g, "")
+      .replace(/^\|+|\|+$/g, "")
       .split("|")
       .map((cell) => cell.trim());
     if (
@@ -1168,7 +1179,7 @@ async function buildLearningWaveModel(
     sequenceWaves.sort(
       (a, b) =>
         (a.order ?? 1e9) - (b.order ?? 1e9) ||
-        stringValue(a.id).localeCompare(stringValue(b.id)),
+        compareCodePoints(stringValue(a.id), stringValue(b.id)),
     );
     sequences.push({
       plan_path: planRelative,

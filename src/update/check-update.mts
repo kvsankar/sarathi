@@ -52,12 +52,20 @@ function defaultManifestPath(): string {
 
 function defaultCachePath(): string {
   if (process.env.SARATHI_UPDATE_CACHE)
-    return resolve(process.env.SARATHI_UPDATE_CACHE);
+    return resolve(expandUser(process.env.SARATHI_UPDATE_CACHE));
   const base =
     process.platform === "win32" && process.env.LOCALAPPDATA
       ? process.env.LOCALAPPDATA
       : (process.env.XDG_CACHE_HOME ?? resolve(homedir(), ".cache"));
   return resolve(base, "sarathi-sdlc", "update.json");
+}
+
+function expandUser(path: string): string {
+  return path === "~"
+    ? homedir()
+    : path.startsWith("~/") || path.startsWith("~\\")
+      ? resolve(homedir(), path.slice(2))
+      : path;
 }
 
 async function readObject(path: string): Promise<Record<string, unknown>> {
@@ -169,7 +177,7 @@ export function updateNotice(current: string, latest: string): string {
     `Sarathi SDLC ${latest} is available; installed version is ${current}. ` +
     "Ask for explicit user approval before updating. If approved, install " +
     `the exact version with \`npx --yes sarathi-sdlc@${latest} install\`, then ` +
-    "reload or restart the agent tools."
+    "check that manifest.json shows the approved version, then reload or restart the agent tools."
   );
 }
 

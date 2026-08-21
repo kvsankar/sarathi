@@ -175,12 +175,10 @@ export async function checkSpec(
     )
       definitionIds.push(identifier);
   }
-  const duplicates = sorted(
-    new Set(
-      definitionIds.filter(
-        (item, index) => definitionIds.indexOf(item) !== index,
-      ),
-    ),
+  const duplicates = definitionIds.filter(
+    (item, index) =>
+      definitionIds.indexOf(item) === index &&
+      definitionIds.lastIndexOf(item) !== index,
   );
   const badIdFormat = sorted(
     new Set(allMatches(text, CANDIDATE).filter((item) => !ID_FULL.test(item))),

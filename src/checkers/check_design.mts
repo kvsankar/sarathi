@@ -213,17 +213,15 @@ export async function checkDesign(
       if (kind(id) === "IFACE") ifaceDefinitionIds.push(id);
     }
   }
-  const duplicates = sorted(
-    new Set(
-      definitionIds.filter((id, index) => definitionIds.indexOf(id) !== index),
-    ),
+  const duplicates = definitionIds.filter(
+    (id, index) =>
+      definitionIds.indexOf(id) === index &&
+      definitionIds.lastIndexOf(id) !== index,
   );
-  const ifaceDuplicates = sorted(
-    new Set(
-      ifaceDefinitionIds.filter(
-        (id, index) => ifaceDefinitionIds.indexOf(id) !== index,
-      ),
-    ),
+  const ifaceDuplicates = ifaceDefinitionIds.filter(
+    (id, index) =>
+      ifaceDefinitionIds.indexOf(id) === index &&
+      ifaceDefinitionIds.lastIndexOf(id) !== index,
   );
   const ifaceOwners = new Map<string, string>(),
     ifaceOwnerIssues: string[] = [];

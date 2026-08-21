@@ -23,6 +23,10 @@ export function stableJson(value: unknown): string {
   return `${serialize(value, 0)}\n`;
 }
 
+export function pythonReportJson(value: unknown): string {
+  return serializeReport(value, 0);
+}
+
 /** Compare strings the way Python orders Unicode strings. */
 export function compareCodePoints(left: string, right: string): number {
   const leftPoints = Array.from(
@@ -72,6 +76,40 @@ function serialize(value: unknown, depth: number): string {
       ([key, nested]) => `${quoteString(key)}: ${serialize(nested, depth + 1)}`,
     );
     return `{\n${indent}${properties.join(`,\n${indent}`)}\n${closing}}`;
+  }
+  return "null";
+}
+
+function serializeReport(value: unknown, depth: number, key?: string): string {
+  if (value === null || value === undefined) return "null";
+  if (typeof value === "bigint") return value.toString();
+  if (typeof value === "string") return quoteString(value);
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return "null";
+    return key?.endsWith("_pct") && Number.isInteger(value)
+      ? `${String(value)}.0`
+      : String(value);
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "[]";
+    const indent = "  ".repeat(depth + 1);
+    const closing = "  ".repeat(depth);
+    return `[\n${indent}${value.map((item) => serializeReport(item, depth + 1)).join(`,\n${indent}`)}\n${closing}]`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value).filter(
+      ([, item]) => item !== undefined,
+    );
+    if (entries.length === 0) return "{}";
+    const indent = "  ".repeat(depth + 1);
+    const closing = "  ".repeat(depth);
+    return `{\n${indent}${entries
+      .map(
+        ([name, item]) =>
+          `${quoteString(name)}: ${serializeReport(item, depth + 1, name)}`,
+      )
+      .join(`,\n${indent}`)}\n${closing}}`;
   }
   return "null";
 }

@@ -79,7 +79,10 @@ compiled checkers, status renderer, installers, and documentation.
 The tag workflow reruns the Node and browser checks, builds the `.tgz`, publishes it through
 the protected `npm` environment and npm Trusted Publishing with provenance, then creates the
 GitHub Release and attaches the package. Configure the npm trusted publisher before the first
-authorized release. Do not use a long-lived npm token.
+authorized release. For the first release of a new package, use a short-lived granular token
+in the `npm` environment's `NPM_TOKEN` secret because npm requires the package to exist before
+trusted publishing can be configured. After that release, configure the trusted publisher,
+delete the secret, and rely on OIDC. Never use a long-lived npm token.
 
 ## Verification
 

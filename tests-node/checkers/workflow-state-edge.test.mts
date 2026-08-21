@@ -114,3 +114,23 @@ approval:
     assert.ok(issues.every(({ reason }) => reason.length > 0));
   });
 });
+
+test("workflow commands must match the entire field value", async () => {
+  await withRoot(async (root) => {
+    await writeState(
+      root,
+      "wip.md",
+      `Current Command: spec-create rubbish
+Current Stage: garbage workflow-status
+`,
+    );
+    const issues = await validateWorkflowState(root);
+    assert.deepEqual(
+      issues.map(({ field, value }) => ({ field, value })),
+      [
+        { field: "Current Command", value: "spec-create rubbish" },
+        { field: "Current Stage", value: "garbage workflow-status" },
+      ],
+    );
+  });
+});

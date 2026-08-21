@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-base-to-string, @typescript-eslint/no-non-null-assertion */
 import { readFile } from "node:fs/promises";
 
-import { compareCodePoints, splitLines } from "./output.mjs";
+import { compareCodePoints, pythonReportJson, splitLines } from "./output.mjs";
 
 export const HEADING = /^(#{1,6})\s+(.+?)\s*$/;
 export const DEF_MARKER = /^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+)/;
@@ -144,7 +144,7 @@ export async function readUtf8(path: string): Promise<string> {
 }
 
 export function printJson(value: unknown): void {
-  process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+  process.stdout.write(`${pythonReportJson(value)}\n`);
 }
 
 export function pythonRepr(value: unknown): string {

@@ -107,7 +107,7 @@ async function scanInputs(
           path: relPath(supplied, root),
           reason: `unsupported source extension ${extension || "<none>"}`,
         });
-      else files.add(supplied);
+      else files.add(resolve(supplied));
     } else if (info.isDirectory())
       (await sourceFiles(supplied, suffixes)).forEach((path) =>
         files.add(path),
@@ -362,7 +362,7 @@ export async function checkCode(
   const processHits = await processIdHits(scanned, root, declared);
   let testsExit: number | null = null,
     testsPass: boolean | null = null;
-  if (command !== null) {
+  if (command !== null && (typeof command === "string" || command.length > 0)) {
     testsExit = execute(command, shell, root);
     testsPass = testsExit === 0;
   }

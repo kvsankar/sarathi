@@ -26,6 +26,19 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 - Choose assessment-report boundaries by coherent review units rather than approval policy or
   pauses, and update the same report across correction rounds.
 
+### Fixed
+
+- Restore Python-era validation parity for breakdown work fields and workflow command values,
+  and preserve complete classification diagnostics.
+- Restore deterministic code-point ordering, ID-derived title casing, multiline field parsing,
+  source-file deduplication, empty verification-command handling, and explicit update-check
+  feedback in the TypeScript runtime.
+- Restore Python-compatible JSON reports, duplicate and field ordering, path expansion,
+  status parsing, CLI argument and message behavior, and artifact-file validation.
+- Raise Node checker and status coverage gates to require both 80% line and branch coverage.
+- Restore installer regression coverage for legacy-skill archival and bundle replacement.
+- Keep local research documents ignored and out of assembled or installed bundles.
+
 ### Removed
 
 - Remove the Python runtime, PyPI packaging, and Python-only test infrastructure after

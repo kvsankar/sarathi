@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import test from "node:test";
 
 import {
@@ -76,6 +76,52 @@ test("check code fails when the verification command fails", async () => {
     const result = await checkCode(args, files.root, () => 3);
     assert.equal(result.exitCode, 1);
     assert.equal(result.report.verification_command_exit, 3);
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("an empty tests argv means no verification command", async () => {
+  const files = await fixture();
+  try {
+    const args = [...files.args];
+    args[args.indexOf("--tests-argv") + 1] = "[]";
+    let executed = false;
+    const result = await checkCode(args, files.root, () => {
+      executed = true;
+      return 0;
+    });
+    assert.equal(executed, false);
+    assert.equal(result.report.verification_command, "");
+    assert.equal(result.report.verification_command_passed, null);
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("overlapping relative file and directory inputs are scanned once", async () => {
+  const files = await fixture();
+  try {
+    await writeFile(
+      resolve(files.root, "tests", "test_auth.js"),
+      "// FR-AUTH-SIGNIN\n",
+    );
+    const args = [
+      ...withoutFlag(files.args, "--tests-dir"),
+      "--tests-dir",
+      relative(process.cwd(), resolve(files.root, "tests", "test_auth.js")),
+      "--src",
+      files.root,
+    ];
+    const result = await checkCode(args, files.root, () => 0);
+    assert.deepEqual(result.report.process_id_hits, [
+      {
+        path: "tests/test_auth.js",
+        line: 1,
+        identifier: "FR-AUTH-SIGNIN",
+        text: "// FR-AUTH-SIGNIN",
+      },
+    ]);
   } finally {
     await rm(files.root, { recursive: true, force: true });
   }
