@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -44,14 +45,21 @@ export async function verifyRelease(
   return `Release metadata matches ${expectedTag}.`;
 }
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (isDirectInvocation(import.meta.url)) {
   try {
     console.log(await verifyRelease(process.argv[2] ?? ""));
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 2;
+  }
+}
+
+function isDirectInvocation(metaUrl: string): boolean {
+  const invoked = process.argv[1];
+  if (!invoked) return false;
+  try {
+    return realpathSync(invoked) === realpathSync(fileURLToPath(metaUrl));
+  } catch {
+    return resolve(invoked) === resolve(fileURLToPath(metaUrl));
   }
 }

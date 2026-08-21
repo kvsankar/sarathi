@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { homedir } from "node:os";
+import { realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
@@ -211,8 +212,15 @@ export async function runUpdateCheck(
   return 0;
 }
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-)
+if (isDirectInvocation(import.meta.url))
   process.exitCode = await runUpdateCheck();
+
+function isDirectInvocation(metaUrl: string): boolean {
+  const invoked = process.argv[1];
+  if (!invoked) return false;
+  try {
+    return realpathSync(invoked) === realpathSync(fileURLToPath(metaUrl));
+  } catch {
+    return resolve(invoked) === resolve(fileURLToPath(metaUrl));
+  }
+}

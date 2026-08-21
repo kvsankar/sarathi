@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-base-to-string, @typescript-eslint/no-non-null-assertion */
+import { realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { compareCodePoints, pythonReportJson, splitLines } from "./output.mjs";
 
@@ -156,10 +159,9 @@ export function pythonRepr(value: unknown): string {
 export function isDirectInvocation(metaUrl: string): boolean {
   const invoked = process.argv[1];
   if (!invoked) return false;
-  return (
-    new URL(metaUrl).pathname.toLocaleLowerCase("en-US") ===
-    new URL(
-      `file:///${invoked.replaceAll("\\", "/")}`,
-    ).pathname.toLocaleLowerCase("en-US")
-  );
+  try {
+    return realpathSync(invoked) === realpathSync(fileURLToPath(metaUrl));
+  } catch {
+    return resolve(invoked) === resolve(fileURLToPath(metaUrl));
+  }
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
+import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -194,8 +195,14 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   }
 }
 
-if (
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-)
-  process.exitCode = await main();
+if (isDirectInvocation(import.meta.url)) process.exitCode = await main();
+
+function isDirectInvocation(metaUrl: string): boolean {
+  const invoked = process.argv[1];
+  if (!invoked) return false;
+  try {
+    return realpathSync(invoked) === realpathSync(fileURLToPath(metaUrl));
+  } catch {
+    return resolve(invoked) === resolve(fileURLToPath(metaUrl));
+  }
+}
