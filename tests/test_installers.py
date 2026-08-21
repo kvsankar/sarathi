@@ -394,7 +394,10 @@ def test_project_install_assembles_canonical_docs_into_skill(tmp_path: Path) -> 
             path.name for path in expected
         ]
         for source in expected:
-            assert (installed_docs / source.name).read_bytes() == source.read_bytes()
+            if source.is_file():
+                assert (installed_docs / source.name).read_bytes() == source.read_bytes()
+            else:
+                assert (installed_docs / source.name).is_dir()
 
 
 def test_project_install_rebuilds_owned_bundle_subdirectories(tmp_path: Path) -> None:
