@@ -1,6 +1,34 @@
 # sarathi — Build Production Software with AI Agents
 
-![Sarathi guiding Arjuna's chariot](docs/assets/sarathi-chariot-hero.png)
+<!--- pyml disable-next-line no-inline-html --->
+<p align="center">
+  <a href="https://github.com/kvsankar/sarathi/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/kvsankar/sarathi/ci.yml?branch=master&amp;style=flat-square" alt="CI" />
+  </a>
+  <a href="https://github.com/kvsankar/sarathi/releases/latest">
+    <img src="https://img.shields.io/github/v/release/kvsankar/sarathi?style=flat-square" alt="Latest release" />
+  </a>
+  <a href="https://pypi.org/project/sarathi-sdlc/">
+    <img src="https://img.shields.io/pypi/v/sarathi-sdlc?style=flat-square" alt="PyPI version" />
+  </a>
+  <a href="https://pypi.org/project/sarathi-sdlc/">
+    <img src="https://img.shields.io/pypi/pyversions/sarathi-sdlc?style=flat-square" alt="Python versions" />
+  </a>
+  <a href="https://pypistats.org/packages/sarathi-sdlc">
+    <img src="https://img.shields.io/pypi/dm/sarathi-sdlc?style=flat-square" alt="PyPI downloads" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/kvsankar/sarathi?style=flat-square" alt="MIT license" />
+  </a>
+  <a href="https://github.com/kvsankar/sarathi/stargazers">
+    <img src="https://img.shields.io/github/stars/kvsankar/sarathi?style=flat-square" alt="GitHub stars" />
+  </a>
+</p>
+
+<!--- pyml disable-next-line no-inline-html --->
+<p align="center">
+  <img src="docs/assets/sarathi-chariot-hero.png" alt="Sarathi guiding Arjuna's chariot" width="50%" />
+</p>
 
 Sarathi helps coding agents turn approved requirements into the smallest safe working change
 through clear requirements, design, planning, coding, automatic checks, and independent

@@ -8,9 +8,13 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Added
+
+- License Sarathi under the MIT License and include the license in package metadata.
+
 ### Docs
 
-- Add a chariot illustration as the README hero image.
+- Add a centered chariot hero image and repository status badges to the README.
 
 ## 0.9.0 - 2026-08-21
 
