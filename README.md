@@ -1,5 +1,7 @@
 # sarathi — Build Production Software with AI Agents
 
+![Sarathi guiding Arjuna's chariot](docs/assets/sarathi-chariot-hero.png)
+
 Sarathi helps coding agents turn approved requirements into the smallest safe working change
 through clear requirements, design, planning, coding, automatic checks, and independent
 review. It keeps the next step clear and adjusts the remaining work from real feedback.
