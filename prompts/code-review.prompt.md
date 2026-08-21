@@ -11,23 +11,24 @@ implementation, `.sdlc/wip.md`, available check results, `docs/artifact-contract
 `docs/feedback-and-learning.md`, `docs/test-ownership.md`, `docs/cleanup-pass.md`, and
 `docs/simplify-pass.md`, plus `docs/project-quality-gates.md` and
 `docs/result-reporting.md`. For an authorized
-existing-system baseline review, follow `docs/project-entry.md`; otherwise block when
-approved requirements or an implementable plan are missing or unfit.
+review of the current system without a plan, follow `docs/project-entry.md`; otherwise block
+when approved requirements or a plan ready for implementation are missing or unfit.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and seek counterexamples. Do not rerun commands unless needed to
 resolve missing or contradictory evidence.
 
-After issues are fixed, review only those fixes. If a fix is incomplete, correct it and
-check it again. Do not repeat the full review unless a fix materially changes the
-implementation. Apply the correction-closure procedure in
+After issues are fixed, review only those fixes. If a fix is incomplete, leave the issue open.
+After it is corrected, check only that fix again. Do not repeat the full review unless a fix
+materially changes the implementation. Apply the correction-closure procedure in
 `docs/review-verification-checklist.md`.
 
 ## Judge
 
-After the plain-language review result, report actionable findings ordered by severity and grounded in file/line references.
-Check correctness, important edge cases, fit with the approved documents, meaningful tests
-with clear pass/fail results, and whether external dependencies were tested credibly.
+State the result first. Then report actionable findings by severity with file and line
+references. Ask: Does the code behave correctly? Are important failure cases covered? Does
+it match the approved requirements and plan? Do tests have clear pass/fail results? Were
+important external dependencies tested through a credible interface?
 For behavior changes, inspect whether the evidence shows a meaningful test failing for the
 expected reason before the implementation made it pass, followed by safe refactoring. Do
 not infer test-first development merely because tests now exist or pass. Accept a non-Red
@@ -36,27 +37,27 @@ verification.
 Confirm that changed files match the plan, the committed local gate and hook are suitable
 for the repository and passed, process IDs did not enter source, and the implementation is
 no more complicated than the requested behavior.
-Classify earlier-document impact using `docs/feedback-and-learning.md`. A defect where the
+Decide whether earlier documents must change using `docs/feedback-and-learning.md`. A defect where the
 accepted documents are right and the code is wrong is a code fix, not a required document
-revision. When an earlier document is genuinely wrong or incomplete, name the exact blocked
-obligations and continue reviewing unrelated fixes.
-For a Decision/evidence outcome, also confirm the code stays within the experimental boundary,
-the resulting evidence supports the named decision, and no product-ready or deployment claim
+revision. When an earlier document is genuinely wrong or incomplete, name the exact
+obligations that block code—such as behavior, scope, contracts, acceptance criteria, tests,
+or risk—and continue reviewing unrelated fixes.
+For a Decision/evidence outcome, confirm the code stays within the experiment's limits, the
+result supports the named decision, and no product-ready or deployment claim
 is made.
-Treat unexplained skips and expected failures as evidence gaps. An environment-specific
-skip is acceptable when another explicit command or CI job runs that boundary successfully;
-the marker inventory alone neither rejects the code nor proves the evidence sufficient.
-Use private marker candidates from the assessment when available; otherwise scan the changed
-source and tests privately. Report only candidates that become actionable findings, never a
-warning section or marker inventory.
+Treat unexplained skips and expected failures as missing proof. A test may be skipped in one
+environment when another named command or CI job runs it successfully. Private scans may
+help the reviewer find suspicious skips or markers, but report only real problems, not scan
+output or counts.
 
 Start with simplification. Identify code, commands, tests, files, or PR boundaries that can
 be removed, collapsed, deferred, or proved by existing checks. A green, traceable implementation can still be
 `Needs rework` when overbuilt. Simplification may require revision of an earlier spec,
 design, or plan; do not confine it to local refactoring.
 
-Report one plain-language result, categorized findings, interpreted evidence, what can be
-deleted, deferred, or reused, impact-ranked fixes, feedback, and earlier-document changes.
+Report the result first. List problems by severity, explain what the checks prove, say what
+can be deleted, deferred, or reused, rank fixes by impact, and note feedback or changes needed
+in earlier documents.
 Preserve `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and
 internal state; follow `docs/result-reporting.md` for chat. Write/update
 the scope-appropriate report from `docs/document-locations.md`: `code-review.md` only for

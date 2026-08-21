@@ -9,14 +9,9 @@ must improve judgment without turning every prompt into a checklist wall.
 - Keep Sarathi's identity anchored in [enduring-model.md](enduring-model.md). Treat status
   formats, identifier placement, compatibility rules, and checker fixes as supporting
   guidance rather than the top-level process story.
-- Put repeated policy in shared docs such as
-  [project-entry.md](project-entry.md), [progressive-disclosure.md](progressive-disclosure.md),
-  [work-in-progress.md](work-in-progress.md),
-  [bootstrap-instructions.md](bootstrap-instructions.md),
-  [artifact-formatting.md](artifact-formatting.md), and
-  [cross-cutting-concerns.md](cross-cutting-concerns.md),
-  [work-decomposition.md](work-decomposition.md), and
-  [feedback-and-learning.md](feedback-and-learning.md), and reference it from prompts.
+- Put repeated policy in its owning shared document. The routing map in
+  [progressive-disclosure.md](progressive-disclosure.md) lists those owners. Reference the
+  owning document from prompts instead of copying its rules.
 - Prefer one crisp command instruction plus one shared reference over copying a concern into
   every create, verify, review, and assess prompt.
 - Keep `SKILL.md` as the short instruction file that is always loaded. It should select the project entry
@@ -27,7 +22,7 @@ must improve judgment without turning every prompt into a checklist wall.
 - Prefer short core instructions plus only the extra checks required by
   [assurance-profiles.md](assurance-profiles.md) over universal concern lists.
 - Apply [simplicity-first.md](simplicity-first.md): process requirements stay outside
-product architecture, and new generic machinery requires concrete evidence.
+  product architecture, and new generic machinery requires a concrete need.
 
 ## Test Executable Contracts, Not Policy Prose
 
@@ -102,7 +97,7 @@ need interpretation, such as TODO or skipped-test candidates, are private review
 they are not a public warning category. A reviewer reports only candidates that become
 actionable findings.
 
-## Evidence Language
+## Language About Results
 
 Use precise language:
 
@@ -111,11 +106,11 @@ Use precise language:
 - "Claim" means an agent/project-authored file or field such as
   `.sdlc/wip.md`, `.sdlc/process-decisions.yaml`, `.sdlc/test-traceability.yaml`,
   `.sdlc/approvals.yaml`, or `real_boundary: true`.
-- "Verified" should be reserved for evidence backed by a command, observed output, real
+- "Verified" should be reserved for a result backed by a command, observed output, real
   dependency, generated file, matching approval record, or independent review.
 
-Do not let a green checker result imply semantic correctness, human consent, or
-real-boundary execution unless the evidence actually proves that.
+Do not let a green checker result imply correct meaning, human consent, or a test against
+the real dependency unless the result actually proves that.
 
 ## Change And Release Records
 

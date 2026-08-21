@@ -14,25 +14,26 @@ Assess the target plan using two separate passes. Load `prompts/plan-verify.prom
 ## Run
 
 Run full passes once for the current revision. After issues are fixed, rerun affected checks
-and review only those fixes. If a fix is incomplete, correct it and check it again. Repeat
-the full assessment only when a fix materially changes the document.
+and review only those fixes. If a fix is incomplete, leave the issue open. After it is
+corrected, check only that fix again. Repeat the full assessment only when a fix materially
+changes the document.
 
-1. **Check pass**: execute `prompts/plan-verify.prompt.md` inline, including earlier
-   checkers, IDs, coverage, and work-group membership. Preserve commands, metrics, failures,
-   and approval evidence only.
+1. **Check pass**: run `prompts/plan-verify.prompt.md` here, including required earlier
+   checks. Keep commands, IDs, results, failures, and approval records separate from quality
+   judgment.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/plan-review.prompt.md` using the plan plus check results. Judge
-   slicing, pass/fail checks, dependencies, feedback, parallel work, delivery assurance, and
-   readiness.
+   whether the work is split well, tests have clear results, dependencies and parallel work
+   are safe, feedback is planned, and implementation can start.
 
 If sub-agents are unavailable, disclose that the review was not independent and keep the
-passes separate. Failed or unfit required earlier documents block the plan verdict. A Lean
-plan may combine technical decisions with planning; do not require a standalone design when
+passes separate. Failed checks or an unfit required earlier document block the plan verdict.
+A Lean plan may combine technical decisions with planning; do not require a standalone design when
 the selected profile permits that path. Other compact plans may rely on approved parent
 documents; do not require unnecessary child spec/design files.
 
-Report one plain-language assessment result, the main engineering consequence, categorized
-findings, interpreted check results, and impact-ranked actions. Preserve
+State the result first. List problems by severity, explain the check results, and rank next
+actions by impact. Preserve
 `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
 state; follow `docs/result-reporting.md` for chat.
 

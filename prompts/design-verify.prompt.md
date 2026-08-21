@@ -5,23 +5,10 @@ agent: agent
 
 # Design Verify
 
-## Workflow state
-
-At the start of this command, follow `docs/work-in-progress.md` and load
-`docs/result-reporting.md`: read `.sdlc/wip.md` if it exists, check important claims against
-the named files, and use it only as a resume note.
-Before any hard stop, blocker report, or completed command handoff, update `.sdlc/wip.md`
-with the current command, document paths, decisions/assumptions, check results,
-blockers/open questions, bootstrap status, and next recommended action. Do not store
-secrets or long command logs.
-
-## Document formatting
-
-For Markdown documents and reports produced or revised by this command, follow
-`docs/artifact-formatting.md`: wrap normal prose and list continuation lines at 80
-characters where practical, while allowing longer lines for tables, URLs, code/logs,
-paths, hashes, IDs, approval records, and syntax where wrapping would reduce correctness
-or readability.
+Read `.sdlc/wip.md` as a resume note when it exists. Follow
+`docs/work-in-progress.md`, `docs/artifact-formatting.md`, and `docs/result-reporting.md`.
+Before stopping, update WIP with the current command, files, results, open problems, and next
+action. Do not store secrets or long logs.
 
 Run repeatable checks for a Software Design Document. This command collects evidence
 only; it does not judge whether the design is a good design. Use the `design-review` command for
@@ -63,21 +50,21 @@ if that is unavailable, retry with `uv run python`.
 Report:
 
 - Exact commands executed.
-- Document format and human-first structure issues: Technical Approach placement (or
-  legacy Technical Crux), machine-only visible headings, final traceability, and
-  annotation/table resolution. Unmarked legacy files stay on the legacy contract.
+- Document structure problems, including Technical Approach placement (or legacy Technical
+  Crux), visible machine-only headings, final traceability, and references that do not resolve
+  between annotations and tables. Do not apply the new format to an unmarked legacy file.
 - Raw checker JSON.
 - Exit codes.
 - `passed/total`.
 - Any spec failures.
-- Any bad IDs, duplicates, orphan refs, component requirement coverage gaps, component test
-  obligation gaps, missing/untraced `TEST-` obligations, missing `JT-`-to-`TEST` journey
-  coverage visible in the design, ambiguous interface ownership, dependency cycles, or
-  vague hits.
-- `external_double_mentions`, `external_double_drift_risks`, and
-  `external_double_mitigation_tests`. If a design mentions mocked/faked/stubbed or locally
-  mirrored external interfaces, report the remaining drift risk and how the contract is
-  checked against the real dependency or official types.
+- Every failure category reported by the checker, including invalid or duplicate IDs, broken
+  references, missing component requirement or test coverage, missing or untraced `TEST-*`
+  obligations, missing `JT-*` journey coverage, unclear interface ownership, dependency
+  cycles, and vague wording hits.
+- The `external_double_mentions`, `external_double_drift_risks`, and
+  `external_double_mitigation_tests` totals.
+- When an external dependency is mocked, what remains untested and how the contract is checked
+  against the real dependency or its official types.
 - Approval requirements and stale/missing approval records when `--require-approvals` is
   used.
 

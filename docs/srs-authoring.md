@@ -3,9 +3,9 @@
 Use these rules when drafting, reconstructing, or reviewing a Software Requirements
 Specification. They extend Sarathi's required SRS format with a stricter quality bar.
 
-Start with the [needs-to-evidence model](requirements-model.md). These rules add atomicity,
-detailed use cases where the behavioral complexity warrants them, measurable supplementary
-requirements, and source reconstruction without replacing that organizing model.
+Start with the [requirements model](requirements-model.md). These rules explain how to keep
+each item focused, add detail to complex use cases, write measurable quality requirements,
+and compare existing sources.
 
 ## Research Basis
 
@@ -27,7 +27,7 @@ requirements, and source reconstruction without replacing that organizing model.
   recommends short examples, and uses Given/When/Then to express initial context, event, and
   expected observable outcome: <https://cucumber.io/docs/gherkin/reference/>
 
-## Atomicity
+## One Idea Per Item
 
 User needs:
 
@@ -88,7 +88,7 @@ Use-case review rules:
 - Do not replace alternate/error flows with "handled normally" or "standard error."
 - Frequency/importance may be qualitative when unknown, but it must help prioritization.
 
-## Supplementary Requirements
+## Quality And Constraint Requirements
 
 Use the categories below only when the accepted scope, stakeholder need, external contract,
 or identified risk makes them relevant. Write measurable supplementary requirements for
@@ -111,7 +111,7 @@ entry for every category.
 
 ## Reconstructing Requirements For An Existing System
 
-Before writing a retrospective baseline SRS, inventory source sets:
+Before writing a spec for an existing system, list the available sources:
 
 - Existing specs, design docs, ADRs, README files, runbooks, deployment docs, CI config.
 - Tests, fixtures, golden outputs, screenshots, examples, generated clients/schemas.
@@ -120,22 +120,22 @@ Before writing a retrospective baseline SRS, inventory source sets:
 - Operational evidence such as dashboards, logs, traces, alerts, smoke checks, deployment
   scripts, and environment configuration.
 
-Classify each source set:
+Classify each group of sources:
 
-- Current controlling source: authoritative behavior or policy to preserve.
+- Current source of truth: behavior or policy that must be preserved.
 - Adopted source: non-authoritative but accepted as current intended behavior.
 - Adapted source: useful but revised to match current intent.
-- Background proposal: informative but not current requirement intent.
-- Historical review evidence: useful defect/risk evidence, not itself controlling behavior.
-- Open-decision ledger: unresolved conflict or decision still needing human choice.
+- Background proposal: useful context, but not a current requirement.
+- Historical review: useful information about defects or risk, but not the source of behavior.
+- Open decision: a conflict or choice that still needs a person to decide.
 - Rejected/stale source: explicitly not used.
 
 Existing-system SRS rules:
 
-- Add a `Source Reconciliation` section or equivalent subsection.
+- Add a `Source Reconciliation` section, or an equivalent section that compares the sources.
 - Preserve useful detail from existing behavior, tests, and docs. Do not collapse separate
   modes, roles, states, errors, or external contracts into one vague requirement.
-- Mark inferred requirements and name the evidence behind them.
+- Mark inferred requirements and name the sources that support them.
 - Mark conflicts and gaps as open decisions; do not silently choose between sources when the
   choice changes behavior, support risk, compliance, or compatibility.
 - Separate current behavior from desired future deltas.
@@ -148,8 +148,8 @@ Fail or require rework even if the automatic checker passes when the SRS is:
 - Cryptic: domain terms, states, actors, or outcomes are not explained.
 - Over-bundled: one need, FR, NFR, or AT carries multiple unrelated behaviors.
 - Under-scenarioed: important alternate/error paths are absent.
-- Under-sourced in existing-system work: current behavior was summarized without source
-  reconciliation.
+- Under-sourced in existing-system work: current behavior was summarized without comparing
+  the available sources.
 - Empty linking: IDs are linked, but the linked content does not actually verify or
   derive the behavior.
 - Design-heavy: implementation choices appear where external behavior or constraints are
@@ -166,6 +166,6 @@ Automatic checks can catch likely problems, not prove quality. Useful checks:
 - `UN-`/`FR-` items with multiple sentences, semicolons, repeated "shall", or obvious
   conjunction bundling.
 - `AT-` items that reference more than one `UC-` or too many `FR-`/`NFR-` IDs.
-- Existing-system specs without `Source Reconciliation` and source classification terms.
+- Existing-system specs that do not compare their sources.
 - NFRs lacking numeric thresholds, units, scope, or verification method.
 - Vague terms such as "etc.", "as appropriate", "fast", "easy", and "TBD".

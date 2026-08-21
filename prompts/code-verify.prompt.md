@@ -49,13 +49,13 @@ Prefer `--tests-argv`; use `--tests-shell` only for trusted commands requiring s
 behavior. Add `--require-approvals` when implementation depends on an approved plan or
 mock. Retry with `python3` or `uv run python` when needed.
 
-Report exact commands, raw JSON, exits, passed/total, approval requirements, process-ID
-source hits, and the concrete test or command behind each claimed risk check. The checker
-records command outcomes; review judges whether the tests and evidence are meaningful. Do
-not publish non-blocking marker candidates or a warning section. A failing verification
-command remains a failure. Do not require IDs inside source to establish coverage. Use an exact repeated
-`--generated-traceability-path` only for explicit generated external ledger files, never to
-hide ordinary source pollution.
+Report exact commands, raw JSON, exit codes, pass totals, approval problems, process IDs found
+in source, and the command behind each risk check. Explain failures in plain language. The
+checker records command results; review judges whether the tests are meaningful. Do not
+publish non-blocking scan candidates or a warning section. A failed command remains a
+failure. Do not require process IDs in source to prove coverage. Repeat
+`--generated-traceability-path` for each exact generated traceability file outside normal
+source. Never use it to hide process IDs in normal source.
 
 ## Project And Additional Checks
 
@@ -80,6 +80,6 @@ Start with one plain result:
 - `Verification result: Checks passed | Checks failed | Checks could not run`;
 - what the checks establish, then commands and raw metrics;
 - missing verification and unavailable checks, separate from process/documentation problems;
-- evidence limits: commands do not prove that the design is suitable, tests are meaningful, or the change is simple,
-  true stakeholder feedback, or human approval;
+- evidence limits: commands do not prove that the design is suitable, tests are meaningful,
+  the change is simple, feedback is genuine, or a person approved the work;
 - recommended next command, `code-review` or `code-assess`, using the current host's explicit invocation form.

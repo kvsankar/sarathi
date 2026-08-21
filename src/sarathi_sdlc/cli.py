@@ -88,7 +88,7 @@ def _run_update_check(_: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sarathi-sdlc",
-        description="Install and inspect the Sarathi software-delivery skill bundle.",
+        description="Install Sarathi commands and check for updates.",
     )
     parser.add_argument("--version", action="version", version=__version__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -104,13 +104,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--with-checkers",
         dest="checkers",
         action="store_true",
-        help="copy project-local checkers during an implicit user install",
+        help="also copy checkers into the project folder",
     )
     checker_mode.add_argument(
         "--no-checkers",
         dest="checkers",
         action="store_false",
-        help="skip the separate project-local checker copy",
+        help="do not copy checkers into the project folder",
     )
     install.add_argument("--no-cross-install", action="store_true")
     install.add_argument("--dry-run", action="store_true")

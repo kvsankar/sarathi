@@ -236,7 +236,7 @@ def validate_approval_record(
 ) -> list[str]:
     issues: list[str] = []
     if not isinstance(record, dict):
-        return ["approval record must be a mapping"]
+        return ["approval record must be a YAML section with named fields"]
     for key in (
         "id",
         "gate",
@@ -254,11 +254,11 @@ def validate_approval_record(
         issues.append("approved_at must be UTC ISO-8601 like 2026-07-01T14:32:18Z")
     artifact = record.get("artifact")
     if not isinstance(artifact, dict):
-        issues.append("artifact must be a mapping")
+        issues.append("artifact details must be a YAML section with named fields")
         return issues
     for key in ("kind", "path", "sha256"):
         if not artifact.get(key):
-            issues.append(f"artifact missing {key}")
+            issues.append(f"artifact details are missing {key}")
     if artifact.get("kind") == "marker-inventory":
         if not re.fullmatch(r"[0-9a-f]{64}", str(artifact.get("sha256", ""))):
             issues.append(
@@ -268,9 +268,11 @@ def validate_approval_record(
         artifact_path = project_root / str(artifact.get("path", ""))
         actual_hash = sha256_file(artifact_path)
         if actual_hash is None:
-            issues.append(f"artifact path does not exist: {artifact.get('path')}")
+            issues.append(f"file does not exist: {artifact.get('path')}")
         elif artifact.get("sha256") != actual_hash:
-            issues.append(f"artifact hash is stale: {artifact.get('path')}")
+            issues.append(
+                f"approval is for an earlier version of: {artifact.get('path')}"
+            )
     if record.get("status") == "auto-approved":
         issues.extend(
             _policy_allows(record, gates_policy or {}, recorded_approval_policy)
@@ -357,15 +359,18 @@ def approval_requirement(
         "approval_id": None,
         "status": None,
         "evidence_semantics": (
-            "hash-current local attestation, not proof of human consent"
+            "this record matches the current file; it does not prove that a person "
+            "approved it"
         ),
         "issues": [],
     }
     if context.get("load_error"):
-        result["issues"].append(f"approval ledger load failed: {context['load_error']}")
+        result["issues"].append(
+            f"could not read the approval file: {context['load_error']}"
+        )
         return result
     if not context.get("exists"):
-        result["issues"].append(f"approval ledger missing: {context['approvals_path']}")
+        result["issues"].append(f"approval file not found: {context['approvals_path']}")
         return result
     invalid_by_id = {
         item["id"]: item["issues"] for item in context.get("invalid_records", [])
@@ -405,7 +410,7 @@ def approval_requirement(
     if candidate_issues:
         result["issues"] = list(dict.fromkeys(candidate_issues))
     else:
-        result["issues"].append("matching approval not found")
+        result["issues"].append("no approval matches this file and version")
     return result
 
 

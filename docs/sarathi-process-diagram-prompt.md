@@ -21,11 +21,11 @@ should feel like an experienced engineering organization's architecture poster, 
 generic corporate flowchart, dashboard, web page, Mermaid diagram, UML export, or release
 notes graphic.
 
-Composition/framing: wide landscape poster composed for documentation and presentation
-use; native generator dimensions may differ from 16:9. Use one visually dominant adaptive
-delivery loop in the center, a clearly visible three-path profile selector, a conditional
-decomposition branch below planning, and two strong quality rails beneath the loop.
-Continuity and authoring rules remain quiet supporting material. Keep all connectors clean
+Composition/framing: wide landscape poster for documentation and presentations; native
+generator dimensions may differ from 16:9. Put one clear delivery loop in the center, a
+visible choice among three paths, a “split work only when needed” branch below planning, and
+separate rows for checks and independent review beneath the loop. Resume and writing rules
+remain quiet supporting material. Keep all connectors clean
 and avoid crossing arrows.
 
 1. TITLE AND ENDURING STATEMENT
@@ -74,18 +74,18 @@ and avoid crossing arrows.
    "Revise"
    "Replan"
 
-3. CONDITIONAL DECOMPOSITION — A FIRST-CLASS STRENGTH
+3. SPLIT WORK ONLY WHEN NEEDED
    Beneath the Plan panel, show a clear decision diamond titled:
    "CAN THE WORK BE UNDERSTOOD AS ONE COHERENT UNIT?"
 
    Add a compact explanation beside it, verbatim:
-   "Decomposition reduces mental load. Split when the work cannot be understood as one coherent unit."
+   "Split the work when one unit would be too hard to understand and review safely."
 
    Two paths leave it:
    - Main path: "Yes — keep the work together"
-   - Branch path: "No — decompose along a natural boundary"
+   - Branch path: "No — split at a clear product or technical division"
 
-   The branch fans into four compact, human-readable boundary cards:
+   The branch fans into four compact, human-readable cards:
    "Capability or outcome"
    "Responsibility or data"
    "Interface or dependency"
@@ -119,8 +119,8 @@ and avoid crossing arrows.
    Add a smaller clarification:
    "Automatic checks report facts. Review judges meaning, test adequacy, simplicity, and safety."
 
-5. CONTINUITY — RESUMABLE WITHOUT CHAT HISTORY
-   Show a quiet vertical thread titled "CONTINUITY" connecting three items:
+5. EASY TO RESUME WITHOUT CHAT HISTORY
+   Show a quiet vertical thread titled "RESUME" connecting three items:
    "Accepted decisions"
    "Working evidence"
    "Current position + one next action"
@@ -128,8 +128,8 @@ and avoid crossing arrows.
    Caption, verbatim:
    "A new engineer or agent can resume from source records and observed results."
 
-6. PROFILE PATHS — ROUTE AND REVIEW CADENCE FOLLOW CONSEQUENCE
-   Show a compact but prominent route selector titled "ASSURANCE PROFILE" with three paths:
+6. CHOOSE A PATH THAT FITS THE RISK
+   Show a compact but prominent selector titled "DELIVERY PATH" with three paths:
    "Lean — Spec → Plan with technical decisions → Code"
    "Standard — Spec → Design → Implementation plan → Code"
    "High-assurance — Spec → Design → Breakdown → Child plans → Code slices"
@@ -137,7 +137,7 @@ and avoid crossing arrows.
    Show a complete quality-gate marker at every stage retained by each route. For
    High-assurance, show review points before code and after each meaningful code slice.
 
-   Caption, verbatim: "Profiles change the path and review cadence, not review quality."
+   Caption, verbatim: "Profiles change the path and when reviews happen, not review quality."
 
 7. SUPPORTING AUTHORING RULES — VISUALLY SECONDARY
    Use a narrow pale footer band titled "SUPPORTING RULES". Include only four short items:

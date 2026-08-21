@@ -1,5 +1,5 @@
 ---
-description: Turn accepted requirements and constraints into an implementable, evolvable technical model.
+description: Explain how the system will meet the approved requirements.
 agent: agent
 ---
 
@@ -11,11 +11,12 @@ model at the level of detail the work needs.
 ## Load And Gate
 
 Read `.sdlc/wip.md`, process decisions, the accepted spec, existing design/code evidence,
-and relevant ADRs. Block when requirements are materially ambiguous or unfit.
+and relevant ADRs. Block when accepted requirements are materially unclear or otherwise
+unfit.
 
 Load `docs/artifact-contracts.md`, `docs/document-locations.md`, `docs/assurance-profiles.md`, `docs/design-principles.md`, and
 `docs/human-first-artifacts.md` for the Design contract, architectural judgment, narrative,
-and traceability layers. Load `docs/result-reporting.md` for the handoff.
+and traceability layers. Load `docs/result-reporting.md` for the final report.
 
 ## Triggered References
 
@@ -24,7 +25,7 @@ Load only when the trigger applies:
 - `docs/simplicity-first.md`: a new abstraction, reuse decision, or refactor is in scope;
 - `docs/cross-cutting-concerns.md`: an identified risk needs an owner and checks;
 - `docs/test-ownership.md`: parent or cross-child test intent is involved;
-- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before handoff.
+- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before reporting.
 
 Use the recorded assurance profile, approval policy, and work outcome unless new evidence
 requires a change. Keep exact process fields in metadata. For decision/evidence work, design
@@ -77,7 +78,7 @@ guidance in `docs/artifact-contracts.md`.
   schema/OpenAPI, CI, build, and deployment tests; add only focused proof for the changed
   boundary.
 
-Use the scope-appropriate name from `docs/document-locations.md`: `design.md` only for
+Use the name for this scope from `docs/document-locations.md`: `design.md` only for
 Product/system, otherwise `<work-slug>.design.md`; for Product/system also write its
 reviewable `design.html` unless other paths are named. For Feature/component or Slice/change,
 create `design.html` only when visual review materially helps the decision. Child designs
@@ -91,7 +92,7 @@ UI implementation remains blocked until explicit user approval.
 When a prototype already exists, reference it as `Approved Prototype Artifact: path` and
 reuse its existing `ux.mock.approved` record instead of creating another mock.
 
-## Verify And Handoff
+## Check And Report
 
 Run:
 
@@ -100,18 +101,16 @@ python checkers/check_spec.py <spec-path> --json
 python checkers/check_design.py <design-path> --spec <spec-path> --json
 ```
 
-Retry launchers when needed. For child documents, use checker feature/parent options. Use
-those results as the check pass for one assessment cycle under
-`prompts/design-assess.prompt.md`; do not rerun unchanged checks. This embedded run is the
-official assessment for the current revision and owns its scope-appropriate assessment
-report. Apply safe in-scope findings once using the correction-propagation rule in
-`docs/review-verification-checklist.md`, then run one focused recheck/re-review. If a fix
-requires a material revision, stop instead of changing accepted intent. Hand off the current
-verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
+Retry launchers when needed. For child documents, use checker feature/parent options. Use the
+results as the check pass for one assessment under `prompts/design-assess.prompt.md`; do not
+rerun unchanged checks. This is the official assessment for this revision and uses the normal
+assessment report. Apply one set of safe, in-scope fixes, update every affected copy, and have
+a fresh reviewer check only those fixes. If a fix requires any material revision, stop
+instead of changing approved requirements or design decisions. Report the current result even
+when it is `Needs rework`; do not accept `Pass-with-fixes`.
 
 Run simplify, update `.sdlc/wip.md`, and stop according to the recorded approval policy.
-Human checkpoints require explicit approval; automatic approval needs an eligible local policy
-and an explicit end-to-end instruction before planning. Give one plain-language result,
-then changed paths, interpreted evidence, categorized problems, impact-ranked
-actions, assumptions, risks, open questions, and recommended next command `plan-create` using
-the current host's explicit invocation form.
+Human checkpoints require explicit approval; automatic approval needs an eligible local
+policy and an explicit end-to-end instruction before planning. State the result first. Then
+list changed paths, check and review results, problems by severity, assumptions, risks, open
+questions, and the next command `plan-create` using the current host's explicit form.

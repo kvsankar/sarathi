@@ -127,13 +127,13 @@ if (-not (Test-Path -LiteralPath $SkillSource)) {
 }
 if (Test-SamePath $TargetRoot $RepoRoot) {
     Write-Detail (
-        "Note: TargetRoot is the commands repository itself. This is okay for dogfooding, " +
-        "but project-local artifacts such as GitHub Copilot prompts and checkers will be " +
-        "installed into the source checkout. Use -TargetRoot <product-workspace> for a product."
+        "You are installing into Sarathi's own source folder. This is useful for testing " +
+        "Sarathi, but it will add prompts and checkers here. Use -TargetRoot <project-folder> " +
+        "to install into a product project."
     )
 }
 if ($DryRun) {
-    Write-Detail "Dry run: no files will be written and no companion install will be executed."
+    Write-Detail "Dry run: no files will be written and nothing will be installed in WSL."
 }
 
 $InstallableTools = @("codex", "copilot", "claude-code", "gemini", "claude", "pi")
@@ -254,7 +254,7 @@ function Write-DestinationSummary {
                     Write-Detail "  Explicit Sarathi command skills -> $(Split-Path -Parent $skillDest)"
                 }
                 if ($Scope -eq "user") {
-                    Write-Detail "    User-scoped VS Code prompt files plus Copilot CLI/agent skill locations."
+                    Write-Detail "    VS Code prompts and Copilot skills for the current user."
                 }
                 Write-Detail "    Explicit commands use prefixed skills such as sarathi-code-review and sarathi-code-assess."
                 Write-Detail "    Reload Copilot CLI skills with /skills reload, then check /skills info sarathi."
@@ -307,8 +307,8 @@ function Copy-Checkers {
     $dest = Join-Path $TargetRoot "checkers"
     if ($Scope -eq "user") {
         Write-Detail (
-            "Note: Checkers are project-local; installing them to " +
-            "$TargetRoot\checkers even though Scope is user. Use -NoCheckers to skip them."
+            "Checkers belong in a project folder. They will be installed in " +
+            "$TargetRoot\checkers. Use -NoCheckers to skip them."
         )
     }
     if ($DryRun) {
@@ -439,22 +439,21 @@ description: "$description"
 
 # Sarathi Command: $stageName
 
-This is an agent-neutral, explicit-only entry point for the Sarathi $stageName command.
-Do not invoke it implicitly for an ordinary coding request.
+This skill runs the Sarathi $stageName command. Use it only when the user asks for that
+command.
 
-First read ../sarathi/SKILL.md and apply its global operating rules, including revision
-classification. Keep this explicitly selected command; do not reroute to another command.
-Follow the bundled prompt file prompts/$promptFileName exactly. Use bundled checker scripts
-from checkers/ when the prompt calls for deterministic verification.
-Resolve any transitive prompts referenced as prompts/*.prompt.md from
-../sarathi/prompts/, and shared docs from ../sarathi/docs/. Load only the files triggered
-by the command; if the sibling Sarathi bundle is missing, report an incomplete installation.
+Read ../sarathi/SKILL.md, including its rules for deciding when earlier documents must
+change. Then follow prompts/$promptFileName exactly. Use this command; do not switch to
+another one. If it links to another prompt or document, read that file from the Sarathi
+bundle. Read only the files this command or its linked instructions require. When the prompt
+asks for a checker, use the bundled checker in ../sarathi/checkers/. If a required file is
+missing, say that the installation is incomplete.
 
-Keep required approvals, safety stops, declared file scope, test evidence, and independent
-review. For every result, status, or handoff response, follow
-../sarathi/docs/result-reporting.md and ../sarathi/docs/work-in-progress.md. Lead with one
-plain engineering outcome and explain secondary process status. Do not start later work
-when the prompt says to stop for the user.
+Respect approvals, safety limits, the file scope declared by the command, actual test
+evidence, and independent review. Follow ../sarathi/docs/result-reporting.md and
+../sarathi/docs/work-in-progress.md when reporting the result. Start with what changed or
+what was found, then explain any Sarathi status. When the prompt tells you to wait for the
+user, stop and do not start later work.
 "@
         Set-AtomicUtf8File (Join-Path $stageDest "SKILL.md") $stageSkill
 
@@ -718,11 +717,11 @@ function Install-WslCompanion {
         return
     }
     if ($DryRun) {
-        Write-Detail "Would install WSL companion targets if WSL is available."
+        Write-Detail "Would also install Sarathi in WSL if WSL is available."
         return
     }
     if (-not (Test-WslAvailable)) {
-        Write-Detail "WSL not available; skipping WSL companion install."
+        Write-Detail "WSL is not available; skipping the WSL installation."
         return
     }
 
@@ -731,7 +730,7 @@ function Install-WslCompanion {
     $scriptWsl = "$repoWsl/scripts/install.sh"
     $toolList = $expandedTools -join ","
 
-    Write-Detail "Installing WSL companion targets via $scriptWsl"
+    Write-Detail "Installing Sarathi in WSL via $scriptWsl"
     Invoke-WslInstallScript `
         -ScriptPath $scriptWsl `
         -TargetPath $targetWsl `
@@ -740,7 +739,7 @@ function Install-WslCompanion {
         -SkipCheckers $NoCheckers `
         -Detailed $Verbose
     if ($LASTEXITCODE -ne 0) {
-        throw "WSL companion install failed with exit code $LASTEXITCODE"
+        throw "WSL installation failed with exit code $LASTEXITCODE"
     }
 }
 

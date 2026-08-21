@@ -1,12 +1,9 @@
 ---
-description: Turn approved intent and technical decisions into an executable delivery structure.
+description: Plan what will change, in what order, and how it will be tested.
 agent: agent
 ---
 
 # Plan Create
-
-Turn approved requirements and technical decisions into an executable Breakdown or
-Implementation plan.
 
 ## Load And Gate
 
@@ -24,7 +21,7 @@ Load only when the trigger applies:
 - `docs/cross-cutting-concerns.md`: an identified risk needs an extra check;
 - `docs/project-quality-gates.md`: the repository lacks a local gate or hook, or the
   delivery changes its language or tooling;
-- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: before handoff.
+- `docs/artifact-formatting.md` and `docs/simplify-pass.md`: before reporting.
 
 Block only on gaps that make implementation unsafe; scope size or document level is not a
 blocker. Follow the selected profile path and escalation rules.
@@ -36,8 +33,8 @@ Ask one question:
 > Can a competent engineer understand, explain, review, and safely plan this work as one
 > coherent unit?
 
-- If yes, choose `Plan Type: Implementation`. Under High-assurance, record why this is
-  already one independently safe slice and needs no one-child Breakdown wrapper.
+- If yes, choose `Plan Type: Implementation`. Under High-assurance, say why this work is
+  already small enough to review, test, and integrate safely.
 - If no, split along natural product or technical boundaries and choose `Plan Type:
   Breakdown` for the resulting independently useful child outcomes.
 
@@ -47,7 +44,7 @@ where it belongs; it does not automatically require a Breakdown plan. Link accep
 documents instead of reproducing them. A Breakdown plan organizes child outcomes; it does
 not authorize code.
 
-For a `Decision/evidence` work outcome, make the plan's done signal the named decision, not a
+For a `Decision/evidence` work outcome, make the required result the named decision, not a
 shippable increment. State the question, decision owner, evidence method, boundaries,
 timebox or stop condition, and next action. Recommend `code-create` only when a planned
 prototype or experiment needs code; otherwise recommend the evidence-gathering or decision
@@ -77,11 +74,12 @@ For an Implementation plan:
 
 - for Lean without a design, add concise Technical Decisions and map spec acceptance to
   executable checks;
-- map the outcome into a PR dependency graph; one cohesive PR is a valid one-node graph and
-  omits empty topology fields;
+- list the PRs and their dependencies; one cohesive PR is valid and needs no empty dependency
+  fields;
 - for each PR, state outcome, impact allocation, verification, and applicable rollback;
-- when there is more than one PR, state graph edges, predecessors/successors, merge order,
-  safe parallel paths, critical path, conflicts, and integration points;
+- when there is more than one PR, say which PRs depend on others, which can run together,
+  their merge order, the dependency chain that controls completion, likely conflicts, and
+  where they must be tested together;
 - make each PR cohesive, testable, safe to undo, and clear about the files, modules, and
   contracts it expects to change; keep `PR-*` IDs in traceability;
 - link required behavior and tests from approved documents;
@@ -99,22 +97,24 @@ For an Implementation plan:
 
 For a Breakdown plan, create a dependency graph of independently useful `WORK-*` outcomes.
 Each item names its observable result, affected areas, owner, dependencies, readiness,
-integration or feedback point, and done signal. Require only the minimum document for each,
+integration or feedback point, and required result. Require only the minimum document for each,
 and use a work group only for a real shared checkpoint.
 
-Use the scope-appropriate name from `docs/document-locations.md`: `plan.md` only for
+Use the name for this scope from `docs/document-locations.md`: `plan.md` only for
 Product/system, otherwise `<work-slug>.plan.md`, unless another path is named; do not create `plan.html`.
 
-## Verify And Handoff
+## Check And Report
 
-Run earlier applicable checkers and `check_plan.py` once for this revision. Use those results as
-the check pass for one assessment cycle under `prompts/plan-assess.prompt.md`; do not rerun unchanged checks.
-This embedded run is the official assessment for the current revision and owns its scope-appropriate assessment report.
-Apply safe in-scope findings once, use the correction-propagation rule in `docs/review-verification-checklist.md`, and run one focused recheck/re-review. If a fix requires a material revision, stop instead of changing accepted intent.
-Hand off the current verdict even when it is `Needs rework`; the agent does not accept `Pass-with-fixes`.
-Interpret checker results before raw metrics, run simplify, and give one plain-language
-result with categorized problems and impact-ranked actions. Update WIP, then stop according
-to the recorded approval policy. Human checkpoints require explicit approval;
-automatic approval needs an eligible local policy and an explicit
-end-to-end instruction. Recommend `code-create` only for a product increment or planned code
-experiment; otherwise recommend the evidence-gathering or decision step.
+Run earlier applicable checkers and `check_plan.py` once for this revision. Use the results as
+the check pass for one assessment under `prompts/plan-assess.prompt.md`; do not rerun unchanged
+checks. This is the official assessment for this revision and uses the normal assessment
+report. Apply one set of safe, in-scope fixes, update every affected copy, and have a fresh
+reviewer check only those fixes. If a fix requires any material revision, stop instead of
+changing approved requirements or design decisions. Report the current result even when it
+is `Needs rework`; do not accept `Pass-with-fixes`.
+
+Explain checker results before raw metrics, simplify the plan, and state the result first.
+List problems by severity and next actions. Update WIP, then follow the recorded approval policy.
+Human checkpoints require explicit approval. Automatic approval requires an eligible local policy and explicit end-to-end instruction.
+Recommend `code-create` only for a product increment or planned code experiment; otherwise
+recommend the next evidence or decision step.

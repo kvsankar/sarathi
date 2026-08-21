@@ -76,33 +76,29 @@ Classify each discovered set as one of:
 - `background`: use only as context or historical evidence;
 - `none_found`: no relevant material was found.
 
-## Rules For Documenting An Existing System
+## Documenting An Existing System
 
-Documenting an existing system reconstructs approved requirements; it is not a blind transcript of
-whatever the current code happens to do.
+When documenting an existing system, use the code, tests, and current documents as evidence
+of intended behavior. Do not assume every current behavior is correct.
 
-- The retrospective SRS expresses reconstructed accepted product/system intent from
-  existing specs, docs, tests, code, and user clarification. Existing code is evidence, not
-  the source of truth.
-- After the SRS is drafted, possible outcomes are: current code matches the SRS; current
-  code has implementation gaps; or the SRS overreached, misread, or invented intent and
-  must be revised.
-- The retrospective design describes the current accepted architecture grounded in code and
-  constrained by the approved SRS. It may name risks, technical debt, and improvement
-  candidates, but adoption itself must not silently convert those into redesign work.
-  Redesign requires an explicit user-approved delta.
-- SRS `AT-`/`JT-` items and design `TEST-` obligations are normative verification
-  obligations once the documents are accepted. Existing tests are evidence of current
-  coverage, not the source of truth.
-- If existing tests differ from or fall short of the SRS/design obligations, surface the
-  gap rather than rewriting the obligations down to current tests.
+- Build the spec from existing specs, docs, tests, code, and user clarification. Do not treat
+  code as the source of truth.
+- When the new spec and the code disagree, decide whether the code is wrong or the spec
+  misunderstood the product.
+- Describe the accepted current design as shown by the code and constrained by the approved
+  spec. You may note risks, technical debt, and possible improvements, but do not turn them
+  into redesign work without user approval.
+- Once accepted, the spec's `AT-` and `JT-` items and the design's `TEST-` items define what
+  must be checked. Existing tests show current coverage; they do not redefine the requirement.
+- If existing tests do not cover an accepted requirement, report the gap. Do not weaken the
+  requirement to match the tests.
 
 Review existing code and tests against the reconstructed requirements. Report two kinds of
 gap:
 
-- **Code gaps against SRS**: behavior missing, different, ambiguous, or accidentally
-  implemented relative to the reconstructed approved requirements.
-- **Test gaps against SRS/design**: `AT-`, `JT-`, or `TEST-` obligations missing, weakly
+- **Code gaps against SRS**: behavior that is missing, different, ambiguous, or accidental
+  compared with the accepted requirements.
+- **Test gaps against SRS/design**: `AT-`, `JT-`, or `TEST-` items that are missing, weakly
   asserted, indirectly covered without a clear pass/fail check, or only covered by risky
   doubles.
 
@@ -111,7 +107,7 @@ Classify each finding as exactly one of:
 - `fix-code`: implementation should change to match accepted SRS/design intent.
 - `add-or-strengthen-tests`: tests should be added or improved to cover accepted
   SRS/design obligations.
-- `revise-artifact`: the SRS or design appears wrong, overreached, or misread current
+- `revise-artifact`: the SRS or design appears wrong, claims too much, or misread current
   approved requirements.
 - `defer-delta`: the gap is real but should become an explicit future delta only if the
   user approves it.
@@ -168,8 +164,8 @@ record `approval.authorization: "explicit_yolo"`, and list important assumptions
 If the user later corrects a decision, update the record rather than silently relying on the
 stale choice.
 
-The starting mode says how Sarathi enters the repository. The assurance profile, approval
-policy, and work outcome describe how the current work proceeds.
+The starting mode says how Sarathi begins in the repository. The assurance profile,
+approval policy, and work outcome say how the current work proceeds.
 
 ## Stage Rules
 

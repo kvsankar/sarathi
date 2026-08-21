@@ -525,7 +525,8 @@ def main() -> int:
                             "approval_id": None,
                             "status": None,
                             "issues": [
-                                "Approved UI intent artifact is required by the spec"
+                                "The spec requires an approved UI mockup or prototype, "
+                                "but no file was listed"
                             ],
                         }
                     )
@@ -719,24 +720,25 @@ def main() -> int:
         print(json.dumps(report, indent=2))
     else:
         labels = {
-            "workflow_state_valid": "Current-work and project-choice values are valid",
+            "workflow_state_valid": "Saved work status and project settings are valid",
             "has_delivery_items": "At least one change is planned",
             "id_format_slug_only": "Identifiers use the supported format",
             "no_duplicates": "No duplicate identifiers",
-            "no_orphan_refs": "All references resolve",
+            "no_orphan_refs": "Every referenced ID exists",
             "external_double_mitigation_present": (
-                "External test substitutes have a real-dependency check"
+                "Tests using a substitute also check the real external dependency"
             ),
             "work_allocations_well_formed": "Child work has the required links",
             "learning_waves_well_formed": "Work groups are valid",
-            "learning_wave_members_complete": "Work group members resolve",
+            "learning_wave_members_complete": "Every item named in a work group exists",
             "no_forward_deps": "Planned changes are in dependency order",
             "required_approvals_present": "Required approvals are current",
             "human_first_structure": (
-                "Plain-language opening and traceability are present"
+                "The document starts with a plain summary and ends with links "
+                "between related items"
             ),
             "baseline_reuse_classified": (
-                "Existing, shared, target-owned, new, and deferred work is classified"
+                "The plan says what will be reused, changed, added, or postponed"
             ),
             "sections_present": "Required sections are present",
         }

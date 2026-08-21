@@ -1,7 +1,7 @@
 # Workflow Status Visualization
 
-Sarathi can render a repeatable, read-only HTML page showing how parent intent has expanded
-into working code and tests. The page helps people find and understand the work. It is not
+Sarathi can render a repeatable, read-only HTML page showing how requirements connect to
+working code and tests. The page helps people find and understand the work. It is not
 an approval record, completion percentage, or substitute for checks and review.
 Formal status responses follow [result-reporting.md](result-reporting.md): one
 plain-language engineering result comes first, and internal document and approval states
@@ -9,19 +9,16 @@ are explained afterward.
 
 ## What The View Shows
 
-- **Engineering snapshot first**: the explicitly recorded `Status Result` and
-  ordinary-language `Status Summary`, followed by the goal, working result, blockers, and
-  next action from `.sdlc/wip.md`. Every completion claim names its exact scope.
-- **Document tree trunk**: product spec, design, and plan presence, readiness, and whether
-  each approval matches the current file.
-- **Process state second**: current document approvals, delivery evidence, and the most
-  immediate process gap. An approved plan with no implementation remains visibly
-  unimplemented in the engineering snapshot.
-- **Progressively disclosed workflow tree**: the product Spec/Design/Plan trunk remains
-  visible, the current `WORK-` allocation opens by default, and other allocations stay
-  collapsed until requested. Each expanded branch uses the same Spec/Design/Plan/Code
-  backgrounds and Product/Feature/Slice level tags as the static process guide. Missing
-  documents remain explicit `Not yet done` nodes.
+- **Current result first**: `Status Result`, plain-language `Status Summary`, goal, working
+  result, blockers, and next action from `.sdlc/wip.md`. Every completion claim names its
+  exact scope.
+- **Main documents**: whether the product spec, design, and plan exist, are ready, and have
+  approval matching the current file.
+- **Process details second**: current approvals, delivery results, and the next process
+  problem. An approved plan with no implementation still shows as not implemented.
+- **Expandable work tree**: the product Spec/Design/Plan path remains visible. The current
+  `WORK-` item opens by default; other work stays collapsed. Missing documents show as `Not
+  yet done`.
 - **Schedule and PRs in the tree**: each child-work row shows its one work-group label.
   Expanding that row shows its implementation PRs and their state. Opening its existing
   details reveals the expected result, review point, and conditions that stop or change the
@@ -33,20 +30,26 @@ are explained afterward.
 - **Malformed-allocation warning**: ID-shaped `WORK-*` bullets that do not satisfy
   `WORK-AREA-NAME` remain visible in a repair warning but are excluded from valid
   allocation counts and workflow branches.
-- **Checks-and-review learning evidence**: a branch whose code checks and review passed can
-  show the learning and next decisions recorded in a matching code-assessment record.
+- **Results from checks and review**: work whose code checks and review passed can show what
+  was learned and what happens next from its matching code-assessment record.
 
-The renderer discovers canonical `spec.md`, `design.md`, and `plan.md` files; use the
-`artifact_paths` section of `.sdlc/process-decisions.yaml` when
-[document-locations.md](document-locations.md) selected a non-standard or ambiguous area. Child specs,
-designs, and plans linked by a plain `Parent Work Item: WORK-*` field or a `WORK-*` ID in
-the first heading. A compact implementation plan that reuses approved earlier documents is
-shown without false missing-spec/design nodes; older marker fields remain readable. It also reads
-Breakdown-plan `Work Groups` sections; `.sdlc/approvals.yaml`; `.sdlc/gates.yaml`;
-`.sdlc/process-decisions.yaml`;
-`.sdlc/delivery-records.yaml`; `.sdlc/wip.md`; and
-`.sdlc/test-traceability.yaml` when a project voluntarily maintains one. It ignores common
-dependency, cache, and VCS directories.
+The renderer finds `spec.md`, `design.md`, and `plan.md`. If the project stores them elsewhere,
+record their paths under `artifact_paths` in `.sdlc/process-decisions.yaml` as described in
+[document-locations.md](document-locations.md).
+
+It finds child documents through `Parent Work Item: WORK-*` or a `WORK-*` ID in the first
+heading. It understands compact plans that reuse earlier documents and remains compatible
+with older marker fields.
+
+It also reads:
+
+- `Work Groups` in Breakdown plans;
+- `.sdlc/approvals.yaml` and `.sdlc/gates.yaml`;
+- `.sdlc/process-decisions.yaml` and `.sdlc/delivery-records.yaml`;
+- `.sdlc/wip.md`; and
+- optional `.sdlc/test-traceability.yaml`.
+
+It ignores common dependency, cache, and version-control directories.
 
 ## What Each Status Means
 
@@ -54,27 +57,27 @@ dependency, cache, and VCS directories.
 | --- | --- |
 | Approved | A local approval record matches the document path and current SHA-256. |
 | Present | The document exists without a matching current approval record. |
-| Approval stale | An approval exists for the path, but not for the current bytes. Select the parent-approval badge for the affected record, hash prefixes, and required fresh approval. |
+| Approval out of date | The document changed after approval. Review and approve the current version. |
 | Not yet done | No document was found for that stage. |
 | Documents started | A child spec or design exists, but no child plan was found. |
 | Compact plan | Approved earlier documents plus one implementation plan replace unnecessary child spec/design files. |
-| Child plan found | A parent `WORK-` item has a child implementation plan. |
+| Detailed plan found | A parent `WORK-` item has a child Implementation plan. |
 | PRs planned | A child plan declares PR slices without linked executable tests. |
 | Tests linked | At least one child `PR-` has entries in the test-link file. |
 | Code checks and review passed | A `code_assessment` entry in `.sdlc/delivery-records.yaml` matches the current plan and records `Pass` for the child plan and `WORK-*` item. |
-| Approved for the next integration step | A matching `code_slice.approved` record approves the child plan for handoff. It does not complete its parent feature. |
-| Child work reviewed or approved for the next step | Every discovered child slice passed its code assessment or was approved for handoff; the parent feature has no inferred completion state. |
-| Not yet broken down | A parent `WORK-` item has no child implementation plan. |
-| Group closed | A checkpoint matches the current plan, group ID, and exact member list. |
-| Group in progress | The group is explicitly active or at least one member has implementation evidence. |
-| Group not started | No member has implementation evidence and the group is not active. |
+| Approved for the next integration step | A matching `code_slice.approved` record approves the child plan for the next integration step. It does not complete its parent feature. |
+| Child work reviewed or approved for the next integration step | Every discovered child change passed its code assessment or was approved for the next integration step. This does not mean the parent feature is complete. |
+| No detailed plan yet | A parent `WORK-` item has no child Implementation plan. |
+| Group closed | A checkpoint matches the current plan, group ID, and exact member list, and records the required feedback, integration, and decisions about parent documents. |
+| In progress | The group is active or at least one member has implementation work. |
+| Not started | No member has implementation work and the group is not active. |
 
-The visual status grammar is deliberately small: a green check means an approval matches
-the current file, code checks and review passed, a code slice was approved for the next
-integration step, or a work-group review point was closed. It does not mean the enclosing
-feature is complete. An amber dot
-means work or evidence is present, and a gray circle means not started. A branch with linked
-tests remains amber until a code assessment establishes a stronger state.
+The page uses three simple symbols. A green check means a document is approved, a code
+change passed its checks and review, a change was approved for the next integration step, or
+a work-group checkpoint closed after its required feedback, integration, and parent-document
+decisions. It does not mean the whole feature is complete. An amber dot means work or
+supporting records exist. A gray circle means not started. Linked tests alone remain amber
+until the code assessment passes.
 
 `WORK-*` is an exceptional Breakdown-plan assignment, not a document type. Follow
 [work-decomposition.md](work-decomposition.md). Missing child spec/design nodes are not
@@ -121,9 +124,8 @@ If a machine-read value is malformed, the page names the file, field, invalid va
 expected shape. Missing optional fields still display `Not recorded` without an error.
 
 An explicit valid `WORK-*` in `Current Work` selects the branch opened as the current
-focus. Older field names remain readable. The renderer does not infer an
-active group, active change, feedback result, or
-parent-document decision from Git activity, approvals, mapped tests, or passing commands.
+focus. Older field names remain readable. The renderer does not guess progress, feedback,
+or document changes from Git activity, approvals, test links, or passing commands.
 
 A plan declares a work group only when near-term children need a shared feedback or integration
 checkpoint:
@@ -214,15 +216,18 @@ records:
       stop_or_replan: Pause sibling auth work if the provider contract changes.
 ```
 
-Only `Pass` is green. `Pass-with-fixes`, stale plan hashes, WIP prose, mapped tests, and Git
-or GitHub state do not imply assessment or completion. The displayed “Approved for the next
-integration step” state additionally requires a `code_slice.approved` record that matches
-the current child implementation plan; it does not complete its parent feature.
-Legacy passing assessment records without a `learning` mapping remain valid and display
-`Not recorded in assessment`; the renderer does not invent a story from unrelated state.
-Legacy `.sdlc/artifact-paths.yaml`, `.sdlc/code-assessments.yaml`, and
-`.sdlc/wave-checkpoints.yaml` files remain readable. New work uses the consolidated files;
-load [state-file-migration.md](state-file-migration.md) only when migrating an existing
+Only `Pass` shows a passing assessment. `Pass-with-fixes`, an outdated plan hash, WIP text,
+test links, and Git or GitHub state do not mean the work passed or finished.
+
+“Approved for the next integration step” also requires a `code_slice.approved` record that
+matches the current child Implementation plan. It does not mean the parent feature is done.
+
+Older passing assessments without a `learning` section remain valid and display `Not
+recorded`. The renderer does not infer missing information from other state.
+
+Older `.sdlc/artifact-paths.yaml`, `.sdlc/code-assessments.yaml`, and
+`.sdlc/wave-checkpoints.yaml` files remain readable. New work uses the consolidated files.
+Load [state-file-migration.md](state-file-migration.md) only when migrating an existing
 project.
 
 ## Generate And Check

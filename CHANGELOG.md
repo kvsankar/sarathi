@@ -8,6 +8,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+## 0.9.0 - 2026-08-21
+
 ### Changed
 
 - Limit required earlier-document revisions to wrong or incomplete accepted obligations,
@@ -21,6 +23,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 - Use lighter evidence while work is disposable and isolated, then increase assurance when
   it reaches real data, shared writes, multiple users, access control, durable audit meaning,
   irreversible migration, or production deployment.
+- Rewrite documentation, prompts, status output, checker messages, and installer text in
+  simpler language without changing machine contracts, workflow policy, or safety rules.
 
 ## 0.8.0 - 2026-08-20
 

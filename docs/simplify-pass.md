@@ -49,21 +49,22 @@ During the simplify pass, ask:
 2. What would break if this layer, option, abstraction, requirement, or test fixture were
    removed?
 3. Can the same behavior be expressed more directly while preserving reviewability,
-   requirement links and evidence?
+   requirement links and test results?
 4. Is this supporting current accepted scope, or is it preparing for an unapproved future?
 5. Does this make the next maintainer's job easier, or only make the document look more
    sophisticated?
 
-If the answer is weak, simplify in scope. If the controlling document itself created the
-unjustified complexity, mark only its affected obligations as `revision-required`, revise
-that document, and then continue dependent work. Unrelated fixes may proceed. Do not
+If the answer is weak, simplify the current work. If an earlier document required the
+unnecessary complexity, mark only the affected requirements or decisions as
+`revision-required`, revise that document, and then continue work that depends on it.
+Unrelated fixes may proceed. Do not
 preserve an overbuilt spec/design/plan merely because
 implementation began. If simplification changes accepted behavior, contracts, quality
-attributes, UX, deployment posture, or public documentation, make that revision explicit.
+goals, UX, deployment, or public documentation, make that revision explicit.
 
-## Handoff Expectation
+## What To Report
 
-Create commands should mention the simplify pass in the handoff when it was relevant:
+Create commands should report the simplify pass when it was relevant:
 
 - What was simplified or intentionally left as-is.
 - Any complexity kept because it is justified by a requirement, risk, or constraint.

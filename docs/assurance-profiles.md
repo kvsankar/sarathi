@@ -1,32 +1,33 @@
 # Delivery Assurance Profiles And Extra Risk Checks
 
-Sarathi uses one delivery model with three paths to code. A delivery assurance profile sets
-which stages are separate, whether risk-boundary decomposition is expected, and when full
-assurance runs. It does not make an individual review shallower or allow anyone to skip
-approved requirements, readiness to implement, tests, feedback, or earlier-document review.
+Sarathi has three paths to code. A delivery assurance profile chooses which documents stay
+separate, whether the work should be split, and when reviews happen. It never makes a review
+less careful or allows anyone to skip approved requirements, a code-ready plan, tests,
+feedback, or review of earlier documents.
 
 ## Rules That Never Change
 
 Every profile keeps these rules:
 
-- Product-increment work uses approved requirements and a plan ready to implement; it proves
-  the smallest useful change with appropriate executable tests.
-- Decision/evidence work uses an accepted question, decision owner, evidence method,
-  boundaries, and stop condition or timebox; it records the resulting decision and next
-  action. Experiments, inspection, prototypes, and checks must be credible and repeatable
-  enough for the consequence, but do not claim product readiness.
+- Product-increment work uses approved requirements and a code-ready plan. Tests show that the
+  smallest useful change works.
+- Decision/evidence work starts with an accepted question, decision owner, method, limits,
+  and stopping point or time limit. It records the decision and next action. Experiments,
+  inspection, prototypes, and checks must be reliable enough for the decision, but do not
+  make the product ready to ship.
 - Record feedback honestly; never invent stakeholder or observed-system evidence.
 - Inspect affected parent specs, designs, plans, code, integration, and process after an
   assessed slice.
-- Stop or replan when evidence invalidates active work.
+- Stop or change the plan when results show that active work is no longer valid or safe.
 - Preserve required approvals, safety constraints, and explicit approval boundaries.
 - Apply `docs/simplicity-first.md`: process records never justify product machinery, and
   conceptual complexity must stay inside the user's mental model.
 
 ## Delivery Assurance Profiles
 
-Choose the shortest path justified by consequence, reversibility, uncertainty, and
-available evidence. The profile may differ by feature or change.
+Choose the shortest safe path. Consider what failure would cause, how easily the change can
+be undone, what is uncertain, and what is already known. The profile may differ by feature
+or change.
 
 ### Lean: combine design with planning
 
@@ -34,17 +35,14 @@ available evidence. The profile may differ by feature or change.
 spec -> implementation plan -> code
 ```
 
-Use Lean when the work is small, reversible, well understood, and affects little. Do not
-create a standalone design. Put the implementation-shaping reasoning needed for safe code
-in the Implementation plan: relevant current structure, changed boundaries and interfaces,
-data/state effects, material trade-offs, test strategy, and conditions that require a
-standalone design. Prefer one coherent implementation unit and do not create a Breakdown
-plan unless evidence shows that the work cannot be understood and integrated safely as one
-unit.
+Use Lean when the work is small, easy to undo, well understood, and has limited effect. Do
+not create a separate design. Put the technical decisions needed for safe code in the
+Implementation plan: relevant current structure, changed interfaces, data or state effects,
+important trade-offs, test approach, and reasons that would require a separate design. Keep
+the work together unless it cannot be understood and combined safely as one unit.
 
-Run a complete assessment at the spec, plan, and code boundaries. Lean gets to code faster
-by combining stages and avoiding unnecessary decomposition, not by weakening checks or
-review.
+Run a complete assessment after the spec, plan, and code. Lean gets to code faster by
+combining documents and keeping coherent work together, not by weakening checks or review.
 
 ### Standard: keep each delivery stage explicit
 
@@ -52,10 +50,9 @@ review.
 spec -> design -> implementation plan -> code
 ```
 
-Use Standard for ordinary delivery or when risk is unclear. Keep requirements, technical
-design, delivery planning, and implementation as separate reviewable stages. Use a
-Breakdown plan only when the work is not one coherent unit. Run a complete assessment at
-every stage boundary.
+Use Standard for ordinary work or when risk is unclear. Review the spec, design, plan, and
+code separately. Use a Breakdown plan only when the work cannot be handled safely as one
+unit. Run a complete assessment after each stage.
 
 ### High-assurance: review smaller risk-bounded increments
 
@@ -63,16 +60,16 @@ every stage boundary.
 spec -> design -> breakdown plan -> child implementation plan(s) -> code slices
 ```
 
-Use High-assurance when failure could cause material security, privacy, safety, regulatory,
-financial, availability, migration, or irreversible-data harm. Divide the work at material
-risk, recovery, feedback, or integration boundaries before implementation. Assess the full
-requirements/design/breakdown package before code, assess each child Implementation plan,
-and assess every meaningful code slice before dependent work continues. If the accepted
-work is already one independently safe slice, one Implementation plan may replace a
-one-child Breakdown plan when the plan records that reason.
+Use High-assurance when failure could cause serious security, privacy, safety, legal or
+regulatory, financial, availability, migration, or permanent data harm. Before coding, split the work
+where a risk, recovery step, review result, or integration result could change what follows.
+Assess the spec, design, and Breakdown plan together before code. Assess each child
+Implementation plan and each meaningful code change before dependent work continues. If the
+accepted work is already one safe, independent change, use one Implementation plan and state
+why a Breakdown plan is unnecessary.
 
-High-assurance adds review points and smaller feedback increments. It does not demand
-inflated documents, recursive document chains, or a different standard of reviewer care.
+High-assurance reviews smaller changes more often. It does not require longer documents,
+chains of repeated documents, or a different standard of reviewer care.
 
 ### What combining a stage means
 
@@ -81,9 +78,10 @@ must make the necessary technical approach reviewable. If an interface, data mod
 migration, security boundary, or architectural trade-off cannot be safely resolved inside
 the plan, escalate to Standard and create the design before implementation.
 
-Every retained stage uses the same check-plus-independent-review assessment contract in
-[review-verification-checklist.md](review-verification-checklist.md). The profile changes
-where assurance occurs, not whether findings are pursued or evidence is credible.
+Every stage kept in the chosen path receives the same automatic checks and independent
+review described in [review-verification-checklist.md](review-verification-checklist.md).
+The profile changes when reviews happen, not whether findings are fixed or results are
+trustworthy.
 
 ## Choosing A Profile
 
@@ -105,10 +103,10 @@ document or slice override in the accepted spec or plan. Link that source from
 use Standard when evidence is insufficient to justify Lean. A user may override the profile,
 but remaining risk must remain explicit.
 
-Escalate before affected work continues when new evidence increases blast radius,
-irreversibility, uncertainty, external-boundary risk, or legal/safety consequence.
-Reducing assurance requires evidence and must not remove obligations accepted by a parent
-document.
+Use a stronger profile before affected work continues when new results show wider
+consequences, make the change harder to undo, increase uncertainty or risk at an external
+interface, or create new legal or safety consequences. Use evidence to justify a weaker
+profile, and do not remove anything required by an earlier document.
 
 Match the process to the work being done now. A disposable change that uses fake data, a
 temporary database, no external writes, and no real users normally does not need
@@ -127,11 +125,11 @@ Do not postpone an early decision when it would make one of these later steps un
 to change. Record the future risk now, but require its expensive evidence when the work
 actually reaches that risk.
 
-A compact implementation plan is expected for coherent Lean work, allowed for coherent
-Standard work when an approved design already exists, and allowed for High-assurance only
-when the accepted work is already one independently safe slice. A decision/evidence plan
-instead states its question, method, boundaries, timebox, decision owner, and done signal.
-Escalate only an unresolved boundary or risk; do not add unrelated document layers.
+Use a compact Implementation plan for coherent Lean work. Standard may also use one when an
+approved design already exists. High-assurance may use one only when the accepted work is
+already one safe, independent change. A decision/evidence plan instead states its question,
+method, limits, timebox, decision owner, and completion condition. Add another document only
+when a specific unanswered decision or risk blocks the work.
 
 ## Extra Checks For Specific Risks
 
@@ -157,8 +155,8 @@ the context reasonably suggests it and the rationale helps reviewers.
 
 ## A Profile Is Not An Approval Policy Or Status
 
-An assurance profile chooses the stage path, decomposition bias, and review cadence. The
-approval policy separately decides whether Sarathi stops at those review points. Lean may
-use Human checkpoints, and YOLO may use Standard or High-assurance. A profile is not a
-completion status: Lean does not mean unchecked, and High-assurance does not mean complete.
-Checks, reviews, feedback, and approvals remain separate results.
+An assurance profile chooses the path to code, whether work is normally split, and when
+reviews happen. The approval policy separately decides whether Sarathi must wait for a
+person at those points. Lean may use Human checkpoints, and YOLO may use Standard or
+High-assurance. A profile is not a status: Lean is still checked, and High-assurance does
+not mean the work is complete. Checks, reviews, feedback, and approvals remain separate.

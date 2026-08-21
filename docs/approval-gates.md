@@ -1,15 +1,14 @@
 # Approval Records
 
-Sarathi stores local approvals in YAML files under
-`.sdlc/`. These files are project-local and do not depend on Jira, GitHub Issues, Azure
-Boards, or any other ticketing system.
+Sarathi stores local approvals in YAML files under `.sdlc/`. These files belong to the
+project and do not depend on Jira, GitHub Issues, Azure Boards, or another ticketing system.
 
 The checker verifies that an approval record is well-formed, UTC timestamped, and current
 for the exact file bytes it names. It does **not** prove human intent, identity, or external
-consent. Treat the file as a local claim that must be visible in reports,
-not as an authority system.
+consent. Treat the file as a local claim that reports must identify. It is not proof of
+authority.
 
-Approval means the document is sufficient and safe for the next learning step. It does not
+Approval means the document is sufficient and safe for the next change. It does not
 mean the document is final, complete, frozen, or presumed correct. Approval should consider
 available feedback from appropriate stakeholders, record feedback not yet obtained, and
 expect revision when implementation, integration, deployment, or use produces new evidence.
@@ -43,7 +42,7 @@ it can do so safely within scope. It does not turn failed checks into passes, in
 claim human or stakeholder approval, exceed the declared file or work scope, or ignore an
 unresolved blocker.
 
-YOLO stops at these protected boundaries unless the user gives the separate authorization
+YOLO stops before these actions unless the user gives the separate authorization
 required for that concrete action:
 
 - live production deployment or production checks;
@@ -78,7 +77,7 @@ requires affected review and approval again. A non-material revision does not re
 substantive re-review, but the applicable approval authority must refresh or confirm the
 approval for the new file hash; an agent must not silently carry forward human approval.
 
-## Approval Ledger
+## Approval File
 
 ```yaml
 version: 1
@@ -106,7 +105,7 @@ approvals:
 - `plan.approved`: required before code gate checks.
 - `ux.mock.approved`: required before planning or production UI work when the spec says
   `UI Mock Preference: Required`.
-- `code_slice.approved`: for teams that want a checked handoff between code slices. Bind
+- `code_slice.approved`: for teams that want approval between code changes. Bind
   the record to the current child implementation plan path and SHA-256 so workflow status
   can map the approval to its owning `WORK-*` branch and display `Completed`.
 - `release.approved` and `production-deployment.approved`: for release/deploy workflows;
@@ -114,8 +113,8 @@ approvals:
 
 ## Recording Approvals
 
-Do not claim that an approval proves end-user or stakeholder feedback. Record feedback
-source and status separately in the slice handoff and `.sdlc/wip.md`.
+Do not claim that an approval proves end-user or stakeholder feedback. Record the feedback
+source and status separately in the change report and `.sdlc/wip.md`.
 
 When a user explicitly approves a document, update `.sdlc/approvals.yaml` immediately.
 Compute the SHA-256 from the current file bytes. On Windows:
