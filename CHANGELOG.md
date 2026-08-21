@@ -8,6 +8,10 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 ## Unreleased
 
+### Docs
+
+- Add a chariot illustration as the README hero image.
+
 ## 0.9.0 - 2026-08-21
 
 ### Changed
