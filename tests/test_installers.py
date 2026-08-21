@@ -396,8 +396,8 @@ def test_project_install_assembles_canonical_docs_into_skill(tmp_path: Path) -> 
         for source in expected:
             if source.is_file():
                 assert (
-                    (installed_docs / source.name).read_bytes() == source.read_bytes()
-                )
+                    installed_docs / source.name
+                ).read_bytes() == source.read_bytes()
             else:
                 assert (installed_docs / source.name).is_dir()
 
