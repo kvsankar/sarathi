@@ -42,6 +42,17 @@ it can do so safely within scope. It does not turn failed checks into passes, in
 claim human or stakeholder approval, exceed the declared file or work scope, or ignore an
 unresolved blocker.
 
+Keep unattended bookkeeping light. Update approvals, WIP, and the current review-unit report
+from `docs/document-locations.md` without pausing or creating a separate report for each
+correction round. Show the user the engineering result and any decision they must make, not a
+narration of internal record updates.
+
+YOLO does not override the three-review-round limit in
+`docs/review-verification-checklist.md`; there is no automatic fourth review. After round 3,
+the coordinating agent uses the eligible automatic-approval policy to decide whether the
+target is sufficient to continue, needs a correction without another review, or has a real
+blocker. It records remaining findings and its reasoning instead of calling them closed.
+
 YOLO stops before these actions unless the user gives the separate authorization
 required for that concrete action:
 

@@ -15,11 +15,8 @@ cases and supplementary requirements need detailed review.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
 independent and actively seek counterexamples. Passing automatic checks is useful evidence,
-not proof that the requirements are good.
-After issues are fixed, review only those fixes. If a fix is incomplete, leave the issue open.
-After it is corrected, check only that fix again. Do not repeat the full review unless a fix
-materially changes the document.
-Apply the correction-closure procedure in `docs/review-verification-checklist.md`.
+not proof that the requirements are good. Follow the correction and re-review rules in
+`docs/review-verification-checklist.md`.
 
 ## Judge
 

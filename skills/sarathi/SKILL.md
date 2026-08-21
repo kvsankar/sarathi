@@ -141,12 +141,12 @@ keeps the restrictions and protected boundaries in `docs/approval-gates.md`.
 
 ## Verification Independence
 
-Run automatic checks once for each revision. Use a fresh reviewer to judge the work and look
-for counterexamples. After issues are fixed, rerun affected checks and review only those
-fixes. Repeat the full review only if requirements or scope changed. If no fresh reviewer is
-available, say the review is not independent and keep checks and review separate. Stop when
-a required earlier document is not fit for the current judgment. See
-`docs/review-verification-checklist.md`.
+Run automatic checks once per revision. Use a fresh reviewer and give re-reviewers earlier
+context. Treat remedies as advice; make the smallest sufficient fix. After the full review,
+review only fixes but allow new findings. Never run a fourth review automatically. After
+round 3, eligible automatic approval or the user decides whether to continue. If no fresh
+reviewer is available, disclose that and keep checks and review separate. Stop when a required
+earlier document is not fit. See `docs/review-verification-checklist.md`.
 
 ## Triggered References
 

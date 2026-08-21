@@ -107,9 +107,9 @@ Product/system, otherwise `<work-slug>.plan.md`, unless another path is named; d
 
 Run earlier applicable checkers and `check_plan.py` once for this revision. Use the results as
 the check pass for one assessment under `prompts/plan-assess.prompt.md`; do not rerun unchanged
-checks. This is the official assessment for this revision and uses the normal assessment
-report. Apply one set of safe, in-scope fixes, update every affected copy, and have a fresh
-reviewer check only those fixes. If a fix requires any material revision, stop instead of
+checks. Follow the correction and re-review rules in
+`docs/review-verification-checklist.md`. Use the report selected by
+`docs/document-locations.md`. If a fix requires any material revision, stop instead of
 changing approved requirements or design decisions. Report the current result even when it
 is `Needs rework`; do not accept `Pass-with-fixes`.
 

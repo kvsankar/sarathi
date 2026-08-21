@@ -12,6 +12,14 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 - License Sarathi under the MIT License and include the license in package metadata.
 
+### Changed
+
+- Give re-reviewers the earlier review context, treat proposed remedies as advice, limit one
+  stage assessment target to three review rounds, and route the final decision through an
+  eligible automatic-approval policy or the user.
+- Choose assessment-report boundaries by coherent review units rather than approval policy or
+  pauses, and update the same report across correction rounds.
+
 ### Docs
 
 - Add a centered chariot hero image and repository status badges to the README.
