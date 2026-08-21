@@ -1,6 +1,6 @@
 {
   "distribution": "sarathi-sdlc",
   "schema_version": 1,
-  "update_url": "https://pypi.org/pypi/sarathi-sdlc/json",
-  "version": "0.9.0"
+  "update_url": "https://registry.npmjs.org/sarathi-sdlc/latest",
+  "version": "0.10.0"
 }

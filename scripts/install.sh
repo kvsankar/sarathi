@@ -21,9 +21,22 @@ else
   REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 fi
 PROMPT_SOURCE="$REPO_ROOT/prompts"
-CHECKER_SOURCE="$REPO_ROOT/checkers"
+LEGACY_CHECKER_SOURCE="$REPO_ROOT/checkers"
+COMPILED_CHECKER_SOURCE="$REPO_ROOT/dist/checkers"
+if [[ -f "$COMPILED_CHECKER_SOURCE/check_plan.mjs" ]]; then
+  CHECKER_SOURCE="$COMPILED_CHECKER_SOURCE"
+  CHECKER_STATUS_SOURCE="$REPO_ROOT/dist/status"
+else
+  CHECKER_SOURCE="$LEGACY_CHECKER_SOURCE"
+  CHECKER_STATUS_SOURCE=""
+fi
 DOC_SOURCE="$REPO_ROOT/docs"
-SKILL_SOURCE="$REPO_ROOT/skills/sarathi"
+PACKAGED_SKILL_SOURCE="$REPO_ROOT/bundle/skills/sarathi"
+if [[ -f "$PACKAGED_SKILL_SOURCE/scripts/check_update.mjs" ]]; then
+  SKILL_SOURCE="$PACKAGED_SKILL_SOURCE"
+else
+  SKILL_SOURCE="$REPO_ROOT/skills/sarathi"
+fi
 
 TARGET_ROOT="$(pwd)"
 SCOPE="user"
@@ -138,6 +151,21 @@ fi
 if [[ "$NO_CHECKERS" -eq 0 && ! -d "$CHECKER_SOURCE" ]]; then
   echo "Checker source folder not found: $CHECKER_SOURCE" >&2
   exit 1
+fi
+if [[ -f "$CHECKER_SOURCE/check_plan.mjs" ]]; then
+  STATUS_CLI="$CHECKER_SOURCE/status/cli.mjs"
+  if [[ -n "$CHECKER_STATUS_SOURCE" ]]; then
+    STATUS_CLI="$CHECKER_STATUS_SOURCE/cli.mjs"
+  fi
+  for required in \
+    "$CHECKER_SOURCE/lib/approvals.mjs" \
+    "$CHECKER_SOURCE/render_workflow_status.mjs" \
+    "$STATUS_CLI"; do
+    if [[ ! -f "$required" ]]; then
+      echo "Compiled checker bundle is incomplete; missing: $required" >&2
+      exit 1
+    fi
+  done
 fi
 if [[ ! -d "$SKILL_SOURCE" ]]; then
   echo "Skill source folder not found: $SKILL_SOURCE" >&2
@@ -336,9 +364,66 @@ copy_checkers() {
       return
     fi
   fi
-  mkdir -p "$dest"
-  cp "$CHECKER_SOURCE"/*.py "$dest"/
+  copy_checker_bundle "$dest"
+  remove_retired_python_checkers "$dest"
   echo "Installed checkers -> $dest"
+}
+
+remove_retired_python_checkers() {
+  local checker_dest="$1"
+  [[ -f "$CHECKER_SOURCE/check_plan.mjs" ]] || return 0
+  local hash_command file expected actual
+  if command -v sha256sum >/dev/null 2>&1; then
+    hash_command="sha256sum"
+  else
+    hash_command="shasum -a 256"
+  fi
+  while IFS=' ' read -r file expected; do
+    [[ -f "$checker_dest/$file" ]] || continue
+    actual="$($hash_command "$checker_dest/$file" | awk '{print $1}')"
+    if [[ "$actual" == "$expected" ]]; then
+      rm -f "$checker_dest/$file"
+      echo "Removed retired Python checker -> $checker_dest/$file"
+    fi
+  done <<'EOF'
+approvals.py 2931574e9f5371f1b743a9a2a83449e82cf8f884c973761b1a4e6be345912353
+check_code.py b398aa796b1e8735153196cc298ed28dd102d0361a03ad48765baac32ac603eb
+check_design.py 6a8feece57461530a38c76b9c4fdd6c03e12acef54906774f67acc099ce19eac
+check_plan.py 6b5d832b0a6ef4dca3d76cd7fe634b07cb8c662315eb05872af05dc9873583d8
+check_spec.py 70f3b1c1dd1594bc218c11315295954a117b49d92ead7a93e57fa7930454b4b5
+markdown_structure.py 43a25b09ae995a3653a16497837b99f20fb312001ef37175fe2358c0e71c3e60
+render_workflow_status.py e85dce50c6a777d240bbf624c334863bea485e9a935172e4d458be3e1ed77863
+schemas.py ff557809bc3e4614c4af5a5cfc4949bd0bca7a94d54bde945eb485f9970fd627
+waves.py be7aa29a767e1923490e70a3d95ffdd8c7e8b6cb7c4af9f431f9a3115c3eb19d
+workflow_state.py 855dd03e6af23404e379d0b6ec5c5fbdefbda56bf17bf3e6460d88fd3e610419
+EOF
+}
+
+copy_tree_files() {
+  local source="$1"
+  local dest="$2"
+  local source_file relative target
+  mkdir -p "$dest"
+  while IFS= read -r -d '' source_file; do
+    relative="${source_file#"$source"/}"
+    target="$dest/$relative"
+    mkdir -p "$(dirname "$target")"
+    atomic_copy_file "$source_file" "$target"
+  done < <(
+    find "$source" -type f \
+      ! -path '*/__pycache__/*' \
+      ! -name '*.pyc' \
+      ! -name '*.pyo' \
+      -print0
+  )
+}
+
+copy_checker_bundle() {
+  local dest="$1"
+  copy_tree_files "$CHECKER_SOURCE" "$dest"
+  if [[ -n "$CHECKER_STATUS_SOURCE" && -d "$CHECKER_STATUS_SOURCE" ]]; then
+    copy_tree_files "$CHECKER_STATUS_SOURCE" "$dest/status"
+  fi
 }
 
 atomic_copy_file() {
@@ -391,6 +476,7 @@ copy_skill_folder() {
   local dest="$1"
   local source_item
   mkdir -p "$dest"
+  remove_retired_python_updater "$dest"
   while IFS= read -r -d '' source_item; do
     if [[ "$(basename "$source_item")" != "SKILL.md" ]]; then
       cp -R "$source_item" "$dest"/
@@ -401,7 +487,7 @@ copy_skill_folder() {
   rm -rf "$dest/docs"
   mkdir -p "$dest/docs"
   while IFS= read -r -d '' source_item; do
-    if [[ "$(basename "$source_item")" != "reviews" ]]; then
+    if [[ "$(basename "$source_item")" != "reviews" && "$(basename "$source_item")" != "research" ]]; then
       cp -R "$source_item" "$dest/docs/"
     fi
   done < <(find "$DOC_SOURCE" -mindepth 1 -maxdepth 1 -print0)
@@ -412,9 +498,30 @@ copy_skill_folder() {
 
   if [[ -d "$CHECKER_SOURCE" ]]; then
     rm -rf "$dest/checkers"
-    mkdir -p "$dest/checkers"
-    cp "$CHECKER_SOURCE"/*.py "$dest/checkers"/
+    copy_checker_bundle "$dest/checkers"
   fi
+}
+
+remove_retired_python_updater() {
+  local skill_dest="$1"
+  [[ -f "$SKILL_SOURCE/scripts/check_update.mjs" ]] || return 0
+  local legacy="$skill_dest/scripts/check_update.py"
+  [[ -f "$legacy" ]] || return 0
+  local actual
+  if command -v sha256sum >/dev/null 2>&1; then
+    actual="$(sha256sum "$legacy" | awk '{print $1}')"
+  else
+    actual="$(shasum -a 256 "$legacy" | awk '{print $1}')"
+  fi
+  case "$actual" in
+    4aa1f3e43045f08b980e7088c4ae913240e7967061408b99509aba576b8e851b|\
+    778a02aef55b0966b390bc2718cc31342979e811cdc3a9a5bc394eab9736bff5|\
+    2458e2ac4dd567d35146009bad0af690d4f57163f378b6d797a0c3b262165929|\
+    9446a600bc6e3e35aa720c39fff57d9bf0a1ad1138ba0bf2b18e67171748119b)
+      rm -f "$legacy"
+      echo "Removed retired Python updater -> $legacy"
+      ;;
+  esac
 }
 
 archive_retired_unprefixed_stage_skills() {
@@ -516,8 +623,7 @@ EOF
 
     if [[ -d "$CHECKER_SOURCE" ]]; then
       rm -rf "$stage_dest/checkers"
-      mkdir -p "$stage_dest/checkers"
-      cp "$CHECKER_SOURCE"/*.py "$stage_dest/checkers"/
+      copy_checker_bundle "$stage_dest/checkers"
     fi
   done
   archive_retired_unprefixed_stage_skills "$skill_root"

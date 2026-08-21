@@ -13,10 +13,8 @@ Assess the target plan using two separate passes. Load `prompts/plan-verify.prom
 
 ## Run
 
-Run full passes once for the current revision. After issues are fixed, rerun affected checks
-and review only those fixes. If a fix is incomplete, leave the issue open. After it is
-corrected, check only that fix again. Repeat the full assessment only when a fix materially
-changes the document.
+Follow the correction and re-review rules in `docs/review-verification-checklist.md`. They
+determine whether this round is full or focused and when to stop.
 
 1. **Check pass**: run `prompts/plan-verify.prompt.md` here, including required earlier
    checks. Keep commands, IDs, results, failures, and approval records separate from quality
@@ -37,8 +35,7 @@ actions by impact. Preserve
 `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and internal
 state; follow `docs/result-reporting.md` for chat.
 
-Write the scope-appropriate report from `docs/document-locations.md`: `plan-assessment.md`
-only for Product/system, otherwise `<work-slug>.plan-assessment.md`. Update `.sdlc/wip.md`
+Write or update the report selected by `docs/document-locations.md`. Update `.sdlc/wip.md`
 and stop according to the recorded approval policy. Human checkpoints require explicit
 approval; automatic approval needs an eligible local policy and an explicit end-to-end
 instruction before implementation.

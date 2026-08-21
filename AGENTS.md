@@ -7,14 +7,15 @@ Guidance for coding agents maintaining this repository.
 - `docs/`: shared process policy and user-facing guides.
 - `prompts/`: canonical `<stage>-<action>` command prompts.
 - `skills/`: skill-specific definitions and metadata.
-- `checkers/`: repeatable structure, approval, and link checks.
+- `src/`: TypeScript CLI, repeatable checks, status renderer, updater, and package assembly.
 - `scripts/`: Windows, macOS, Linux, and WSL installers.
-- `tests/`: checker, bundle, renderer, instruction-budget, installer, and browser regressions.
+- `tests-node/`: checker, bundle, renderer, instruction-budget, and installer regressions.
+- `tests/`: browser layout regressions.
 - `README.md`: installation, command orientation, and repository entry points.
 
 Do not treat `.github` as canonical source. `.github/prompts` is only a project-scoped
 GitHub Copilot installation target. Installers assemble the `sarathi` bundle from canonical
-prompts, docs, checkers, and skill-specific files.
+prompts, docs, compiled TypeScript checkers, and skill-specific files.
 
 ## Do Not Run Sarathi On Itself
 
@@ -41,7 +42,7 @@ other repositories. Do not copy those product rules here.
 
 When changing process behavior, edit the owning source and replace other copies with links.
 Keep command prompts short and specific. Put shared guidance in one document that is read
-when needed. Put rules that a program can check in checkers.
+when needed. Put rules that a program can check in the TypeScript checker source.
 
 ## Maintenance Rules
 
@@ -51,7 +52,7 @@ when needed. Put rules that a program can check in checkers.
   changes; do not add process machinery without a concrete need.
 - Use `apply_patch` for manual edits. Preserve unrelated user changes in a dirty worktree.
 - Keep `skills/sarathi` limited to skill-specific files. Installers assemble canonical docs,
-  prompts, and checkers into installed bundles.
+  prompts, and compiled checkers into installed bundles.
 - Only `sarathi` may start without being named. Generated command skills must be named
   explicitly, work across agent hosts, and use `sarathi-<stage>-<action>`.
 - Update `CHANGELOG.md` for user-visible process, checker, installer, or skill changes.
@@ -66,13 +67,12 @@ when needed. Put rules that a program can check in checkers.
 Run before publishing:
 
 ```powershell
-uv run pre-commit run --all-files
-uv run pytest -q --cov=checkers --cov-report=term-missing
+npm ci
+npm run check
 ```
 
 Run `npm run test:layout` when changing the workflow-status renderer, browser tests, or
-JavaScript dependencies. The Python suite owns portable skill metadata validation; CI
-installs Chromium only for layout-related changes.
+JavaScript dependencies. The Node suite owns portable skill metadata validation.
 
 Use `scripts/install.ps1` or `scripts/install.sh`. User scope and all-agent installation are
 the defaults; do not pass a narrower tool target unless requested. Publish through a PR, wait

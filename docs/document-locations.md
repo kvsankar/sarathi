@@ -47,6 +47,27 @@ reports use the document's work slug, such as `auth-signin.spec-review.md`; asse
 `auth-signin.<stage>-assessment.md` with separate **Check Pass** and **Review Pass** sections.
 For a child, use that child's document area, not a repository-wide review folder.
 
+When a report enters a correction and re-review loop, it names its assessment target, target
+state (`active | accepted | abandoned`), current review round, and concise earlier-round
+conclusions. Findings use one lifecycle: `open | claimed-fixed | closed`. A passing one-off
+review does not need empty lifecycle metadata. A code target names the exact code change being
+reviewed, even when several changes share one plan.
+
+Choose report boundaries by coherent review units, not by approval policy, pauses, or whether
+the request spans the full delivery path. A review unit is work that one reviewer can safely
+understand and judge together. Small work may use one delivery assessment across several
+stages. Larger work uses separate reports by stage, child work item, or code change when its
+size, risk, or independence makes that easier to review.
+
+A cross-stage Product/system report uses `delivery-assessment.md`; smaller work uses
+`<work-slug>.delivery-assessment.md`. Stage-specific reports keep the names above. Each target
+subsection keeps its own **Check Pass**, **Review Pass**, internal verdict, current review
+round, and findings with the lifecycle above. Correction rounds update the same report for
+that review unit; they never create separate closure reports. Put the current overall result
+and active target at the top of a multi-target report. Point WIP to the current report and
+name only the target and next engineering action there; the report is authoritative for
+round state.
+
 Each report follows [result-reporting.md](result-reporting.md) and states:
 
 - one plain-language result;
@@ -55,7 +76,11 @@ Each report follows [result-reporting.md](result-reporting.md) and states:
 - the reviewed files, their revision or hash when available, scope, and commands;
 - whether the reviewer was independent;
 - simplifications considered and unresolved items; and
-- the exact internal verdict.
+- each assessed target's exact internal verdict.
 
-A report is not approval or proof of stakeholder feedback. Update the current report for the
-reviewed revision. Link older reports when history matters instead of copying them.
+A stage summary explains the combined state in plain language. Do not mark the stage ready or
+start the next stage while any required target is not ready for its next step.
+
+A report is not approval or proof of stakeholder feedback. Update the current target's report
+across its correction revisions and review rounds. Link genuinely older targets when history
+matters instead of copying them.

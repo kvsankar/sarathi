@@ -15,12 +15,8 @@ earlier document is unfit. A Lean plan without a standalone design is not blocke
 because that document does not exist.
 
 Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
-independent and seek counterexamples.
-
-After issues are fixed, review only those fixes. If a fix is incomplete, leave the issue open.
-After it is corrected, check only that fix again. Do not repeat the full review unless a fix
-materially changes the document.
-Apply the correction-closure procedure in `docs/review-verification-checklist.md`.
+independent and seek counterexamples. Follow the correction and re-review rules in
+`docs/review-verification-checklist.md`.
 
 ## Judge
 

@@ -18,10 +18,7 @@ Use a fresh reviewer sub-agent when available. Otherwise say that the review is 
 independent and seek counterexamples. Do not rerun commands unless needed to
 resolve missing or contradictory evidence.
 
-After issues are fixed, review only those fixes. If a fix is incomplete, leave the issue open.
-After it is corrected, check only that fix again. Do not repeat the full review unless a fix
-materially changes the implementation. Apply the correction-closure procedure in
-`docs/review-verification-checklist.md`.
+Follow the correction and re-review rules in `docs/review-verification-checklist.md`.
 
 ## Judge
 

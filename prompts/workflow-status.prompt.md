@@ -12,11 +12,12 @@ does not change or approve work. Load `docs/workflow-status.md`,
 available delivery records, and check important claims against their source documents. When
 other requested checks are running, generate status with them instead of stopping separately.
 
-Locate `render_workflow_status.py` in the target project's `checkers/` directory, this
-skill bundle's `checkers/` directory, or the source repository's `checkers/` directory. Run:
+Locate `render_workflow_status.mjs` in the target project's `checkers/` directory, this
+skill bundle's `checkers/` directory, or the built source repository's `dist/checkers/`
+directory. Run:
 
 ```pwsh
-python checkers/render_workflow_status.py <project-root> --output <project-root>/docs/sdlc-status.html
+node checkers/render_workflow_status.mjs <project-root> --output <project-root>/docs/sdlc-status.html
 ```
 
 The command should also publish `docs/sarathi-process.html`, with bidirectional links
@@ -24,8 +25,8 @@ between the static process guide and live project status. If a project-local che
 companion `docs/sarathi.html`, locate the guide in the installed skill or source repository
 and pass it with `--guide-source`.
 
-Retry with `python3` or `uv run python` when needed. Do not hand-edit the generated HTML.
-Use `--check` when the user asks for freshness verification or CI integration.
+Do not hand-edit the generated HTML. Use `--check` when the user asks for freshness
+verification or CI integration.
 
 Report:
 
