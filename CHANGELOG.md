@@ -15,6 +15,7 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 ### Docs
 
 - Add a centered chariot hero image and repository status badges to the README.
+- Simplify `uvx` installation examples when the package and command names match.
 
 ## 0.9.0 - 2026-08-21
 

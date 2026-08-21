@@ -98,7 +98,7 @@ def test_update_notice_requires_approval_and_pins_version(
     notice = capsys.readouterr().out
     assert f"installed version is {CURRENT_VERSION}" in notice
     assert "explicit user approval" in notice
-    assert f"sarathi-sdlc=={NEWER_VERSION}" in notice
+    assert f"sarathi-sdlc@{NEWER_VERSION}" in notice
 
 
 def test_failed_update_check_is_cached_and_does_not_block(

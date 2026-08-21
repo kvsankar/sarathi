@@ -78,7 +78,7 @@ every command prompt.
 Install Sarathi for the current user with one command:
 
 ```sh
-uvx --from sarathi-sdlc sarathi-sdlc install
+uvx sarathi-sdlc install
 ```
 
 `uvx` runs the installer temporarily; the installed skills and prompts remain available.
@@ -90,7 +90,7 @@ When an update notice appears, review and explicitly approve the reported versio
 installing it. Replace `X.Y.Z` with that exact approved version:
 
 ```sh
-uvx --from sarathi-sdlc==X.Y.Z sarathi-sdlc install
+uvx sarathi-sdlc@X.Y.Z install
 ```
 
 Verify `manifest.json` reports the approved version, then restart or reload the agent tools.
@@ -99,7 +99,7 @@ Agents must never update Sarathi automatically.
 Preview the destinations without writing files:
 
 ```sh
-uvx --from sarathi-sdlc sarathi-sdlc install --dry-run
+uvx sarathi-sdlc install --dry-run
 ```
 
 Add `-v` or `--verbose` to show destinations, per-tool actions, companion-install details,
@@ -108,9 +108,9 @@ reload guidance, and informational notes.
 Install project-local assets, including a top-level `checkers/` copy, or select tools:
 
 ```sh
-uvx --from sarathi-sdlc sarathi-sdlc install \
+uvx sarathi-sdlc install \
   --target /path/to/product --scope project
-uvx --from sarathi-sdlc sarathi-sdlc install --tools codex,claude-code
+uvx sarathi-sdlc install --tools codex,claude-code
 ```
 
 ## Optional: Keep The Installer Command
