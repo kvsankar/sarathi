@@ -76,7 +76,10 @@ Each report follows [result-reporting.md](result-reporting.md) and states:
 - the reviewed files, their revision or hash when available, scope, and commands;
 - whether the reviewer was independent;
 - simplifications considered and unresolved items; and
-- each recorded stage's exact internal verdict.
+- each assessed target's exact internal verdict.
+
+A stage summary explains the combined state in plain language. Do not mark the stage ready or
+start the next stage while any required target is not ready for its next step.
 
 A report is not approval or proof of stakeholder feedback. Update the current target's report
 across its correction revisions and review rounds. Link genuinely older targets when history
