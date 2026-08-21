@@ -20,6 +20,11 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 - Run repository checks, coverage, packaging, installers, and browser layout through npm.
 - Publish release candidates as provenance-backed npm packages after protected tag approval.
+- Give re-reviewers the earlier review context, treat proposed remedies as advice, limit one
+  stage assessment target to three review rounds, and route the final decision through an
+  eligible automatic-approval policy or the user.
+- Choose assessment-report boundaries by coherent review units rather than approval policy or
+  pauses, and update the same report across correction rounds.
 
 ### Removed
 

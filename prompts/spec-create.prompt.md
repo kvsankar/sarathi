@@ -105,12 +105,12 @@ Run the repeatable format and link checker and fix failures:
 node checkers/check_spec.mjs <spec-path> --json
 ```
 
-Retry launchers when needed. Use the result as the check pass for one assessment under
-`prompts/spec-assess.prompt.md`; do not rerun unchanged checks. This is the official
-assessment for this revision and uses the normal assessment report. Apply one set of safe,
-in-scope fixes, update every affected copy, and have a fresh reviewer check only those fixes.
-If a fix requires any material revision, stop instead of changing approved requirements.
-Report the current result even when it is `Needs rework`; do not accept `Pass-with-fixes`.
+Retry launchers when needed. Use the result for one assessment under
+`prompts/spec-assess.prompt.md`; do not rerun unchanged checks. Follow the correction and
+re-review rules in `docs/review-verification-checklist.md`.
+Use the report selected by `docs/document-locations.md`. If a fix requires any material
+revision, stop instead of changing approved requirements. Report the current result even
+when it is `Needs rework`; do not accept `Pass-with-fixes`.
 
 Update `.sdlc/wip.md` with the path, machine status, checks, assumptions, blockers, and next action.
 

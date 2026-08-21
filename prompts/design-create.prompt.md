@@ -103,11 +103,11 @@ node checkers/check_design.mjs <design-path> --spec <spec-path> --json
 
 Retry launchers when needed. For child documents, use checker feature/parent options. Use the
 results as the check pass for one assessment under `prompts/design-assess.prompt.md`; do not
-rerun unchanged checks. This is the official assessment for this revision and uses the normal
-assessment report. Apply one set of safe, in-scope fixes, update every affected copy, and have
-a fresh reviewer check only those fixes. If a fix requires any material revision, stop
-instead of changing approved requirements or design decisions. Report the current result even
-when it is `Needs rework`; do not accept `Pass-with-fixes`.
+rerun unchanged checks. Follow the correction and re-review rules in
+`docs/review-verification-checklist.md`. Use the report selected by
+`docs/document-locations.md`. If a fix requires any material revision, stop instead of
+changing approved requirements or design decisions. Report the current result even when it
+is `Needs rework`; do not accept `Pass-with-fixes`.
 
 Run simplify, update `.sdlc/wip.md`, and stop according to the recorded approval policy.
 Human checkpoints require explicit approval; automatic approval needs an eligible local
