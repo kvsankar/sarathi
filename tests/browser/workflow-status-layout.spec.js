@@ -131,9 +131,9 @@ Stop Or Replan Triggers: Stop if any visible label, link, readiness note, badge,
 `,
   );
   execFileSync(
-    process.env.PYTHON || "python",
+    process.execPath,
     [
-      join(repoRoot, "checkers", "render_workflow_status.py"),
+      join(repoRoot, "dist", "status", "cli.mjs"),
       projectRoot,
       "--output",
       statusPath,
@@ -158,17 +158,25 @@ async function layoutEvidence(page) {
         clientHeight: node.clientHeight,
         scrollHeight: node.scrollHeight,
       }))
-      .filter(({ clientHeight, scrollHeight }) => scrollHeight > clientHeight + 1);
+      .filter(
+        ({ clientHeight, scrollHeight }) => scrollHeight > clientHeight + 1,
+      );
     const overlaps = [];
-    for (const flow of [...document.querySelectorAll(".flow")].filter(visible)) {
+    for (const flow of [...document.querySelectorAll(".flow")].filter(
+      visible,
+    )) {
       const nodes = [...flow.children].filter(
         (child) => child.classList.contains("node") && visible(child),
       );
       for (let index = 1; index < nodes.length; index += 1) {
         const previous = nodes[index - 1].getBoundingClientRect();
         const current = nodes[index].getBoundingClientRect();
-        const overlapX = Math.min(previous.right, current.right) - Math.max(previous.left, current.left);
-        const overlapY = Math.min(previous.bottom, current.bottom) - Math.max(previous.top, current.top);
+        const overlapX =
+          Math.min(previous.right, current.right) -
+          Math.max(previous.left, current.left);
+        const overlapY =
+          Math.min(previous.bottom, current.bottom) -
+          Math.max(previous.top, current.top);
         if (overlapX > 0.5 && overlapY > 0.5) {
           overlaps.push({ index, overlapX, overlapY });
         }
@@ -196,7 +204,8 @@ async function layoutEvidence(page) {
       clippedNodes,
       overlaps,
       horizontalOverflow:
-        document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
     };
   });
 }

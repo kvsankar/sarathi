@@ -26,13 +26,13 @@ work slug's `.design.md` file. Do not edit it unless explicitly asked.
 When an earlier spec exists, first run:
 
 ```pwsh
-python checkers/check_spec.py spec.md --json
+node checkers/check_spec.mjs spec.md --json
 ```
 
 Then run:
 
 ```pwsh
-python checkers/check_design.py design.md --spec spec.md --json
+node checkers/check_design.mjs design.md --spec spec.md --json
 ```
 
 When checking a later gate that depends on an already-approved spec or required mock
@@ -43,9 +43,6 @@ to advance and the recorded policy makes the gate applicable.
 
 For a component/slice design, add `--component` and `--parent <parent-design.md>` when
 applicable.
-
-If `python` is unavailable or fails because the launcher is missing, retry with `python3`;
-if that is unavailable, retry with `uv run python`.
 
 Report:
 

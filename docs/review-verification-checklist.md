@@ -55,10 +55,10 @@ them again. Update the same report instead of creating another one.
 
 | Assessment | Required evidence |
 | --- | --- |
-| `spec-assess` | `check_spec.py`, ID/section/coverage structure, approval evidence when required. |
-| `design-assess` | Spec check, `check_design.py`, component/interface/test-obligation structure, approval evidence when required. |
-| `plan-assess` | Earlier checks, `check_plan.py`, allocation/coverage, pass/fail verification, and exact membership of any parallel-work group. |
-| `code-assess` | Earlier checks, `check_code.py`, planned tests, required project checks, and any extra checks in the plan. |
+| `spec-assess` | `check_spec.mjs`, ID/section/coverage structure, approval evidence when required. |
+| `design-assess` | Spec check, `check_design.mjs`, component/interface/test-obligation structure, approval evidence when required. |
+| `plan-assess` | Earlier checks, `check_plan.mjs`, allocation/coverage, pass/fail verification, and exact membership of any parallel-work group. |
+| `code-assess` | Earlier checks, `check_code.mjs`, planned tests, required project checks, and any extra checks in the plan. |
 
 Check results prove only what the command observes. They do not prove
 correctness, meaningful tests, stakeholder feedback, real-boundary execution, merge state,

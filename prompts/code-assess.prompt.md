@@ -21,7 +21,7 @@ changes the implementation.
 
 1. **Check pass**: run `prompts/code-verify.prompt.md` here, including earlier
    checkers, planned tests, project checks, and additional risk checks. Add
-   `--review-context` to `check_code.py`; keep its candidate matches private.
+   `--review-context` to `check_code.mjs`; keep its candidate matches private.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/code-review.prompt.md` using the code and check results. Judge
    correctness, test results, credible external-dependency testing, test-first evidence for

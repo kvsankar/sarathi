@@ -1,0 +1,5 @@
+.node-test-dist/
+.sdlc/
+dist/
+node_modules/
+test-results/

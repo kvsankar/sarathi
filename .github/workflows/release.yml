@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: Publish to npm
 
 on:
   push:
@@ -19,30 +19,20 @@ jobs:
       - name: Require a commit from master
         run: git merge-base --is-ancestor HEAD origin/master
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
-          python-version-file: pyproject.toml
+          node-version: 24
+          cache: npm
 
-      - name: Sync
-        run: uv sync --locked --all-groups
+      - name: Install dependencies
+        run: npm ci
 
       - name: Verify release metadata
-        run: uv run python scripts/verify_release.py "$GITHUB_REF_NAME"
+        run: npm run verify:release -- "$GITHUB_REF_NAME"
 
-      - name: Run code and document checks
-        run: uv run pre-commit run --all-files
-
-      - name: Run Python and skill tests
-        run: >
-          uv run pytest -q --cov=checkers --cov-report=term-missing
-          --cov-fail-under=80
-
-      - name: Install browser test dependencies
-        run: npm ci
+      - name: Run Node and document checks
+        run: npm run check:fast
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -50,34 +40,41 @@ jobs:
       - name: Run browser layout tests
         run: npm run test:layout
 
-      - name: Build distributions
-        run: uv build
+      - name: Build npm package
+        run: |
+          mkdir -p artifacts
+          npm pack --json --pack-destination artifacts
 
-      - name: Verify distributions
-        run: uv run twine check dist/*
-
-      - name: Upload distributions
+      - name: Upload npm package
         uses: actions/upload-artifact@v4
         with:
-          name: python-distributions
-          path: dist/
+          name: npm-package
+          path: artifacts/*.tgz
           if-no-files-found: error
 
   publish:
     needs: build
     runs-on: ubuntu-latest
-    environment: pypi
+    environment: npm
     permissions:
+      contents: read
       id-token: write
     steps:
-      - name: Download distributions
+      - name: Download npm package
         uses: actions/download-artifact@v4
         with:
-          name: python-distributions
-          path: dist/
+          name: npm-package
+          path: artifacts
 
-      - name: Publish distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Publish npm package with provenance
+        run: npm publish artifacts/*.tgz --access public --provenance
 
   github-release:
     needs: publish
@@ -85,23 +82,23 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download distributions
+      - name: Download npm package
         uses: actions/download-artifact@v4
         with:
-          name: python-distributions
-          path: dist/
+          name: npm-package
+          path: artifacts
 
-      - name: Create GitHub Release and attach distributions
+      - name: Create GitHub Release and attach package
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" dist/* \
+            gh release upload "$GITHUB_REF_NAME" artifacts/*.tgz \
               --repo "$GITHUB_REPOSITORY" \
               --clobber
           else
-            gh release create "$GITHUB_REF_NAME" dist/* \
+            gh release create "$GITHUB_REF_NAME" artifacts/*.tgz \
               --repo "$GITHUB_REPOSITORY" \
               --verify-tag \
               --title "sarathi $GITHUB_REF_NAME" \

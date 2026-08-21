@@ -26,20 +26,20 @@ work slug's `.plan.md` file. Do not edit it unless explicitly asked.
 For Standard or High-assurance, first run:
 
 ```pwsh
-python checkers/check_spec.py spec.md --json
-python checkers/check_design.py design.md --spec spec.md --json
+node checkers/check_spec.mjs spec.md --json
+node checkers/check_design.mjs design.md --spec spec.md --json
 ```
 
 Then run:
 
 ```pwsh
-python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
+node checkers/check_plan.mjs plan.md --spec spec.md --design design.md --json
 ```
 
 For Lean without a standalone design, run the spec checker and then:
 
 ```pwsh
-python checkers/check_plan.py plan.md --spec spec.md --json
+node checkers/check_plan.mjs plan.md --spec spec.md --json
 ```
 
 The checker validates structure and spec coverage. Independently review the plan's required
@@ -47,8 +47,8 @@ Technical Decisions; the absence of a design checker does not prove that reasoni
 
 When checking a later gate that depends on approved earlier documents, add
 `--require-approvals`. This checks `.sdlc/approvals.yaml` for hash-matched `spec.approved`,
-  `design.approved` when a standalone design exists, and, when applicable,
-  `ux.mock.approved` records with UTC `approved_at` timestamps. Do not require approval while drafting; require it only when the plan is ready to
+`design.approved` when a standalone design exists, and, when applicable,
+`ux.mock.approved` records with UTC `approved_at` timestamps. Do not require approval while drafting; require it only when the plan is ready to
 advance and the recorded policy makes the gate applicable.
 
 For a compact plan that relies on approved parent documents, verify those documents first,
@@ -57,9 +57,6 @@ check its inherited IDs. Use `--inherited-subset --spec <parent-spec> --design
 <parent-design>` so cited IDs are validated without requiring allocation of the complete
 parent inventory. Do not require missing child spec/design files. For focused
 feature/component or slice/change plans, add `--feature` and `--parent` when applicable.
-
-If `python` is unavailable or fails because the launcher is missing, retry with `python3`;
-if that is unavailable, retry with `uv run python`.
 
 Report:
 

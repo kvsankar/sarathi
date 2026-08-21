@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "outDir": ".node-test-dist",
+    "rootDir": "."
+  },
+  "include": ["src/**/*.mts", "tests-node/**/*.mts"]
+}

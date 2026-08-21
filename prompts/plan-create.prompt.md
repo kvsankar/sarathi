@@ -36,7 +36,7 @@ Ask one question:
 - If yes, choose `Plan Type: Implementation`. Under High-assurance, say why this work is
   already small enough to review, test, and integrate safely.
 - If no, split along natural product or technical boundaries and choose `Plan Type:
-  Breakdown` for the resulting independently useful child outcomes.
+Breakdown` for the resulting independently useful child outcomes.
 
 Stop splitting when each child is understandable, testable, and safe to integrate. Size
 alone is not the test. An unanswered requirement or design question should be resolved
@@ -105,7 +105,7 @@ Product/system, otherwise `<work-slug>.plan.md`, unless another path is named; d
 
 ## Check And Report
 
-Run earlier applicable checkers and `check_plan.py` once for this revision. Use the results as
+Run earlier applicable checkers and `check_plan.mjs` once for this revision. Use the results as
 the check pass for one assessment under `prompts/plan-assess.prompt.md`; do not rerun unchanged
 checks. This is the official assessment for this revision and uses the normal assessment
 report. Apply one set of safe, in-scope fixes, update every affected copy, and have a fresh

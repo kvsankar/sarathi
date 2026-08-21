@@ -97,8 +97,8 @@ reuse its existing `ux.mock.approved` record instead of creating another mock.
 Run:
 
 ```pwsh
-python checkers/check_spec.py <spec-path> --json
-python checkers/check_design.py <design-path> --spec <spec-path> --json
+node checkers/check_spec.mjs <spec-path> --json
+node checkers/check_design.mjs <design-path> --spec <spec-path> --json
 ```
 
 Retry launchers when needed. For child documents, use checker feature/parent options. Use the

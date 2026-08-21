@@ -102,7 +102,7 @@ approved parent documents and one short plan are enough.
 Run the repeatable format and link checker and fix failures:
 
 ```pwsh
-python checkers/check_spec.py <spec-path> --json
+node checkers/check_spec.mjs <spec-path> --json
 ```
 
 Retry launchers when needed. Use the result as the check pass for one assessment under

@@ -176,9 +176,9 @@ reports must say when a gate passed through auto approval.
 Draft checks do not require approvals. Checks before the next stage do:
 
 ```pwsh
-python checkers/check_design.py design.md --spec spec.md --require-approvals --json
-python checkers/check_plan.py plan.md --spec spec.md --design design.md --require-approvals --json
-python checkers/check_code.py --plan plan.md --require-approvals --tests-argv '["pytest","-q"]' --json
+node checkers/check_design.mjs design.md --spec spec.md --require-approvals --json
+node checkers/check_plan.mjs plan.md --spec spec.md --design design.md --require-approvals --json
+node checkers/check_code.mjs --plan plan.md --require-approvals --tests-argv '["pytest","-q"]' --json
 ```
 
 Use `--approvals <path>` or `--gates-policy <path>` when a project stores the YAML files

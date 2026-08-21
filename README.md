@@ -8,14 +8,14 @@
   <a href="https://github.com/kvsankar/sarathi/releases/latest">
     <img src="https://img.shields.io/github/v/release/kvsankar/sarathi?style=flat-square" alt="Latest release" />
   </a>
-  <a href="https://pypi.org/project/sarathi-sdlc/">
-    <img src="https://img.shields.io/pypi/v/sarathi-sdlc?style=flat-square" alt="PyPI version" />
+  <a href="https://www.npmjs.com/package/sarathi-sdlc">
+    <img src="https://img.shields.io/npm/v/sarathi-sdlc?style=flat-square" alt="npm version" />
   </a>
-  <a href="https://pypi.org/project/sarathi-sdlc/">
-    <img src="https://img.shields.io/pypi/pyversions/sarathi-sdlc?style=flat-square" alt="Python versions" />
+  <a href="https://www.npmjs.com/package/sarathi-sdlc">
+    <img src="https://img.shields.io/node/v/sarathi-sdlc?style=flat-square" alt="Node.js versions" />
   </a>
-  <a href="https://pypistats.org/packages/sarathi-sdlc">
-    <img src="https://img.shields.io/pypi/dm/sarathi-sdlc?style=flat-square" alt="PyPI downloads" />
+  <a href="https://www.npmjs.com/package/sarathi-sdlc">
+    <img src="https://img.shields.io/npm/dm/sarathi-sdlc?style=flat-square" alt="npm downloads" />
   </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/github/license/kvsankar/sarathi?style=flat-square" alt="MIT license" />
@@ -36,7 +36,7 @@ review. It keeps the next step clear and adjusts the remaining work from real fe
 
 ## Why sarathi?
 
-In the Mahabharata, Krishna serves as Arjuna's *sarathi*—his charioteer and counsel. He does
+In the Mahabharata, Krishna serves as Arjuna's _sarathi_—his charioteer and counsel. He does
 not replace Arjuna's agency; he helps him see the situation clearly, reason through doubt,
 and act with purpose. sarathi takes its name from that partnership: it helps engineers and
 AI agents navigate complex software decisions and reach production with evidence,
@@ -78,10 +78,10 @@ every command prompt.
 Install Sarathi for the current user with one command:
 
 ```sh
-uvx sarathi-sdlc install
+npx --yes sarathi-sdlc install
 ```
 
-`uvx` runs the installer temporarily; the installed skills and prompts remain available.
+`npx` runs the installer temporarily; the installed skills and prompts remain available.
 Restart or reload your agent tools after installation. A user install skips the separate
 project-local `checkers/` copy by default because every installed Sarathi skill already
 contains its checkers.
@@ -90,7 +90,7 @@ When an update notice appears, review and explicitly approve the reported versio
 installing it. Replace `X.Y.Z` with that exact approved version:
 
 ```sh
-uvx sarathi-sdlc@X.Y.Z install
+npx --yes sarathi-sdlc@X.Y.Z install
 ```
 
 Verify `manifest.json` reports the approved version, then restart or reload the agent tools.
@@ -99,7 +99,7 @@ Agents must never update Sarathi automatically.
 Preview the destinations without writing files:
 
 ```sh
-uvx sarathi-sdlc install --dry-run
+npx --yes sarathi-sdlc install --dry-run
 ```
 
 Add `-v` or `--verbose` to show destinations, per-tool actions, companion-install details,
@@ -108,9 +108,9 @@ reload guidance, and informational notes.
 Install project-local assets, including a top-level `checkers/` copy, or select tools:
 
 ```sh
-uvx sarathi-sdlc install \
+npx --yes sarathi-sdlc install \
   --target /path/to/product --scope project
-uvx sarathi-sdlc install --tools codex,claude-code
+npx --yes sarathi-sdlc install --tools codex,claude-code
 ```
 
 ## Optional: Keep The Installer Command
@@ -119,14 +119,14 @@ Install `sarathi-sdlc` permanently only when you want its installer, version, an
 commands to remain on your `PATH`:
 
 ```sh
-uv tool install sarathi-sdlc
+npm install --global sarathi-sdlc
 sarathi-sdlc install
 sarathi-sdlc --version
 sarathi-sdlc check-update
 ```
 
-Alternatively, use `pipx install sarathi-sdlc`. After upgrading the package, rerun
-`sarathi-sdlc install` to refresh copied skills and prompts. Installed skills check PyPI at
+After upgrading with `npm update --global sarathi-sdlc`, rerun `sarathi-sdlc install` to
+refresh copied skills and prompts. Installed skills check npm at
 most once per 24 hours and report newer releases without blocking work or updating
 automatically. Set `SARATHI_UPDATE_CHECK=0` to disable that check.
 
@@ -140,6 +140,13 @@ generic skills.
 ## Install From A Source Checkout
 
 Clone the repository and run from its root when developing or testing an unreleased change.
+
+Install development dependencies and build the Node runtime:
+
+```sh
+npm ci
+npm run build
+```
 
 Preview the install without writing files:
 
@@ -211,7 +218,7 @@ also refresh Windows targets when `powershell.exe` is available. Use `-NoCrossIn
   installers retain `-NoCheckers` and `--no-checkers` for explicitly skipping the copy.
 
 Installed skill bundles are self-contained: the installer assembles each `sarathi` skill copy
-from the canonical `docs/`, `prompts/`, and `checkers/` sources, plus `SKILL.md` and agent
+from canonical `docs/`, `prompts/`, and compiled TypeScript checker sources, plus `SKILL.md` and agent
 config. Prompt commands or explicit command skills are also installed separately where host
 tools can expose them directly. Only the top-level `sarathi` skill permits implicit
 invocation, and only for Sarathi or managed delivery-workflow intent—not an ordinary
@@ -222,10 +229,9 @@ Every dry or real install prints the destination folders before doing work.
 Prefixed command skills are expected only on agent skill surfaces where the installer exposes
 them; Codex-only, Claude Code, and Gemini installations use their native explicit commands.
 If an agent reports that bundled `prompts/spec-create.prompt.md`,
-`checkers/check_spec.py`, or another required file under the main `sarathi` skill is missing,
+`checkers/check_spec.mjs`, or another required file under the main `sarathi` skill is missing,
 the bundle is incomplete or was copied from the wrong folder. Re-run the installer, or install
-from this repository's `skills/sarathi` folder after updating to a version where that source
-folder is self-contained.
+from a source checkout after running `npm ci` and `npm run build`.
 
 ## Commands
 
@@ -238,30 +244,30 @@ Commands combine a stage (`spec`, `design`, `plan`, or `code`) with one of four 
 
 The core stage names are:
 
-| Explicit command skill | Purpose |
-| --- | --- |
-| `$sarathi-spec-create` | Define the problem, needs, features, use cases, functional and supplementary requirements, acceptance tests, and journeys. |
-| `$sarathi-spec-verify` | Run automatic spec checks and report evidence. |
-| `$sarathi-spec-review` | Independently review spec quality. |
-| `$sarathi-spec-assess` | Run specification checks plus independent review. |
-| `$sarathi-design-create` | Create or revise a Software Design Document and ADRs as needed. |
-| `$sarathi-design-verify` | Run spec and design checks. |
-| `$sarathi-design-review` | Independently review design quality and whether the spec is sufficient. |
-| `$sarathi-design-assess` | Run design checks plus independent review. |
-| `$sarathi-plan-create` | Plan the impact, dependencies, order, integration, safety, and proof for a Breakdown or Implementation plan. |
-| `$sarathi-plan-verify` | Run checks for the spec, design, and plan. |
-| `$sarathi-plan-review` | Independently review whether the plan is clear, safe, testable, and ordered well. |
-| `$sarathi-plan-assess` | Run plan checks plus independent review. |
-| `$sarathi-code-create` | Implement an approved plan with focused tests and any planned logging, error-handling, documentation, build, or deployment work. |
-| `$sarathi-code-verify` | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks. |
-| `$sarathi-code-review` | Independently review code, tests, operational work, required project checks, and fit with earlier documents. |
-| `$sarathi-code-assess` | Run code checks plus independent review. |
-| `$sarathi-workflow-status` | Render project status as read-only HTML. |
+| Explicit command skill     | Purpose                                                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `$sarathi-spec-create`     | Define the problem, needs, features, use cases, functional and supplementary requirements, acceptance tests, and journeys.       |
+| `$sarathi-spec-verify`     | Run automatic spec checks and report evidence.                                                                                   |
+| `$sarathi-spec-review`     | Independently review spec quality.                                                                                               |
+| `$sarathi-spec-assess`     | Run specification checks plus independent review.                                                                                |
+| `$sarathi-design-create`   | Create or revise a Software Design Document and ADRs as needed.                                                                  |
+| `$sarathi-design-verify`   | Run spec and design checks.                                                                                                      |
+| `$sarathi-design-review`   | Independently review design quality and whether the spec is sufficient.                                                          |
+| `$sarathi-design-assess`   | Run design checks plus independent review.                                                                                       |
+| `$sarathi-plan-create`     | Plan the impact, dependencies, order, integration, safety, and proof for a Breakdown or Implementation plan.                     |
+| `$sarathi-plan-verify`     | Run checks for the spec, design, and plan.                                                                                       |
+| `$sarathi-plan-review`     | Independently review whether the plan is clear, safe, testable, and ordered well.                                                |
+| `$sarathi-plan-assess`     | Run plan checks plus independent review.                                                                                         |
+| `$sarathi-code-create`     | Implement an approved plan with focused tests and any planned logging, error-handling, documentation, build, or deployment work. |
+| `$sarathi-code-verify`     | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks.                  |
+| `$sarathi-code-review`     | Independently review code, tests, operational work, required project checks, and fit with earlier documents.                     |
+| `$sarathi-code-assess`     | Run code checks plus independent review.                                                                                         |
+| `$sarathi-workflow-status` | Render project status as read-only HTML.                                                                                         |
 
 Generate the live status page and its linked static process guide directly with:
 
 ```pwsh
-python checkers/render_workflow_status.py . --output docs/sdlc-status.html
+node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html
 ```
 
 See [docs/workflow-status.md](docs/workflow-status.md) for details. The page starts with what
@@ -349,9 +355,10 @@ correct meaning, stakeholder consent, or production readiness.
 docs/      user-facing documentation and review notes
 prompts/   source command prompt definitions
 skills/    skill-specific definitions and metadata
-checkers/  repeatable structure and link checks
+src/       TypeScript CLI, checkers, status renderer, updater, and package assembly
 scripts/   installers for Windows, macOS, Linux, and WSL
-tests/     checker tests
+tests-node/ Node unit, contract, package, and installer tests
+tests/     browser layout tests
 ```
 
 Do not treat `.github/prompts` as source in this repository. It is only an install target

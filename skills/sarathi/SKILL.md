@@ -27,8 +27,9 @@ command prompt; do not load every concern.
 
 ## Skill Maintenance
 
-Run bundled `scripts/check_update.py` at invocation start; never auto-update or install
-without approval. Respect `SARATHI_UPDATE_CHECK=0`; missing bundle files mean incomplete install.
+Run bundled `scripts/check_update.mjs` with Node at invocation start; never auto-update or
+install without approval. Respect `SARATHI_UPDATE_CHECK=0`; missing bundle files mean
+incomplete install.
 
 ## Enduring Model
 
@@ -160,4 +161,4 @@ a required earlier document is not fit for the current judgment. See
 
 After selecting a command, use its local trigger list and
 `docs/progressive-disclosure.md`, the complete shared-reference map. Use bundled
-`checkers/check_*.py` for deterministic verification and preserve raw evidence.
+`checkers/check_*.mjs` with Node for deterministic verification and preserve raw evidence.

@@ -14,9 +14,25 @@ $ErrorActionPreference = "Stop"
 
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $PromptSource = Join-Path $RepoRoot "prompts"
-$CheckerSource = Join-Path $RepoRoot "checkers"
+$LegacyCheckerSource = Join-Path $RepoRoot "checkers"
+$CompiledCheckerSource = Join-Path $RepoRoot "dist/checkers"
+$CheckerSource = if (Test-Path -LiteralPath (Join-Path $CompiledCheckerSource "check_plan.mjs")) {
+    $CompiledCheckerSource
+} else {
+    $LegacyCheckerSource
+}
+$CheckerStatusSource = if ($CheckerSource -eq $CompiledCheckerSource) {
+    Join-Path $RepoRoot "dist/status"
+} else {
+    $null
+}
 $DocSource = Join-Path $RepoRoot "docs"
-$SkillSource = Join-Path $RepoRoot "skills/sarathi"
+$PackagedSkillSource = Join-Path $RepoRoot "bundle/skills/sarathi"
+$SkillSource = if (Test-Path -LiteralPath (Join-Path $PackagedSkillSource "scripts/check_update.mjs")) {
+    $PackagedSkillSource
+} else {
+    Join-Path $RepoRoot "skills/sarathi"
+}
 $TargetRoot = (Resolve-Path -LiteralPath $TargetRoot).ProviderPath
 
 function Write-Detail {
@@ -121,6 +137,22 @@ if (-not (Test-Path -LiteralPath $DocSource)) {
 }
 if (-not $NoCheckers -and -not (Test-Path -LiteralPath $CheckerSource)) {
     throw "Checker source folder not found: $CheckerSource"
+}
+if (Test-Path -LiteralPath (Join-Path $CheckerSource "check_plan.mjs")) {
+    $statusCli = if ($CheckerStatusSource) {
+        Join-Path $CheckerStatusSource "cli.mjs"
+    } else {
+        Join-Path $CheckerSource "status/cli.mjs"
+    }
+    foreach ($required in @(
+        (Join-Path $CheckerSource "lib/approvals.mjs"),
+        (Join-Path $CheckerSource "render_workflow_status.mjs"),
+        $statusCli
+    )) {
+        if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
+            throw "Compiled checker bundle is incomplete; missing: $required"
+        }
+    }
 }
 if (-not (Test-Path -LiteralPath $SkillSource)) {
     throw "Skill source folder not found: $SkillSource"
@@ -323,15 +355,75 @@ function Copy-Checkers {
             return
         }
     }
-    New-Item -ItemType Directory -Force -Path $dest | Out-Null
-    Get-ChildItem -LiteralPath $CheckerSource -Filter "*.py" |
-        Copy-Item -Destination $dest -Force
+    Copy-CheckerBundle $dest
+    Remove-RetiredPythonCheckers $dest
     Write-Detail "Installed checkers -> $dest"
+}
+
+function Remove-RetiredPythonCheckers {
+    param([string]$CheckerDestination)
+    if (-not (Test-Path -LiteralPath (Join-Path $CheckerSource "check_plan.mjs") -PathType Leaf)) {
+        return
+    }
+    $knownFiles = @{
+        "approvals.py" = "2931574e9f5371f1b743a9a2a83449e82cf8f884c973761b1a4e6be345912353"
+        "check_code.py" = "b398aa796b1e8735153196cc298ed28dd102d0361a03ad48765baac32ac603eb"
+        "check_design.py" = "6a8feece57461530a38c76b9c4fdd6c03e12acef54906774f67acc099ce19eac"
+        "check_plan.py" = "6b5d832b0a6ef4dca3d76cd7fe634b07cb8c662315eb05872af05dc9873583d8"
+        "check_spec.py" = "70f3b1c1dd1594bc218c11315295954a117b49d92ead7a93e57fa7930454b4b5"
+        "markdown_structure.py" = "43a25b09ae995a3653a16497837b99f20fb312001ef37175fe2358c0e71c3e60"
+        "render_workflow_status.py" = "e85dce50c6a777d240bbf624c334863bea485e9a935172e4d458be3e1ed77863"
+        "schemas.py" = "ff557809bc3e4614c4af5a5cfc4949bd0bca7a94d54bde945eb485f9970fd627"
+        "waves.py" = "be7aa29a767e1923490e70a3d95ffdd8c7e8b6cb7c4af9f431f9a3115c3eb19d"
+        "workflow_state.py" = "855dd03e6af23404e379d0b6ec5c5fbdefbda56bf17bf3e6460d88fd3e610419"
+    }
+    foreach ($entry in $knownFiles.GetEnumerator()) {
+        $legacy = Join-Path $CheckerDestination $entry.Key
+        if (-not (Test-Path -LiteralPath $legacy -PathType Leaf)) {
+            continue
+        }
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $hashBytes = $sha256.ComputeHash([System.IO.File]::ReadAllBytes($legacy))
+            $actual = [System.BitConverter]::ToString($hashBytes).Replace("-", "").ToLowerInvariant()
+        } finally {
+            $sha256.Dispose()
+        }
+        if ($actual -eq $entry.Value) {
+            Remove-Item -LiteralPath $legacy -Force
+            Write-Detail "Removed retired Python checker -> $legacy"
+        }
+    }
+}
+
+function Copy-TreeFiles {
+    param([string]$Source, [string]$Destination)
+    Get-ChildItem -LiteralPath $Source -File -Recurse |
+        Where-Object {
+            $_.Extension -notin @(".pyc", ".pyo") -and
+            $_.FullName -notmatch "[\\/]__pycache__[\\/]"
+        } |
+        ForEach-Object {
+            $relative = $_.FullName.Substring($Source.Length).TrimStart('\', '/')
+            $target = Join-Path $Destination $relative
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+            Copy-AtomicFile $_.FullName $target
+        }
+}
+
+function Copy-CheckerBundle {
+    param([string]$Destination)
+    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    Copy-TreeFiles $CheckerSource $Destination
+    if ($CheckerStatusSource -and (Test-Path -LiteralPath $CheckerStatusSource)) {
+        Copy-TreeFiles $CheckerStatusSource (Join-Path $Destination "status")
+    }
 }
 
 function Copy-SkillFolder {
     param([string]$Destination)
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    Remove-RetiredPythonUpdater $Destination
     Get-ChildItem -Force -LiteralPath $SkillSource |
         Where-Object { $_.Name -ne "SKILL.md" } |
         Copy-Item -Destination $Destination -Recurse -Force
@@ -359,9 +451,35 @@ function Copy-SkillFolder {
         if (Test-Path -LiteralPath $checkerDest) {
             Remove-Item -LiteralPath $checkerDest -Recurse -Force
         }
-        New-Item -ItemType Directory -Force -Path $checkerDest | Out-Null
-        Get-ChildItem -LiteralPath $CheckerSource -Filter "*.py" |
-            Copy-Item -Destination $checkerDest -Force
+        Copy-CheckerBundle $checkerDest
+    }
+}
+
+function Remove-RetiredPythonUpdater {
+    param([string]$SkillDestination)
+    if (-not (Test-Path -LiteralPath (Join-Path $SkillSource "scripts/check_update.mjs") -PathType Leaf)) {
+        return
+    }
+    $legacy = Join-Path $SkillDestination "scripts/check_update.py"
+    if (-not (Test-Path -LiteralPath $legacy -PathType Leaf)) {
+        return
+    }
+    $knownHashes = @(
+        "4aa1f3e43045f08b980e7088c4ae913240e7967061408b99509aba576b8e851b",
+        "778a02aef55b0966b390bc2718cc31342979e811cdc3a9a5bc394eab9736bff5",
+        "2458e2ac4dd567d35146009bad0af690d4f57163f378b6d797a0c3b262165929",
+        "9446a600bc6e3e35aa720c39fff57d9bf0a1ad1138ba0bf2b18e67171748119b"
+    )
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hashBytes = $sha256.ComputeHash([System.IO.File]::ReadAllBytes($legacy))
+        $actual = [System.BitConverter]::ToString($hashBytes).Replace("-", "").ToLowerInvariant()
+    } finally {
+        $sha256.Dispose()
+    }
+    if ($knownHashes -contains $actual) {
+        Remove-Item -LiteralPath $legacy -Force
+        Write-Detail "Removed retired Python updater -> $legacy"
     }
 }
 
@@ -485,9 +603,7 @@ policy:
             if (Test-Path -LiteralPath $checkerDest) {
                 Remove-Item -LiteralPath $checkerDest -Recurse -Force
             }
-            New-Item -ItemType Directory -Force -Path $checkerDest | Out-Null
-            Get-ChildItem -LiteralPath $CheckerSource -Filter "*.py" |
-                Copy-Item -Destination $checkerDest -Force
+            Copy-CheckerBundle $checkerDest
         }
     }
     Archive-RetiredUnprefixedStageSkills $skillRoot

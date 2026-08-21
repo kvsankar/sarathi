@@ -1,64 +1,56 @@
 # Release Process
 
-Sarathi releases publish a coherent prompt, skill, checker, installer, and
-documentation snapshot. Release tags are lightweight to consume but should be
-prepared deliberately.
+Sarathi releases publish one coherent npm package containing the CLI, prompts, skill,
+compiled checkers, status renderer, installers, and documentation.
 
 ## Versioning
 
-- Use `vMAJOR.MINOR.PATCH` Git tags, for example `v0.1.0`.
-- Keep the tag version aligned with `pyproject.toml` and
-  `skills/sarathi/manifest.json`.
-- Use patch releases for fixes that do not change the intended SDLC behavior.
-- Use minor releases for new prompts, checker rules, skill guidance, installer
-  targets, or meaningful process behavior changes.
-- Reserve major releases for incompatible command, artifact, checker, or install
-  contract changes.
+- Use `vMAJOR.MINOR.PATCH` Git tags, for example `v0.10.0`.
+- Keep the version aligned in `package.json`, `package-lock.json`,
+  `skills/sarathi/manifest.json`, and `CHANGELOG.md`.
+- Use patch releases for compatible fixes, minor releases for meaningful new behavior, and
+  major releases for incompatible command, document, checker, or install contracts.
 
-## Changelog Rules
+## Changelog
 
-- Every user-visible prompt, skill, checker, installer, or documentation change
-  gets a `CHANGELOG.md` entry.
+- Record every user-visible prompt, skill, checker, installer, CLI, or documentation change.
 - Keep unreleased work under `## Unreleased`.
-- Group entries under `Added`, `Changed`, `Fixed`, `Deprecated`, `Removed`,
-  `Security`, or `Docs` as applicable.
-- Before tagging, rename `## Unreleased` to `## X.Y.Z - YYYY-MM-DD`, add a fresh
-  empty `## Unreleased` section above it, and make sure the date is the tag date.
-- Do not list private implementation noise unless it affects maintainers,
-  installers, checkers, prompt behavior, or generated artifacts.
+- Before tagging, move release entries under `## X.Y.Z - YYYY-MM-DD` and leave a new empty
+  `## Unreleased` section above it.
 
-## Release Preparation
+## Preparation
 
-1. Confirm the working tree is clean:
+1. Confirm the working tree is clean.
 
    ```sh
    git status --short --branch
    ```
 
-2. Choose the next version and update both `pyproject.toml` and
-   `skills/sarathi/manifest.json`.
-
-3. Update `CHANGELOG.md`:
-
-   - Move relevant entries from `Unreleased` into the versioned section.
-   - Add or prune categories so the section is readable.
-   - Keep a new empty `Unreleased` section at the top.
-
-4. Run the full local gate:
+2. Set the version without creating a tag, then update the skill manifest and changelog.
 
    ```sh
-   uv run python -m pre_commit run --all-files
+   npm version X.Y.Z --no-git-tag-version
    ```
 
-5. Build and inspect the PyPI distributions:
+3. Run the complete local gate.
 
    ```sh
-   uv build
-   uv run twine check dist/*
+   npm ci
+   npm run check
    ```
 
-6. Run installer dry runs for the platforms available on the release machine, including
-   the packaged command:
+4. Build and inspect the exact package.
+
+   ```sh
+   npm pack --dry-run --json
+   mkdir -p artifacts
+   npm pack --json --pack-destination artifacts
+   ```
+
+   The archive must contain no Python runtime, TypeScript loader, build-only source, local
+   review files, or production dependency.
+
+5. Run source installer dry runs on available platforms.
 
    ```powershell
    .\scripts\install.ps1 -DryRun
@@ -66,54 +58,37 @@ prepared deliberately.
 
    ```sh
    bash scripts/install.sh --dry-run
-   uv run sarathi-sdlc install --dry-run
    ```
 
-   On Windows, the PowerShell dry run may also exercise the WSL companion path
-   when WSL is available. On WSL, the Bash dry run may exercise the Windows
-   companion path when `powershell.exe` is available.
-
-7. Commit the release prep:
+6. Verify metadata with the intended tag.
 
    ```sh
-   git add pyproject.toml skills/sarathi/manifest.json CHANGELOG.md
-   git commit -m "Release vX.Y.Z"
+   npm run verify:release -- vX.Y.Z
    ```
 
-8. Merge the release preparation through a reviewed PR. Create an annotated tag from the
-   merged `master` commit:
+7. Commit the release preparation and merge it through a reviewed PR.
+
+8. After explicit authorization, create and push the annotated tag from the merged `master`
+   commit.
 
    ```sh
    git tag -a vX.Y.Z -m "sarathi vX.Y.Z"
-   ```
-
-9. Push the tag:
-
-   ```sh
    git push origin vX.Y.Z
    ```
 
-   `.github/workflows/release.yml` verifies the tag and metadata, reruns all checks,
-   builds the wheel and source distribution, and publishes them through the `pypi`
-   environment and PyPI Trusted Publishing. After PyPI succeeds, it creates the GitHub
-   Release and attaches both distributions. The final step is safe to rerun: an existing
-   release receives refreshed attachments instead of a duplicate release. Do not publish
-   the files or create the GitHub Release manually.
+The tag workflow reruns the Node and browser checks, builds the `.tgz`, publishes it through
+the protected `npm` environment and npm Trusted Publishing with provenance, then creates the
+GitHub Release and attaches the package. Configure the npm trusted publisher before the first
+authorized release. Do not use a long-lived npm token.
 
-10. Confirm the release on both PyPI and GitHub, then optionally deploy locally from the
-    tagged commit:
+## Verification
 
-   ```powershell
-   .\scripts\install.ps1
-   ```
+Confirm the version on npm and GitHub, then install the exact approved version:
 
-   ```sh
-   uv tool upgrade sarathi-sdlc
-   sarathi-sdlc install
-   ```
+```sh
+npx --yes sarathi-sdlc@X.Y.Z install --dry-run
+npx --yes sarathi-sdlc@X.Y.Z install
+```
 
-## Tag Corrections
-
-Avoid rewriting a published tag. If a pushed release tag is wrong, prefer a new
-patch release. Delete and recreate a tag only when it has not been consumed and
-the maintainers explicitly agree.
+Avoid rewriting a published tag or package version. Correct a bad release with a new patch
+version.

@@ -65,7 +65,7 @@ the references relevant to that command.
 | `docs/process-maintenance.md` | Modifying the SDLC process, prompts, skills, checker policy, or shared docs. |
 | `docs/release-process.md` | Preparing `CHANGELOG.md`, a version bump, release commit, or Git tag. |
 | `docs/sarathi-process-diagram-prompt.md` | Regenerating or materially revising the Sarathi process-diagram asset. |
-| `checkers/check_*.py` help/source | Running, troubleshooting, or changing deterministic verification. |
+| `src/checkers/check_*.mts` help/source | Running, troubleshooting, or changing deterministic verification. |
 
 If a referenced doc is not bundled in an installed skill, fall back to the repository copy
 when available. If neither exists and the missing reference governs the requested action,
