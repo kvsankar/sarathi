@@ -8,6 +8,11 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+### Changed
+
+- Remove the first-release npm token fallback now that the package uses GitHub Actions
+  Trusted Publishing through OIDC.
+
 ## 0.10.0 - 2026-08-21
 
 ### Added
