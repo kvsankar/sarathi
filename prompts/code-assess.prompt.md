@@ -14,14 +14,12 @@ Assess the implemented change using a separate check pass and review pass. Load
 
 ## Run
 
-Run full passes once for the current revision. After issues are fixed, rerun affected checks
-and review only those fixes. If a fix is incomplete, leave the issue open. After it is
-corrected, check only that fix again. Repeat the full assessment only when a fix materially
-changes the implementation.
+Follow the correction and re-review rules in `docs/review-verification-checklist.md`. They
+determine whether this round is full or focused and when to stop.
 
 1. **Check pass**: run `prompts/code-verify.prompt.md` here, including earlier
    checkers, planned tests, project checks, and additional risk checks. Add
-   `--review-context` to `check_code.py`; keep its candidate matches private.
+   `--review-context` to `check_code.mjs`; keep its candidate matches private.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/code-review.prompt.md` using the code and check results. Judge
    correctness, test results, credible external-dependency testing, test-first evidence for
@@ -58,8 +56,7 @@ required feedback, work to combine parallel changes, or `revision-required` work
 checkpoint does not assess the whole plan, approve the next group, merge, release, or deploy
 work.
 
-Write the scope-appropriate report from `docs/document-locations.md`: `code-assessment.md`
-only for Product/system, otherwise `<work-slug>.code-assessment.md`. Update `.sdlc/wip.md`
+Write or update the report selected by `docs/document-locations.md`. Update `.sdlc/wip.md`
 and stop according to the recorded approval policy. Human checkpoints require explicit
 approval; automatic approval needs an eligible local policy and explicit unattended
 continuation. `revision-required`, `feedback-required`, release, and deployment boundaries

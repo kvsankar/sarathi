@@ -74,13 +74,11 @@ as `10`, and internal hyphens, remain invalid.
 5. Re-run the checkers:
 
    ```pwsh
-   python checkers/check_spec.py spec.md --json
-   python checkers/check_design.py design.md --spec spec.md --json
-   python checkers/check_plan.py plan.md --spec spec.md --design design.md --json
-   python checkers/check_code.py --plan plan.md --tests-argv '["pytest","-q"]' --json
+   node checkers/check_spec.mjs spec.md --json
+   node checkers/check_design.mjs design.md --spec spec.md --json
+   node checkers/check_plan.mjs plan.md --spec spec.md --design design.md --json
+   node checkers/check_code.mjs --plan plan.md --tests-argv '["pytest","-q"]' --json
    ```
-
-   If `python` is unavailable, try `python3`, then `uv run python`.
 
 ## Common Failures
 

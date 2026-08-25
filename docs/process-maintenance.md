@@ -121,6 +121,7 @@ the real dependency unless the result actually proves that.
 - Keep release notes focused on behavior, compatibility, install impact, checker policy,
   and maintainer workflow. Avoid burying important process changes in generic refactor
   wording.
-- Do not tag a release until `pyproject.toml`, `skills/sarathi/manifest.json`,
-  `CHANGELOG.md`, built distributions, bundled skill docs, and installer dry runs are
+- Do not tag a release until `package.json`, `package-lock.json`,
+  `skills/sarathi/manifest.json`, `CHANGELOG.md`, the packed npm archive, bundled skill docs,
+  and installer dry runs are
   consistent.

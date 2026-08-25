@@ -183,7 +183,7 @@ The renderer excludes a stale or member-mismatched checkpoint from completion. A
 closes only its group; it does not mark a member change assessed, merged, approved, or ready for
 release.
 
-The renderer and `check_plan.py` share the same plan-ID grammar. `MILE-*`, `WORK-*`, and
+The renderer and `check_plan.mjs` share the same plan-ID grammar. `MILE-*`, `WORK-*`, and
 `PR-*` identifiers require exactly two uppercase slug tokens after the kind. One-token,
 extra-token, lowercase, numeric-placeholder, and otherwise malformed candidates are not
 valid allocations or delivery items.
@@ -235,8 +235,8 @@ project.
 From the target project root, run the repository checker copy:
 
 ```pwsh
-python checkers/render_workflow_status.py . --output docs/sdlc-status.html
-python checkers/render_workflow_status.py . --output docs/sdlc-status.html --check
+node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html
+node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html --check
 ```
 
 When using an installed skill without project-local checkers, run the same script from the
@@ -252,7 +252,7 @@ The renderer finds the guide beside its installed or source checker bundle. A st
 project-local checker without that companion file can name it explicitly:
 
 ```pwsh
-python checkers/render_workflow_status.py . --output docs/sdlc-status.html --guide-source <sarathi>/docs/sarathi.html
+node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html --guide-source <sarathi>/docs/sarathi.html
 ```
 
 ## Maintenance

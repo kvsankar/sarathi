@@ -29,13 +29,13 @@ product/system spec, add `--feature --parent <parent-spec.md>`.
 Run:
 
 ```pwsh
-python checkers/check_spec.py <spec.md> --json
+node checkers/check_spec.mjs <spec.md> --json
 ```
 
 For focused specs:
 
 ```pwsh
-python checkers/check_spec.py <spec.md> --feature --parent <parent-spec.md> --json
+node checkers/check_spec.mjs <spec.md> --feature --parent <parent-spec.md> --json
 ```
 
 When checking that an already-reviewed spec has a valid local approval before later
@@ -43,9 +43,6 @@ work, add `--require-approvals`. This checks `.sdlc/approvals.yaml` for a hash-m
 `spec.approved` record with a UTC `approved_at` timestamp. Do not require approval while
 drafting; require it only when the spec is ready to advance and the recorded policy makes the
 gate applicable.
-
-If `python` is unavailable or fails because the launcher is missing, retry with `python3`;
-if that is unavailable, retry with `uv run python`.
 
 Report:
 

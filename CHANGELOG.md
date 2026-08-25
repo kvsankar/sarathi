@@ -4,18 +4,52 @@ All notable Sarathi changes should be recorded here.
 
 This project follows a Keep-a-Changelog style format with `Added`, `Changed`,
 `Fixed`, `Deprecated`, `Removed`, `Security`, and `Docs` headings as needed.
-Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
+Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
+
+## 0.10.0 - 2026-08-21
 
 ### Added
 
 - License Sarathi under the MIT License and include the license in package metadata.
+- Add the Node 22/24 TypeScript runtime, npm CLI and package, deterministic checkers, status
+  renderer, update check, and Python-free installed bundles.
+
+### Changed
+
+- Run repository checks, coverage, packaging, installers, and browser layout through npm.
+- Publish release candidates as provenance-backed npm packages after protected tag approval.
+- Give re-reviewers the earlier review context, treat proposed remedies as advice, limit one
+  stage assessment target to three review rounds, and route the final decision through an
+  eligible automatic-approval policy or the user.
+- Choose assessment-report boundaries by coherent review units rather than approval policy or
+  pauses, and update the same report across correction rounds.
+
+### Fixed
+
+- Restore Python-era validation parity for breakdown work fields and workflow command values,
+  and preserve complete classification diagnostics.
+- Restore deterministic code-point ordering, ID-derived title casing, multiline field parsing,
+  source-file deduplication, empty verification-command handling, and explicit update-check
+  feedback in the TypeScript runtime.
+- Restore Python-compatible JSON reports, duplicate and field ordering, path expansion,
+  status parsing, CLI argument and message behavior, and artifact-file validation.
+- Resolve executable entry points by filesystem identity so checker, status, update, and
+  package CLIs run correctly across Linux, macOS symlinks, and Windows drive paths.
+- Raise Node checker and status coverage gates to require both 80% line and branch coverage.
+- Restore installer regression coverage for legacy-skill archival and bundle replacement.
+- Keep local research documents ignored and out of assembled or installed bundles.
+
+### Removed
+
+- Remove the Python runtime, PyPI packaging, and Python-only test infrastructure after
+  behavior and package parity moved to the Node suites.
 
 ### Docs
 
 - Add a centered chariot hero image and repository status badges to the README.
-- Simplify `uvx` installation examples when the package and command names match.
+- Replace Python/PyPI installation guidance with `npx` and npm commands.
 
 ## 0.9.0 - 2026-08-21
 
@@ -170,7 +204,7 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `pyproject.toml`.
 
 - Position sarathi as a production software engineering workflow for AI coding agents, and
   use the lowercase product name consistently in titles and the process diagram. Explain
-  the name through Krishna's role as Arjuna's *sarathi*: guidance that preserves human
+  the name through Krishna's role as Arjuna's _sarathi_: guidance that preserves human
   agency and judgment.
 
 ## 0.5.0 - 2026-07-21

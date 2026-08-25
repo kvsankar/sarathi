@@ -20,9 +20,9 @@ Run only the earlier documents that control the plan. Do not fail a compact or l
 because unnecessary child spec/design files do not exist. When documents exist, run:
 
 ```pwsh
-python checkers/check_spec.py <spec-path> --json
-python checkers/check_design.py <design-path> --spec <spec-path> --json
-python checkers/check_plan.py <plan-path> --spec <spec-path> --design <design-path> --json
+node checkers/check_spec.mjs <spec-path> --json
+node checkers/check_design.mjs <design-path> --spec <spec-path> --json
+node checkers/check_plan.mjs <plan-path> --spec <spec-path> --design <design-path> --json
 ```
 
 Report failures in earlier documents without reinterpreting them as a quality judgment.
@@ -32,7 +32,7 @@ Report failures in earlier documents without reinterpreting them as a quality ju
 Run the planned test command through:
 
 ```pwsh
-python checkers/check_code.py \
+node checkers/check_code.mjs \
   --plan <plan-path> \
   --tests-argv '<json-array>' \
   --json
@@ -47,7 +47,7 @@ silently omitting them.
 
 Prefer `--tests-argv`; use `--tests-shell` only for trusted commands requiring shell
 behavior. Add `--require-approvals` when implementation depends on an approved plan or
-mock. Retry with `python3` or `uv run python` when needed.
+mock.
 
 Report exact commands, raw JSON, exit codes, pass totals, approval problems, process IDs found
 in source, and the command behind each risk check. Explain failures in plain language. The
