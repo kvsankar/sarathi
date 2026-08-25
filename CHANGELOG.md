@@ -37,6 +37,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
   status parsing, CLI argument and message behavior, and artifact-file validation.
 - Resolve executable entry points by filesystem identity so checker, status, update, and
   package CLIs run correctly across Linux, macOS symlinks, and Windows drive paths.
+- Publish the generated npm tarball through an explicit local path so npm does not interpret
+  it as a Git repository package spec.
 - Raise Node checker and status coverage gates to require both 80% line and branch coverage.
 - Restore installer regression coverage for legacy-skill archival and bundle replacement.
 - Keep local research documents ignored and out of assembled or installed bundles.

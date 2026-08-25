@@ -39,7 +39,7 @@ test("GitHub Release waits for provenance-backed npm publication", async () => {
   assert.match(workflow.slice(release), /^\s*needs:\s*publish\s*$/mu);
   assert.match(
     workflow,
-    /npm publish artifacts\/\*\.tgz --access public --provenance/u,
+    /npm publish \.\/artifacts\/\*\.tgz --access public --provenance/u,
   );
   assert.match(workflow, /id-token:\s*write/u);
   assert.match(workflow.slice(release), /artifacts\/\*\.tgz/u);
