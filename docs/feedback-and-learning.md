@@ -76,11 +76,15 @@ Do not mark every earlier document for revision, stop unrelated fixes, or reasse
 unchanged document merely because another document changed. Use `Blocked-upstream` only when
 the named problems prevent a safe, sound judgment of the requested work.
 
-Record the current state in `.sdlc/wip.md` using the fields from
-[work-in-progress.md](work-in-progress.md). When a slice receives a passing code assessment,
-preserve its completed learning evidence in an assessment record that matches the current
-plan so workflow status can show branch history without treating WIP or Git activity as
-proof.
+After each planned PR assessment, replace the short `.sdlc/wip.md` bookmark using
+[work-in-progress.md](work-in-progress.md). Preserve the focused review and learning result in
+the Implementation plan's rolling code-assessment report. The next dependent PR may continue
+without a user-facing pause when the assessment passes and no required feedback, approval, or
+protected boundary blocks it.
+
+At a review point declared by the plan, inspect how its completed PRs work together. Reuse
+their focused assessments and review integration, accumulated risk, required feedback, and
+whether later work remains safe. Do not repeat the completed PR reviews.
 
 The agent performs this check and may draft revisions supported by observed results. It must
 not silently change accepted product behavior, contracts, safety rules, or scope. Material revisions
@@ -120,9 +124,10 @@ It marks only that group as finished. It is not a code assessment, human approva
 claim, or permission to start the next group. Changing the plan or group membership makes
 the checkpoint stale.
 
-Run checks, record approvals, update status, and update the records together as one automatic
-step. Do not pause the user between these bookkeeping actions. Keep old approvals as history,
-but do not repeatedly report them as current errors after a document is revised and approved.
+At a real work-group checkpoint, update only the records required by that checkpoint. Status
+generation is a separate explicit write, not routine bookkeeping. Keep old approvals as
+history, but do not repeatedly report them as current errors after a document is revised and
+approved.
 
 Unattended or end-to-end mode may cross a collaboration pause only when the recorded approval
 policy permits automatic approval for that local gate. It does not remove learning

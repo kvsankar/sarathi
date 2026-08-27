@@ -441,6 +441,7 @@ test("packaged installer leaves self-contained Node copies after its origin is r
       [
         join(target, "checkers", "render_workflow_status.mjs"),
         target,
+        "--write",
         "--output",
         statusOutput,
         "--guide-source",

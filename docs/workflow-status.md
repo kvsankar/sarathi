@@ -33,9 +33,9 @@ are explained afterward.
 - **Results from checks and review**: work whose code checks and review passed can show what
   was learned and what happens next from its matching code-assessment record.
 
-The renderer finds `spec.md`, `design.md`, and `plan.md`. If the project stores them elsewhere,
-record their paths under `artifact_paths` in `.sdlc/process-decisions.yaml` as described in
-[document-locations.md](document-locations.md).
+The renderer finds tracked and nonignored `spec.md`, `design.md`, and `plan.md`. If the
+project stores them elsewhere or ignores them, record their paths under `artifact_paths` in
+`.sdlc/process-decisions.yaml` as described in [document-locations.md](document-locations.md).
 
 It finds child documents through `Parent Work Item: WORK-*` or a `WORK-*` ID in the first
 heading. It understands compact plans that reuse earlier documents and remains compatible
@@ -49,7 +49,10 @@ It also reads:
 - `.sdlc/wip.md`; and
 - optional `.sdlc/test-traceability.yaml`.
 
-It ignores common dependency, cache, and version-control directories.
+In a Git project it discovers documents through Git's tracked and nonignored file list, so it
+does not recurse through ignored dependencies, caches, build output, disposable state, or
+inaccessible ignored directories. Configured paths are read directly. A non-Git directory
+uses a tolerant fallback scan that skips common generated directories and inaccessible paths.
 
 ## What Each Status Means
 
@@ -232,15 +235,22 @@ project.
 
 ## Generate And Check
 
-From the target project root, run the repository checker copy:
+From the target project root, use the npm CLI:
 
 ```pwsh
-node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html
-node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html --check
+sarathi-sdlc status
+sarathi-sdlc status --check
+sarathi-sdlc status --write
 ```
 
-When using an installed skill without project-local checkers, run the same script from the
-installed `sarathi/checkers` directory and pass the target project root explicitly.
+The first command prints the recorded status without writing. `--check` compares existing
+HTML with current inputs and exits nonzero when it is stale. `--write` generates the status
+page and linked process guide. With a project-local checker, use the same explicit modes:
+
+```pwsh
+node checkers/render_workflow_status.mjs . --check
+node checkers/render_workflow_status.mjs . --write
+```
 
 The output is a standalone LF UTF-8 HTML file with embedded CSS, JavaScript, and a normalized
 JSON model. It contains no clock value, random identifier, network dependency, or external
@@ -252,15 +262,15 @@ The renderer finds the guide beside its installed or source checker bundle. A st
 project-local checker without that companion file can name it explicitly:
 
 ```pwsh
-node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html --guide-source <sarathi>/docs/sarathi.html
+node checkers/render_workflow_status.mjs . --write --output docs/sdlc-status.html --guide-source <sarathi>/docs/sarathi.html
 ```
 
 ## Maintenance
 
-Regenerate the page after accepted document, approval, breakdown, WIP, learning, feedback,
-parallel-work checkpoint, assessment, test-link, or process-guide changes. CI may use
-`--check` to reject a stale status page or static guide. Do not hand-edit generated HTML;
-change the source documents, the guide source, or the renderer instead.
+Regenerate the page explicitly when a published status view is needed. CI may use `--check`
+to reject a stale status page or static guide. Ordinary status queries and PR completion do
+not write it. Do not hand-edit generated HTML; change the source documents, guide source, or
+renderer instead.
 
 The canonical repository also runs responsive browser checks for the status page and
 process guide:

@@ -240,6 +240,9 @@ export async function checkSpec(
       exists: approvalContext?.exists ?? null,
       load_error: approvalContext?.load_error ?? null,
       invalid_records: approvalContext?.invalid_records ?? [],
+      ...(argv.includes("--include-approval-history")
+        ? { historical_records: approvalContext?.historical_records ?? [] }
+        : {}),
     },
     artifact_format: formatName,
     human_first_issues: formatIssues,

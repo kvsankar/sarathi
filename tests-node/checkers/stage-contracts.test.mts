@@ -125,7 +125,7 @@ test("spec checker enforces hash time and automatic approval policy", async () =
     const current = await hash(files.spec);
     await ledger(
       files.root,
-      approval("APR-OLD", "spec.approved", "spec", "spec.md", "0".repeat(64)) +
+      approval("APR-OLD", "spec.approved", "spec", "spec.md", "f".repeat(64)) +
         approval("APR-CURRENT", "spec.approved", "spec", "spec.md", current),
     );
     result = await checkSpec(args, files.root);
@@ -134,6 +134,23 @@ test("spec checker enforces hash time and automatic approval policy", async () =
         .required_approvals_present,
       true,
       JSON.stringify(result.report.approval_requirements),
+    );
+    const approvalLedger = result.report.approval_ledger as Record<
+      string,
+      unknown
+    >;
+    assert.deepEqual(approvalLedger.invalid_records, []);
+    assert.equal("historical_records" in approvalLedger, false);
+    const withHistory = await checkSpec(
+      [...args, "--include-approval-history"],
+      files.root,
+    );
+    assert.deepEqual(
+      (
+        (withHistory.report.approval_ledger as Record<string, unknown>)
+          .historical_records as Array<{ id: string }>
+      ).map(({ id }) => id),
+      ["APR-OLD"],
     );
     await ledger(
       files.root,
@@ -192,6 +209,43 @@ test("spec checker enforces hash time and automatic approval policy", async () =
       (result.report.gates as Record<string, boolean>)
         .required_approvals_present,
       false,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("plan checker resolves a configured parent or names --parent", async () => {
+  const files = await workspace();
+  try {
+    const parent = resolve(files.root, "parent.plan.md");
+    await writeFile(
+      parent,
+      "Plan Type: Breakdown\n- WORK-AUTH-PARENT\n  Work Classification: target-owned implementation\n",
+    );
+    await writeFile(
+      files.plan,
+      "Plan Type: Implementation\nParent Work Item: WORK-AUTH-PARENT\n- PR-AUTH-SIGNIN\n  Work Classification: target-owned implementation\n",
+    );
+    let result = await checkPlan([files.plan, "--json"], files.root);
+    assert.deepEqual(result.report.orphan_refs, ["WORK-AUTH-PARENT"]);
+    assert.match(
+      String(
+        (result.report.parent_resolution as Record<string, unknown>).issue,
+      ),
+      /pass --parent <path>/u,
+    );
+
+    await mkdir(resolve(files.root, ".sdlc"), { recursive: true });
+    await writeFile(
+      resolve(files.root, ".sdlc", "process-decisions.yaml"),
+      "artifact_paths:\n  canonical:\n    plan: parent.plan.md\n",
+    );
+    result = await checkPlan([files.plan, "--json"], files.root);
+    assert.deepEqual(result.report.orphan_refs, []);
+    assert.equal(
+      (result.report.parent_resolution as Record<string, unknown>).path,
+      "parent.plan.md",
     );
   } finally {
     await rm(files.root, { recursive: true, force: true });

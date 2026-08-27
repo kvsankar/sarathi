@@ -74,12 +74,12 @@ For an Implementation plan:
 
 - for Lean without a design, add concise Technical Decisions and map spec acceptance to
   executable checks;
-- list the PRs and their dependencies; one cohesive PR is valid and needs no empty dependency
-  fields;
+- list the PRs and dependencies; one cohesive PR needs no empty dependency fields;
 - for each PR, state outcome, impact allocation, verification, and applicable rollback;
-- when there is more than one PR, say which PRs depend on others, which can run together,
-  their merge order, the dependency chain that controls completion, likely conflicts, and
-  where they must be tested together;
+- for several PRs, state dependencies, safe parallel work, merge order, conflicts, the
+  completion chain, and where the parts must be tested together;
+- declare integration review before feedback, contract, integration, or risk results could
+  change dependent work; do not use a fixed PR count or delay review to the end of a large plan;
 - make each PR cohesive, testable, safe to undo, and clear about the files, modules, and
   contracts it expects to change; keep `PR-*` IDs in traceability;
 - link required behavior and tests from approved documents;

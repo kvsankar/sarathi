@@ -27,9 +27,8 @@ command prompt; do not load every concern.
 
 ## Skill Maintenance
 
-Run bundled `scripts/check_update.mjs` with Node at invocation start; never auto-update or
-install without approval. Respect `SARATHI_UPDATE_CHECK=0`; missing bundle files mean
-incomplete install.
+Run bundled `scripts/check_update.mjs` at invocation start. Never update or install without
+approval. Respect `SARATHI_UPDATE_CHECK=0`; missing bundle files mean an incomplete install.
 
 ## Enduring Model
 
@@ -37,8 +36,8 @@ Split work when one engineer cannot understand, review, test, and integrate it s
 Requirements, design, plans, and code may change as the team learns. Load
 `docs/enduring-model.md` when explaining the whole process.
 
-Production work must preserve approved requirements, useful tests with clear pass/fail
-results, honest feedback, required approvals, and safety limits.
+Production work preserves approved requirements, useful tests, honest feedback, required
+approvals, and safety limits.
 
 Choose a delivery assurance profile with `docs/assurance-profiles.md`:
 
@@ -69,9 +68,8 @@ See `docs/approval-gates.md`.
 
 ## User-Facing Language
 
-Use ordinary language. Hide internal IDs, hashes, records, verdicts, and workflow terms
-unless asked or they affect the next action; explain why first. Apply
-`docs/result-reporting.md` only to formal results and saved reports.
+Use ordinary language. Hide internal IDs, hashes, records, verdicts, and workflow terms unless
+asked or they affect the next action. Use `docs/result-reporting.md` for formal results.
 
 ## Orient Before Acting
 
@@ -100,21 +98,24 @@ one unit. Otherwise split it at a natural product or technical boundary until ev
 understandable, testable, and safe to integrate. A split does not require a new spec and
 design for each part. Use `docs/work-decomposition.md`.
 
-Use a work group (`WAVE-*`) only for near-term `WORK-*` items that share one feedback or
-integration checkpoint. Unscheduled work has no group. An Implementation plan lists the PRs
-for one work item; those PRs do not belong to a work group. A checkpoint closes only its
-group. It does not approve the whole plan or the next group. See
+Use a work group (`WAVE-*`) only for near-term `WORK-*` items sharing one feedback or
+integration checkpoint. Implementation-plan PRs do not belong to a work group. A checkpoint
+closes only its group; it does not approve the plan or next group. See
 `docs/feedback-and-learning.md`.
 
 ## When To Stop
 
-After creating or materially revising a spec, design, ADR, plan, code change, assessment, or
-review report:
+After a spec, design, ADR, or plan is created or materially revised, update WIP, report its
+result and next command, and end the turn before the next stage.
 
-1. Update `.sdlc/wip.md`.
-2. Report the path, whether the work can continue, check and review results, open problems,
-   and the recommended next command.
-3. End the turn before starting the next stage.
+For each planned PR, keep an identifiable Git change, run focused and affected checks,
+assess that exact change independently, and replace the short WIP bookmark. A passing PR may
+lead directly to the next PR in the same turn. Do not regenerate status, refresh unrelated
+approvals, or reassess unchanged documents because a PR finished.
+
+Stop at a planned integration review, an uncorrectable failed assessment, an invalidated
+accepted document, required feedback, a protected boundary, or needed user input. Integration
+review reuses the focused PR assessments.
 
 Continue across commands only when the request and recorded policy permit it. Human
 checkpoints stop. Explicit YOLO authorizes end-to-end work and automatic internal gates but
@@ -142,12 +143,10 @@ keeps the restrictions and protected boundaries in `docs/approval-gates.md`.
 
 ## Verification Independence
 
-Run automatic checks once per revision. Use a fresh reviewer and give re-reviewers earlier
-context. Treat remedies as advice; make the smallest sufficient fix. After the full review,
-review only fixes but allow new findings. Never run a fourth review automatically. After
-round 3, eligible automatic approval or the user decides whether to continue. If no fresh
-reviewer is available, disclose that and keep checks and review separate. Stop when a required
-earlier document is not fit. See `docs/review-verification-checklist.md`.
+Run checks once per revision. Use a fresh reviewer and give re-reviewers earlier context.
+Treat remedies as advice and review only fixes after the full review. Never run a fourth
+review automatically. After round 3, eligible automatic approval or the user decides. If no
+fresh reviewer is available, disclose it. See `docs/review-verification-checklist.md`.
 
 ## Triggered References
 

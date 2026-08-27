@@ -16,18 +16,41 @@ interface Options {
   output?: string;
   guideSource?: string;
   check: boolean;
+  write: boolean;
+  help: boolean;
 }
+
+const HELP = `Usage: sarathi-sdlc status [project-root] [options]
+
+Without a mode, status prints the current recorded state and does not write files.
+
+Options:
+  --check                 Verify that generated HTML is current without writing
+  --write                 Generate deterministic status and process-guide HTML
+  --output <path>         Status HTML path (default: docs/sdlc-status.html)
+  --guide-source <path>   Static Sarathi process guide source
+  -h, --help              Show this help`;
 
 function parseArgs(argv: string[]): Options {
   let root: string | undefined;
   let output: string | undefined;
   let guideSource: string | undefined;
   let check = false;
+  let write = false;
+  let help = false;
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === undefined) continue;
     if (argument === "--check") {
       check = true;
+      continue;
+    }
+    if (argument === "--write") {
+      write = true;
+      continue;
+    }
+    if (argument === "-h" || argument === "--help") {
+      help = true;
       continue;
     }
     if (argument === "--output" || argument === "--guide-source") {
@@ -58,11 +81,14 @@ function parseArgs(argv: string[]): Options {
       throw new Error(`unrecognized argument: ${argument}`);
     root = argument;
   }
+  if (check && write) throw new Error("--check and --write cannot be combined");
   return {
     root: resolve(root ?? process.cwd()),
     ...(output === undefined ? {} : { output }),
     ...(guideSource === undefined ? {} : { guideSource }),
     check,
+    write,
+    help,
   };
 }
 
@@ -93,6 +119,10 @@ export async function runStatus(argv = process.argv.slice(2)): Promise<number> {
     console.error(`error: ${errorMessage(error)}`);
     return 2;
   }
+  if (options.help) {
+    console.log(HELP);
+    return 0;
+  }
   if (!(await isDirectory(options.root))) {
     console.error(`error: project root does not exist: ${options.root}`);
     return 2;
@@ -100,20 +130,20 @@ export async function runStatus(argv = process.argv.slice(2)): Promise<number> {
   const output = options.output
     ? resolveArgument(process.cwd(), options.output)
     : resolve(options.root, "docs", "sdlc-status.html");
-  const guideSource = options.guideSource
-    ? resolveArgument(process.cwd(), options.guideSource)
-    : await defaultGuideSource();
-  if (!guideSource) {
-    console.error("error: static process guide not found; pass --guide-source");
-    return 2;
-  }
-  if (!(await isFile(guideSource))) {
-    console.error(`error: process guide does not exist: ${guideSource}`);
-    return 2;
-  }
-  const guideOutput = join(dirname(output), GUIDE_FILENAME);
   try {
     const model = await buildModel(options.root);
+    if (!options.check && !options.write) {
+      printSummary(model);
+      return 0;
+    }
+    const guideSource = options.guideSource
+      ? resolveArgument(process.cwd(), options.guideSource)
+      : await defaultGuideSource();
+    if (!guideSource)
+      throw new Error("static process guide not found; pass --guide-source");
+    if (!(await isFile(guideSource)))
+      throw new Error(`process guide does not exist: ${guideSource}`);
+    const guideOutput = join(dirname(output), GUIDE_FILENAME);
     const rendered = Buffer.from(
       normalizeRenderedHtml(
         renderHtml(model, options.root, output, GUIDE_FILENAME),
@@ -149,6 +179,33 @@ export async function runStatus(argv = process.argv.slice(2)): Promise<number> {
     console.error(`error: ${errorMessage(error)}`);
     return 2;
   }
+}
+
+function printSummary(model: Record<string, unknown>): void {
+  const wip = record(model.wip);
+  const product = record(wip.product_status);
+  const learning = record(wip.learning);
+  const lines: [string, unknown][] = [
+    ["Status", product.status_result],
+    ["Summary", product.status_summary],
+    ["Last completed", wip["Last Completed"]],
+    ["Current work", learning.active_work_item ?? wip["Work Target"]],
+    ["Next action", product.next_action],
+    ["Blockers", product.blockers],
+    ["Review point", wip["Planned Review Point"]],
+  ];
+  for (const [label, value] of lines) {
+    const rendered = typeof value === "string" ? value.trim() : "";
+    if (rendered) console.log(`${label}: ${rendered}`);
+  }
+  if (!lines.some(([, value]) => typeof value === "string" && value.trim()))
+    console.log("Status: No current work is recorded");
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 function resolveArgument(base: string, path: string): string {

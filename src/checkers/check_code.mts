@@ -417,6 +417,9 @@ export async function checkCode(
       exists: approvalContext?.exists ?? null,
       load_error: approvalContext?.load_error ?? null,
       invalid_records: approvalContext?.invalid_records ?? [],
+      ...(argv.includes("--include-approval-history")
+        ? { historical_records: approvalContext?.historical_records ?? [] }
+        : {}),
     },
     scan_input_issues: scanInputIssues,
     process_id_hits: processHits,

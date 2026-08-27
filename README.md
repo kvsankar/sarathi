@@ -115,14 +115,18 @@ npx --yes sarathi-sdlc install --tools codex,claude-code
 
 ## Optional: Keep The Installer Command
 
-Install `sarathi-sdlc` permanently only when you want its installer, version, and update
-commands to remain on your `PATH`:
+Install `sarathi-sdlc` permanently when you want its installer, checker, status, version, and
+update commands on your `PATH`:
 
 ```sh
 npm install --global sarathi-sdlc
 sarathi-sdlc install
 sarathi-sdlc --version
 sarathi-sdlc check-update
+sarathi-sdlc check plan docs/plan.md --json
+sarathi-sdlc status
+sarathi-sdlc status --check
+sarathi-sdlc status --write
 ```
 
 After upgrading with `npm update --global sarathi-sdlc`, rerun `sarathi-sdlc install` to
@@ -262,12 +266,13 @@ The core stage names are:
 | `$sarathi-code-verify`     | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks.                  |
 | `$sarathi-code-review`     | Independently review code, tests, operational work, required project checks, and fit with earlier documents.                     |
 | `$sarathi-code-assess`     | Run code checks plus independent review.                                                                                         |
-| `$sarathi-workflow-status` | Render project status as read-only HTML.                                                                                         |
+| `$sarathi-workflow-status` | Report project status without writing; explicitly check or write the HTML view.                                                    |
 
-Generate the live status page and its linked static process guide directly with:
+Report status without writing, or explicitly generate the HTML page and linked guide:
 
 ```pwsh
-node checkers/render_workflow_status.mjs . --output docs/sdlc-status.html
+sarathi-sdlc status
+sarathi-sdlc status --write
 ```
 
 See [docs/workflow-status.md](docs/workflow-status.md) for details. The page starts with what

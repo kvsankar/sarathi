@@ -3,6 +3,7 @@
 import {
   approvalGatePassed,
   approvalRequirement,
+  loadYamlFile,
   loadApprovalContext,
   type ApprovalContext,
   type ApprovalRequirement,
@@ -38,6 +39,7 @@ import {
 import { splitLines } from "./lib/output.mjs";
 import { parseLearningWaves } from "./lib/waves.mjs";
 import { validateWorkflowState } from "./lib/workflow-state.mjs";
+import { relative, resolve } from "node:path";
 
 const SLUG = "(?=[A-Z0-9]{2,32}(?![A-Z0-9]))(?=[A-Z0-9]*[A-Z])[A-Z0-9]{2,32}";
 const PYTHON_WORD = "\\p{L}\\p{N}_";
@@ -75,6 +77,70 @@ const PARENT_WORK = new RegExp(
   `^\\s*Parent Work Item\\s*:\\s*(WORK-${SLUG}-${SLUG})\\s*$`,
   "im",
 );
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+async function configuredParent(
+  root: string,
+  currentPlan: string,
+  workItem: string,
+): Promise<{ path?: string; candidates: string[] }> {
+  let decisions: Record<string, unknown> | undefined;
+  try {
+    decisions = asRecord(
+      await loadYamlFile(resolve(root, ".sdlc", "process-decisions.yaml")),
+    );
+  } catch (error) {
+    if (
+      !error ||
+      typeof error !== "object" ||
+      !("code" in error) ||
+      error.code !== "ENOENT"
+    )
+      throw error;
+    return { candidates: [] };
+  }
+  const paths = asRecord(decisions?.artifact_paths);
+  const configured = new Set<string>();
+  const addPlan = (value: unknown): void => {
+    const group = asRecord(value);
+    if (typeof group?.plan === "string")
+      configured.add(resolve(root, group.plan));
+  };
+  addPlan(paths?.canonical);
+  const children = asRecord(paths?.children);
+  if (children) for (const value of Object.values(children)) addPlan(value);
+
+  const matches: string[] = [];
+  for (const candidate of configured) {
+    if (resolve(candidate) === resolve(root, currentPlan)) continue;
+    let candidateText: string;
+    try {
+      candidateText = await readUtf8(candidate);
+    } catch (error) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "ENOENT"
+      )
+        continue;
+      throw error;
+    }
+    const definitions = definitionsAndReferences(candidateText).defined;
+    if (Object.values(definitions).some((ids) => ids.has(workItem)))
+      matches.push(candidate);
+  }
+  matches.sort();
+  return {
+    ...(matches.length === 1 ? { path: matches[0] } : {}),
+    candidates: matches,
+  };
+}
 const CLASSIFICATION =
   /^\s*(?:[-*+]\s+)?(?:\*\*)?Work Classification(?:\*\*)?\s*:\s*(.+?)\s*$/gim;
 const CLASSIFICATIONS = new Set([
@@ -223,11 +289,19 @@ export async function checkPlan(
       ["Implementation Approach", "Implementation Crux"],
       ["human-first-v2", "human-first-v3"],
     );
-  const parentIds = new Set<string>(),
-    parent = valueAfter(argv, "--parent");
-  if (parent)
+  const parentIds = new Set<string>();
+  const parentWorkItem = PARENT_WORK.exec(text)?.[1];
+  let parent = valueAfter(argv, "--parent");
+  let parentCandidates: string[] = [];
+  if (!parent && parentWorkItem) {
+    const resolvedParent = await configuredParent(root, path, parentWorkItem);
+    parent = resolvedParent.path;
+    parentCandidates = resolvedParent.candidates;
+  }
+  const parentPath = parent ? resolve(root, parent) : undefined;
+  if (parentPath)
     Object.values(
-      definitionsAndReferences(await readUtf8(parent)).defined,
+      definitionsAndReferences(await readUtf8(parentPath)).defined,
     ).forEach((set) => set.forEach((id) => parentIds.add(id)));
   const specPath = valueAfter(argv, "--spec"),
     specText = specPath ? await readUtf8(specPath) : "",
@@ -356,6 +430,14 @@ export async function checkPlan(
       ...parentIds,
     ]),
     orphans = sorted([...refs].filter((id) => !allIds.has(id)));
+  const parentIssue =
+    parentWorkItem && !parent && orphans.length
+      ? parentCandidates.length > 1
+        ? `parent work item ${parentWorkItem} is defined by multiple configured plans (${parentCandidates
+            .map((candidate) => relative(root, candidate).replaceAll("\\", "/"))
+            .join(", ")}); pass --parent <path>`
+        : `cannot resolve parent work item ${parentWorkItem} from configured artifact_paths; pass --parent <path>`
+      : null;
   const externalMentions = allMatches(text, EXTERNAL_DOUBLE).map((value) =>
       value.replace(/\s+/g, " ").trim(),
     ),
@@ -562,6 +644,16 @@ export async function checkPlan(
       exists: approvalContext?.exists ?? null,
       load_error: approvalContext?.load_error ?? null,
       invalid_records: approvalContext?.invalid_records ?? [],
+      ...(argv.includes("--include-approval-history")
+        ? { historical_records: approvalContext?.historical_records ?? [] }
+        : {}),
+    },
+    parent_resolution: {
+      work_item: parentWorkItem ?? null,
+      path: parentPath
+        ? relative(root, parentPath).replaceAll("\\", "/")
+        : null,
+      issue: parentIssue,
     },
     orphan_refs: orphans,
     duplicates,
@@ -609,6 +701,8 @@ async function main(): Promise<number> {
       console.log(
         `${passed ? "PASS" : "FAIL"}  ${labels[key] ?? key.replaceAll("_", " ")}`,
       );
+    if (report.parent_resolution?.issue)
+      console.log(`DETAIL ${report.parent_resolution.issue}`);
     for (const item of report.workflow_state_issues)
       console.log(
         `ERROR ${item.path} ${item.field}: ${item.reason} (found ${pythonRepr(item.value)})`,

@@ -135,6 +135,7 @@ Stop Or Replan Triggers: Stop if any visible label, link, readiness note, badge,
     [
       join(repoRoot, "dist", "status", "cli.mjs"),
       projectRoot,
+      "--write",
       "--output",
       statusPath,
       "--guide-source",
