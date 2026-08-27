@@ -280,6 +280,14 @@ async function assertNodeBundle(
   );
   assert.equal(checker.status, 1, checker.stderr);
   assert.match(checker.stdout, /"has_delivery_items": false/u);
+
+  const status = run(
+    process.execPath,
+    [join(checkers, "render_workflow_status.mjs"), "--help"],
+    projectRoot,
+  );
+  assert.equal(status.status, 0, status.stderr);
+  assert.match(status.stdout, /--write/u);
 }
 
 test("native installer dry-run preserves the quiet public output", async () => {
@@ -352,6 +360,24 @@ test("source checkout installs the compiled checker tree", async () => {
         .flat()
         .some((path) => path.endsWith(".py")),
       false,
+    );
+  } finally {
+    await rm(target, { recursive: true, force: true });
+  }
+});
+
+test("no-checkers skips only the project copy", async () => {
+  const target = await mkdtemp(join(tmpdir(), "sarathi-skill-checkers-"));
+  const noCheckers =
+    process.platform === "win32" ? "-NoCheckers" : "--no-checkers";
+  try {
+    await writeFile(join(target, "plan.md"), "# Invalid Plan\n", "utf8");
+    const result = install(repositoryRoot, target, [noCheckers], "codex");
+    assert.equal(result.status, 0, result.stderr);
+    await assert.rejects(access(join(target, "checkers", "check_plan.mjs")));
+    await assertNodeBundle(
+      join(target, ".codex", "skills", "sarathi", "checkers"),
+      target,
     );
   } finally {
     await rm(target, { recursive: true, force: true });
