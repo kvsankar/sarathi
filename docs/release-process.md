@@ -8,8 +8,10 @@ compiled checkers, status renderer, installers, and documentation.
 - Use `vMAJOR.MINOR.PATCH` Git tags, for example `v0.10.0`.
 - Keep the version aligned in `package.json`, `package-lock.json`,
   `skills/sarathi/manifest.json`, and `CHANGELOG.md`.
-- Use patch releases for compatible fixes, minor releases for meaningful new behavior, and
-  major releases for incompatible command, document, checker, or install contracts.
+- Before `1.0.0`, use patch releases for compatible fixes and minor releases for meaningful
+  new behavior or incompatible tuning changes. Publish `1.0.0` only after an explicit
+  stability decision. After `1.0.0`, incompatible command, document, checker, or install
+  contracts require a major release.
 
 ## Changelog
 

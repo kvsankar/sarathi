@@ -8,7 +8,7 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
-## 1.0.0 - 2026-08-27
+## 0.11.0 - 2026-08-27
 
 ### Added
 
