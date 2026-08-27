@@ -68,6 +68,13 @@ and active target at the top of a multi-target report. Point WIP to the current 
 name only the target and next engineering action there; the report is authoritative for
 round state.
 
+For code, keep one rolling `<work-slug>.code-assessment.md` per Implementation plan. Give
+each planned PR a compact section with its reviewed commit or range, result, short check
+references, reviewer, and active findings. Update that section after reviewed fixes. At each
+declared integration review point, add one section for cross-PR behavior, integration checks,
+feedback, combined risk, and readiness to continue. Do not copy complete logs or add a
+per-PR hash ledger. Git history carries older report text; the current report stays concise.
+
 Each report follows [result-reporting.md](result-reporting.md) and states:
 
 - one plain-language result;

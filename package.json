@@ -1,6 +1,6 @@
 {
   "name": "sarathi-sdlc",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "A structured software delivery workflow for AI coding agents",
   "private": false,
   "type": "module",
@@ -48,7 +48,7 @@
     "format": "prettier --write package.json package-lock.json tsconfig.json tsconfig.tests.json eslint.config.mjs playwright.config.mjs .prettierrc.json .markdownlint.json \"src/**/*.mts\" \"tests-node/**/*.mts\"",
     "format:check": "prettier --check package.json package-lock.json tsconfig.json tsconfig.tests.json eslint.config.mjs playwright.config.mjs .prettierrc.json .markdownlint.json \"src/**/*.mts\" \"tests-node/**/*.mts\"",
     "lint": "eslint src tests-node eslint.config.mjs playwright.config.mjs",
-    "lint:markdown": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#.sdlc\" \"#.node-test-dist\" \"#.pytest_cache\" \"#.venv\" \"#.worktrees\" \"#bundle\" \"#dist\" \"#docs/reviews\"",
+    "lint:markdown": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#.sdlc\" \"#.node-test-dist\" \"#.pytest_cache\" \"#.venv\" \"#.worktrees\" \"#artifacts\" \"#bundle\" \"#dist\" \"#docs/reviews\"",
     "test:foundation": "npm run build:test && node --experimental-test-coverage --test-coverage-include=.node-test-dist/src/**/*.mjs --test-coverage-lines=80 .node-test-dist/tests-node/run-foundation.mjs",
     "test:checkers": "npm run build:test && node --experimental-test-coverage --test-coverage-include=.node-test-dist/src/checkers/**/*.mjs --test-coverage-lines=80 --test-coverage-branches=80 .node-test-dist/tests-node/run-checkers.mjs",
     "test:distribution": "npm run build && npm run build:test && node .node-test-dist/tests-node/run-distribution.mjs",

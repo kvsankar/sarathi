@@ -22,6 +22,7 @@ export interface ApprovalContext {
   exists: boolean;
   records: unknown[];
   invalid_records: { id: unknown; issues: string[] }[];
+  historical_records: { id: unknown; issues: string[] }[];
   load_error: string | null;
   recorded_approval_policy: string | null;
   gates_policy_exists: boolean;
@@ -301,12 +302,12 @@ function policyAllows(
   return issues;
 }
 
-export async function validateApprovalRecord(
+export function validateApprovalRecord(
   record: unknown,
-  projectRoot: string,
+  _projectRoot: string,
   gatesPolicy: Record<string, unknown> = {},
   recordedApprovalPolicy: string | null = null,
-): Promise<string[]> {
+): string[] {
   const approval = asRecord(record);
   if (approval === undefined) {
     return ["approval record must be a YAML section with named fields"];
@@ -337,23 +338,8 @@ export async function validateApprovalRecord(
   for (const key of ["kind", "path", "sha256"]) {
     if (!artifact[key]) issues.push(`artifact details are missing ${key}`);
   }
-  if (artifact.kind === "marker-inventory") {
-    if (!/^[0-9a-f]{64}$/.test(stringValue(artifact.sha256))) {
-      issues.push(
-        "marker inventory sha256 must be a lowercase SHA-256 hex digest",
-      );
-    }
-  } else {
-    const artifactPath = resolve(projectRoot, stringValue(artifact.path));
-    const actualHash = await sha256File(artifactPath);
-    if (actualHash === null)
-      issues.push(`file does not exist: ${stringValue(artifact.path)}`);
-    else if (artifact.sha256 !== actualHash) {
-      issues.push(
-        `approval is for an earlier version of: ${stringValue(artifact.path)}`,
-      );
-    }
-  }
+  if (!/^[0-9a-f]{64}$/.test(stringValue(artifact.sha256)))
+    issues.push("artifact sha256 must be a lowercase SHA-256 hex digest");
   if (approval.status === "auto-approved") {
     issues.push(...policyAllows(approval, gatesPolicy, recordedApprovalPolicy));
   }
@@ -373,6 +359,7 @@ export async function loadApprovalContext(
     exists: false,
     records: [],
     invalid_records: [],
+    historical_records: [],
     load_error: null,
     recorded_approval_policy: null,
     gates_policy_exists: false,
@@ -399,7 +386,7 @@ export async function loadApprovalContext(
     }
     context.records = data.approvals;
     for (const record of context.records) {
-      const issues = await validateApprovalRecord(
+      const issues = validateApprovalRecord(
         record,
         projectRoot,
         context.gates_policy,
@@ -407,7 +394,27 @@ export async function loadApprovalContext(
       );
       if (issues.length > 0) {
         context.invalid_records.push({ id: asRecord(record)?.id, issues });
+        continue;
       }
+      const approval = asRecord(record);
+      const artifact = asRecord(approval?.artifact);
+      if (!artifact || artifact.kind === "marker-inventory") continue;
+      const artifactPath = resolve(projectRoot, stringValue(artifact.path));
+      const actualHash = await sha256File(artifactPath);
+      if (actualHash === null)
+        context.historical_records.push({
+          id: approval?.id,
+          issues: [
+            `approved file no longer exists: ${stringValue(artifact.path)}`,
+          ],
+        });
+      else if (artifact.sha256 !== actualHash)
+        context.historical_records.push({
+          id: approval?.id,
+          issues: [
+            `approval is for an earlier version of: ${stringValue(artifact.path)}`,
+          ],
+        });
     }
   } catch (error) {
     context.load_error = errorMessage(error);
@@ -452,6 +459,9 @@ export function approvalRequirement(
   const invalidById = new Map(
     context.invalid_records.map((item) => [item.id, item.issues]),
   );
+  const historicalById = new Map(
+    context.historical_records.map((item) => [item.id, item.issues]),
+  );
   const candidateIssues: string[] = [];
   for (const rawRecord of context.records) {
     const record = asRecord(rawRecord);
@@ -475,7 +485,10 @@ export function approvalRequirement(
     }
     result.approval_id = record.id;
     result.status = record.status;
-    const issues = [...(invalidById.get(record.id) ?? [])];
+    const issues = [
+      ...(invalidById.get(record.id) ?? []),
+      ...(historicalById.get(record.id) ?? []),
+    ];
     if (
       options.allowedStatuses &&
       !options.allowedStatuses.has(String(record.status))

@@ -359,6 +359,9 @@ export async function checkDesign(
       exists: approvalContext?.exists ?? null,
       load_error: approvalContext?.load_error ?? null,
       invalid_records: approvalContext?.invalid_records ?? [],
+      ...(argv.includes("--include-approval-history")
+        ? { historical_records: approvalContext?.historical_records ?? [] }
+        : {}),
     },
     orphan_refs: orphanRefs,
     duplicates,

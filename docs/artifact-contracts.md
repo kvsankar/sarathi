@@ -192,6 +192,11 @@ When a plan has several PRs, state their dependencies, order, critical path, saf
 work, conflicts, and integration points. For a one-PR plan, say that there is only one PR and
 omit empty dependency and parallel-work fields.
 
+Also state the planned integration review points. Put one before feedback, contract,
+integration, or risk results could materially change dependent PRs. A review point may cover
+several related PRs, but it does not replace the focused assessment of each PR and must not be
+delayed until the end of work too large to judge safely.
+
 A Lean plan without a separate design adds **Technical Decisions** before the PR list. Include
 only the structure, interfaces, data or state behavior, trade-offs, and test approach needed
 for this change. Map `AT-*` and `JT-*` directly to executable checks. If this section cannot
@@ -231,8 +236,10 @@ results, and anything that could not be checked. Test names describe behavior. S
 not belong in production or test source merely for traceability; keep those mappings in the
 plan, assessment, or an optional external traceability record.
 
-Before stopping, run the planned tests, required project checks, applicable extra checks,
-cleanup, and simplification. Report missing results as unavailable, never as passing.
+At each PR boundary, create an identifiable Git change, run the planned focused and affected
+checks, and assess that exact change independently. Before a declared integration review
+point, run its planned full and integration checks, cleanup, and simplification. Report
+missing results as unavailable, never as passing.
 Use a coverage or detailed test-link inventory only when the project or selected profile
 requires one. At every PR boundary, keep the planned test suite passing.
 

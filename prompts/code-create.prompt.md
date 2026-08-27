@@ -5,7 +5,8 @@ agent: agent
 
 # Code Create
 
-Implement the selected approved plan and keep each delivery item usable and testable.
+Implement the selected approved plan one reviewable PR at a time. A passing PR may lead
+directly to the next planned PR in the same turn.
 
 ## Load And Gate
 
@@ -16,18 +17,12 @@ Evidence contract, `docs/test-ownership.md` for test-first implementation, and
 `docs/feedback-and-learning.md` when coordinated work is active. Load
 `docs/result-reporting.md` for the final report.
 
-## Triggered References
-
 Load only when the trigger applies:
 
-- `docs/assurance-profiles.md` and `docs/cross-cutting-concerns.md`: an assigned additional
-  check, escalation, or new risk needs interpretation;
-- `docs/project-quality-gates.md`: inspect the project gate before implementation and load
-  the policy when its configuration or hook is missing or needs to change;
-- `docs/simplicity-first.md`: implementation exposes unnecessary machinery, a refactor, or a
-  simplification decision;
-- `docs/cleanup-pass.md`, `docs/simplify-pass.md`, and `docs/artifact-formatting.md`:
-  immediately before reporting.
+- assurance profiles and cross-cutting concerns for an assigned check, escalation, or risk;
+- project quality gates when its configuration or hook needs work;
+- simplicity-first for unnecessary machinery, refactoring, or simplification; and
+- cleanup, simplify, and formatting guidance immediately before reporting.
 
 Block unless the plan clearly says what to build, required approvals exist, and required
 earlier documents are fit. A feature/component plan may authorize code directly without a
@@ -36,17 +31,13 @@ When one exists, `.sdlc/wip.md` selects it. If coordinated work has a declared l
 checkpoint, enforce it. Confirm the expected files, first failing tests, smallest intended
 change, required behavior and tests, how each check will pass or fail, risks, reviewer,
 dependencies, and reasons to stop or change the plan.
+For a `Decision/evidence` outcome, stay within its limits, record its result and next action,
+and do not claim product readiness or deploy without new product-increment requirements.
 
-For a `Decision/evidence` outcome, implement only the planned experiment or prototype within
-its stated limits. Record the result, decision, and next action; do not claim product
-readiness or deploy the result without new product-increment requirements.
-
-Inspect the repository's documented local gate and hook. Reuse them when present. When
-missing, configure and document the smallest ecosystem-appropriate gate authorized by the
-plan, install it in the working checkout, and keep slow or environment-heavy checks in CI.
-
-Update `.sdlc/wip.md` with the exact active `WORK-*` item and, when applicable, its active
-`WAVE-*`. Do not exceed its declared parallel-work limit. Do not start additional work merely
+Reuse the repository's documented local gate and hook. When missing, add the smallest gate
+authorized by the plan and keep slow or environment-heavy checks in CI.
+Use `.sdlc/wip.md` to select the current `WORK-*` item and planned PR. When coordinated work
+is active, enforce its group and parallel-work limit. Do not start additional work merely
 because an agent is available.
 
 ## Implement
@@ -76,12 +67,27 @@ unsafe to continue; unrelated fixes may proceed. When the accepted document is r
 the code is wrong, fix the code without reopening the document. Do not add product machinery
 merely to satisfy the process.
 
-## Check The Change
+## Finish Each Planned PR
 
-Run focused and full planned tests, the project gate required by
-`docs/project-quality-gates.md`, build/docs/deployment/environment checks, and all additional checks
-assigned to this PR. Run coverage only when the repository policy or accepted risk profile
-requires it.
+At each planned PR boundary:
+
+1. Run the PR's focused and affected tests, applicable project gate, and assigned extra
+   checks. Run full, build, documentation, deployment, or environment checks here only when
+   the plan or repository requires them for this PR.
+2. Create an identifiable Git boundary, normally one commit. If the PR needs several commits,
+   record the exact base and head range.
+3. Run `code-assess` against that exact change. Its independent review stays focused on this
+   PR's assigned behavior, tests, changed boundaries, and risks.
+4. Correct blocking findings, rerun affected checks, and reassess the fixes. Do not restart
+   unchanged checks or review unrelated earlier PRs.
+5. When the PR passes, update the plan's rolling code-assessment report and replace the WIP
+   bookmark with the completed PR, reviewed commit or range, result, current PR, and next
+   action.
+
+Focused and affected checks and the independent assessment must pass before dependent work
+continues. Passing a PR does not require status generation, a roadmap update, a fresh
+approval for unchanged documents, or a user-facing pause. Continue to the next planned PR
+when policy and safety permit it.
 
 Do not run live production deployment or checks without explicit user approval. Report
 unavailable checks and remaining risk rather than treating them as passed.
@@ -91,23 +97,24 @@ Clean up and simplify, using the correction rule in
 theatrical tests/checks, misleading docs, and unjustified abstractions within scope. Rerun
 affected checks.
 
+At each review point declared by the plan, run its integration and full applicable checks and
+an independent integration assessment against the exact combined code state. Reuse the
+completed PR assessments; review the interaction, accumulated risk, required feedback, and
+readiness for the next planned group instead of reviewing every PR again.
+
 ## Result
 
 Update `.sdlc/wip.md` and report:
 
-- the result and what it means for the product;
-- changed paths and what they now do;
-- exact test and project-check commands, with a plain explanation of the results;
-- the observed Red-Green-Refactor evidence, or the narrow reason and replacement check when
-  a failing test was not a sensible driver;
-- product/code problems, missing verification, and process/documentation problems kept
-  separate;
-- assumptions, risks, feedback, required changes to earlier documents, next actions in
-  priority order, and whether `code-assess` can start.
+- the product result and changed paths;
+- exact test and project-check commands with a plain explanation;
+- observed Red-Green-Refactor evidence, or the reason and replacement check;
+- separate code, verification, and document problems; and
+- assumptions, risks, feedback, earlier-document changes, and priority next actions.
 
-Stop according to the recorded approval policy after the code change. Human checkpoints
-require explicit approval; automatic approval needs an eligible local policy and a
-latest-message unattended instruction. Required document changes (`revision-required`),
-missing feedback, release, and deployment boundaries still block affected work.
+Stop when the recorded policy requires approval at the current boundary. A plan approval does
+not create an extra approval after every PR unless the plan or policy explicitly requires a
+code-slice gate. Required document changes (`revision-required`), missing feedback, protected
+actions, release, and deployment boundaries still block affected work.
 For approved-prototype UI work, this stop is a mandatory stakeholder UI review after every
 completed UI change.

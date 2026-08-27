@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- Assertions intentionally inspect the heterogeneous parity model. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  cp,
+  mkdtemp,
+  mkdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -397,6 +405,7 @@ test("HTML is deterministic, escaped, standalone, and check detects staleness", 
     assert.equal(
       await runStatus([
         root,
+        "--write",
         "--output",
         output,
         "--guide-source",
@@ -439,6 +448,80 @@ test("HTML is deterministic, escaped, standalone, and check detects staleness", 
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("status summary leaves existing project files byte-identical", async () => {
+  const root = await fixture();
+  const output = join(root, "docs", "sdlc-status.html");
+  const guide = join(root, "docs", GUIDE_FILENAME);
+  try {
+    await writeFile(output, Buffer.from([0x73, 0x74, 0x61, 0x74, 0x75, 0x73]));
+    await writeFile(guide, Buffer.from([0x67, 0x75, 0x69, 0x64, 0x65]));
+    const outputBefore = await readFile(output);
+    const guideBefore = await readFile(guide);
+    assert.equal(await runStatus([root]), 0);
+    assert.equal((await readFile(output)).equals(outputBefore), true);
+    assert.equal((await readFile(guide)).equals(guideBefore), true);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("Git discovery excludes ignored project directories", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sarathi-node-git-status-"));
+  try {
+    assert.equal(
+      spawnSync("git", ["init", "--quiet"], { cwd: root }).status,
+      0,
+    );
+    await write(join(root, ".gitignore"), "var/\n");
+    await write(join(root, "docs", "spec.md"), "# Tracked status\n");
+    await write(join(root, "var", "plan.md"), "# Ignored status\n");
+    const paths = (await discover(root, "*.md")).map((path) =>
+      path.slice(root.length + 1).replaceAll("\\", "/"),
+    );
+    assert.deepEqual(paths, ["docs/spec.md"]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("Git discovery ignores tracked files deleted from the working tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sarathi-node-git-deleted-"));
+  try {
+    assert.equal(
+      spawnSync("git", ["init", "--quiet"], { cwd: root }).status,
+      0,
+    );
+    const spec = await write(join(root, "docs", "spec.md"), "# Deleted\n");
+    assert.equal(
+      spawnSync("git", ["add", "docs/spec.md"], { cwd: root }).status,
+      0,
+    );
+    await rm(spec);
+    const model = await buildModel(root);
+    assert.equal(model.stages.spec.state, "missing");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test(
+  "non-Git fallback tolerates an inaccessible irrelevant directory",
+  { skip: process.platform === "win32" },
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "sarathi-node-inaccessible-"));
+    const blocked = join(root, "blocked");
+    try {
+      await write(join(root, "docs", "spec.md"), "# Available\n");
+      await write(join(blocked, "plan.md"), "# Irrelevant\n");
+      await chmod(blocked, 0o000);
+      await assert.doesNotReject(discover(root, "*.md"));
+    } finally {
+      await chmod(blocked, 0o700).catch(() => undefined);
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);
 
 test("embedded model neutralizes mixed-case script terminators", async () => {
   const root = await fixture();
@@ -490,7 +573,7 @@ test("compiled CLI preserves root, output, guide-source, and check behavior", as
     join(repositoryRoot, "docs", "sarathi.html"),
   ];
   try {
-    const generated = spawnSync(process.execPath, args, {
+    const generated = spawnSync(process.execPath, [...args, "--write"], {
       cwd: repositoryRoot,
       encoding: "utf8",
     });
@@ -521,6 +604,7 @@ test("compiled CLI preserves root, output, guide-source, and check behavior", as
         root,
         `--output=${equalsOutput}`,
         `--guide-source=${join(repositoryRoot, "docs", "sarathi.html")}`,
+        "--write",
       ],
       { cwd: repositoryRoot, encoding: "utf8" },
     );
@@ -560,6 +644,7 @@ test("compiled CLI resolves explicit relative output from process cwd", async ()
       [
         cli,
         root,
+        "--write",
         "--output",
         relativeOutput,
         "--guide-source",
@@ -1109,7 +1194,7 @@ test("check detects stale static process guide", async () => {
       "--guide-source",
       join(repositoryRoot, "docs", "sarathi.html"),
     ];
-    assert.equal(await runStatus(args), 0);
+    assert.equal(await runStatus([...args, "--write"]), 0);
     await writeFile(guide, "stale\n", "utf8");
     assert.equal(await runStatus([...args, "--check"]), 1);
   } finally {
@@ -1129,7 +1214,13 @@ test("missing static process guide is an error", async () => {
     );
     const result = spawnSync(
       process.execPath,
-      [join(isolated, "dist", "status", "cli.mjs"), root, "--output", output],
+      [
+        join(isolated, "dist", "status", "cli.mjs"),
+        root,
+        "--write",
+        "--output",
+        output,
+      ],
       { cwd: root, encoding: "utf8" },
     );
     assert.equal(result.status, 2);

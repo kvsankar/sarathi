@@ -47,12 +47,11 @@ another checker score without an interpretation such as, “The requirements, de
 implementation plan passed their structural checks.” Raw counts and checker JSON may follow
 under technical evidence.
 
-When updating `.sdlc/wip.md`, put only the base `Ready`, `Ready after minor fixes`,
-`Not ready`, or `Cannot assess yet` value in `Status Result`. Put scope, next step, and the
-plain-language reason in `Status Summary`. A verify-only result does not replace this broader
-readiness status; record it under check evidence instead. The workflow-status page renders
-only the recorded readiness result; it does not derive readiness from approvals, Git
-activity, or passing tests.
+When recording a formal status in `.sdlc/wip.md`, put only the base `Ready`, `Ready after
+minor fixes`, `Not ready`, or `Cannot assess yet` value in `Status Result`. Put scope, next
+step, and the plain-language reason in `Status Summary`. A PR assessment updates the short
+resume bookmark; it does not replace the broader readiness status. Status reporting never
+derives product readiness from approvals, Git activity, or passing tests.
 
 ## Keep Machine State In Its Files
 

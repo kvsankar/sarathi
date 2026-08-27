@@ -23,8 +23,14 @@ const HELP = `Usage: sarathi-sdlc [--version] <command>
 Commands:
   install       Install bundled skills and prompts
   check-update  Check npm for a newer Sarathi release
+  check         Run a bundled spec, design, plan, or code checker
+  status        Report, check, or write project workflow status
 
-Run sarathi-sdlc install --help for install options.`;
+Run sarathi-sdlc <command> --help for command options.`;
+
+const CHECK_HELP = `Usage: sarathi-sdlc check <spec|design|plan|code> [checker options]
+
+Arguments after the checker name are passed to the bundled checker.`;
 
 const INSTALL_HELP = `Usage: sarathi-sdlc install [options]
 
@@ -154,6 +160,27 @@ async function runInstall(options: InstallOptions): Promise<number> {
   });
 }
 
+async function runBundled(
+  root: string,
+  modulePath: string[],
+  args: string[],
+): Promise<number> {
+  return await new Promise((done, reject) => {
+    const child = spawn(
+      process.execPath,
+      [resolve(root, ...modulePath), ...args],
+      {
+        stdio: "inherit",
+      },
+    );
+    child.once("error", reject);
+    child.once("exit", (code, signal) => {
+      if (signal) reject(new Error(`command stopped by ${signal}`));
+      else done(code ?? 2);
+    });
+  });
+}
+
 export async function main(argv = process.argv.slice(2)): Promise<number> {
   try {
     if (argv.includes("--version")) {
@@ -185,6 +212,31 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         return 0;
       }
       return await runInstall(options);
+    }
+    if (command === "check") {
+      const stage = argv[1];
+      if (!stage || stage === "-h" || stage === "--help") {
+        console.log(CHECK_HELP);
+        return stage ? 0 : 2;
+      }
+      const checker = {
+        spec: "check_spec.mjs",
+        design: "check_design.mjs",
+        plan: "check_plan.mjs",
+        code: "check_code.mjs",
+      }[stage];
+      if (!checker)
+        throw new Error("check must name spec, design, plan, or code");
+      const root = await resolveBundleRoot();
+      return await runBundled(root, ["checkers", checker], argv.slice(2));
+    }
+    if (command === "status") {
+      const root = await resolveBundleRoot();
+      return await runBundled(
+        root,
+        ["checkers", "render_workflow_status.mjs"],
+        argv.slice(1),
+      );
     }
     throw new Error(`unrecognized command: ${command}`);
   } catch (error) {

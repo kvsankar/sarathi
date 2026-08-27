@@ -35,8 +35,10 @@ when it is already one safe change and says why. Otherwise, check that every par
 understandable, testable, and safe to integrate. Each PR needs a clear result, expected
 changes, tests, and rollback when needed. With multiple PRs, require dependencies, merge
 order, work that can run together, likely conflicts, where the parts must be tested together,
-and the dependency chain that controls completion. A one-PR plan needs no empty dependency
-fields.
+the dependency chain that controls completion, and declared integration review points before
+feedback, contract, integration, or risk results could invalidate later work. Judge those
+points from the actual work; do not require a fixed number of PRs per review. A one-PR plan
+needs no empty dependency fields.
 For a Decision/evidence outcome, judge the evidence method, decision owner, boundaries,
 timebox or stop condition, and next action rather than demanding a shippable result.
 

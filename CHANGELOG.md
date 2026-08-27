@@ -8,10 +8,38 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+## 0.11.0 - 2026-08-27
+
+### Added
+
+- Expose bundled specification, design, plan, and code checkers plus read-only status,
+  freshness checking, and explicit HTML generation through the `sarathi-sdlc` CLI.
+
 ### Changed
 
+- Keep every planned PR as an identifiable Git change with focused checks, independent
+  assessment, and a short WIP update, while allowing a passing PR to continue in the same
+  agent session without unrelated status, roadmap, approval, or document-review work.
+- Use one rolling code-assessment report per Implementation plan and add focused integration
+  assessment at the review points declared by the plan.
+- Reduce `.sdlc/wip.md` to a current resume bookmark instead of a status-history ledger.
+- Make status read-only by default. `status --check` verifies existing HTML and
+  `status --write` generates deterministic status and process-guide pages.
+- Discover status documents through Git's tracked and nonignored files plus configured
+  paths, with a tolerant fallback for non-Git directories.
 - Remove the first-release npm token fallback now that the package uses GitHub Actions
   Trusted Publishing through OIDC.
+
+### Fixed
+
+- Resolve child-plan parents from configured document paths and name `--parent` directly
+  when the parent is missing or ambiguous.
+- Separate malformed or policy-ineligible approvals from well-formed historical approvals so
+  an older hash does not obscure a valid current approval.
+- Accept the current PR and correction state in the short WIP bookmark without failing stage
+  checks, and keep embedded code reviewers from writing a second report or WIP update.
+- Ignore deleted tracked documents during status discovery and preserve structured checker
+  diagnostics when parent configuration is malformed.
 
 ## 0.10.0 - 2026-08-21
 

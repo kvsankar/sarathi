@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-base-to-string, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/restrict-plus-operands, @typescript-eslint/restrict-template-expressions -- The renderer mirrors a heterogeneous, serialized Python status model during migration. */
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { existsSync, type Dirent } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 
@@ -120,7 +122,15 @@ export function relativePath(path: string, root: string): string {
 
 async function walk(root: string, current = root): Promise<string[]> {
   const result: string[] = [];
-  for (const entry of await readdir(current, { withFileTypes: true })) {
+  let entries: Dirent[];
+  try {
+    entries = await readdir(current, { withFileTypes: true });
+  } catch (error) {
+    if (["EACCES", "EPERM", "ENOENT"].includes(String(errorCode(error))))
+      return result;
+    throw error;
+  }
+  for (const entry of entries) {
     if (entry.isDirectory()) {
       if (!EXCLUDED_DIRS.has(entry.name))
         result.push(...(await walk(root, join(current, entry.name))));
@@ -129,12 +139,35 @@ async function walk(root: string, current = root): Promise<string[]> {
   return result;
 }
 
+function gitFiles(root: string): string[] | null {
+  const result = spawnSync(
+    "git",
+    [
+      "-C",
+      root,
+      "ls-files",
+      "--cached",
+      "--others",
+      "--exclude-standard",
+      "-z",
+    ],
+    { encoding: "utf8", windowsHide: true },
+  );
+  if (result.status !== 0 || result.error) return null;
+  return result.stdout
+    .split("\0")
+    .filter(Boolean)
+    .map((path) => resolve(root, path))
+    .filter(existsSync);
+}
+
 export async function discover(
   root: string,
   filename: string,
 ): Promise<string[]> {
   const wildcard = filename.startsWith("*") ? filename.slice(1) : undefined;
-  const paths = (await walk(root)).filter((path) =>
+  const candidates = gitFiles(root) ?? (await walk(root));
+  const paths = candidates.filter((path) =>
     wildcard === undefined
       ? basename(path) === filename
       : path.endsWith(wildcard),
@@ -692,6 +725,10 @@ export async function parseWip(root: string): Promise<StatusValue> {
   if (!result.exists) return result;
   const text = await readText(path);
   for (const field of [
+    "Active Plan",
+    "Last Completed",
+    "Planned Review Point",
+    "Latest Checks",
     "Work Target",
     "Current Command",
     "Current Stage",

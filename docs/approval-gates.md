@@ -83,6 +83,12 @@ eligible gates or explicitly requests YOLO.
 Approval records refer to exact file bytes. If an approved document changes, its hash
 no longer matches and the approval is stale.
 
+A well-formed approval for older bytes is a historical record, not a malformed record. Normal
+checker output reports malformed or policy-ineligible records and the approvals required for
+the current gate. It does not list every historical approval. Add
+`--include-approval-history` when that history is needed. A current matching approval passes
+even when older approvals for the same path remain in the file.
+
 Classify the revision using the always-loaded rule in `SKILL.md`. A material revision
 requires affected review and approval again. A non-material revision does not require
 substantive re-review, but the applicable approval authority must refresh or confirm the

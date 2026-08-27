@@ -22,7 +22,11 @@ determine whether this round is full or focused and when to stop.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/plan-review.prompt.md` using the plan plus check results. Judge
    whether the work is split well, tests have clear results, dependencies and parallel work
-   are safe, feedback is planned, and implementation can start.
+   are safe, feedback is planned, and implementation can start. For an Implementation plan
+   with several PRs, judge whether its declared integration review points occur before
+   feedback, contract, risk, or integration results could make later work unsafe or wasteful.
+   Use engineering judgment; do not impose a PR-count rule or pretend a checker can score
+   proportionality.
 
 If sub-agents are unavailable, disclose that the review was not independent and keep the
 passes separate. Failed checks or an unfit required earlier document block the plan verdict.
