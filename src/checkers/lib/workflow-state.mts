@@ -150,16 +150,18 @@ export async function validateWip(path: string): Promise<WorkflowIssue[]> {
   }
   for (const field of ["Current Work", "Active Work Item"]) {
     for (const value of values.get(field) ?? []) {
+      const identifier = value.split(/\s+—\s+/u, 1)[0] ?? value;
       if (
         value.toLocaleLowerCase("en-US") !== "none" &&
-        !isPlanId(value, "WORK")
+        !isPlanId(identifier, "WORK") &&
+        !isPlanId(identifier, "PR")
       ) {
         issues.push(
           issue(
             ".sdlc/wip.md",
             field,
             value,
-            "expected none or a WORK-AREA-NAME identifier",
+            "expected none, WORK-AREA-NAME, or PR-AREA-NAME with an optional state after an em dash",
           ),
         );
       }

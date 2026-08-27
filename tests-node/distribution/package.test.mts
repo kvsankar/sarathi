@@ -214,6 +214,40 @@ test("packed package has an allowlisted, Python-free, dependency-free runtime", 
   assert.ok(report && typeof report === "object");
   assert.equal(Number(Reflect.get(report, "total")) > 0, true);
 
+  for (const [stage, args] of [
+    ["design", [invalidSpec, "--component"]],
+    ["plan", [invalidSpec]],
+    [
+      "code",
+      [
+        "--plan",
+        invalidSpec,
+        "--tests-argv",
+        '["node","-e","process.exit(0)"]',
+      ],
+    ],
+  ] as const) {
+    const delegated = run(
+      process.execPath,
+      [cli, "check", stage, ...args, "--json"],
+      { cwd: application },
+    );
+    const directChecker = run(
+      process.execPath,
+      [
+        resolve(packageRoot, "bundle", "checkers", `check_${stage}.mjs`),
+        ...args,
+        "--json",
+      ],
+      { cwd: application },
+    );
+    assert.equal(delegated.status, directChecker.status, delegated.stderr);
+    const delegatedReport: unknown = JSON.parse(delegated.stdout);
+    assert.ok(delegatedReport && typeof delegatedReport === "object");
+    assert.equal(Number(Reflect.get(delegatedReport, "total")) > 0, true);
+    assert.deepEqual(delegatedReport, JSON.parse(directChecker.stdout));
+  }
+
   const status = run(process.execPath, [cli, "status", application], {
     cwd: application,
   });

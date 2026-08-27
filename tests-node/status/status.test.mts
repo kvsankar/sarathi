@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- Assertions intentionally inspect the heterogeneous parity model. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  cp,
+  mkdtemp,
+  mkdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -476,6 +484,44 @@ test("Git discovery excludes ignored project directories", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("Git discovery ignores tracked files deleted from the working tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "sarathi-node-git-deleted-"));
+  try {
+    assert.equal(
+      spawnSync("git", ["init", "--quiet"], { cwd: root }).status,
+      0,
+    );
+    const spec = await write(join(root, "docs", "spec.md"), "# Deleted\n");
+    assert.equal(
+      spawnSync("git", ["add", "docs/spec.md"], { cwd: root }).status,
+      0,
+    );
+    await rm(spec);
+    const model = await buildModel(root);
+    assert.equal(model.stages.spec.state, "missing");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test(
+  "non-Git fallback tolerates an inaccessible irrelevant directory",
+  { skip: process.platform === "win32" },
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "sarathi-node-inaccessible-"));
+    const blocked = join(root, "blocked");
+    try {
+      await write(join(root, "docs", "spec.md"), "# Available\n");
+      await write(join(blocked, "plan.md"), "# Irrelevant\n");
+      await chmod(blocked, 0o000);
+      await assert.doesNotReject(discover(root, "*.md"));
+    } finally {
+      await chmod(blocked, 0o700).catch(() => undefined);
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);
 
 test("embedded model neutralizes mixed-case script terminators", async () => {
   const root = await fixture();

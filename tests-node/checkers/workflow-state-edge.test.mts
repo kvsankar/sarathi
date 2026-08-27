@@ -72,6 +72,19 @@ bootstrap:
   });
 });
 
+test("current PR bookmark accepts an optional state", async () => {
+  await withRoot(async (root) => {
+    await writeState(
+      root,
+      "wip.md",
+      `Current Work: PR-INVOICE-FACETS — correction required
+Next Action: Correct the focused coverage defect.
+`,
+    );
+    assert.deepEqual(await validateWorkflowState(root), []);
+  });
+});
+
 test("invalid machine values report file, field, value, and reason", async () => {
   await withRoot(async (root) => {
     await writeState(

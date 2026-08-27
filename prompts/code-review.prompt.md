@@ -14,9 +14,11 @@ implementation, `.sdlc/wip.md`, available check results, `docs/artifact-contract
 review of the current system without a plan, follow `docs/project-entry.md`; otherwise block
 when approved requirements or a plan ready for implementation are missing or unfit.
 
-Use a fresh reviewer sub-agent when available. Otherwise say that the review is not
-independent and seek counterexamples. Do not rerun commands unless needed to
-resolve missing or contradictory evidence.
+When `code-assess` runs these instructions in a fresh reviewer, this context is the review
+pass: do not spawn another reviewer, edit files, write reports or WIP, or decide whether work
+continues. Return findings and the verdict to the coordinating assessment. For a direct
+`code-review`, use a fresh reviewer when available; otherwise disclose that it is not
+independent. Do not rerun commands unless needed to resolve missing or contradictory evidence.
 
 Follow the correction and re-review rules in `docs/review-verification-checklist.md`.
 
@@ -55,10 +57,8 @@ design, or plan; do not confine it to local refactoring.
 Report the result first. List problems by severity, explain what the checks prove, say what
 can be deleted, deferred, or reused, rank fixes by impact, and note feedback or changes needed
 in earlier documents.
-Preserve `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` in the saved report and
-internal state; follow `docs/result-reporting.md` for chat. Write/update
-the scope-appropriate report from `docs/document-locations.md`: `code-review.md` only for
-Product/system, otherwise `<work-slug>.code-review.md`. Update WIP and stop according to the
-recorded approval policy. Human checkpoints require explicit approval; automatic approval
-needs an eligible local policy and explicit unattended continuation. Release and deployment
+Return `Pass | Pass-with-fixes | Needs rework | Blocked-upstream` to the caller. For a direct
+review only, write the scope-appropriate report from `docs/document-locations.md`, update WIP,
+and stop according to the recorded approval policy. The `code-assess` coordinator owns its
+rolling assessment report, WIP update, and continuation decision. Release and deployment
 always require explicit approval.

@@ -94,14 +94,7 @@ async function configuredParent(
     decisions = asRecord(
       await loadYamlFile(resolve(root, ".sdlc", "process-decisions.yaml")),
     );
-  } catch (error) {
-    if (
-      !error ||
-      typeof error !== "object" ||
-      !("code" in error) ||
-      error.code !== "ENOENT"
-    )
-      throw error;
+  } catch {
     return { candidates: [] };
   }
   const paths = asRecord(decisions?.artifact_paths);

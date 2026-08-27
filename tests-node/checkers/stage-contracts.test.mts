@@ -247,6 +247,24 @@ test("plan checker resolves a configured parent or names --parent", async () => 
       (result.report.parent_resolution as Record<string, unknown>).path,
       "parent.plan.md",
     );
+
+    await writeFile(
+      resolve(files.root, ".sdlc", "process-decisions.yaml"),
+      "artifact_paths:\n  canonical\n",
+    );
+    result = await checkPlan([files.plan, "--json"], files.root);
+    assert.match(
+      String(
+        (result.report.parent_resolution as Record<string, unknown>).issue,
+      ),
+      /pass --parent <path>/u,
+    );
+    assert.equal(
+      (
+        result.report.workflow_state_issues as Array<Record<string, unknown>>
+      ).some(({ path }) => path === ".sdlc/process-decisions.yaml"),
+      true,
+    );
   } finally {
     await rm(files.root, { recursive: true, force: true });
   }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-base-to-string, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/restrict-plus-operands, @typescript-eslint/restrict-template-expressions -- The renderer mirrors a heterogeneous, serialized Python status model during migration. */
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import type { Dirent } from "node:fs";
+import { existsSync, type Dirent } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 
@@ -157,7 +157,8 @@ function gitFiles(root: string): string[] | null {
   return result.stdout
     .split("\0")
     .filter(Boolean)
-    .map((path) => resolve(root, path));
+    .map((path) => resolve(root, path))
+    .filter(existsSync);
 }
 
 export async function discover(
