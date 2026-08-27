@@ -25,10 +25,8 @@ LEGACY_CHECKER_SOURCE="$REPO_ROOT/checkers"
 COMPILED_CHECKER_SOURCE="$REPO_ROOT/dist/checkers"
 if [[ -f "$COMPILED_CHECKER_SOURCE/check_plan.mjs" ]]; then
   CHECKER_SOURCE="$COMPILED_CHECKER_SOURCE"
-  CHECKER_STATUS_SOURCE="$REPO_ROOT/dist/status"
 else
   CHECKER_SOURCE="$LEGACY_CHECKER_SOURCE"
-  CHECKER_STATUS_SOURCE=""
 fi
 DOC_SOURCE="$REPO_ROOT/docs"
 PACKAGED_SKILL_SOURCE="$REPO_ROOT/bundle/skills/sarathi"
@@ -148,15 +146,12 @@ if [[ ! -d "$DOC_SOURCE" ]]; then
   echo "Documentation source folder not found: $DOC_SOURCE" >&2
   exit 1
 fi
-if [[ "$NO_CHECKERS" -eq 0 && ! -d "$CHECKER_SOURCE" ]]; then
+if [[ ! -d "$CHECKER_SOURCE" ]]; then
   echo "Checker source folder not found: $CHECKER_SOURCE" >&2
   exit 1
 fi
 if [[ -f "$CHECKER_SOURCE/check_plan.mjs" ]]; then
   STATUS_CLI="$CHECKER_SOURCE/status/cli.mjs"
-  if [[ -n "$CHECKER_STATUS_SOURCE" ]]; then
-    STATUS_CLI="$CHECKER_STATUS_SOURCE/cli.mjs"
-  fi
   for required in \
     "$CHECKER_SOURCE/lib/approvals.mjs" \
     "$CHECKER_SOURCE/render_workflow_status.mjs" \
@@ -421,9 +416,6 @@ copy_tree_files() {
 copy_checker_bundle() {
   local dest="$1"
   copy_tree_files "$CHECKER_SOURCE" "$dest"
-  if [[ -n "$CHECKER_STATUS_SOURCE" && -d "$CHECKER_STATUS_SOURCE" ]]; then
-    copy_tree_files "$CHECKER_STATUS_SOURCE" "$dest/status"
-  fi
 }
 
 atomic_copy_file() {
@@ -496,10 +488,8 @@ copy_skill_folder() {
   mkdir -p "$dest/prompts"
   cp "$PROMPT_SOURCE"/*.prompt.md "$dest/prompts"/
 
-  if [[ -d "$CHECKER_SOURCE" ]]; then
-    rm -rf "$dest/checkers"
-    copy_checker_bundle "$dest/checkers"
-  fi
+  rm -rf "$dest/checkers"
+  copy_checker_bundle "$dest/checkers"
 }
 
 remove_retired_python_updater() {
@@ -621,10 +611,8 @@ EOF
     mkdir -p "$stage_dest/prompts"
     cp "$file" "$stage_dest/prompts/"
 
-    if [[ -d "$CHECKER_SOURCE" ]]; then
-      rm -rf "$stage_dest/checkers"
-      copy_checker_bundle "$stage_dest/checkers"
-    fi
+    rm -rf "$stage_dest/checkers"
+    copy_checker_bundle "$stage_dest/checkers"
   done
   archive_retired_unprefixed_stage_skills "$skill_root"
   remove_retired_srs_authoring "$skill_root"

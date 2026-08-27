@@ -21,11 +21,6 @@ $CheckerSource = if (Test-Path -LiteralPath (Join-Path $CompiledCheckerSource "c
 } else {
     $LegacyCheckerSource
 }
-$CheckerStatusSource = if ($CheckerSource -eq $CompiledCheckerSource) {
-    Join-Path $RepoRoot "dist/status"
-} else {
-    $null
-}
 $DocSource = Join-Path $RepoRoot "docs"
 $PackagedSkillSource = Join-Path $RepoRoot "bundle/skills/sarathi"
 $SkillSource = if (Test-Path -LiteralPath (Join-Path $PackagedSkillSource "scripts/check_update.mjs")) {
@@ -135,15 +130,11 @@ if (-not (Test-Path -LiteralPath $PromptSource)) {
 if (-not (Test-Path -LiteralPath $DocSource)) {
     throw "Documentation source folder not found: $DocSource"
 }
-if (-not $NoCheckers -and -not (Test-Path -LiteralPath $CheckerSource)) {
+if (-not (Test-Path -LiteralPath $CheckerSource)) {
     throw "Checker source folder not found: $CheckerSource"
 }
 if (Test-Path -LiteralPath (Join-Path $CheckerSource "check_plan.mjs")) {
-    $statusCli = if ($CheckerStatusSource) {
-        Join-Path $CheckerStatusSource "cli.mjs"
-    } else {
-        Join-Path $CheckerSource "status/cli.mjs"
-    }
+    $statusCli = Join-Path $CheckerSource "status/cli.mjs"
     foreach ($required in @(
         (Join-Path $CheckerSource "lib/approvals.mjs"),
         (Join-Path $CheckerSource "render_workflow_status.mjs"),
@@ -415,9 +406,6 @@ function Copy-CheckerBundle {
     param([string]$Destination)
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
     Copy-TreeFiles $CheckerSource $Destination
-    if ($CheckerStatusSource -and (Test-Path -LiteralPath $CheckerStatusSource)) {
-        Copy-TreeFiles $CheckerStatusSource (Join-Path $Destination "status")
-    }
 }
 
 function Copy-SkillFolder {
@@ -446,13 +434,11 @@ function Copy-SkillFolder {
     Get-ChildItem -LiteralPath $PromptSource -Filter "*.prompt.md" |
         Copy-Item -Destination $promptDest -Force
 
-    if (Test-Path -LiteralPath $CheckerSource) {
-        $checkerDest = Join-Path $Destination "checkers"
-        if (Test-Path -LiteralPath $checkerDest) {
-            Remove-Item -LiteralPath $checkerDest -Recurse -Force
-        }
-        Copy-CheckerBundle $checkerDest
+    $checkerDest = Join-Path $Destination "checkers"
+    if (Test-Path -LiteralPath $checkerDest) {
+        Remove-Item -LiteralPath $checkerDest -Recurse -Force
     }
+    Copy-CheckerBundle $checkerDest
 }
 
 function Remove-RetiredPythonUpdater {
@@ -598,13 +584,11 @@ policy:
         New-Item -ItemType Directory -Force -Path $promptDest | Out-Null
         Copy-Item -LiteralPath $_.FullName -Destination $promptDest -Force
 
-        if (Test-Path -LiteralPath $CheckerSource) {
-            $checkerDest = Join-Path $stageDest "checkers"
-            if (Test-Path -LiteralPath $checkerDest) {
-                Remove-Item -LiteralPath $checkerDest -Recurse -Force
-            }
-            Copy-CheckerBundle $checkerDest
+        $checkerDest = Join-Path $stageDest "checkers"
+        if (Test-Path -LiteralPath $checkerDest) {
+            Remove-Item -LiteralPath $checkerDest -Recurse -Force
         }
+        Copy-CheckerBundle $checkerDest
     }
     Archive-RetiredUnprefixedStageSkills $skillRoot
     Remove-RetiredSrsAuthoring $skillRoot

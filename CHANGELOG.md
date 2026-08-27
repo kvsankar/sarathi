@@ -8,6 +8,15 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+## 0.11.1 - 2026-08-27
+
+### Fixed
+
+- Preserve the relocated status imports when installing from a built source checkout on
+  Windows, macOS, Linux, or WSL.
+- Always install the checker runtime inside Sarathi skills even when `--no-checkers` skips
+  the separate project-local checker copy.
+
 ## 0.11.0 - 2026-08-27
 
 ### Added
