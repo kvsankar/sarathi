@@ -8,6 +8,19 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+### Docs
+
+- Classify delivery documents into intent, knowledge, orienting status, and evidence, each
+  with its own discipline, under the rule that gated decisions use checked evidence while
+  orienting documents stay minimal, replaced, and stale-tolerant. Superseded standalone
+  review reports move to a `reviews/archive/` folder excluded from routine search.
+- Add a review-round floor beside the existing three-round cap: a passing review of an
+  unchanged target is final; a new round exists only for a changed target or a claimed fix.
+- Start work items from a passing complete gate so control drift surfaces at the cheapest
+  moment, and record a fact shared by several checkers in one fixture every checker reads
+  so cross-tool pins cannot drift apart. Both rules distill a delivery in a consuming
+  repository where a weeks-stale packaging pin and rule surfaced only at the final gate.
+
 ## 0.12.0 - 2026-08-31
 
 ### Added

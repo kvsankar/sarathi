@@ -36,6 +36,11 @@ the next round a full review but does not reset the count. Start a new count onl
 earlier target is accepted or abandoned, or the user explicitly changes the scope into a new
 target. Round 3 is final; never run round 4 automatically.
 
+The budget also has a floor: a passing review of an unchanged target is final for that
+target. Never rerun a review on identical bytes to gain confidence — repetition adds no
+independence. A new round exists only because the target changed or a claimed fix needs
+checking, never to re-litigate an unchanged result.
+
 If round 3 leaves the target not ready, decide who resolves it from the recorded approval
 policy. When automatic approval is current and eligible for the target's next gate, the
 coordinating agent decides whether to proceed with non-blocking findings, make a correction
