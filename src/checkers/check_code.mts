@@ -34,6 +34,7 @@ const TEST_OBLIGATION_NAME = new RegExp(
 );
 const UI_WORK = /^\s*UI Work\s*:\s*Yes\s*$/im,
   MOCK_DEP = /^\s*Mock UI Dependency\s*:\s*(?!None\b)(.+)$/im,
+  UI_MOCK_REQUIRED = /^\s*UI Mock Preference\s*:\s*Required\s*$/im,
   UI_ARTIFACT = /^\s*(?:UI Mock|Approved Prototype) Artifact\s*:\s*(\S+)\s*$/im;
 const SKIPPED = new Set([
   ".git",
@@ -283,10 +284,22 @@ export async function checkCode(
     cwd: string,
   ) => number | null = executeCommand,
 ): Promise<{ report: Record<string, unknown>; exitCode: number }> {
-  const plan = valueAfter(argv, "--plan", "plan.md")!,
-    design = valueAfter(argv, "--design", "design.md")!,
+  const explicitPlan = valueAfter(argv, "--plan"),
+    slice = valueAfter(argv, "--slice"),
+    baseline = argv.includes("--baseline"),
+    explicitDesign = valueAfter(argv, "--design"),
+    design = explicitDesign ?? "design.md",
     approvalsPath = valueAfter(argv, "--approvals", ".sdlc/approvals.yaml")!,
     gatesPath = valueAfter(argv, "--gates-policy", ".sdlc/gates.yaml")!;
+  if (
+    [Boolean(explicitPlan), Boolean(slice), baseline].filter(Boolean).length !==
+    1
+  )
+    throw new Error(
+      "name exactly one delivery authority: --slice <path>, --plan <path>, or --baseline",
+    );
+  const authorityPath = slice ?? explicitPlan ?? null;
+  const authorityKind = baseline ? "baseline" : slice ? "slice" : "plan";
   const explicitTests = valuesAfter(argv, "--tests-dir"),
     explicitSources = valuesAfter(argv, "--src");
   const testInputs = explicitTests.length ? explicitTests : ["tests"],
@@ -352,10 +365,12 @@ export async function checkCode(
           root,
         )
       : [];
-  const planText = await readFile(plan, "utf8").catch(() => ""),
+  const authorityText = authorityPath
+      ? await readFile(authorityPath, "utf8").catch(() => "")
+      : "",
     designText = await readFile(design, "utf8").catch(() => "");
   const declared = new Set(
-    [...`${planText}\n${designText}`.matchAll(PROCESS_ID)].map((match) =>
+    [...`${authorityText}\n${designText}`.matchAll(PROCESS_ID)].map((match) =>
       match[0].replaceAll("_", "-").toUpperCase(),
     ),
   );
@@ -371,11 +386,27 @@ export async function checkCode(
   const approvalRequirements: ApprovalRequirement[] = [];
   if (requireApprovals) {
     approvalContext = await loadApprovalContext(root, approvalsPath, gatesPath);
-    approvalRequirements.push(
-      approvalRequirement(approvalContext, root, "plan.approved", plan),
-    );
-    const match = UI_ARTIFACT.exec(`${designText}\n${planText}`);
-    if ((UI_WORK.test(planText) || MOCK_DEP.test(planText)) && match?.[1])
+    if (authorityPath)
+      approvalRequirements.push(
+        approvalRequirement(
+          approvalContext,
+          root,
+          slice ? "spec.approved" : "plan.approved",
+          authorityPath,
+          slice ? { scope: "slice/change" } : {},
+        ),
+      );
+    if (slice && explicitDesign)
+      approvalRequirements.push(
+        approvalRequirement(approvalContext, root, "design.approved", design),
+      );
+    const uiText = `${designText}\n${authorityText}`;
+    const match = UI_ARTIFACT.exec(uiText);
+    const uiApprovalNeeded =
+      UI_WORK.test(uiText) ||
+      MOCK_DEP.test(uiText) ||
+      UI_MOCK_REQUIRED.test(uiText);
+    if (uiApprovalNeeded && match?.[1])
       approvalRequirements.push(
         approvalRequirement(
           approvalContext,
@@ -384,7 +415,7 @@ export async function checkCode(
           match[1],
         ),
       );
-    else if (UI_WORK.test(planText) || MOCK_DEP.test(planText))
+    else if (uiApprovalNeeded)
       approvalRequirements.push({
         gate: "ux.mock.approved",
         artifact: null as unknown as string,
@@ -408,6 +439,7 @@ export async function checkCode(
       : {}),
   };
   const report: Record<string, unknown> = {
+    delivery_authority: { kind: authorityKind, path: authorityPath },
     verification_command: displayCommand(command),
     verification_command_exit: testsExit,
     verification_command_passed: testsPass,

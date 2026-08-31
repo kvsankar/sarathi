@@ -8,7 +8,7 @@ practical so local and shared checks enforce the same rules.
 
 If the gate or hook configuration is missing, make its smallest useful setup part of the
 first implementation change. Include the configuration and documentation in that change's
-expected files; do not expand an approved plan silently. Document how contributors install
+expected files; do not expand the controlling slice or plan silently. Document how contributors install
 the hook and how they run the complete gate without committing.
 
 Choose checks for the languages and files the repository actually contains:

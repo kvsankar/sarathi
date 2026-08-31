@@ -42,14 +42,15 @@ generalize when a second concrete use case reveals the right boundary.
 
 ## Before Adding Another Document
 
-If the approved requirements and applicable technical decisions are enough to implement a
-safe change, write one specific implementation plan and start. Create another document only
-when a specific unanswered question blocks implementation. Keep that document focused on
-the question, then return to implementation when it is answered.
+For an intentional behavior change, start with one focused slice delta. If its observable
+behavior, constraints, technical approach, delivery boundary, checks, rollback, and review
+point are enough to implement safely, start from that document. Create a separate design or
+plan only when complexity or risk makes independent review materially easier. A defect,
+refactor, or mechanical change needs no slice when accepted behavior and protected contracts
+remain unchanged.
 
-Record the result briefly in the plan. Refer to approved requirements, acceptance tests,
-design decisions, risks, interfaces, and prototypes instead of restating them. A feature may
-be ready to implement directly; several screens do not require separate document chains.
+Refer to accepted requirements, decisions, risks, interfaces, and prototypes instead of
+restating them. Several screens or commits do not require separate document chains.
 
 ## Reuse Proof From The Existing System
 
@@ -116,7 +117,7 @@ and work groups before the first screen could be implemented.
 
 **After:** reuse the approved requirements, architecture, prototype, working foundation, runtime,
 directive, mock-device, encrypted-storage, theme, localization, and Android evidence
-boundaries. Create one short, specific Implementation plan for the mocked investor
-experience, implement the first prototype-matching UI slice, run focused checks, and stop
-for stakeholder UI review. Keep backend and BLE integration out of scope. Continue one UI
-slice at a time under the same plan unless feedback or a genuinely new boundary changes it.
+boundaries. Create one short slice for the mocked investor experience, implement the first
+prototype-matching UI delivery unit, run focused checks, and stop for stakeholder UI review.
+Keep backend and BLE integration out of scope. Add a separate plan only if later UI units
+need dependency or review sequencing that the slice cannot state clearly.

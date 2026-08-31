@@ -258,14 +258,14 @@ risk before showing any process ID. The final appendix retains detailed mappings
 
 ### Small behavior change
 
-Use a short Product Overview or Implementation Approach, a compact plan, a minimal appendix, and
-behavioral test names. Do not inflate the change with process vocabulary.
+Use one compact slice with a plain delta, delivery boundary, checks, and a minimal
+traceability section. Do not inflate the change with process vocabulary.
 
-### High-assurance migration
+### Risk-sensitive migration
 
 Explain data ownership, migration order, rollback, failure behavior, and evidence in human
-technical language. High-assurance adds realistic proof and independent review, not
-identifier-heavy prose.
+technical language. Material risk adds realistic proof and independent review, not
+identifier-heavy prose or a mandatory document chain.
 
 ### Existing legacy document
 

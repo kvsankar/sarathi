@@ -32,16 +32,23 @@ The hierarchy is a thinking and validation model, not a demand for identifier-he
 Documents use descriptive headings and natural language; machine IDs remain in annotations
 or the final traceability section.
 
-## Scope It Proportionately
+## Use The Baseline And A Focused Delta
 
-A product or system specification explains enough of the hierarchy to establish its major
-capabilities. A feature or change specification may reference accepted parent intent and
-describe only its changed needs, behavior, supplementary constraints, acceptance, and
-traceability. Use cases add detail when an actor-goal flow matters; journeys when order
-matters; and supplementary requirements when scope or risk activates a quality or
-constraint. Do not inventory irrelevant categories or repeat inherited content. Compact
-does not mean vague: material flows, failures, qualities, and observable results remain
-explicit.
+A product or system specification establishes the accepted baseline. For an intentional
+behavior change, write a slice delta that references that baseline and the enduring product,
+authority, privacy, safety, migration, or other protected constraints that apply. The slice
+controls the intended change; the referenced baseline and constraints remain authoritative.
+Do not create a baseline registry or slice index.
+
+The slice states the observable change, exclusions, affected interfaces or state, applicable
+constraints, acceptance, and traceability. For simple work it may also state the technical
+approach, planned delivery unit, checks, rollback, and review point so implementation can
+start without separate design or plan documents. Compact does not mean vague: material
+flows, failures, qualities, and observable results remain explicit.
+
+Defect repairs, refactors, and mechanical work do not need a slice document unless they
+intentionally change observable product behavior or a protected contract. Their controlling
+authority is the accepted baseline plus the repository's own task and engineering rules.
 
 Other requirements approaches are optional authoring tools, not Sarathi modes or required
 sections. Use a fitting technique only to resolve a concrete gap—for example, Jobs to Be
@@ -53,3 +60,12 @@ Requirements state what must be true at the product boundary, not the internal a
 or delivery sequence. Acceptance and journey tests are requirements-level intent in the
 specification, not executable test code. Design chooses the test architecture, planning
 assigns executable evidence, and code implements it test-first.
+
+## Reconcile When Product Intent Needs It
+
+Reconciliation is an approved product decision, not routine cleanup. Use it when a release,
+feature family, interdependency, contradiction, or material staleness makes the combined
+intent hard to understand. Decide what remains authoritative, what supersedes earlier
+intent, what was temporary prototype behavior, and what was only an accidental
+implementation detail. Never trigger it after a fixed slice count. Incorporated slices
+become historical only when an approved coherent replacement baseline links them.

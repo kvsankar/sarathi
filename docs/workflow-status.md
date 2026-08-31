@@ -12,10 +12,11 @@ are explained afterward.
 - **Current result first**: `Status Result`, plain-language `Status Summary`, goal, working
   result, blockers, and next action from `.sdlc/wip.md`. Every completion claim names its
   exact scope.
-- **Main documents**: whether the product spec, design, and plan exist, are ready, and have
-  approval matching the current file.
+- **Main documents**: whether the accepted product baseline and any separate design or plan
+  exist, are ready, and have approval matching the current file.
 - **Process details second**: current approvals, delivery results, and the next process
-  problem. An approved plan with no implementation still shows as not implemented.
+  problem. An approved plan with no implementation still shows as not implemented. The
+  compact slice path does not require status generation or a second slice ledger.
 - **Expandable work tree**: the product Spec/Design/Plan path remains visible. The current
   `WORK-` item opens by default; other work stays collapsed. Missing documents show as `Not
   yet done`.
@@ -45,7 +46,7 @@ It also reads:
 
 - `Work Groups` in Breakdown plans;
 - `.sdlc/approvals.yaml` and `.sdlc/gates.yaml`;
-- `.sdlc/process-decisions.yaml` and `.sdlc/delivery-records.yaml`;
+- `.sdlc/process-decisions.yaml` and historical `.sdlc/delivery-records.yaml` when present;
 - `.sdlc/wip.md`; and
 - optional `.sdlc/test-traceability.yaml`.
 
@@ -63,15 +64,14 @@ uses a tolerant fallback scan that skips common generated directories and inacce
 | Approval out of date | The document changed after approval. Review and approve the current version. |
 | Not yet done | No document was found for that stage. |
 | Documents started | A child spec or design exists, but no child plan was found. |
-| Compact plan | Approved earlier documents plus one implementation plan replace unnecessary child spec/design files. |
 | Detailed plan found | A parent `WORK-` item has a child Implementation plan. |
 | PRs planned | A child plan declares PR slices without linked executable tests. |
 | Tests linked | At least one child `PR-` has entries in the test-link file. |
-| Code checks and review passed | A `code_assessment` entry in `.sdlc/delivery-records.yaml` matches the current plan and records `Pass` for the child plan and `WORK-*` item. |
+| Code checks and review passed | Historical display only: an existing `code_assessment` entry matches the current plan and records `Pass`. New work keeps this result in its assessment report and WIP position instead. |
 | Approved for the next integration step | A matching `code_slice.approved` record approves the child plan for the next integration step. It does not complete its parent feature. |
 | Child work reviewed or approved for the next integration step | Every discovered child change passed its code assessment or was approved for the next integration step. This does not mean the parent feature is complete. |
 | No detailed plan yet | A parent `WORK-` item has no child Implementation plan. |
-| Group closed | A checkpoint matches the current plan, group ID, and exact member list, and records the required feedback, integration, and decisions about parent documents. |
+| Group closed | Historical display only: an existing checkpoint matches the current plan and group membership. New work records the combined result in its assessment report and WIP position. |
 | In progress | The group is active or at least one member has implementation work. |
 | Not started | No member has implementation work and the group is not active. |
 
@@ -151,87 +151,24 @@ has no group. A change can contain one or more `PR-*` entries, but PRs are not s
 independently. Later groups are provisional, not promises. Existing Implementation-plan group
 declarations remain readable for older projects but are not the format for new plans.
 
-A completed group is recorded separately from full code assessment or human approval. Both
-group checkpoints and code assessments use `.sdlc/delivery-records.yaml`; the `kind` field
-distinguishes them:
-
-```yaml
-version: 1
-records:
-  - kind: wave_checkpoint
-    id: CHECK-WAVE-AUTH-BOUNDARY
-    wave: WAVE-AUTH-BOUNDARY
-    plan:
-      path: docs/plan.md
-      sha256: "<current plan sha256>"
-    members:
-      - WORK-AUTH-SIGNIN
-      - WORK-AUTH-RECOVERY
-    status: completed
-    completed_at: "2026-07-16T12:00:00Z"
-    learning:
-      target: Validate the external identity boundary.
-      feedback_target: Security reviewer and provider sandbox.
-      feedback_status: received
-      feedback_evidence: docs/reviews/auth-boundary.md
-      invalidation_result: The token contract held.
-      ancestor_impact:
-        spec: "no-change: accepted behavior remains correct"
-        design: "no-change: boundary design remains valid"
-        plan: "no-change: the next group may begin"
-      stop_or_replan: Stop if the provider contract changes.
-```
-
-The renderer excludes a stale or member-mismatched checkpoint from completion. A checkpoint
-closes only its group; it does not mark a member change assessed, merged, approved, or ready for
-release.
+Existing `.sdlc/delivery-records.yaml` files are read-only historical input for the renderer.
+New delivery work does not create or update code-assessment or group-checkpoint ledgers. It
+keeps the current result in the rolling assessment report and replacement WIP position.
 
 The renderer and `check_plan.mjs` share the same plan-ID grammar. `MILE-*`, `WORK-*`, and
 `PR-*` identifiers require exactly two uppercase slug tokens after the kind. One-token,
 extra-token, lowercase, numeric-placeholder, and otherwise malformed candidates are not
 valid allocations or delivery items.
 
-A passing code assessment can be recorded without conflating it with human approval:
-
-```yaml
-version: 1
-records:
-  - kind: code_assessment
-    id: ASSESS-CODE-AUTH-SIGNIN
-    work_item: WORK-AUTH-SIGNIN
-    plan:
-      path: docs/plans/work_auth_signin.md
-      sha256: "<current child-plan sha256>"
-    verdict: Pass
-    assessed_at: "2026-07-15T12:00:00Z"
-    learning:
-      target: Validate the sign-in boundary with a production-like identity provider.
-      feedback_target: Security reviewer and identity-provider sandbox.
-      feedback_status: received
-      feedback_evidence: docs/reviews/auth-signin.md
-      invalidation_result: The token-refresh assumption held; retry timing changed.
-      ancestor_impact:
-        spec: "no-change: accepted behavior remains correct"
-        design: "revision-proposed: document the observed retry timing"
-        plan: "no-change: remaining allocations are unaffected"
-        code_integration: "no-change: contract suite covers the shared boundary"
-        process: "no-change: no reusable process gap was found"
-      stop_or_replan: Pause sibling auth work if the provider contract changes.
-```
-
-Only `Pass` shows a passing assessment. `Pass-with-fixes`, an outdated plan hash, WIP text,
-test links, and Git or GitHub state do not mean the work passed or finished.
+Only `Pass` in an existing historical record shows a passing assessment in this legacy
+projection. WIP text, test links, and Git or GitHub state do not mean the work passed or
+finished.
 
 “Approved for the next integration step” also requires a `code_slice.approved` record that
 matches the current child Implementation plan. It does not mean the parent feature is done.
 
-Older passing assessments without a `learning` section remain valid and display `Not
-recorded`. The renderer does not infer missing information from other state.
-
-Older `.sdlc/artifact-paths.yaml`, `.sdlc/code-assessments.yaml`, and
-`.sdlc/wave-checkpoints.yaml` files remain readable. New work uses the consolidated files.
-Load [state-file-migration.md](state-file-migration.md) only when migrating an existing
-project.
+The renderer does not infer missing information from other state. Do not migrate or rewrite
+old delivery records during ordinary work.
 
 ## Generate And Check
 

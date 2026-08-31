@@ -9,9 +9,9 @@ for documents and tests that can be reused.
 Choose exactly one project entry mode before creating or reviewing later documents
 when the repo is not already operating under an SDLC decision record:
 
-- **New project**: the project starts under Sarathi now. Establish product requirements and
-  architecture, then begin implementation wherever those documents and a specific plan are
-  sufficient. Existing external references may satisfy part of the need.
+- **New project**: the project starts under Sarathi now. Establish an accepted product
+  baseline, then deliver focused slices. Add architecture or planning documents only when
+  the current complexity or risk needs them.
 - **Document and review the existing system**: create a retrospective spec and design from the existing product, docs,
   tests, and code, then perform a baseline
   `code-review` when requested. A retrospective baseline code review may skip
@@ -33,17 +33,13 @@ be inferred. Record non-standard canonical paths under `artifact_paths` in
 
 ## Choose Delivery Decisions
 
-At project entry, present the delivery assurance profiles and approval policies with a
-recommendation grounded in the current scope and risks. When requirements begin for a feature,
-present the current project defaults and ask the user to confirm or override them. Under an
-explicit YOLO request, infer and record these decisions without stopping; YOLO selects
-automatic approval for internal gates as defined in [approval-gates.md](approval-gates.md).
+At project entry, present the approval-policy choices with a recommendation grounded in the
+current scope and risks. Under an explicit YOLO request, infer eligible internal decisions
+without stopping; YOLO selects automatic approval for internal gates as defined in
+[approval-gates.md](approval-gates.md).
 
-Record three independent choices:
+Record these independent choices:
 
-- **Delivery assurance profile**: Lean, Standard, or High-assurance. It determines the stage
-  path, decomposition bias, and review cadence; use
-  [assurance-profiles.md](assurance-profiles.md).
 - **Approval policy**: Human checkpoints or automatic approval for eligible gates. It
   determines whether the agent must wait at a material gate; use
   [approval-gates.md](approval-gates.md).
@@ -51,7 +47,7 @@ Record three independent choices:
   accepted behavior works. Decision work is done when credible evidence answers a stated
   question sufficiently for a named decision.
 
-Decision/evidence work uses the same profile and approval policy as product work. Record its
+Decision/evidence work uses the same approval policy as product work. Record its
 question, decision owner, evidence method, allowed boundaries, stop condition or timebox, and
 the decision/next action. It must not claim product readiness merely because it produced code
 or a prototype. If its result should ship, begin or revise product-increment requirements.
@@ -138,7 +134,7 @@ project_entry:
     tests: "adopt | adapt | supersede | background | none_found"
   stage_policy:
     retrospective_plan_required: false
-    new_delta_plan_required: true
+    new_delta_slice_required: true
     code_review_without_plan_allowed_for: "baseline_review_only"
   assumptions:
     - "Existing behavior outside the requested delta is accepted as baseline."
@@ -146,7 +142,6 @@ project_entry:
     - "Legacy requirements may remain incomplete until touched by a future delta."
   next_recommended_command: "spec-create"
 delivery:
-  assurance_profile: "lean | standard | high-assurance"
   work_outcome: "product_increment | decision_evidence"
   extra_checks:
     - "external-integration"
@@ -164,31 +159,25 @@ record `approval.authorization: "explicit_yolo"`, and list important assumptions
 If the user later corrects a decision, update the record rather than silently relying on the
 stale choice.
 
-The starting mode says how Sarathi begins in the repository. The assurance profile,
-approval policy, and work outcome say how the current work proceeds.
+The starting mode says how Sarathi begins in the repository. The approval policy, work
+outcome, changed boundary, and identified risks say how the current work proceeds.
 
 ## Stage Rules
 
-- Greenfield work starts with a spec, then follows the selected profile path in
-  [assurance-profiles.md](assurance-profiles.md).
-- Lean proceeds from an assessed spec to an Implementation plan that contains the technical
-  decisions needed for safe implementation. A material unresolved boundary escalates the
-  work to Standard before code.
-- Standard uses separate spec, design, Implementation plan, and code stages. It introduces
-  a Breakdown plan only when the work is not one coherent unit.
-- High-assurance uses an assessed spec and design, then normally a Breakdown plan with
-  assessed child Implementation plans and assessed code slices. An already risk-bounded
-  single slice may omit a one-child Breakdown plan when its plan records why.
+- Greenfield work starts with an accepted product baseline. Intentional later behavior
+  changes use a focused slice delta.
+- A compact slice may carry observable behavior, technical approach, delivery boundary,
+  checks, rollback, and review point through code. Create separate design or plan documents
+  only when complexity or risk makes their independent review useful.
 - Existing-system baseline work may create retrospective specs and designs from observed
   behavior, docs, tests, and code. Mark reconstructed intent clearly and flag gaps where the
   current system's intended behavior cannot be inferred.
 - A planless baseline `code-review` must say that it is a retrospective baseline
   review, name the decision record that permits skipping plan review, and avoid claiming
   conformance to a pre-approved implementation plan.
-- New implementation changes in any mode require approved requirements and a specific plan
-  that is ready to implement. Reuse existing approved documents. Under Lean, the plan owns
-  the necessary technical decisions when no standalone design exists; otherwise create
-  another document only for a concrete unresolved decision or risk.
+- New intentional behavior changes require an approved code-ready slice or, when needed, a
+  specific plan under that slice. Reuse the accepted baseline and create another document
+  only for a concrete unresolved decision, dependency, or risk.
 - Existing documents can satisfy a gate only when they are classified as `adopt` or have
   been `adapt`ed into a fit earlier document. `background` evidence can inform judgment
   but cannot silently stand in for a missing gate.

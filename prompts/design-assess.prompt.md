@@ -7,7 +7,7 @@ agent: agent
 
 Assess the target design using two separate passes. Load
 `prompts/design-verify.prompt.md`, `prompts/design-review.prompt.md`,
-`docs/review-verification-checklist.md`, and the selected delivery assurance profile and additional checks from
+`docs/review-verification-checklist.md`, and the selected additional checks from
 `docs/assurance-profiles.md`. Load `docs/document-locations.md`,
 `docs/result-reporting.md`, and `docs/simplicity-first.md`.
 

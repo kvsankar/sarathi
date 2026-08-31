@@ -30,9 +30,9 @@
   <img src="docs/assets/sarathi-chariot-hero.png" alt="Sarathi guiding Arjuna's chariot" width="50%" />
 </p>
 
-Sarathi helps coding agents turn approved requirements into the smallest safe working change
-through clear requirements, design, planning, coding, automatic checks, and independent
-review. It keeps the next step clear and adjusts the remaining work from real feedback.
+Sarathi helps coding agents turn an accepted product baseline and a focused change into the
+smallest safe working result. It keeps review-sized Git boundaries, automatic checks,
+independent review, and protected gates without requiring a document chain for every change.
 
 ## Why sarathi?
 
@@ -45,22 +45,23 @@ discipline, and human judgment intact.
 Its basic loop is:
 
 ```text
-approved requirements -> smallest safe change -> checks and review -> feedback -> adapt
+accepted baseline + focused delta -> smallest safe change -> checks and review -> adapt
 ```
 
-Requirements, designs, plans, and code may change as the team learns. Lean combines design
-with planning. Standard keeps a separate design. High-assurance splits risky work into
-smaller changes with more review points. Every stage that remains is checked and independently
-reviewed. Approval rules are chosen separately.
+One compact slice may contain the observable delta, technical approach, delivery boundary,
+checks, rollback, and review point. Add a separate design or plan only when complexity or
+risk makes it useful. Every planned delivery unit still gets focused checks, exact Git
+identity, independent assessment, and a short resumable WIP position. Approval rules and
+protected gates remain separate.
 See [sarathi's enduring model](docs/enduring-model.md) and
-[delivery assurance profiles](docs/assurance-profiles.md).
+[risk-based assurance guidance](docs/assurance-profiles.md).
 
 ## What You Get
 
 - Slash-command prompts for specs, designs, plans, code, verification, review, and
   assessment.
 - A native `sarathi` skill for agents that support skills.
-- Automatic checkers for specs, designs, plans, and links from requirements to tests.
+- Automatic checkers for compact slices, specs, designs, plans, code, and requirement links.
 - A repeatable HTML project-status view showing current work, linked tests, feedback, and
   approvals.
 - Installers for Windows, macOS, Linux, and WSL.
@@ -123,6 +124,7 @@ npm install --global sarathi-sdlc
 sarathi-sdlc install
 sarathi-sdlc --version
 sarathi-sdlc check-update
+sarathi-sdlc check slice docs/auth-retry.slice.md --json
 sarathi-sdlc check plan docs/plan.md --json
 sarathi-sdlc status
 sarathi-sdlc status --check
@@ -262,7 +264,7 @@ The core stage names are:
 | `$sarathi-plan-verify`     | Run checks for the spec, design, and plan.                                                                                       |
 | `$sarathi-plan-review`     | Independently review whether the plan is clear, safe, testable, and ordered well.                                                |
 | `$sarathi-plan-assess`     | Run plan checks plus independent review.                                                                                         |
-| `$sarathi-code-create`     | Implement an approved plan with focused tests and any planned logging, error-handling, documentation, build, or deployment work. |
+| `$sarathi-code-create`     | Implement an approved slice or plan with focused tests and any required operational, documentation, build, or deployment work.  |
 | `$sarathi-code-verify`     | Run planned tests, required project checks, and applicable logging/error-handling/build/docs/deployment checks.                  |
 | `$sarathi-code-review`     | Independently review code, tests, operational work, required project checks, and fit with earlier documents.                     |
 | `$sarathi-code-assess`     | Run code checks plus independent review.                                                                                         |
@@ -294,12 +296,12 @@ Exact invocation syntax depends on the host tool:
 
 ## Workflow Model
 
-The core model is [approved requirements, useful changes, checks, review, and
-feedback](docs/enduring-model.md). Requirements explain the problem, user needs, behavior,
-constraints, acceptance tests, and important user journeys. Designs explain how the system
-will meet them. Plans say what will change, in what order, and how it will be tested. Code is
-built in short Red-Green-Refactor cycles. Each stage is checked and independently reviewed
-before the work moves on.
+The core model is [accepted intent, useful changes, checks, review, and
+feedback](docs/enduring-model.md). The baseline explains existing accepted behavior. A slice
+defines an intentional delta. Optional designs explain difficult technical decisions;
+optional plans explain multiple delivery boundaries and dependencies. Code is built in short
+Red-Green-Refactor cycles. Each genuine delivery boundary is checked and independently
+reviewed before dependent work moves on.
 
 Work uses three levels. The paired terms below are retained as machine-readable values for
 compatibility:
@@ -312,14 +314,13 @@ compatibility:
 Documents say plainly whether the work is ready to implement and, when it is not, what
 specific question remains.
 
-`$sarathi-code-create` runs from approved requirements and a specific implementation plan that is
-ready to implement.
+`$sarathi-code-create` runs from an approved code-ready slice or, when complexity or risk
+requires one, its specific implementation plan.
 
-Start implementation when the approved requirements, design, and one specific plan make the
-next change clear and safe. If the work is too complex to understand and review as one
-unit, split it along a natural product or technical boundary until each part is clear,
-testable, and safe to integrate. A split does not automatically require another spec or
-design. See
+Start implementation when the accepted baseline and focused slice make the next change clear
+and safe. If the work is too complex to understand and review as one unit, split it into
+planned delivery units and add a plan only when the sequencing or risk needs independent
+review. A split does not automatically require another spec or design. See
 [docs/work-decomposition.md](docs/work-decomposition.md).
 
 ## ID Format

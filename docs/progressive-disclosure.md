@@ -48,7 +48,7 @@ the references relevant to that command.
 | `docs/simplicity-first.md` | Creating, reviewing, or simplifying architecture, abstractions, generated machinery, existing compatibility proof, or PR breakdown. |
 | `docs/cleanup-pass.md` | Running the focused pre-handoff cleanup pass or classifying cleanup findings. |
 | `docs/simplify-pass.md` | Running the post-cleanup simplification pass on documents, plans, or code. |
-| `docs/assurance-profiles.md` | Choosing or changing the stage path, decomposition bias, review cadence, or extra checks for specific risks. |
+| `docs/assurance-profiles.md` | Deciding whether risk needs a separate design or plan, smaller delivery boundaries, different review timing, or extra checks. |
 | `docs/bootstrap-instructions.md` | Offering, adding, updating, or recording consent for a bootstrap block in files such as `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`. |
 | `prompts/<stage>-<action>.prompt.md` | A command is selected or directly invoked, such as `spec-create` or `code-review`. |
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
@@ -89,7 +89,7 @@ For existing projects, start with discovery rather than the full stage stack:
 2. Load `docs/project-entry.md`.
 3. Inspect enough repository files to choose the starting mode and find existing material.
 4. Record or update `.sdlc/process-decisions.yaml` when the user chooses or confirms the
-   entry mode, delivery assurance profile, approval policy, or work outcome.
+   entry mode, approval policy, work outcome, or protected boundary.
 5. Load only the selected command prompt.
 6. Load deeper docs or checker sources only when the command reaches that concern.
 7. Update `.sdlc/wip.md` before stopping or handing off.

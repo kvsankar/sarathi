@@ -7,10 +7,7 @@ Decomposition reduces mental load. Ask one question first:
 
 If yes, keep it together. If no, decompose it.
 
-The assurance profile sets the default path around this question. Lean strongly prefers one
-Implementation plan. Standard uses the coherence test directly. High-assurance normally
-uses a Breakdown plan to isolate material risk, recovery, feedback, and integration
-boundaries; an already independent safe slice need not create a one-child wrapper plan.
+Use the coherence test directly. Named delivery profiles do not decide the document path.
 
 ## Find A Natural Boundary
 
@@ -26,12 +23,20 @@ Stop splitting when each part is understandable, testable, and can be integrated
 Size alone is not the test: large but coherent work may stay together, while a smaller
 change with tangled responsibilities may need decomposition.
 
-## Choose The Plan
+## Choose The Delivery Boundaries
 
-Use one Implementation plan when one coherent outcome can be mapped into a safe sequence of
-PRs. The plan may contain several PRs or sequential slices.
+One slice normally maps to one planned delivery unit. Here, PR means that planned unit: it
+may be a pull request or an exact commit/range in a direct-to-main workflow. Internal
+implementation commits, test-first chronology, and review-fix amendments do not create
+additional Sarathi boundaries.
 
-Use a Breakdown plan when the work must first be divided into independently useful child
+Keep one compact slice document when it can name the observable delta, technical approach,
+delivery unit, checks, rollback, and review point clearly. Create an Implementation plan
+when reviewability, risk, migration, dependency feedback, or learning requires several
+delivery units or more detailed sequencing. Keep one controlling slice delta and name each
+delivery boundary in the plan.
+
+Use a Breakdown plan only when broad work must first be divided into independently useful child
 outcomes. Each child states what will work when it is complete, what it depends on, and
 where it rejoins through feedback or integration. The Breakdown plan organizes the children;
 it does not authorize code.
@@ -42,9 +47,9 @@ Breakdown plan. Resolve that question where it belongs, then plan the implementa
 ## Add Documents Only When Needed
 
 Decomposing work does not automatically mean creating more specifications or designs. A
-child uses the accepted parent documents unless a specific unanswered question prevents it
-from being planned safely. Any new document answers only that question and does not repeat
-the parent inventory.
+child uses the accepted baseline and controlling slice unless a specific unanswered question
+prevents safe implementation. Any new document answers only that question and does not
+repeat the parent inventory.
 
 ## Check Existing Work
 
@@ -65,7 +70,7 @@ A `WORK-*` item is an allocation, not a mandatory document layer. Give every chi
 
 - an observable outcome and clear scope;
 - the accepted parent intent it inherits;
-- the minimum documents it needs, normally one Implementation plan;
+- the minimum documents it needs, which may be the controlling slice alone;
 - an owner, dependencies, important risks, and a done signal; and
 - its feedback or integration point.
 
@@ -73,6 +78,6 @@ Use a work group only when near-term children share a real feedback or integrati
 checkpoint. Do not use one merely to group sequential PRs. Unscheduled children need no
 group.
 
-The `code-create` command starts from approved requirements and a specific Implementation plan that is
-ready to implement. After each assessed child, use the evidence to confirm or revise the
-remaining work and its parent documents.
+The `code-create` command starts from an approved code-ready slice or, when one is needed, its
+specific Implementation plan. After each assessed delivery unit, use the evidence to confirm
+or revise the remaining work and controlling documents.

@@ -7,7 +7,7 @@ agent: agent
 
 Assess the target plan using two separate passes. Load `prompts/plan-verify.prompt.md`,
 `prompts/plan-review.prompt.md`, `docs/review-verification-checklist.md`,
-`docs/feedback-and-learning.md`, and the selected delivery assurance profile and additional checks from
+`docs/feedback-and-learning.md`, and the selected additional checks from
 `docs/assurance-profiles.md`. Load `docs/document-locations.md`,
 `docs/result-reporting.md`, and `docs/simplicity-first.md`.
 
@@ -30,9 +30,9 @@ determine whether this round is full or focused and when to stop.
 
 If sub-agents are unavailable, disclose that the review was not independent and keep the
 passes separate. Failed checks or an unfit required earlier document block the plan verdict.
-A Lean plan may combine technical decisions with planning; do not require a standalone design when
-the selected profile permits that path. Other compact plans may rely on approved parent
-documents; do not require unnecessary child spec/design files.
+A plan may contain the technical decisions needed for delivery; do not require a standalone
+design when those decisions remain clear and reviewable. Plans may rely on the controlling
+slice and accepted baseline; do not require unnecessary child spec/design files.
 
 State the result first. List problems by severity, explain the check results, and rank next
 actions by impact. Preserve

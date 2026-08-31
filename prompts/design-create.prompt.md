@@ -27,11 +27,12 @@ Load only when the trigger applies:
 - `docs/test-ownership.md`: parent or cross-child test intent is involved;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: immediately before reporting.
 
-Use the recorded assurance profile, approval policy, and work outcome unless new evidence
-requires a change. Keep exact process fields in metadata. For decision/evidence work, design
+Create a separate design only when complexity or risk makes its independent review
+materially easier than keeping the technical approach in the controlling slice. Use the
+recorded approval policy and work outcome unless new evidence requires a change. For decision/evidence work, design
 only the method, boundaries, and credible proof needed for its decision; do not imply a
-shippable product increment. High-assurance requires explicit risk-boundary evidence and
-later review points, not distant design work or a different standard of reviewer care.
+shippable product increment. Material risk requires explicit boundary evidence and later
+review points, not distant design work or a different standard of reviewer care.
 
 Ask one focused question per turn only for a decision that materially changes architecture,
 contracts, risk, or readiness. In YOLO mode, record assumptions and trade-offs; do not
@@ -70,7 +71,7 @@ guidance in `docs/artifact-contracts.md`.
   dependency or its official test interface. If only a mock is available, state what
   remains untested.
 - Define developer verification and only the additional environments/module tactics
-  justified by the chosen delivery assurance profile and context.
+  justified by the identified risks and context.
 - Keep logging, errors, deployment, docs, security/privacy, UI/accessibility, migration,
   resilience, performance/cost, and operations proportional to the risks actually present.
 - Do not add reusable machinery without a current need. Prefer the direct solution.

@@ -214,6 +214,15 @@ test("packed package has an allowlisted, Python-free, dependency-free runtime", 
   assert.ok(report && typeof report === "object");
   assert.equal(Number(Reflect.get(report, "total")) > 0, true);
 
+  const invalidSlice = run(
+    process.execPath,
+    [cli, "check", "slice", invalidSpec, "--json"],
+    { cwd: application },
+  );
+  assert.equal(invalidSlice.status, 1, invalidSlice.stderr);
+  const sliceReport: unknown = JSON.parse(invalidSlice.stdout);
+  assert.equal(Reflect.get(sliceReport as object, "mode"), "slice");
+
   for (const [stage, args] of [
     ["design", [invalidSpec, "--component"]],
     ["plan", [invalidSpec]],

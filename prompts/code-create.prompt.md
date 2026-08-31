@@ -1,42 +1,40 @@
 ---
-description: Implement an approved plan test-first, using Red-Green-Refactor for behavior changes and recording clear results.
+description: Implement an approved slice or plan test-first, using Red-Green-Refactor for behavior changes and recording clear results.
 agent: agent
 ---
 
 # Code Create
 
-Implement the selected approved plan one reviewable PR at a time. A passing PR may lead
-directly to the next planned PR in the same turn.
+Implement the selected approved slice or plan one planned delivery unit at a time. For
+conforming defect repair, refactor, or mechanical work, use the accepted baseline directly.
+A passing unit may lead directly to the next planned unit in the same turn.
 
 ## Load And Gate
 
-Read `.sdlc/wip.md`, process decisions, approved earlier documents, the implementation plan,
-current code/tests, and repository check commands. A compact plan may link approved parent
-documents instead of repeating them. Load `docs/artifact-contracts.md` for the Code and
-Evidence contract, `docs/test-ownership.md` for test-first implementation, and
+Read `.sdlc/wip.md`, process decisions, the accepted baseline, controlling slice, optional
+design or implementation plan, current code/tests, and repository check commands. Load
+`docs/artifact-contracts.md` for the Code and Evidence contract,
+`docs/test-ownership.md` for test-first implementation, and
 `docs/feedback-and-learning.md` when coordinated work is active. Load
 `docs/result-reporting.md` for the final report.
 
 Load only when the trigger applies:
 
-- assurance profiles and cross-cutting concerns for an assigned check, escalation, or risk;
+- assurance and cross-cutting concerns for an assigned check or risk;
 - project quality gates when its configuration or hook needs work;
-- simplicity-first for unnecessary machinery, refactoring, or simplification; and
-- cleanup, simplify, and formatting guidance immediately before reporting.
+- simplicity-first for unnecessary machinery, refactoring, or simplification.
 
-Block unless the plan clearly says what to build, required approvals exist, and required
-earlier documents are fit. A feature/component plan may authorize code directly without a
-`WORK-*` allocation.
+Block unless the controlling slice or plan clearly says what to build, or the requested
+baseline-only maintenance clearly preserves observable behavior and protected contracts.
+Required approvals must exist and applicable authorities must be fit. A compact slice may
+authorize code without a separate design, plan, or `WORK-*` allocation.
 When one exists, `.sdlc/wip.md` selects it. If coordinated work has a declared limit or
 checkpoint, enforce it. Confirm the expected files, first failing tests, smallest intended
 change, required behavior and tests, how each check will pass or fail, risks, reviewer,
-dependencies, and reasons to stop or change the plan.
-For a `Decision/evidence` outcome, stay within its limits, record its result and next action,
-and do not claim product readiness or deploy without new product-increment requirements.
-
+dependencies, and reasons to stop or change the controlling document.
 Reuse the repository's documented local gate and hook. When missing, add the smallest gate
 authorized by the plan and keep slow or environment-heavy checks in CI.
-Use `.sdlc/wip.md` to select the current `WORK-*` item and planned PR. When coordinated work
+Use `.sdlc/wip.md` to select the current `WORK-*` item when relevant and planned delivery unit. When coordinated work
 is active, enforce its group and parallel-work limit. Do not start additional work merely
 because an agent is available.
 
@@ -67,40 +65,41 @@ unsafe to continue; unrelated fixes may proceed. When the accepted document is r
 the code is wrong, fix the code without reopening the document. Do not add product machinery
 merely to satisfy the process.
 
-## Finish Each Planned PR
+## Finish Each Planned Delivery Unit
 
-At each planned PR boundary:
+Here, PR means a planned delivery unit represented by a pull request or an exact commit/range.
+Internal implementation commits, test-first chronology, and review-fix amendments do not
+create new Sarathi boundaries.
 
-1. Run the PR's focused and affected tests, applicable project gate, and assigned extra
+At each planned delivery boundary:
+
+1. Run the unit's focused and affected tests, applicable project gate, and assigned extra
    checks. Run full, build, documentation, deployment, or environment checks here only when
-   the plan or repository requires them for this PR.
+   the slice, plan, or repository requires them for this unit.
 2. Create an identifiable Git boundary, normally one commit. If the PR needs several commits,
    record the exact base and head range.
 3. Run `code-assess` against that exact change. Its independent review stays focused on this
-   PR's assigned behavior, tests, changed boundaries, and risks.
+   unit's assigned behavior, tests, changed boundaries, and risks.
 4. Correct blocking findings, rerun affected checks, and reassess the fixes. Do not restart
    unchanged checks or review unrelated earlier PRs.
-5. When the PR passes, update the plan's rolling code-assessment report and replace the WIP
-   bookmark with the completed PR, reviewed commit or range, result, current PR, and next
+5. When the unit passes, update the report selected by `docs/document-locations.md` and
+   replace the WIP bookmark with the completed unit, reviewed change, result, current unit, and next
    action.
 
 Focused and affected checks and the independent assessment must pass before dependent work
-continues. Passing a PR does not require status generation, a roadmap update, a fresh
-approval for unchanged documents, or a user-facing pause. Continue to the next planned PR
+continues. Passing a unit does not require status generation, a roadmap update, a fresh
+approval for unchanged documents, product-spec rewrite, or user-facing pause. Continue to the next planned unit
 when policy and safety permit it.
-
-Do not run live production deployment or checks without explicit user approval. Report
-unavailable checks and remaining risk rather than treating them as passed.
 
 Clean up and simplify, using the correction rule in
 `docs/review-verification-checklist.md` for review fixes. Remove debug leftovers, dead code, stale comments, brittle or
 theatrical tests/checks, misleading docs, and unjustified abstractions within scope. Rerun
 affected checks.
 
-At each review point declared by the plan, run its integration and full applicable checks and
+At each review point declared by the slice or plan, run its integration and full applicable checks and
 an independent integration assessment against the exact combined code state. Reuse the
-completed PR assessments; review the interaction, accumulated risk, required feedback, and
-readiness for the next planned group instead of reviewing every PR again.
+completed focused assessments; review the interaction, accumulated risk, required feedback,
+and readiness for the next planned group instead of repeating them.
 
 ## Result
 
@@ -112,9 +111,10 @@ Update `.sdlc/wip.md` and report:
 - separate code, verification, and document problems; and
 - assumptions, risks, feedback, earlier-document changes, and priority next actions.
 
-Stop when the recorded policy requires approval at the current boundary. A plan approval does
-not create an extra approval after every PR unless the plan or policy explicitly requires a
-code-slice gate. Required document changes (`revision-required`), missing feedback, protected
+Stop when the recorded policy requires approval at the current boundary. Approval of the
+controlling slice or plan does not create an extra approval after every delivery unit unless
+policy explicitly requires a code-slice gate. Required document changes
+(`revision-required`), missing feedback, protected
 actions, release, and deployment boundaries still block affected work.
 For approved-prototype UI work, this stop is a mandatory stakeholder UI review after every
 completed UI change.

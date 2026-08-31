@@ -15,31 +15,37 @@ checker behavior support it; they are not the identity of the process.
 ## 1. Deliver In A Learning Loop
 
 ```text
-accepted intent -> smallest safe increment -> working behavior -> evidence -> feedback -> adapt
+accepted baseline + focused delta -> smallest safe increment -> evidence -> feedback -> adapt
 ```
 
-The spec says what must work and how people can observe success.
+The accepted baseline says what already must work. A focused slice says what intentionally
+changes and how people can observe success. Defect repairs, refactors, and mechanical work
+need a slice only when they intentionally change observable behavior or a protected contract.
 
-The design explains how the important parts of the system will support those requirements.
+Create a separate design only when a technical decision or risk is easier to review on its
+own.
 
-The plan says what will change, in what order, what depends on what, and how success will be
-checked. It may keep one coherent change together or split broad work into useful children.
+A simple slice may also contain the technical approach, delivery boundary, checks, rollback,
+and review point. Create a separate plan only when decomposition, dependency, migration, or
+risk makes independent planning useful.
 
 Code and tests make the change work through short Red-Green-Refactor cycles: see a meaningful
 test fail, make the smallest change that passes it, then improve the code while tests stay
 green.
 
-The result may confirm or change what comes next. The stages preserve decisions; they are
-not a one-way waterfall. A profile may combine design with planning, but the plan must still
-state the technical decisions needed for safe implementation.
+The result may confirm or change what comes next. Documents preserve useful decisions; they
+are not a mandatory stage sequence.
 
 ## 2. Decompose When It Improves Delivery
 
 Ask whether a competent engineer can understand, explain, review, and safely plan the work
 as one coherent unit. If not, split it along a natural product or technical boundary.
 
-Stop when each part is understandable, testable, and can be integrated safely. Size alone
-is not the test, and splitting work does not automatically require more documents. Use
+Stop when each planned delivery unit is understandable, testable, independently reviewable,
+and safe to integrate. A delivery unit is represented by a pull request or an exact Git
+commit/range. Internal commits, test-first steps, and review fixes do not create new Sarathi
+boundaries. Size alone is not the test, and splitting work does not automatically require
+more documents. Use
 [work-decomposition.md](work-decomposition.md) for the practical rule.
 
 ## 3. Separate Checks From Judgment
@@ -51,29 +57,37 @@ Each stage can be created, verified, reviewed, or assessed:
 - **Review** independently judges whether the result is clear, correct, simple, and safe.
 - **Assess** combines verification and review.
 
-This happens throughout the work, not only after implementation. Specs, designs, plans, and
-code each receive repeatable checks and independent review before dependent work begins.
+This happens where it protects a real decision or delivery boundary, not after every internal
+step. Every genuine delivery unit receives focused and affected checks, an exact Git identity,
+and an independent focused assessment before dependent work continues.
 
-Testing also runs through the whole delivery loop: specifications define observable
-acceptance, designs choose the test architecture, plans assign that evidence to delivery
-items, and code develops the behavior test-first and records exact results.
+Testing runs through the whole delivery loop: intent defines observable acceptance, optional
+design or planning assigns special evidence when needed, and code develops behavior
+test-first and records exact results.
 
 Automatic checks establish only the facts they can observe. They never manufacture human
 approval, stakeholder feedback, semantic correctness, or evidence from a real system.
 
 ## 4. Make Work Easy To Resume
 
-Accepted documents keep the requirements and decisions. Tests and assessment records keep
-the observed results. A short WIP note lets a new engineer or agent find what is happening,
-why, and what to do next without relying on chat history.
+Accepted baseline and slice documents keep the intent and decisions. Tests and assessment
+records keep observed results. After each delivery unit, replace the short WIP note with the
+completed Git identity, result, current work, and next action. This lets a new engineer or
+agent resume without chat history and does not create a history ledger.
 
-## 5. Match The Path And Review Timing To Risk
+## 5. Match Review Timing And Evidence To Risk
 
-All production work keeps approved requirements, a code-ready plan, meaningful tests, honest
-feedback, required approvals, and safety limits. Lean combines design with planning;
-Standard keeps spec, design, plan, and code separate; High-assurance reviews a full package
-and smaller changes around important risks. Every stage in the chosen path receives complete
-checks and independent review. Profiles change the path and review timing, not reviewer care.
+All production work keeps approved intent, meaningful tests, honest feedback, required
+approvals, and safety limits. Risk decides which extra checks are needed, where work must be
+split, and whether design or planning needs separate review. It does not impose a named
+document path. Protected privacy, safety, authority, migration, external-effect, release,
+and production gates remain in force.
+
+At meaningful release, feature-family, interdependency, contradiction, or material-staleness
+boundaries, deliberately reconcile the baseline and accumulated deltas. Resolve
+contradictions, superseded intent, temporary prototype behavior, and accidental
+implementation details. Never reconcile after a fixed number of slices. A slice becomes
+historical only after an approved coherent replacement baseline links it.
 
 ## 6. Keep Supporting Rules In Their Place
 
