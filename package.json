@@ -1,6 +1,6 @@
 {
   "name": "sarathi-sdlc",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "A structured software delivery workflow for AI coding agents",
   "private": false,
   "type": "module",
