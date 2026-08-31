@@ -8,6 +8,8 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+## 0.13.0 - 2026-08-31
+
 ### Docs
 
 - Classify delivery documents into intent, knowledge, orienting status, and evidence, each
