@@ -4,6 +4,25 @@ Keep Sarathi records with the work they describe. Do not create `spec.md`, `desi
 `plan.md`, or review reports in the repository root unless the user or an established project
 convention explicitly names that location.
 
+## Document Classes
+
+Treat every delivery document as one of four classes and give each its discipline:
+
+- **Intent** (specs, designs, plans, slices): durable and reviewed; expresses what to build
+  and how; never trimmed for convenience.
+- **Knowledge** (integration gotchas, research notes): durable learning about the outside
+  world; append as it is learned.
+- **Orienting status** (WIP, progress notes): minimal and current-state only; replace rather
+  than append. It may be stale and must never gate an action. Superseded narrative belongs
+  to version-control history, not to the file.
+- **Evidence** (review reports, check results, approval records): bound to the exact
+  revision it judged and validated when a decision uses it. Stale evidence is missing
+  evidence, not an approximation.
+
+The dividing rule: anything a decision gates on must be checked evidence, not prose;
+anything that merely orients may be minimal, stale-tolerant prose. The real status is
+always the code and its checked evidence.
+
 ## Choose The Document Area
 
 Before creating or revising a document, resolve one documentation area in this order:
@@ -73,6 +92,11 @@ references, reviewer, and active findings. Update that section after reviewed fi
 declared integration review point, add one section for cross-PR behavior, integration checks,
 feedback, combined risk, and readiness to continue. Do not copy complete logs or add a
 per-unit hash ledger. Git history carries older report text; the current report stays concise.
+When a separate report's target is fully superseded — the revision it judged is no longer
+part of any current candidate — move that report to a `reviews/archive/` folder instead of
+leaving it beside current evidence. The archive is historical record: exclude it from
+routine search and never cite it as current evidence. Agents search rather than read by
+default, so a stale report at a current-looking path is eventually quoted as current.
 
 For baseline-only defect repair, refactor, or mechanical work, derive `<task-slug>` from the
 requested change and keep one `<task-slug>.code-assessment.md` in the chosen document area's

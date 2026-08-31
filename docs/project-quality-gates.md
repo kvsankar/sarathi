@@ -35,3 +35,18 @@ credibly by the repository.
 During code creation, install or refresh the hook in the working checkout, run the complete
 gate before handoff, and report the exact command and result. Verification treats a missing
 required gate, an uninstalled hook, or a failing check as an evidence gap, not a pass.
+
+## Start From A Green Gate
+
+Begin a work item from a passing complete gate, not only end with one. A slow gate that
+runs only at delivery discovers accumulated drift at the worst moment — mid-delivery, on
+top of finished work. Running it at work-item start moves that discovery to the cheapest
+moment. Where the repository caches results by exact content, a clean start costs seconds
+and a real run happens exactly when something changed, which is when the time buys
+information. Repair a red baseline as its own small correction before feature work begins.
+
+When two checkers assert the same fact — for example an expected output shape pinned in
+both a test suite and a packaging script, possibly in different languages — record the
+fact once in a fixture that every checker reads. A fact written twice eventually disagrees
+with itself, and diff-scoped review cannot see the copy in the file the change did not
+touch; only executing the second checker, or removing the duplication, catches it.
