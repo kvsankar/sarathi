@@ -112,6 +112,177 @@ test("spec checker rejects numbered lowercase and design-only identifiers", asyn
   }
 });
 
+test("slice checker accepts one compact code-ready delta", async () => {
+  const files = await workspace();
+  try {
+    await writeFile(
+      files.spec,
+      `# Sign-in Slice
+
+## Intent And Baseline
+Baseline: Accepted sign-in behavior and security constraints.
+Change To Baseline: Add a visible retry message.
+Applicable Constraints: Existing authorization and privacy rules.
+
+## Observable Delta
+Exclusions: No credential or session changes.
+Affected Interfaces / State: Sign-in form message state.
+- FR-AUTH-RETRY Show the retry message.
+
+## Delivery And Checks
+Technical Approach: Reuse the existing error path.
+Delivery Unit: PR-AUTH-RETRY
+Checks: Focused sign-in tests and the affected UI suite.
+Rollback: Revert the delivery commit.
+Review Point: Assess the exact delivery commit before push.
+
+## Traceability
+- AT-AUTH-RETRY Covers FR-AUTH-RETRY.
+`,
+    );
+    const result = await checkSpec(
+      [files.spec, "--slice", "--json"],
+      files.root,
+    );
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.report.mode, "slice");
+    assert.equal(
+      (result.report.gates as Record<string, boolean>).slice_contract_complete,
+      true,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("slice checker rejects a delta without its delivery contract", async () => {
+  const files = await workspace();
+  try {
+    await writeFile(
+      files.spec,
+      `# Incomplete Slice
+
+## Intent And Baseline
+Baseline: Current behavior.
+Change To Baseline: Change it.
+Applicable Constraints: Existing constraints.
+
+## Observable Delta
+Exclusions: None.
+Affected Interfaces / State: One interface.
+- FR-AUTH-RETRY Show retry.
+
+## Delivery And Checks
+Technical Approach: Direct change.
+Delivery Unit: PR-AUTH-RETRY
+Checks: Focused tests.
+Review Point: Review the commit.
+
+## Traceability
+- AT-AUTH-RETRY Covers FR-AUTH-RETRY.
+`,
+    );
+    const result = await checkSpec(
+      [files.spec, "--slice", "--json"],
+      files.root,
+    );
+    assert.equal(result.exitCode, 1);
+    assert.match(
+      (result.report.slice_contract_issues as string[]).join("\n"),
+      /Rollback/u,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("slice checker requires a current slice-scoped approval when requested", async () => {
+  const files = await workspace();
+  try {
+    await writeFile(
+      files.spec,
+      `# Approved Slice
+
+## Intent And Baseline
+Baseline: Current behavior.
+Change To Baseline: Add retry.
+Applicable Constraints: Existing constraints.
+
+## Observable Delta
+Exclusions: None.
+Affected Interfaces / State: Retry state.
+- FR-AUTH-RETRY Show retry.
+
+## Delivery And Checks
+Technical Approach: Direct change.
+Delivery Unit: PR-AUTH-RETRY
+Checks: Focused tests.
+Rollback: Revert the commit.
+Review Point: Review the commit.
+
+## Traceability
+- AT-AUTH-RETRY Covers FR-AUTH-RETRY.
+`,
+    );
+    const current = await hash(files.spec);
+    await ledger(
+      files.root,
+      `  - id: APR-SLICE\n    gate: spec.approved\n    scope: slice/change\n    artifact:\n      kind: spec\n      path: spec.md\n      sha256: ${current}\n    status: approved\n    approved_by: Test User\n    approved_at: 2026-07-01T12:00:00Z\n`,
+    );
+    const result = await checkSpec(
+      [files.spec, "--slice", "--require-approvals", "--json"],
+      files.root,
+    );
+    assert.equal(result.exitCode, 0);
+    assert.equal(
+      (result.report.gates as Record<string, boolean>)
+        .required_approvals_present,
+      true,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("slice checker accepts a protected-constraint-only delta", async () => {
+  const files = await workspace();
+  try {
+    await writeFile(
+      files.spec,
+      `# Retention Slice
+
+## Intent And Baseline
+Baseline: Current audit retention behavior.
+Change To Baseline: Shorten retention under the approved privacy rule.
+Applicable Constraints: Approved privacy and audit authorities.
+
+## Observable Delta
+Exclusions: No audit event schema change.
+Affected Interfaces / State: Stored audit records.
+- NFR-AUDIT-RETENTION Delete expired audit records within one day.
+
+## Delivery And Checks
+Technical Approach: Reuse the existing expiry job.
+Delivery Unit: PR-AUDIT-RETENTION
+Checks: Retention boundary and affected audit tests.
+Rollback: Restore the earlier retention setting.
+Review Point: Review the exact delivery commit.
+
+## Traceability
+- AT-AUDIT-RETENTION Covers NFR-AUDIT-RETENTION.
+`,
+    );
+    const result = await checkSpec(
+      [files.spec, "--slice", "--json"],
+      files.root,
+    );
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.report.nfr_at_coverage_pct, 100);
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
 test("spec checker enforces hash time and automatic approval policy", async () => {
   const files = await workspace();
   try {

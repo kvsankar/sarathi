@@ -5,7 +5,8 @@ agent: agent
 
 # Spec Create
 
-Create or revise the requirements document. Requirements define intent, not implementation.
+Create or revise the accepted product baseline or one focused slice delta. Requirements
+define observable intent; a compact slice may also carry the delivery details needed for code.
 
 ## Load
 
@@ -21,7 +22,7 @@ Load only when the trigger applies:
 - `docs/project-entry.md`: starting in an unfamiliar or existing codebase;
 - `docs/srs-authoring.md`: reconstructed behavior, detailed use cases, measurable
   supplementary requirements, or terse requirements risk;
-- `docs/assurance-profiles.md`: selecting or changing delivery assurance or additional checks;
+- `docs/assurance-profiles.md`: deciding whether risk needs separate design, planning, or extra checks;
 - `docs/approval-gates.md`: selecting approval policy or using explicit YOLO;
 - `docs/simplicity-first.md`: proposed implementation machinery, reuse, or a refactor affects
   the requirement boundary;
@@ -33,34 +34,34 @@ report an incomplete installation instead of recreating policy from memory.
 
 ## Establish Intent
 
-Infer and state Product/system, Feature/component, or Slice/change scope. At project entry or
-the first requirements for a feature, present a contextual recommendation and ask the user to
-select or confirm: Delivery Assurance Profile (Lean, Standard, High-assurance), Approval
-Policy (Human checkpoints, Automatic eligible gates), and Work Outcome (Product increment,
-Decision/evidence). Record the explicit choice or confirmed default in process metadata.
-Under explicit YOLO, infer and record these decisions without stopping, following
-`docs/approval-gates.md`. Describe important risks and checks in ordinary language.
+Infer whether the work is a Product/system baseline, Feature/component refinement, or
+Slice/change delta. At project entry, confirm approval policy and work outcome when they are
+not already recorded. Under explicit YOLO, infer eligible internal decisions without
+stopping, following `docs/approval-gates.md`. Describe important risks and checks in ordinary
+language.
 
 Before writing, understand the problem, affected stakeholders, success, non-goals,
 observable behavior, external boundaries, acceptance basis, and material constraints. Ask
 one focused question per turn only when the missing answer materially changes accepted
-intent or risk. In YOLO mode, proceed with explicit assumptions; default to Standard when
-Lean is not supported by evidence.
+intent or risk. In YOLO mode, proceed with explicit assumptions.
 
 Research current external facts when requirements depend on changing standards,
 regulation, vendor contracts, or specialized domain facts. Cite authoritative sources in
 the spec when they control intent.
 
-Before creating a child spec, ask whether the approved requirements and one short plan are
-already enough to implement safely. If so, do not create another spec. If not, write only
-what is needed to answer the specific unresolved question.
+Do not create a slice for a defect repair, refactor, or mechanical change unless it
+intentionally changes observable behavior or a protected contract. For an intentional
+change, reference the accepted baseline and applicable protected authorities instead of
+repeating them.
 
 ## Author
 
 Follow the Spec contract in `docs/artifact-contracts.md` exactly for product/system work.
-Feature and slice specs contain only changed/refined behavior, unresolved local decisions,
-slice-specific acceptance, new risks/boundaries, and exceptions to parent intent. Never
-reproduce the complete parent requirement inventory.
+Feature specs contain only refined behavior and local decisions. A compact slice follows the
+four-section Slice contract: baseline and constraints, observable delta and exclusions,
+delivery and checks, then traceability. It may contain the technical approach, planned
+delivery unit, rollback, and review point. Never reproduce the baseline inventory or create
+a registry of slices.
 
 Apply these requirements rules:
 
@@ -70,30 +71,21 @@ Apply these requirements rules:
   Keep its plain-language problem, users, outcomes, non-goals, success, failures, and
   constraints free of process IDs. Use descriptive headings; put IDs in comments and the
   final `## Traceability` appendix.
-- Derive features from stakeholder needs; use cases then describe actor-goal behavior in
-  context, including meaningful alternate and failure flows.
-- Make non-goals explicit enough to prevent accidental scope.
-- Write each functional requirement as one necessary, feasible, testable behavior. Write
-  measurable supplementary requirements for relevant qualities and constraints. Keep
-  `FR-*` and `NFR-*` IDs in traceability.
-- Define black-box acceptance tests for required behavior and qualities. Define journey
-  tests when confidence depends on an ordered end-to-end story. Keep `AT-*` and `JT-*` IDs
-  in traceability.
-- Preserve the derivation from problem and needs through features, use cases, requirements,
-  acceptance tests, and journeys in the final traceability section.
+- Follow the needs-to-evidence rules in `docs/requirements-model.md`; make non-goals,
+  failures, measurable constraints, black-box acceptance, and ordered journeys explicit when
+  they matter.
 - Name the source of each external contract and how it will be tested through the real
   dependency or its official test interface. If only a mock is available, state what
   remains untested.
-- For UI-facing work, record presentation/accessibility intent and
-  `UI Mock Preference: Required | Optional | Not needed | Deferred`.
-- Include only the additional checks this work needs. Do not paste a universal concern list
-  or add `None` fields for risks the context does not suggest.
+- For UI-facing work, record presentation/accessibility intent, `UI Mock Preference`, and the
+  required mock or approved prototype path. Include only checks this work needs.
 - Preserve stable IDs during revision and record changes needed in parent documents.
 - Do not turn process links, evidence, approval, or status needs into product requirements.
   Do not specify hypothetical future consumers.
 
-Use the name for this scope from `docs/document-locations.md`: `spec.md` only for
-Product/system, otherwise `<work-slug>.spec.md`, unless another path is named. Child specs
+Use the name for this scope from `docs/document-locations.md`: `spec.md` for Product/system,
+`<work-slug>.spec.md` for a Feature/component spec, and `<work-slug>.slice.md` for a focused
+delta, unless another path is named. Child specs
 include `Parent Work Item: WORK-AREA-NAME`. Do not create a standalone child spec when
 approved parent documents and one short plan are enough.
 
@@ -103,6 +95,12 @@ Run the repeatable format and link checker and fix failures:
 
 ```pwsh
 node checkers/check_spec.mjs <spec-path> --json
+```
+
+For a compact slice, run:
+
+```pwsh
+node checkers/check_spec.mjs <slice-path> --slice --json
 ```
 
 Retry launchers when needed. Use the result for one assessment under
@@ -117,4 +115,6 @@ Update `.sdlc/wip.md` with the path, machine status, checks, assumptions, blocke
 Stop according to the recorded approval policy. Human checkpoints require explicit approval;
 automatic approval needs an eligible local policy and explicit end-to-end continuation.
 State the result first. Give the path, check and review results, problems by severity, and
-next actions. Recommend `plan-create` for Lean and `design-create` for the other profiles.
+next actions. Recommend `code-create` when a compact slice is code-ready. Recommend
+`design-create` or `plan-create` only when the named complexity or risk needs that separate
+review.

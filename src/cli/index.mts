@@ -23,12 +23,12 @@ const HELP = `Usage: sarathi-sdlc [--version] <command>
 Commands:
   install       Install bundled skills and prompts
   check-update  Check npm for a newer Sarathi release
-  check         Run a bundled spec, design, plan, or code checker
+  check         Run a bundled slice, spec, design, plan, or code checker
   status        Report, check, or write project workflow status
 
 Run sarathi-sdlc <command> --help for command options.`;
 
-const CHECK_HELP = `Usage: sarathi-sdlc check <spec|design|plan|code> [checker options]
+const CHECK_HELP = `Usage: sarathi-sdlc check <slice|spec|design|plan|code> [checker options]
 
 Arguments after the checker name are passed to the bundled checker.`;
 
@@ -220,15 +220,18 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
         return stage ? 0 : 2;
       }
       const checker = {
+        slice: "check_spec.mjs",
         spec: "check_spec.mjs",
         design: "check_design.mjs",
         plan: "check_plan.mjs",
         code: "check_code.mjs",
       }[stage];
       if (!checker)
-        throw new Error("check must name spec, design, plan, or code");
+        throw new Error("check must name slice, spec, design, plan, or code");
       const root = await resolveBundleRoot();
-      return await runBundled(root, ["checkers", checker], argv.slice(2));
+      const checkerArguments = argv.slice(2);
+      if (stage === "slice") checkerArguments.unshift("--slice");
+      return await runBundled(root, ["checkers", checker], checkerArguments);
     }
     if (command === "status") {
       const root = await resolveBundleRoot();

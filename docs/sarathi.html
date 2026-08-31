@@ -612,9 +612,9 @@
       <div class="legend" aria-label="Diagram encoding">
         <div class="legend-row">
           <span class="legend-label">The delivery loop</span>
-          <span class="key key-spec">Spec</span>
-          <span class="key key-design">Design</span>
-          <span class="key key-plan">Plan</span>
+          <span class="key key-spec">Baseline</span>
+          <span class="key key-design">Focused slice</span>
+          <span class="key key-plan">Design or plan when needed</span>
           <span class="key key-code">Code + tests</span>
         </div>
         <div class="legend-row">
@@ -625,46 +625,47 @@
           <span>Assess</span>
         </div>
       </div>
-      <p class="rule"><strong>Enduring model:</strong> accepted intent &rarr; smallest safe
+      <p class="rule"><strong>Enduring model:</strong> accepted baseline + focused delta &rarr; smallest safe
       increment &rarr; working behavior &rarr; evidence &rarr; feedback &rarr; adapt.</p>
-      <p class="rule">The documents preserve decisions along the loop. They are not a
-      one-way waterfall, and approval means safe enough for the next learning step rather
-      than frozen forever.</p>
+      <p class="rule">One compact slice can carry intent through code. Separate design or
+      plan documents exist only when complexity or risk makes their review useful.</p>
     </header>
 
     <section aria-labelledby="core-loop">
       <div class="section-head">
         <h2 id="core-loop">1. Deliver in a learning loop</h2>
-        <p>Each stage answers a different question and keeps the next increment grounded.</p>
+        <p>Start from what is already accepted, state only the intentional delta, and add
+        documents only when they improve a real decision.</p>
       </div>
       <div class="flow" aria-label="Core delivery loop">
         <div class="node artifact-spec">
           <div class="node-meta">
-            <span class="kind">Spec</span>
-            <span class="status approved">Accepted intent</span>
+            <span class="kind">Baseline</span>
+            <span class="status approved">Accepted behavior</span>
           </div>
-          <strong>How is the required behavior defined?</strong>
-          <small>Problem, stakeholders, scope and non-goals; needs &rarr; features; use cases
-          with main, alternate and failure flows; functional and supplementary requirements;
-          black-box acceptance tests and journeys; traceability to observable evidence</small>
+          <strong>What already remains authoritative?</strong>
+          <small>Accepted product behavior and enduring authority, privacy, safety,
+          migration, and other protected constraints</small>
         </div>
         <span class="arrow" aria-hidden="true"></span>
         <div class="node artifact-design">
           <div class="node-meta">
-            <span class="kind">Design</span>
-            <span class="status approved">Technical model understood</span>
+            <span class="kind">Focused slice</span>
+            <span class="status approved">Intentional delta</span>
           </div>
-          <strong>How is the solution shaped?</strong>
-          <small>Architecture, responsibilities, boundaries, interfaces, data, decisions, quality attributes, and test approach</small>
+          <strong>What changes, and what does not?</strong>
+          <small>Observable behavior, exclusions, affected interfaces or state, applicable
+          constraints, acceptance, delivery boundary, checks, rollback, and review point</small>
         </div>
         <span class="arrow" aria-hidden="true"></span>
         <div class="node artifact-plan">
           <div class="node-meta">
-            <span class="kind">Plan</span>
-            <span class="status ready">Delivery structured</span>
+            <span class="kind">Only when needed</span>
+            <span class="status ready">Risk made reviewable</span>
           </div>
-          <strong>How will delivery be structured?</strong>
-          <small>Impact map; Breakdown child outcomes or Implementation PR graph; dependencies, sequence, integration, safety, and proof</small>
+          <strong>Would a separate decision improve review?</strong>
+          <small>Use design for difficult technical choices. Use a plan for multiple
+          delivery units, dependencies, migration, feedback, or risk sequencing.</small>
         </div>
         <span class="arrow" aria-hidden="true"></span>
         <div class="node artifact-code">
@@ -678,10 +679,10 @@
         </div>
       </div>
       <div class="return-loop" aria-label="Evidence and feedback return to earlier decisions">
-        Evidence and feedback confirm or revise the specification, design, and remaining plan
+        Evidence and feedback confirm or revise the baseline, slice, and remaining delivery
       </div>
-      <p class="footnote">Observed results return to the specification, design, or plan
-      only when they change accepted needs, boundaries, risks, or remaining work.</p>
+      <p class="footnote">Observed results reopen intent only when they change accepted
+      behavior, boundaries, risks, or remaining work.</p>
     </section>
 
     <section aria-labelledby="decomposition">
@@ -711,29 +712,29 @@
     <section aria-labelledby="quality-model">
       <div class="section-head">
         <h2 id="quality-model">3. Test and review throughout delivery</h2>
-        <p>Test intent matures across the stages, and every stage passes through repeatable
-        checks plus independent judgment.</p>
+        <p>Every genuine delivery boundary keeps repeatable checks, exact Git identity,
+        and independent judgment.</p>
       </div>
       <h3>Test evidence thread</h3>
       <div class="learning-flow" aria-label="Test evidence through every delivery stage">
         <div class="learning-step">
-          <strong>Spec</strong>
-          <small>Define observable acceptance and important failure cases</small>
+          <strong>Baseline</strong>
+          <small>Preserve accepted behavior and protected constraints</small>
         </div>
         <div class="learning-step">
-          <strong>Design</strong>
-          <small>Choose the test architecture, environments, and boundary proof</small>
+          <strong>Slice</strong>
+          <small>Define the delta, acceptance, and important failure cases</small>
         </div>
         <div class="learning-step">
-          <strong>Plan</strong>
-          <small>Assign test obligations and the first expected failures to delivery</small>
+          <strong>Optional decisions</strong>
+          <small>Add technical or sequencing proof only when risk needs it</small>
         </div>
         <div class="learning-step">
           <strong>Code + tests</strong>
           <small>Red &rarr; Green &rarr; Refactor; run focused and affected suites; record exact results</small>
         </div>
       </div>
-      <h3>Quality gate at every stage</h3>
+      <h3>Quality at every retained boundary</h3>
       <div class="learning-flow" aria-label="Create verify review assess model">
         <div class="learning-step">
           <strong>Create</strong>
@@ -752,9 +753,8 @@
           <small>Combine the check results with independent judgment</small>
         </div>
       </div>
-      <p class="footnote">A stage is not accepted merely because its automatic checks are
-      green. Independent review judges meaning, test adequacy, simplicity, and safety;
-      assessment combines both before the next stage proceeds.</p>
+      <p class="footnote">Automatic checks do not make a delivery unit correct. Independent
+      review judges meaning, test adequacy, simplicity, and safety before dependent work proceeds.</p>
     </section>
 
     <section aria-labelledby="continuity">
@@ -763,7 +763,7 @@
         <p>A new engineer or agent should be able to resume from evidence rather than chat history.</p>
       </div>
       <div class="parallel-rule" aria-label="Continuity sources">
-        <span><strong>Intent and decisions:</strong> accepted specifications, designs, and plans</span>
+        <span><strong>Intent and decisions:</strong> accepted baseline, active slice, and optional design or plan</span>
         <span><strong>Working evidence:</strong> behavioral tests, commands, results, and assessments</span>
         <span><strong>Current position:</strong> a short WIP snapshot with one executable next action</span>
       </div>
@@ -776,13 +776,13 @@
         <h2 id="risk-controls">5. Match assurance to risk</h2>
         <p>Every production change keeps the same safety floor; actual risk determines the depth of proof.</p>
       </div>
-      <div class="learning-flow" aria-label="Delivery assurance profile">
-        <div class="learning-step"><strong>Lean</strong><small>Small, reversible, and low risk</small></div>
-        <div class="learning-step"><strong>Standard</strong><small>The ordinary default or unclear risk</small></div>
-        <div class="learning-step"><strong>High-assurance</strong><small>Stronger evidence for material consequences</small></div>
+      <div class="learning-flow" aria-label="Risk-based delivery choices">
+        <div class="learning-step"><strong>Compact slice</strong><small>One clear, reviewable delivery unit</small></div>
+        <div class="learning-step"><strong>Separate design</strong><small>A technical choice needs independent review</small></div>
+        <div class="learning-step"><strong>Separate plan</strong><small>Dependencies, migration, feedback, or risk need sequencing</small></div>
       </div>
-      <p class="footnote">Choose approval policy and work outcome separately. High-assurance
-      adds evidence for concrete risks; it does not require the whole project to be designed up front.</p>
+      <p class="footnote">Risk changes evidence, delivery boundaries, and review timing. It
+      does not impose a named path or make more documents inherently safer.</p>
     </section>
 
     <section aria-labelledby="supporting-rules">
@@ -795,7 +795,7 @@
         <span><strong>Honest status:</strong> state engineering reality and exact completion scope before process state</span>
         <span><strong>Existing systems:</strong> reuse proven behavior and make ownership explicit</span>
         <span><strong>Traceability:</strong> preserve links in documents and records, not production code</span>
-        <span><strong>Safe start:</strong> code begins from accepted intent and a bounded plan ready to implement</span>
+        <span><strong>Safe start:</strong> code begins from a code-ready slice, optional plan, or unchanged baseline for conforming maintenance</span>
         <span><strong>Production boundary:</strong> live deployment requires explicit user approval</span>
       </div>
       <p class="rule"><strong>Inspect and adapt:</strong> after each reviewed increment,

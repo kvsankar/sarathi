@@ -33,8 +33,8 @@ copying the policy.
 An explicit YOLO request authorizes autonomous end-to-end execution. The agent selects
 `automatic_eligible_gates`, records that the user authorized it through YOLO, and creates or
 updates `.sdlc/gates.yaml` so Sarathi's internal document, UI-mock, plan, and code-slice gates
-can be recorded as `auto-approved`. The agent may infer the entry mode, assurance profile,
-work outcome, implementation decisions, and other reasonable defaults; record important
+can be recorded as `auto-approved`. The agent may infer the entry mode, work outcome,
+implementation decisions, and other reasonable defaults; record important
 assumptions, risks, and trade-offs.
 
 YOLO continues across commands and resolves failed checks or missing readiness evidence when
@@ -115,11 +115,12 @@ approvals:
 
 ## Approval Names
 
-- `spec.approved`: required before design gate checks.
-- `design.approved`: required before plan gate checks when the selected profile has a
-  standalone design. Lean plans without one require the current `spec.approved` record and
-  expose their technical decisions to the plan assessment.
-- `plan.approved`: required before code gate checks.
+- `spec.approved`: approves a product/feature baseline or a slice delta. A code-ready slice
+  may enter code without separate design or plan approval.
+- `design.approved`: required before dependent planning or code when a standalone design is
+  created for the change.
+- `plan.approved`: required before code when a separate implementation plan controls the
+  delivery units.
 - `ux.mock.approved`: required before planning or production UI work when the spec says
   `UI Mock Preference: Required`.
 - `code_slice.approved`: for teams that want approval between code changes. Bind

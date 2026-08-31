@@ -14,11 +14,10 @@ Before creating or revising a document, resolve one documentation area in this o
 4. `docs/` at the repository root when no more specific location can be inferred.
 
 For Product/system scope, write controlling documents as `<document-area>/spec.md`,
-`<document-area>/design.md`, and `<document-area>/plan.md`. For Feature/component or
-Slice/change scope, use one descriptive lowercase-kebab `<work-slug>` for the same work in
-every filename: `<document-area>/<work-slug>.spec.md`,
-`<document-area>/<work-slug>.design.md`, and
-`<document-area>/<work-slug>.plan.md`. Derive the slug from the feature or work-item name
+`<document-area>/design.md`, and `<document-area>/plan.md`. Use
+`<document-area>/<work-slug>.spec.md` for a separate Feature/component spec and
+`<document-area>/<work-slug>.slice.md` for a focused delta. Optional designs and plans use
+`<document-area>/<work-slug>.design.md` and `<document-area>/<work-slug>.plan.md`. Derive the slug from the feature or work-item name
 (for example, `auth-signin`), not from a generic label or an arbitrary number. Thus a child
 may live at `docs/work/auth/signin/auth-signin.spec.md`. Do not move or rename existing
 documents merely to match this convention. Record the chosen repository-relative paths in WIP
@@ -68,12 +67,16 @@ and active target at the top of a multi-target report. Point WIP to the current 
 name only the target and next engineering action there; the report is authoritative for
 round state.
 
-For code, keep one rolling `<work-slug>.code-assessment.md` per Implementation plan. Give
-each planned PR a compact section with its reviewed commit or range, result, short check
+For code, keep one rolling `<work-slug>.code-assessment.md` per controlling slice or plan.
+Give each planned delivery unit a compact section with its reviewed commit or range, result, short check
 references, reviewer, and active findings. Update that section after reviewed fixes. At each
 declared integration review point, add one section for cross-PR behavior, integration checks,
 feedback, combined risk, and readiness to continue. Do not copy complete logs or add a
-per-PR hash ledger. Git history carries older report text; the current report stays concise.
+per-unit hash ledger. Git history carries older report text; the current report stays concise.
+
+For baseline-only defect repair, refactor, or mechanical work, derive `<task-slug>` from the
+requested change and keep one `<task-slug>.code-assessment.md` in the chosen document area's
+`reviews/` directory. This names the review unit without creating a slice or plan.
 
 Each report follows [result-reporting.md](result-reporting.md) and states:
 

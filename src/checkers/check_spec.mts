@@ -46,6 +46,10 @@ const ID_DEFINITION = new RegExp(
   "u",
 );
 const ID_FULL = new RegExp(`^${ID_SOURCE}$`, "u");
+const DELIVERY_UNIT = new RegExp(
+  `(?<![${PYTHON_WORD}])PR-${SLUG}-${SLUG}(?![${PYTHON_WORD}])`,
+  "gu",
+);
 const CANDIDATE = new RegExp(
   `(?<![${PYTHON_WORD}])(?:UN|FEAT|UC|FR|NFR|AT|JT|TEST)-[A-Za-z0-9]+-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*(?![${PYTHON_WORD}])`,
   "giu",
@@ -54,6 +58,52 @@ const LEAD = /^[\s#>\-*+\d.)]*/;
 const DEF_MARKER = /^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+)/;
 const HEADING = /^#{1,6}\s+(.+?)\s*$/;
 const KINDS = ["UN", "FEAT", "UC", "FR", "NFR", "AT", "JT"] as const;
+const SLICE_SECTIONS = [
+  "Intent And Baseline",
+  "Observable Delta",
+  "Delivery And Checks",
+  "Traceability",
+] as const;
+const SLICE_FIELDS = [
+  "Baseline",
+  "Change To Baseline",
+  "Applicable Constraints",
+  "Exclusions",
+  "Affected Interfaces / State",
+  "Technical Approach",
+  "Delivery Unit",
+  "Checks",
+  "Rollback",
+  "Review Point",
+] as const;
+
+function hasField(text: string, label: string): boolean {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^\\s*${escaped}\\s*:\\s*\\S`, "im").test(text);
+}
+
+function sliceContractIssues(
+  text: string,
+  defined: Record<string, Set<string>>,
+): string[] {
+  const issues = SLICE_FIELDS.filter((field) => !hasField(text, field)).map(
+    (field) => `Missing ${field}: field`,
+  );
+  if (!sectionsPresentInOrder(text, SLICE_SECTIONS))
+    issues.push(
+      "Use the sections Intent And Baseline, Observable Delta, Delivery And Checks, and Traceability in that order",
+    );
+  if (!DELIVERY_UNIT.test(text))
+    issues.push("Name at least one PR-AREA-NAME delivery unit");
+  DELIVERY_UNIT.lastIndex = 0;
+  if (!defined.FR?.size && !defined.NFR?.size)
+    issues.push(
+      "Define at least one FR-AREA-NAME behavior or NFR-AREA-NAME constraint",
+    );
+  if (!defined.AT?.size)
+    issues.push("Define at least one AT-AREA-NAME acceptance check");
+  return issues;
+}
 
 function defId(line: string): string | undefined {
   return definitionId(line, ID_DEFINITION, LEAD, DEF_MARKER);
@@ -128,6 +178,9 @@ export async function checkSpec(
   root = process.cwd(),
 ): Promise<{ report: Record<string, unknown>; exitCode: number }> {
   const feature = argv.includes("--feature");
+  const slice = argv.includes("--slice");
+  if (feature && slice)
+    throw new Error("--feature and --slice cannot be combined");
   const requireApprovals = argv.includes("--require-approvals");
   const approvalsPath = valueAfter(
     argv,
@@ -158,8 +211,12 @@ export async function checkSpec(
   );
   const uc = defined.UC ?? new Set<string>();
   const fr = defined.FR ?? new Set<string>();
+  const nfr = defined.NFR ?? new Set<string>();
   const ucCovered = new Set([...uc].filter((item) => acceptanceRefs.has(item)));
   const frCovered = new Set([...fr].filter((item) => acceptanceRefs.has(item)));
+  const nfrCovered = new Set(
+    [...nfr].filter((item) => acceptanceRefs.has(item)),
+  );
   const primary = primaryDefinitionIds(text, defId);
   const definitionIds: string[] = [];
   let fenced = false;
@@ -185,18 +242,27 @@ export async function checkSpec(
   );
   const orphanRefs = sorted([...refs].filter((item) => !allIds.has(item)));
   const formatName = artifactFormat(text);
-  const formatIssues = humanFirstIssues(
-    text,
-    ["Product Overview", "Product Crux"],
-    ["human-first-v2", "human-first-v3"],
-  );
+  const sliceIssues = slice ? sliceContractIssues(text, defined) : [];
+  const formatIssues = slice
+    ? sectionsPresentInOrder(text, SLICE_SECTIONS)
+      ? []
+      : ["The compact slice sections are missing or out of order"]
+    : humanFirstIssues(
+        text,
+        ["Product Overview", "Product Crux"],
+        ["human-first-v2", "human-first-v3"],
+      );
   let approvalContext: ApprovalContext | undefined;
   const approvalRequirements: ApprovalRequirement[] = [];
   if (requireApprovals) {
     approvalContext = await loadApprovalContext(root, approvalsPath, gatesPath);
     approvalRequirements.push(
       approvalRequirement(approvalContext, root, "spec.approved", path, {
-        scope: feature ? "feature/component" : "product/system",
+        scope: slice
+          ? "slice/change"
+          : feature
+            ? "feature/component"
+            : "product/system",
       }),
     );
   }
@@ -208,12 +274,14 @@ export async function checkSpec(
     no_orphan_refs: orphanRefs.length === 0,
     uc_at_coverage_100: ucCovered.size === uc.size,
     fr_at_coverage_100: frCovered.size === fr.size,
+    ...(slice ? { nfr_at_coverage_100: nfrCovered.size === nfr.size } : {}),
     ...(requireApprovals
       ? { required_approvals_present: approvalGatePassed(approvalRequirements) }
       : {}),
     human_first_structure: formatIssues.length === 0,
+    ...(slice ? { slice_contract_complete: sliceIssues.length === 0 } : {}),
   };
-  if (!feature) {
+  if (!feature && !slice) {
     const required =
       formatName === "human-first-v3"
         ? HUMAN_FIRST_SPEC_SECTIONS
@@ -223,14 +291,16 @@ export async function checkSpec(
     gates.sections_present = sectionsPresentInOrder(text, required);
   }
   const report = {
-    mode: feature ? "feature" : "product",
+    mode: slice ? "slice" : feature ? "feature" : "product",
     counts: Object.fromEntries(
       KINDS.map((key) => [key, defined[key]?.size ?? 0]),
     ),
     uc_at_coverage_pct: percentage(ucCovered, uc),
     fr_at_coverage_pct: percentage(frCovered, fr),
+    nfr_at_coverage_pct: percentage(nfrCovered, nfr),
     uncovered_use_cases: sorted([...uc].filter((item) => !ucCovered.has(item))),
     uncovered_frs: sorted([...fr].filter((item) => !frCovered.has(item))),
+    uncovered_nfrs: sorted([...nfr].filter((item) => !nfrCovered.has(item))),
     orphan_refs: orphanRefs,
     duplicates,
     bad_id_format: badIdFormat,
@@ -246,6 +316,7 @@ export async function checkSpec(
     },
     artifact_format: formatName,
     human_first_issues: formatIssues,
+    slice_contract_issues: sliceIssues,
     workflow_state_issues: workflowStateIssues,
     gates,
     passed: Object.values(gates).filter(Boolean).length,
@@ -268,10 +339,13 @@ async function main(): Promise<number> {
       no_orphan_refs: "Every referenced ID exists",
       uc_at_coverage_100: "User outcomes have acceptance coverage",
       fr_at_coverage_100: "Requirements have acceptance coverage",
+      nfr_at_coverage_100: "Protected constraints have acceptance coverage",
       required_approvals_present: "Required approvals are current",
       human_first_structure:
         "The document starts with a plain summary and ends with links between related items",
       sections_present: "Required sections are present",
+      slice_contract_complete:
+        "The compact slice names its baseline, intended change, delivery unit, checks, rollback, and review point",
     };
     const report = result.report as any;
     for (const [key, passed] of Object.entries(report.gates))

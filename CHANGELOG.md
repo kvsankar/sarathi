@@ -8,6 +8,34 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+## 0.12.0 - 2026-08-31
+
+### Added
+
+- Add a compact slice contract and `sarathi-sdlc check slice` command for intentional
+  observable behavior or protected-contract changes.
+- Allow code checks to use an approved compact slice directly with `--slice` when no
+  separate implementation plan is needed.
+- Add explicit `--baseline` code verification for defect repairs, refactors, and mechanical
+  work that preserves observable behavior and protected contracts.
+
+### Changed
+
+- Start delivery from an accepted baseline plus a focused delta. Create separate design and
+  plan documents only when complexity or risk makes their independent review useful.
+- Define each planned PR as a delivery unit represented by a pull request or exact Git
+  commit/range, while preserving focused checks, independent assessment, and one replacement
+  WIP position at every genuine boundary.
+- Replace named profile-driven document paths with risk-based evidence, review timing, and
+  protected gates. Existing projects choose how to interpret their own prior Sarathi files;
+  this release adds no compatibility workflow or process-state migration.
+- Reconcile accumulated deltas only through an approved product-intent decision at a
+  meaningful release, feature-family, interdependency, contradiction, or staleness boundary.
+- Keep focused assessment results in the current report and replacement WIP position; read
+  existing delivery-record ledgers only as historical status input.
+- Preserve UI-mock and separate-design approval gates when a compact slice controls code
+  directly, and accept protected-constraint-only slices with measurable acceptance coverage.
+
 ## 0.11.1 - 2026-08-27
 
 ### Fixed

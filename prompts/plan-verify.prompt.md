@@ -23,26 +23,25 @@ work slug's `.plan.md` file. Do not edit it unless explicitly asked.
 
 ## Checks
 
-For Standard or High-assurance, first run:
+Run the controlling slice check first:
 
 ```pwsh
-node checkers/check_spec.mjs spec.md --json
-node checkers/check_design.mjs design.md --spec spec.md --json
+node checkers/check_spec.mjs slice.md --slice --json
 ```
 
-Then run:
+When a separate design exists, also run its checker. Then run:
 
 ```pwsh
 node checkers/check_plan.mjs plan.md --spec spec.md --design design.md --json
 ```
 
-For Lean without a standalone design, run the spec checker and then:
+Without a standalone design, run:
 
 ```pwsh
 node checkers/check_plan.mjs plan.md --spec spec.md --json
 ```
 
-The checker validates structure and spec coverage. Independently review the plan's required
+The checker validates structure and requirement coverage. Independently review the plan's required
 Technical Decisions; the absence of a design checker does not prove that reasoning sound.
 
 When checking a later gate that depends on approved earlier documents, add
@@ -51,7 +50,7 @@ When checking a later gate that depends on approved earlier documents, add
 `ux.mock.approved` records with UTC `approved_at` timestamps. Do not require approval while drafting; require it only when the plan is ready to
 advance and the recorded policy makes the gate applicable.
 
-For a compact plan that relies on approved parent documents, verify those documents first,
+For a plan that relies on accepted baseline documents, verify those documents first,
 then run the plan checker with `--feature` and the parent document options needed to
 check its inherited IDs. Use `--inherited-subset --spec <parent-spec> --design
 <parent-design>` so cited IDs are validated without requiring allocation of the complete

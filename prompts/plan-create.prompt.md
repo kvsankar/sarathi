@@ -7,8 +7,8 @@ agent: agent
 
 ## Load And Gate
 
-Read WIP, process decisions, accepted specs and any required designs/ADRs/prototypes, the
-existing plan, and repository conventions. Load `docs/artifact-contracts.md`,
+Read WIP, process decisions, the controlling slice, accepted baseline, any required
+designs/ADRs/prototypes, the existing plan, and repository conventions. Load `docs/artifact-contracts.md`,
 `docs/document-locations.md`, `docs/assurance-profiles.md`, `docs/simplicity-first.md`,
 `docs/human-first-artifacts.md`, `docs/test-ownership.md`, `docs/work-decomposition.md`, and
 `docs/result-reporting.md`.
@@ -23,8 +23,9 @@ Load only when the trigger applies:
   delivery changes its language or tooling;
 - `docs/artifact-formatting.md` and `docs/simplify-pass.md`: before reporting.
 
-Block only on gaps that make implementation unsafe; scope size or document level is not a
-blocker. Follow the selected profile path and escalation rules.
+Create a plan only when the compact slice cannot make dependencies, delivery boundaries,
+migration, feedback, or risk easy enough to review. Block only on gaps that make
+implementation unsafe; scope size or document level is not a blocker.
 
 ## Choose The Plan Shape
 
@@ -33,8 +34,9 @@ Ask one question:
 > Can a competent engineer understand, explain, review, and safely plan this work as one
 > coherent unit?
 
-- If yes, choose `Plan Type: Implementation`. Under High-assurance, say why this work is
-  already small enough to review, test, and integrate safely.
+- If yes and the compact slice already names one clear delivery unit, do not create a plan.
+- If the work needs several delivery units or separately reviewable sequencing, choose
+  `Plan Type: Implementation`.
 - If no, split along natural product or technical boundaries and choose `Plan Type:
 Breakdown` for the resulting independently useful child outcomes.
 
@@ -44,11 +46,9 @@ where it belongs; it does not automatically require a Breakdown plan. Link accep
 documents instead of reproducing them. A Breakdown plan organizes child outcomes; it does
 not authorize code.
 
-For a `Decision/evidence` work outcome, make the required result the named decision, not a
-shippable increment. State the question, decision owner, evidence method, boundaries,
-timebox or stop condition, and next action. Recommend `code-create` only when a planned
-prototype or experiment needs code; otherwise recommend the evidence-gathering or decision
-step.
+For a `Decision/evidence` outcome, make the required result the named decision, not a
+shippable increment. State its owner, method, boundaries, stop condition, and next action.
+Recommend `code-create` only when the evidence work needs code.
 
 ## Structure The Delivery
 
@@ -70,9 +70,9 @@ section. Classify every delivery item using the five compact choices in
 extracted, what remains target-owned and why, what is genuinely new, and what is deferred.
 Do not present an existing capability as greenfield work.
 
-For an Implementation plan:
+For an Implementation plan, keep the accepted slice as the controlling behavior delta:
 
-- for Lean without a design, add concise Technical Decisions and map spec acceptance to
+- without a separate design, add concise Technical Decisions and map slice acceptance to
   executable checks;
 - list the PRs and dependencies; one cohesive PR needs no empty dependency fields;
 - for each PR, state outcome, impact allocation, verification, and applicable rollback;

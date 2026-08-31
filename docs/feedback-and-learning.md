@@ -76,15 +76,16 @@ Do not mark every earlier document for revision, stop unrelated fixes, or reasse
 unchanged document merely because another document changed. Use `Blocked-upstream` only when
 the named problems prevent a safe, sound judgment of the requested work.
 
-After each planned PR assessment, replace the short `.sdlc/wip.md` bookmark using
+After each planned delivery-unit assessment, replace the short `.sdlc/wip.md` bookmark using
 [work-in-progress.md](work-in-progress.md). Preserve the focused review and learning result in
-the Implementation plan's rolling code-assessment report. The next dependent PR may continue
+the controlling slice or plan's rolling code-assessment report, or the task-slug report for
+baseline-only maintenance. The next dependent delivery unit may continue
 without a user-facing pause when the assessment passes and no required feedback, approval, or
 protected boundary blocks it.
 
-At a review point declared by the plan, inspect how its completed PRs work together. Reuse
+At a review point declared by the slice or plan, inspect how its completed delivery units work together. Reuse
 their focused assessments and review integration, accumulated risk, required feedback, and
-whether later work remains safe. Do not repeat the completed PR reviews.
+whether later work remains safe. Do not repeat the completed focused reviews.
 
 The agent performs this check and may draft revisions supported by observed results. It must
 not silently change accepted product behavior, contracts, safety rules, or scope. Material revisions
@@ -117,12 +118,9 @@ Breakdown plans may schedule near-term child work in a `Work Groups` section. Ea
 a scheduled child belongs to exactly one group, while an unscheduled child has no group. An
 Implementation plan lists the PRs for one child; PRs do not belong to groups.
 
-The current group and active members live in `.sdlc/wip.md`. When a group finishes, a
-`wave_checkpoint` entry in `.sdlc/delivery-records.yaml` records the group ID, exact members,
-current plan SHA-256, `status: completed`, completion time, feedback, and document changes.
-It marks only that group as finished. It is not a code assessment, human approval, merge
-claim, or permission to start the next group. Changing the plan or group membership makes
-the checkpoint stale.
+The current group and active members live in `.sdlc/wip.md`. When a group finishes, record
+its combined result in the controlling assessment report and replace the WIP position. Do
+not create a separate checkpoint ledger.
 
 At a real work-group checkpoint, update only the records required by that checkpoint. Status
 generation is a separate explicit write, not routine bookkeeping. Keep old approvals as

@@ -215,6 +215,116 @@ test("check code requires plan approval only when requested", async () => {
   }
 });
 
+test("check code accepts an approved compact slice instead of a plan", async () => {
+  const files = await fixture();
+  try {
+    const slice = resolve(files.root, "slice.md");
+    await writeFile(slice, "- PR-AUTH-SIGNIN\n- FR-AUTH-SIGNIN\n");
+    const args = withoutFlag(files.args, "--plan");
+    const designIndex = args.indexOf("--design");
+    args.splice(designIndex, 2);
+    args.push("--slice", slice, "--require-approvals");
+    await mkdir(resolve(files.root, ".sdlc"));
+    const hash = createHash("sha256")
+      .update(await readFile(slice))
+      .digest("hex");
+    await writeFile(
+      resolve(files.root, ".sdlc", "approvals.yaml"),
+      `version: 1\napprovals:\n  - id: APR-SLICE\n    gate: spec.approved\n    scope: slice/change\n    artifact:\n      kind: spec\n      path: slice.md\n      sha256: ${hash}\n    status: approved\n    approved_by: Test User\n    approved_at: 2026-07-01T12:00:00Z\n`,
+    );
+    const result = await checkCode(args, files.root, () => 0);
+    assert.equal(result.exitCode, 0);
+    assert.deepEqual(result.report.delivery_authority, {
+      kind: "slice",
+      path: slice,
+    });
+    const withDesign = await checkCode(
+      [...args, "--design", resolve(files.root, "design.md")],
+      files.root,
+      () => 0,
+    );
+    assert.equal(
+      (withDesign.report.gates as Record<string, boolean>)
+        .required_approvals_present,
+      false,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("check code rejects competing slice and plan authorities", async () => {
+  const files = await fixture();
+  try {
+    await assert.rejects(
+      checkCode(
+        [...files.args, "--slice", resolve(files.root, "slice.md")],
+        files.root,
+        () => 0,
+      ),
+      /name exactly one delivery authority/u,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("check code accepts explicit baseline authority for conforming maintenance", async () => {
+  const files = await fixture();
+  try {
+    const args = withoutFlag(files.args, "--plan");
+    const result = await checkCode(
+      [...args, "--baseline", "--require-approvals"],
+      files.root,
+      () => 0,
+    );
+    assert.equal(result.exitCode, 0);
+    assert.deepEqual(result.report.delivery_authority, {
+      kind: "baseline",
+      path: null,
+    });
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("check code requires one explicit delivery authority", async () => {
+  const files = await fixture();
+  try {
+    await assert.rejects(
+      checkCode(withoutFlag(files.args, "--plan"), files.root, () => 0),
+      /name exactly one delivery authority/u,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
+test("direct slice UI work preserves the mock approval gate", async () => {
+  const files = await fixture();
+  try {
+    const slice = resolve(files.root, "slice.md");
+    await writeFile(
+      slice,
+      "UI Mock Preference: Required\n- PR-AUTH-SIGNIN\n- FR-AUTH-SIGNIN\n",
+    );
+    const args = withoutFlag(files.args, "--plan");
+    args.push("--slice", slice, "--require-approvals");
+    const result = await checkCode(args, files.root, () => 0);
+    assert.equal(
+      (result.report.gates as Record<string, boolean>)
+        .required_approvals_present,
+      false,
+    );
+    assert.match(
+      JSON.stringify(result.report.approval_requirements),
+      /mockup/u,
+    );
+  } finally {
+    await rm(files.root, { recursive: true, force: true });
+  }
+});
+
 test("check code omits marker candidates from verification report", async () => {
   const files = await fixture();
   try {

@@ -21,8 +21,9 @@ Target the spec file the user provides; otherwise resolve the location with
 `docs/document-locations.md`: normally `docs/spec.md` for Product/system, otherwise the
 work slug's `.spec.md` file. Do not edit it unless explicitly asked.
 
-If the user is verifying a feature/component or slice/change spec that references a parent
-product/system spec, add `--feature --parent <parent-spec.md>`.
+If the user is verifying a feature/component spec that references a parent product/system
+spec, add `--feature --parent <parent-spec.md>`. For a compact slice, use `--slice`; add
+`--parent <baseline-spec.md>` when requirement references depend on it.
 
 ## Checks
 
@@ -36,6 +37,12 @@ For focused specs:
 
 ```pwsh
 node checkers/check_spec.mjs <spec.md> --feature --parent <parent-spec.md> --json
+```
+
+For compact slices:
+
+```pwsh
+node checkers/check_spec.mjs <slice.md> --slice --parent <baseline-spec.md> --json
 ```
 
 When checking that an already-reviewed spec has a valid local approval before later

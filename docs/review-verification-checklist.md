@@ -101,7 +101,7 @@ a candidate into an actionable finding with context or omits it from the report.
 Every reviewer judges:
 
 - approved requirements, scope/readiness, and whether earlier documents are sufficient;
-- selected delivery assurance profile and only the extra risk checks triggered by context;
+- the controlling slice or plan and only the extra risk checks triggered by context;
 - clear pass/fail checks, tests of important real systems, risks, and remaining uncertainty;
 - feedback that could change later work and any required parent-document changes;
 - simplicity using `docs/simplicity-first.md`.

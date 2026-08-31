@@ -8,22 +8,35 @@ agent: agent
 Collect repeatable check results for implemented code. Do not edit code or judge overall
 quality. Use the `code-review` command for judgment and `code-assess` to run both.
 
-Read `.sdlc/wip.md`, the accepted plan and earlier documents, repository commands, and the
-selected delivery assurance and additional checks. A compact or legacy plan may use approved
-parent documents instead of unnecessary child spec/design files. Load
+Read `.sdlc/wip.md`, the controlling slice or plan, accepted baseline and applicable earlier
+documents, repository commands, and assigned additional checks. A compact slice may use
+approved baseline documents instead of unnecessary child spec/design files. Load
 `docs/document-locations.md`, `docs/project-quality-gates.md`, and
 `docs/result-reporting.md`. Run repeatable commands directly in the active context.
 
 ## Earlier Documents
 
-Run only the earlier documents that control the plan. Do not fail a compact or legacy plan
-because unnecessary child spec/design files do not exist. When documents exist, run:
+Run only the documents that control the delivery unit. Do not fail a compact slice because
+unnecessary design or plan files do not exist. For a slice, run:
+
+```pwsh
+node checkers/check_spec.mjs <slice-path> --slice --json
+```
+
+When separate documents exist, run:
 
 ```pwsh
 node checkers/check_spec.mjs <spec-path> --json
 node checkers/check_design.mjs <design-path> --spec <spec-path> --json
 node checkers/check_plan.mjs <plan-path> --spec <spec-path> --design <design-path> --json
 ```
+
+When the compact slice controls code directly, replace `--plan <plan-path>` with
+`--slice <slice-path>`. Keep `--design <design-path>` when a separate design controls the
+change so `--require-approvals` also enforces its approval.
+
+For a defect repair, refactor, or mechanical change that intentionally preserves observable
+behavior and protected contracts, use `--baseline` instead of `--slice` or `--plan`.
 
 Report failures in earlier documents without reinterpreting them as a quality judgment.
 
@@ -46,8 +59,8 @@ shell, and PowerShell source. Use `--src-ext` for repository-specific languages 
 silently omitting them.
 
 Prefer `--tests-argv`; use `--tests-shell` only for trusted commands requiring shell
-behavior. Add `--require-approvals` when implementation depends on an approved plan or
-mock.
+behavior. Add `--require-approvals` when implementation depends on an approved slice, plan,
+or mock.
 
 Report exact commands, raw JSON, exit codes, pass totals, approval problems, process IDs found
 in source, and the command behind each risk check. Explain failures in plain language. The

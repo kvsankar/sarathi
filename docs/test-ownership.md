@@ -5,14 +5,14 @@ feature/component, and slice/change documents.
 
 ## Core Rule
 
-Only an Implementation plan that is ready to implement may enter `code-create`. The change being
-implemented is usually a slice/change, but a sufficiently small feature may be implemented
-directly. Its PR may implement production code and executable tests whose approved
-requirements live in an earlier document.
+Only an approved code-ready slice, or its separate Implementation plan when one exists, may
+enter `code-create`. Its planned delivery unit may implement production code and executable
+tests whose accepted requirements live in the baseline or slice.
 
-Test code is code. Approved requirements plus a specific Implementation plan authorize it.
-Every earlier `AT-`, `JT-`, and design `TEST-` item must be assigned to a PR and become an
-executable check, unless the plan gives a clear reason to verify it without code.
+Test code is code. The accepted baseline plus a specific approved slice or plan authorizes
+it. Every applicable `AT-`, `JT-`, and design `TEST-` item must be assigned to a delivery
+unit and become an executable check, unless the controlling document gives a clear reason
+to verify it without code.
 
 ## Test-First Implementation
 
@@ -68,15 +68,14 @@ can prove the behavior:
 A Breakdown plan creates an integration or acceptance `WORK-` item only when a required test
 spans several children and does not belong to one of them. That
 work item follows [work-decomposition.md](work-decomposition.md): name its child scope and
-minimum required document, normally one specific Implementation plan. Do not create a child
+minimum required document, normally one compact slice. Do not create a child
 spec or design unless a named uncertainty requires one.
 
 ## Assigning And Running Tests
 
-Every parent `AT-`, `JT-`, and design `TEST-` item must be assigned to one or more child work
-items, PRs, or a justified non-code check. A child Implementation plan keeps the parent IDs
-in its Coverage Map and states the test level, environment, fixtures or contracts, and what
-counts as pass or fail.
+Every applicable `AT-`, `JT-`, and design `TEST-` item must be assigned to one or more child
+work items, delivery units, or a justified non-code check. A compact slice may keep this
+mapping in its Traceability section; a separate plan uses its Coverage Map.
 
 Keep these states distinct:
 

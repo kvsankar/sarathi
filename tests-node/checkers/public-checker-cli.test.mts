@@ -14,6 +14,10 @@ async function fixture(): Promise<string> {
   );
   await writeFile(resolve(root, "parent-spec.md"), "");
   await writeFile(
+    resolve(root, "slice.md"),
+    "# Slice\n\n## Intent And Baseline\nBaseline: Current behavior.\nChange To Baseline: Add behavior.\nApplicable Constraints: Existing constraints.\n\n## Observable Delta\nExclusions: None.\nAffected Interfaces / State: One interface.\n- FR-AUTH-RETRY Add retry.\n\n## Delivery And Checks\nTechnical Approach: Direct change.\nDelivery Unit: PR-AUTH-RETRY\nChecks: Focused tests.\nRollback: Revert the commit.\nReview Point: Review the commit.\n\n## Traceability\n- AT-AUTH-RETRY Covers FR-AUTH-RETRY.\n",
+  );
+  await writeFile(
     resolve(root, "design.md"),
     "- COMP-AUTH FR-AUTH-SIGNIN\n- IFACE-AUTH owner COMP-AUTH\n# Test Strategy\n- TEST-AUTH-POLICY COMP-AUTH FR-AUTH-SIGNIN\n",
   );
@@ -69,6 +73,14 @@ async function cliCase(
 test("Node spec checker preserves the documented JSON interface", (t) =>
   cliCase(t, "check_spec", ["spec.md", "--feature"], (report) => {
     assert.equal(report.mode, "feature");
+  }));
+test("Node spec checker exposes compact slice mode", (t) =>
+  cliCase(t, "check_spec", ["slice.md", "--slice"], (report) => {
+    assert.equal(report.mode, "slice");
+    assert.equal(
+      (report.gates as Record<string, boolean>).slice_contract_complete,
+      true,
+    );
   }));
 test("Node spec checker accepts a repository-relative spec path", (t) =>
   cliCase(t, "check_spec", ["spec.md", "--feature"], (report) => {

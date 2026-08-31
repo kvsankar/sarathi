@@ -23,41 +23,38 @@ notes graphic.
 
 Composition/framing: wide landscape poster for documentation and presentations; native
 generator dimensions may differ from 16:9. Put one clear delivery loop in the center, a
-visible choice among three paths, a “split work only when needed” branch below planning, and
-separate rows for checks and independent review beneath the loop. Resume and writing rules
-remain quiet supporting material. Keep all connectors clean
+visible choice to add design or planning only when needed, a “split work only when needed”
+branch below delivery, and separate rows for checks and independent review beneath the loop.
+Resume and writing rules remain quiet supporting material. Keep all connectors clean
 and avoid crossing arrows.
 
 1. TITLE AND ENDURING STATEMENT
    - Large title, verbatim: "sarathi — PRODUCTION SOFTWARE ENGINEERING WITH AI AGENTS"
    - Subtitle, verbatim:
-     "Accepted intent becomes safe working software — evidence and feedback shape what comes next."
+     "Accepted baseline plus a focused delta becomes safe working software — evidence and feedback shape what comes next."
    - Small badge: "Enduring model — not waterfall"
 
 2. CENTRAL DELIVERY LOOP — VISUALLY DOMINANT
    Arrange four large panels from left to right, then curve a bold feedback arrow from the
-   final panel back toward any earlier panel. Show that profiles select different routes
-   through these panels rather than implying one mandatory four-stage chain. The panels are:
+   final panel back toward any earlier panel. Show that design and planning are conditional,
+   not a mandatory four-stage chain. The panels are:
 
-   - "SPEC — DEFINE THE REQUIREMENTS"
-     "Problem, stakeholders, scope"
-     "Needs → features"
-     "Use cases: main, alternate, failure flows"
-     "Functional + supplementary requirements"
-     "Black-box acceptance tests + journeys"
-     "Traceability: needs → observable evidence"
-     Exit label: "Testable requirements understood and accepted"
+   - "BASELINE — ACCEPTED BEHAVIOR"
+     "Existing product intent"
+     "Enduring protected constraints"
+     Exit label: "What remains authoritative is clear"
 
-   - "DESIGN — SHAPE THE SOLUTION"
-     "Architecture, responsibilities, boundaries, interfaces, data, decisions, quality attributes"
-     Exit label: "Technical model understood"
+   - "SLICE — FOCUSED DELTA"
+     "Observable behavior + exclusions"
+     "Affected interfaces or state"
+     "Applicable constraints + acceptance"
+     "Delivery boundary + checks + rollback + review point"
+     Exit label: "One intentional change is code-ready"
 
-   - "PLAN — STRUCTURE THE DELIVERY"
-     "Impact map"
-     "Breakdown: child outcomes + dependencies"
-     "Implementation: PR graph + sequence"
-     "Integration, safety, proof"
-     Exit label: "Delivery structure understood"
+   - "ONLY WHEN NEEDED — DESIGN OR PLAN"
+     "Design: difficult technical choice"
+     "Plan: multiple delivery units, dependencies, migration, feedback, or risk"
+     Exit label: "Complexity is independently reviewable"
 
    - "CODE + TESTS — WORKING BEHAVIOR"
      "RED — observe the behavioral test fail"
@@ -75,7 +72,7 @@ and avoid crossing arrows.
    "Replan"
 
 3. SPLIT WORK ONLY WHEN NEEDED
-   Beneath the Plan panel, show a clear decision diamond titled:
+   Beneath the Slice panel, show a clear decision diamond titled:
    "CAN THE WORK BE UNDERSTOOD AS ONE COHERENT UNIT?"
 
    Add a compact explanation beside it, verbatim:
@@ -101,12 +98,12 @@ and avoid crossing arrows.
 
    First rail title: "TEST EVIDENCE THROUGH DELIVERY"
    Show four aligned steps:
-   "Spec — observable acceptance"
-   "Design — test architecture + boundary proof"
-   "Plan — tests assigned to delivery"
+   "Baseline — accepted behavior + protected constraints"
+   "Slice — delta + observable acceptance"
+   "Optional decisions — only risk-specific proof"
    "Code — Red → Green → Refactor + exact results"
 
-   Second rail title: "QUALITY GATE AT EVERY STAGE"
+   Second rail title: "QUALITY AT EVERY RETAINED BOUNDARY"
    Show four steps:
    "Create — write or revise"
    "Verify — repeatable checks"
@@ -114,7 +111,7 @@ and avoid crossing arrows.
    "Assess — checks + review"
 
    Caption, verbatim:
-   "Every retained stage is checked and independently reviewed before the next learning step."
+   "Every genuine delivery unit is checked and independently reviewed before dependent work."
 
    Add a smaller clarification:
    "Automatic checks report facts. Review judges meaning, test adequacy, simplicity, and safety."
@@ -128,16 +125,14 @@ and avoid crossing arrows.
    Caption, verbatim:
    "A new engineer or agent can resume from source records and observed results."
 
-6. CHOOSE A PATH THAT FITS THE RISK
-   Show a compact but prominent selector titled "DELIVERY PATH" with three paths:
-   "Lean — Spec → Plan with technical decisions → Code"
-   "Standard — Spec → Design → Implementation plan → Code"
-   "High-assurance — Spec → Design → Breakdown → Child plans → Code slices"
+6. MATCH EVIDENCE TO RISK
+   Show a compact but prominent selector titled "ADD ONLY WHAT THE RISK NEEDS" with three
+   choices:
+   "Compact slice — one clear delivery unit"
+   "Separate design — a technical choice needs independent review"
+   "Separate plan — dependencies, migration, feedback, or risk need sequencing"
 
-   Show a complete quality-gate marker at every stage retained by each route. For
-   High-assurance, show review points before code and after each meaningful code slice.
-
-   Caption, verbatim: "Profiles change the path and when reviews happen, not review quality."
+   Caption, verbatim: "Risk changes evidence, delivery boundaries, and review timing — not a named path."
 
 7. SUPPORTING AUTHORING RULES — VISUALLY SECONDARY
    Use a narrow pale footer band titled "SUPPORTING RULES". Include only four short items:
@@ -158,7 +153,7 @@ contrast and consistent meaning.
 
 Visual grammar: rounded stage panels, a bold continuous return arrow, one clear decision
 diamond, child increments that visibly rejoin, a continuous test-evidence thread,
-independent-review eye icons attached to every stage, deterministic check squares,
+independent-review eye icons attached to every retained delivery boundary, deterministic check squares,
 Red-Green-Refactor cycle arrows, evidence document icon, continuity thread, and restrained
 risk shield. The core loop, test/review rails, and conditional decomposition must dominate
 the visual hierarchy.

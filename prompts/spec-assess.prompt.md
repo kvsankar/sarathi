@@ -7,7 +7,7 @@ agent: agent
 
 Assess the target spec using two separate passes. Load `prompts/spec-verify.prompt.md`,
 `prompts/spec-review.prompt.md`, `docs/review-verification-checklist.md`, and the selected
-delivery assurance profile and additional checks from `docs/assurance-profiles.md`. Load
+additional checks from `docs/assurance-profiles.md`. Load
 `docs/document-locations.md` and `docs/result-reporting.md`. Apply
 `docs/simplicity-first.md`.
 
@@ -20,7 +20,7 @@ determine whether this round is full or focused and when to stop.
    failures, and approval records separate from quality judgment.
 2. **Review pass**: in a fresh sub-agent when available, execute the review
    instructions from `prompts/spec-review.prompt.md` using the spec and check results. Judge
-   the spec against the selected assurance profile and additional checks. Do not apply a list
+   the spec against its baseline, intended delta, protected constraints, and additional checks. Do not apply a list
    of risks that do not affect this work.
 
 If sub-agents are unavailable, disclose that the review was not independent, keep the

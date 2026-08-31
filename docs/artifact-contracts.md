@@ -19,11 +19,10 @@ readable and keep their earlier requirements. Version 3 documents put the explan
 use descriptive headings, and keep machine mappings in structured comments and a final
 `## Traceability` section.
 
-## Fields Required In Every Controlling Document
+## Fields For Standalone Specs, Designs, And Plans
 
 - `Work Scope: product/system | feature/component | slice/change`
 - `Ready To Implement: Yes | No`
-- `Delivery Assurance Profile: Lean | Standard | High-assurance`
 - `Approval Policy: Human checkpoints | Automatic eligible gates`
 - `Work Outcome: Product increment | Decision/evidence`
 - `Extra Checks: comma-separated checks or none`
@@ -37,6 +36,32 @@ slug in every document and report filename.
 
 `Ready To Implement: Yes` means that the next code change is specific and no unresolved
 product or architecture decision blocks it. The size of the scope does not decide readiness.
+
+## Compact Slice Contract
+
+Use a compact slice for an intentional observable behavior or protected-contract change.
+Reference the accepted baseline and applicable protected authorities; do not copy them or
+create a registry. A defect repair, refactor, or mechanical change needs no slice unless it
+intentionally changes that behavior or contract.
+
+The slice uses these four sections in order:
+
+1. **Intent And Baseline**: `Baseline:`, `Change To Baseline:`, and
+   `Applicable Constraints:`.
+2. **Observable Delta**: the changed behavior and acceptance, plus `Exclusions:` and
+   `Affected Interfaces / State:`.
+3. **Delivery And Checks**: `Technical Approach:`, one or more `Delivery Unit:` values using
+   `PR-AREA-NAME`, `Checks:`, `Rollback:`, and `Review Point:`.
+4. **Traceability**: compact requirement and acceptance links.
+
+This one document may authorize implementation when it is approved and code-ready. Create a
+separate design or plan only when complexity or risk makes independent review materially
+easier. When one slice needs several delivery units, keep the slice as the controlling delta
+and name the boundaries and dependencies in its plan.
+
+For UI work, add `UI Mock Preference: Required | Optional | Not needed | Deferred`. When it
+is `Required`, name `UI Mock Artifact: <path>` or `Approved Prototype Artifact: <path>` and
+preserve the `ux.mock.approved` gate before production UI code.
 
 ## Spec Contract
 
@@ -55,7 +80,8 @@ Version 3 Product/system specs start with **Product Overview**. Older documents 
 8. **Acceptance Tests**: black-box `AT-AREA-NAME` checks linked to requirements.
 9. **Journey Tests**: ordered `JT-AREA-NAME` acceptance scenarios, or a reason none are needed.
 10. **Assumptions & Open Questions**: unresolved facts, deferrals, the reason for delivery
-    choices, conditions that require a stronger profile, and UI mock preference.
+    choices, conditions that require more evidence or an earlier review point, and UI mock
+    preference.
 11. **Traceability**: links from needs through tests, with priority or risk when useful.
 
 Feature/component and Slice/change specs may omit empty sections that do not apply. They must
@@ -134,8 +160,8 @@ If the spec requires a UI mock and no approved prototype exists, create or updat
 ## Plan Contract
 
 A plan says what will change, in what order, what depends on what, how pieces will be combined,
-how failure will be handled, and how success will be checked. Under Lean, it also records the
-technical decisions that a separate design would have contained.
+how failure will be handled, and how success will be checked. Create one only when those
+details are easier to review separately from the controlling slice.
 
 Plan type and work outcome are separate choices. A Decision/evidence plan states the
 question, decision owner, method, limits, stopping point or timebox, results, decision, and
@@ -197,10 +223,10 @@ integration, or risk results could materially change dependent PRs. A review poi
 several related PRs, but it does not replace the focused assessment of each PR and must not be
 delayed until the end of work too large to judge safely.
 
-A Lean plan without a separate design adds **Technical Decisions** before the PR list. Include
-only the structure, interfaces, data or state behavior, trade-offs, and test approach needed
-for this change. Map `AT-*` and `JT-*` directly to executable checks. If this section cannot
-stay short and clear, create and assess a Standard design.
+When no separate design exists, include only the structure, interfaces, data or state
+behavior, trade-offs, and test approach needed for the change. Map `AT-*` and `JT-*`
+directly to executable checks. If those decisions cannot stay short and clear, create and
+assess a separate design.
 
 When a Breakdown plan schedules near-term child work, each scheduled `WORK-*` appears once in
 a `WAVE-AREA-NAME` block under `## Work Groups`:
@@ -225,8 +251,11 @@ Older short-plan fields remain readable, but new plans do not need them.
 
 ## Code And Evidence Contract
 
-`code-create` requires an explicitly selected Implementation plan with
-`Ready To Implement: Yes`. For behavior changes, follow the Red-Green-Refactor loop in
+`code-create` requires an approved code-ready slice or, when one exists, its explicitly
+selected Implementation plan with `Ready To Implement: Yes`. A defect repair, refactor, or
+mechanical change may work directly from the accepted baseline only when it intentionally
+preserves observable behavior and protected contracts. For behavior changes, follow
+the Red-Green-Refactor loop in
 [test-ownership.md](test-ownership.md): see the smallest meaningful test fail for the expected
 reason, make it pass with the minimum production-quality change, then improve the code while
 the affected tests stay green.
@@ -236,15 +265,17 @@ results, and anything that could not be checked. Test names describe behavior. S
 not belong in production or test source merely for traceability; keep those mappings in the
 plan, assessment, or an optional external traceability record.
 
-At each PR boundary, create an identifiable Git change, run the planned focused and affected
-checks, and assess that exact change independently. Before a declared integration review
+At each planned delivery boundary, create an identifiable Git change, run the planned focused
+and affected checks, and assess that exact change independently. A delivery unit may be a
+pull request or an exact commit/range; internal commits and review fixes do not create new
+boundaries. Before a declared integration review
 point, run its planned full and integration checks, cleanup, and simplification. Report
 missing results as unavailable, never as passing.
-Use a coverage or detailed test-link inventory only when the project or selected profile
-requires one. At every PR boundary, keep the planned test suite passing.
+Use a coverage or detailed test-link inventory only when the project or identified risk
+requires one. At every planned delivery boundary, keep the planned test suite passing and
+replace the short WIP position. Passing work continues automatically unless a protected gate,
+invalidated intent, blocker, or required decision stops it. Do not regenerate product specs,
+roadmaps, status, approvals, or unrelated process records at the boundary.
 
-`code-assess` may write a passing `code_assessment` entry to
-`.sdlc/delivery-records.yaml` using the schema in [workflow-status.md](workflow-status.md).
-After every exact group member, review point, required feedback and integration step, and
-required decision about earlier documents is complete, it may write a `wave_checkpoint`
-entry that matches the current plan. Neither record is human approval.
+Keep the focused result in the rolling assessment report and current WIP position. Do not
+create a delivery-result ledger at each boundary.
