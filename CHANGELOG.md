@@ -14,6 +14,10 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
   canonical ownership, evidence-aware archiving, stable names, compatible moves, focused
   navigation, and proportionate coverage checks. Clarify where archived review reports live
   and how WIP represents work controlled by a plan without a slice.
+- Require decomposed and concurrent work to remain connected to the accepted whole in both
+  traceability directions: every branch names its contribution and integration point, and
+  every parent obligation is allocated. Add `Active Work Items` as the clear WIP name for
+  concurrent `WORK-*` and `PR-*` identifiers while retaining `Active Slices` compatibility.
 
 ## 0.13.0 - 2026-08-31
 

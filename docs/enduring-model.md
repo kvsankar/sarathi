@@ -48,6 +48,13 @@ boundaries. Size alone is not the test, and splitting work does not automaticall
 more documents. Use
 [work-decomposition.md](work-decomposition.md) for the practical rule.
 
+Every resulting branch remains connected to the accepted whole. Each child or delivery unit
+names the parent outcome and inherited requirements, decisions, tests, or integration work it
+advances. The plan allocates every parent obligation downward and says where parallel
+branches rejoin for integration and acceptance. New user input revises that connected graph,
+joins it as traced work, stays unscheduled, or becomes a separate work target; it never
+becomes an unexplained active island.
+
 ## 3. Separate Checks From Judgment
 
 Each stage can be created, verified, reviewed, or assessed:

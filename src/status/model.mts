@@ -36,6 +36,7 @@ const WIP_LEARNING_FIELDS = [
   ["Active Work Item", "active_work_item"],
   ["Parallel Limit", "wip_limit"],
   ["WIP Limit", "wip_limit"],
+  ["Active Work Items", "active_slices"],
   ["Active Slices", "active_slices"],
   ["What Changed", "invalidation_result"],
   ["Invalidation Result", "invalidation_result"],
@@ -834,7 +835,9 @@ export function explicitFocusItem(
   items: StatusValue[],
   wip: StatusValue,
 ): StatusValue | null {
-  const ids = planIdCandidates(stringValue(wip.learning?.active_slices));
+  const ids = planIdCandidates(
+    `${stringValue(wip.learning?.active_work_item)} ${stringValue(wip.learning?.active_slices)}`,
+  );
   for (const id of ids) {
     if (isPlanId(id, "WORK")) {
       const match = items.find((item) => item.id === id);

@@ -73,6 +73,7 @@ const OTHER_WIP_FIELDS = [
   "Active Work Item",
   "Parallel Limit",
   "WIP Limit",
+  "Active Work Items",
   "Active Slices",
 ] as const;
 
@@ -184,27 +185,29 @@ export async function validateWip(path: string): Promise<WorkflowIssue[]> {
       }
     }
   }
-  for (const value of values.get("Active Slices") ?? []) {
-    const identifiers = value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    if (
-      value.toLocaleLowerCase("en-US") !== "none" &&
-      (identifiers.length === 0 ||
-        identifiers.some(
-          (identifier) =>
-            !isPlanId(identifier, "WORK") && !isPlanId(identifier, "PR"),
-        ))
-    ) {
-      issues.push(
-        issue(
-          ".sdlc/wip.md",
-          "Active Slices",
-          value,
-          "expected none or comma-separated WORK-/PR- identifiers",
-        ),
-      );
+  for (const field of ["Active Work Items", "Active Slices"]) {
+    for (const value of values.get(field) ?? []) {
+      const identifiers = value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      if (
+        value.toLocaleLowerCase("en-US") !== "none" &&
+        (identifiers.length === 0 ||
+          identifiers.some(
+            (identifier) =>
+              !isPlanId(identifier, "WORK") && !isPlanId(identifier, "PR"),
+          ))
+      ) {
+        issues.push(
+          issue(
+            ".sdlc/wip.md",
+            field,
+            value,
+            "expected none or comma-separated WORK-/PR- identifiers",
+          ),
+        );
+      }
     }
   }
   return issues;

@@ -20,6 +20,7 @@ import {
   buildModel,
   compactValue,
   discover,
+  explicitFocusItem,
   metadata,
   parseWip,
   planPrs,
@@ -697,7 +698,8 @@ Feedback Status: requested
 Feedback Evidence: docs/review.md
 Current Work Group: WAVE-DEMO-NEXT
 Current Work: WORK-DEMO-ALPHA
-Parallel Limit: 1
+Active Work Items: WORK-DEMO-ALPHA, PR-DEMO-BETA
+Parallel Limit: 2
 What Changed: Nothing yet.
 Documents To Update: none
 Stop Conditions: Stop if the API changes.
@@ -717,10 +719,25 @@ Stop Conditions: Stop if the API changes.
     assert.equal(wip.artifacts["docs/export-plan.md"].status, "approved");
     assert.equal(wip.learning.target, "Confirm the public behavior.");
     assert.equal(wip.learning.active_work_item, "WORK-DEMO-ALPHA");
+    assert.equal(wip.learning.active_slices, "WORK-DEMO-ALPHA, PR-DEMO-BETA");
     assert.equal(wip.learning.stop_or_replan, "Stop if the API changes.");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("current work remains the focus when several work items are active", () => {
+  const items = [
+    { id: "WORK-DEMO-PRIMARY", prs: [] },
+    { id: "WORK-DEMO-SECONDARY", prs: [] },
+  ];
+  const wip = {
+    learning: {
+      active_work_item: "WORK-DEMO-PRIMARY",
+      active_slices: "WORK-DEMO-SECONDARY, WORK-DEMO-PRIMARY",
+    },
+  };
+  assert.equal(explicitFocusItem(items, wip)?.id, "WORK-DEMO-PRIMARY");
 });
 
 test("renderer promotes legacy combined stage to current command", async () => {

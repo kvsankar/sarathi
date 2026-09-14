@@ -23,6 +23,27 @@ Stop splitting when each part is understandable, testable, and can be integrated
 Size alone is not the test: large but coherent work may stay together, while a smaller
 change with tangled responsibilities may need decomposition.
 
+## Keep Every Branch Connected
+
+Decomposition produces a connected delivery graph rather than a list of independent tasks.
+For every child or delivery unit:
+
+- trace upward to the parent outcome and the accepted requirements, design decisions,
+  tests, risks, or integration obligation it advances;
+- state its useful result, dependencies, and contribution in ordinary language; and
+- name where it rejoins sibling work for integration, feedback, or acceptance.
+
+Trace downward as well: allocate every accepted parent requirement, design test, and
+cross-branch integration obligation to one or more delivery items. The coverage map must
+make both missing parent coverage and work with no contribution visible.
+
+When the user introduces another direction, decide how it changes this graph before making
+it active. Revise the controlling intent or plan when it changes the whole; attach it as a
+traced child when it contributes to the same outcome; leave accepted later work unscheduled;
+or give unrelated work a separately accepted target and do not count it toward the current
+whole. Do not place unallocated work in an active group or WIP merely because it can run
+concurrently.
+
 ## Choose The Delivery Boundaries
 
 One slice normally maps to one planned delivery unit. Here, PR means that planned unit: it
@@ -76,7 +97,8 @@ A `WORK-*` item is an allocation, not a mandatory document layer. Give every chi
 
 Use a work group only when near-term children share a real feedback or integration
 checkpoint. Do not use one merely to group sequential PRs. Unscheduled children need no
-group.
+group. Every group member still keeps its individual upward trace, and the group names the
+point where its combined result is judged against the parent outcome.
 
 The `code-create` command starts from an approved code-ready slice or, when one is needed, its
 specific Implementation plan. After each assessed delivery unit, use the evidence to confirm

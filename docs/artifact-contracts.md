@@ -188,20 +188,24 @@ The checker expects this order:
 6. **Pull Requests / Child Work Items**: each with one `Work Classification:` value:
    `reuse directly`, `extract then reuse`, `target-owned implementation`, `new behavior`, or
    `deferred cleanup`.
-7. **Coverage Map**: assigns all parent and local requirements and `TEST-*` checks.
+7. **Coverage Map**: assigns all parent and local requirements and `TEST-*` checks to
+   delivery items, and shows how every delivery item contributes to the parent outcome.
 8. **Work Groups**: optional coordination for near-term child work in a Breakdown plan.
 9. **Sequencing & Risks**: dependencies, order, safe parallel work, conflicts, integration,
    rollback, ownership, and reasons to stop or change the plan.
-10. **Traceability**: compact links among milestones, work items, PRs, inherited requirements,
-    and tests.
+10. **Traceability**: compact links among milestones, work items, PRs, inherited
+    requirements, decisions, tests, and integration points. It has no unallocated parent
+    obligation or delivery island.
 
 For each `WORK-AREA-NAME` in a Breakdown plan, state what will work when it is done, its scope,
-parent requirements, owner, dependencies, risks, required documents, readiness goal, how it
-will be combined or reviewed, and what counts as done.
+contribution to the parent outcome, parent requirements, owner, dependencies, risks,
+required documents, readiness goal, how it will be combined or reviewed, and what counts as
+done.
 
 For each `PR-AREA-NAME` in an Implementation plan, state:
 
 - the result and files, modules, or contracts expected to change;
+- the parent outcome or work item it advances;
 - assigned requirement and test IDs;
 - focused checks that state what counts as pass or fail;
 - test level and real-system or fixture approach;
@@ -215,8 +219,9 @@ For each `PR-AREA-NAME` in an Implementation plan, state:
 - why the PR is a coherent review unit.
 
 When a plan has several PRs, state their dependencies, order, critical path, safe parallel
-work, conflicts, and integration points. For a one-PR plan, say that there is only one PR and
-omit empty dependency and parallel-work fields.
+work, conflicts, and integration points. Show how every branch contributes to the plan's
+result and where the combined result is checked. For a one-PR plan, say that there is only
+one PR and omit empty dependency and parallel-work fields.
 
 Also state the planned integration review points. Put one before feedback, contract,
 integration, or risk results could materially change dependent PRs. A review point may cover
