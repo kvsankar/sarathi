@@ -8,16 +8,24 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+## 0.14.0 - 2026-09-15
+
+### Changed
+
+- Keep decomposed and concurrent work connected to the accepted whole: every branch names
+  its parent contribution and integration point, every parent obligation is allocated, and
+  new user directions must join the connected graph or a separately accepted work target
+  before implementation.
+- Add `Active Work Items` as the canonical WIP field for concurrent `WORK-*` and `PR-*`
+  identifiers, retain `Active Slices` compatibility, and keep `Current Work` as the primary
+  status focus.
+
 ### Docs
 
 - Add repository-wide documentation lifecycle guidance for purpose-based organisation,
   canonical ownership, evidence-aware archiving, stable names, compatible moves, focused
   navigation, and proportionate coverage checks. Clarify where archived review reports live
   and how WIP represents work controlled by a plan without a slice.
-- Require decomposed and concurrent work to remain connected to the accepted whole in both
-  traceability directions: every branch names its contribution and integration point, and
-  every parent obligation is allocated. Add `Active Work Items` as the clear WIP name for
-  concurrent `WORK-*` and `PR-*` identifiers while retaining `Active Slices` compatibility.
 
 ## 0.13.0 - 2026-08-31
 
