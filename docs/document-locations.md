@@ -23,6 +23,10 @@ The dividing rule: anything a decision gates on must be checked evidence, not pr
 anything that merely orients may be minimal, stale-tolerant prose. The real status is
 always the code and its checked evidence.
 
+This page chooses the location for one Sarathi record. For a repository-wide folder
+convention, document archiving, navigation, or migration, use
+[documentation-lifecycle.md](documentation-lifecycle.md).
+
 ## Choose The Document Area
 
 Before creating or revising a document, resolve one documentation area in this order:
@@ -38,8 +42,10 @@ For Product/system scope, write controlling documents as `<document-area>/spec.m
 `<document-area>/<work-slug>.slice.md` for a focused delta. Optional designs and plans use
 `<document-area>/<work-slug>.design.md` and `<document-area>/<work-slug>.plan.md`. Derive the slug from the feature or work-item name
 (for example, `auth-signin`), not from a generic label or an arbitrary number. Thus a child
-may live at `docs/work/auth/signin/auth-signin.spec.md`. Do not move or rename existing
-documents merely to match this convention. Record the chosen repository-relative paths in WIP
+may live at `docs/work/auth/signin/auth-signin.spec.md`. A repository may instead organise
+documents by purpose, as described in
+[documentation-lifecycle.md](documentation-lifecycle.md). Do not move or rename existing
+documents merely to match either convention. Record the chosen repository-relative paths in WIP
 and pass those exact paths to checkers rather than relying on their legacy root-file defaults.
 
 When more than one candidate exists or the area is non-standard, record the renderer's
@@ -59,11 +65,14 @@ Use its `children` mapping for work-item-specific paths when applicable. See
 ## Preserve Review Output
 
 Every direct `spec-review`, `design-review`, `plan-review`, and `code-review` writes or
-updates a Markdown report in `<document-area>/reviews/`. Product/system reports normally use
-`spec-review.md`, `design-review.md`, `plan-review.md`, or `code-review.md`. Smaller-scope
-reports use the document's work slug, such as `auth-signin.spec-review.md`; assessments use
-`auth-signin.<stage>-assessment.md` with separate **Check Pass** and **Review Pass** sections.
-For a child, use that child's document area, not a repository-wide review folder.
+updates a Markdown report in the repository's chosen evidence area. By default, use
+`<document-area>/reviews/`. An explicit purpose-based convention may instead use a shared
+area such as `docs/reviews/`; record non-standard report paths rather than inferring them.
+Product/system reports normally use `spec-review.md`, `design-review.md`, `plan-review.md`,
+or `code-review.md`. Smaller-scope reports use the document's work slug, such as
+`auth-signin.spec-review.md`; assessments use `auth-signin.<stage>-assessment.md` with
+separate **Check Pass** and **Review Pass** sections. For a child, keep the report in its
+document area unless the established convention explicitly names a shared evidence area.
 
 When a report enters a correction and re-review loop, it names its assessment target, target
 state (`active | accepted | abandoned`), current review round, and concise earlier-round
@@ -93,10 +102,14 @@ declared integration review point, add one section for cross-PR behavior, integr
 feedback, combined risk, and readiness to continue. Do not copy complete logs or add a
 per-unit hash ledger. Git history carries older report text; the current report stays concise.
 When a separate report's target is fully superseded — the revision it judged is no longer
-part of any current candidate — move that report to a `reviews/archive/` folder instead of
-leaving it beside current evidence. The archive is historical record: exclude it from
-routine search and never cite it as current evidence. Agents search rather than read by
-default, so a stale report at a current-looking path is eventually quoted as current.
+part of any current candidate — and its findings are resolved or owned by named live work,
+move that report out of current evidence. When the project has adopted a central
+`docs/archive/`, mirror the report's live path beneath it; for example, `docs/reviews/x.md`
+becomes `docs/archive/reviews/x.md`, while `docs/work/auth/reviews/x.md` becomes
+`docs/archive/work/auth/reviews/x.md`. Otherwise use `reviews/archive/` beside the reports.
+Name the successor assessment or status record when one exists. The archive is historical
+record: exclude it from routine search and never cite it as current evidence. See
+[documentation-lifecycle.md](documentation-lifecycle.md) for the shared leaving rules.
 
 For baseline-only defect repair, refactor, or mechanical work, derive `<task-slug>` from the
 requested change and keep one `<task-slug>.code-assessment.md` in the chosen document area's

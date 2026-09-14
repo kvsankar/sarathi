@@ -8,6 +8,13 @@ Release tags use `vMAJOR.MINOR.PATCH` and should match `package.json`.
 
 ## Unreleased
 
+### Docs
+
+- Add repository-wide documentation lifecycle guidance for purpose-based organisation,
+  canonical ownership, evidence-aware archiving, stable names, compatible moves, focused
+  navigation, and proportionate coverage checks. Clarify where archived review reports live
+  and how WIP represents work controlled by a plan without a slice.
+
 ## 0.13.0 - 2026-08-31
 
 ### Docs

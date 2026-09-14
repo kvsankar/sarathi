@@ -41,6 +41,7 @@ the references relevant to that command.
 | `docs/artifact-contracts.md` | Writing or revising a spec, design, plan, or code evidence record. |
 | `docs/artifact-formatting.md` | Writing or materially revising a Markdown document or its rendered companion. |
 | `docs/document-locations.md` | Choosing a document area, recording non-standard paths, or saving a review/assessment report. |
+| `docs/documentation-lifecycle.md` | Performing an explicitly requested or adopted documentation reorganisation or cleanup; moving, splitting, archiving, routing, indexing, or tracking document currency. |
 | `docs/requirements-model.md` | Creating or reviewing a specification and preserving the hierarchy from stakeholder needs to observable evidence. |
 | `docs/srs-authoring.md` | Writing detailed use cases, measurable supplementary requirements, or reconstructed requirements for an existing system. |
 | `docs/human-first-artifacts.md` | Creating or materially revising a spec, design, or plan; reviewing first-page comprehensibility; checking process IDs in source. |

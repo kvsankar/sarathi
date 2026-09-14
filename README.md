@@ -343,7 +343,8 @@ repeated here:
 - [project entry](docs/project-entry.md), [delivery assurance](docs/assurance-profiles.md),
   and [approval/YOLO policy](docs/approval-gates.md);
 - [document contracts](docs/artifact-contracts.md), [locations](docs/document-locations.md),
-  and [human-first formatting](docs/human-first-artifacts.md);
+  [documentation lifecycle](docs/documentation-lifecycle.md), and
+  [human-first formatting](docs/human-first-artifacts.md);
 - [work decomposition](docs/work-decomposition.md), [feedback and learning](docs/feedback-and-learning.md),
   and [work-in-progress state](docs/work-in-progress.md);
 - [test ownership](docs/test-ownership.md), [risk-triggered checks](docs/cross-cutting-concerns.md),
@@ -378,6 +379,7 @@ for GitHub Copilot project-scoped prompts.
 - Cross-scope test and integration ownership: [docs/test-ownership.md](docs/test-ownership.md)
 - Review checklist: [docs/review-verification-checklist.md](docs/review-verification-checklist.md)
 - Document locations and persistent review records: [docs/document-locations.md](docs/document-locations.md)
+- Documentation organisation, navigation, and archiving: [docs/documentation-lifecycle.md](docs/documentation-lifecycle.md)
 - Slug ID migration: [docs/slug-id-migration.md](docs/slug-id-migration.md)
 - Approval gates: [docs/approval-gates.md](docs/approval-gates.md)
 - Agent-facing repository guidance: [AGENTS.md](AGENTS.md)

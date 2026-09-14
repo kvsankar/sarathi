@@ -44,7 +44,7 @@ Keep the file small enough to understand immediately:
 # Current Work
 
 Goal: the useful result being delivered
-Active Slice: repository-relative path to the controlling slice, or none for baseline-only maintenance
+Active Slice: repository-relative path to the controlling slice, or none when no slice controls the work
 Active Plan: repository-relative path when a separate plan exists, otherwise none
 Last Completed: PR-AREA-NAME — exact commit or range, assessment result
 Current Work: PR-AREA-NAME and its current state
@@ -53,6 +53,11 @@ Blockers: none, or the exact blocker
 Planned Review Point: the next integration or feedback review
 Latest Checks: short result and link to the rolling assessment
 ```
+
+A documentation reorganisation, release, or other plan-level unit may name an active plan
+and use `Active Slice: none`. Between delivery units, `Current Work: none` is accurate; keep
+the controlling slice or plan only when it still determines the next action. Otherwise set
+both document lines to `none`.
 
 If the current PR needs correction, do not call it complete:
 
