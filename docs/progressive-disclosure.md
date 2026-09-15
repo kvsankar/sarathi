@@ -55,7 +55,7 @@ the references relevant to that command.
 | `docs/cross-cutting-concerns.md` | Assigning extra risk checks to the document or code that owns them. |
 | `docs/test-ownership.md` | Planning or implementing tests, including test-first behavior changes, or assigning acceptance, journey, or integration tests. |
 | `docs/project-quality-gates.md` | Defining or reviewing repository quality gates, CI placement, merge requirements, or release evidence. |
-| `docs/work-decomposition.md` | Deciding whether complex work should be split, where to split it, or whether a child needs another document. |
+| `docs/work-decomposition.md` | Deciding whether complex work should be split, where to split it, whether a child needs another document, or routing a new user direction into connected work. |
 | `docs/feedback-and-learning.md` | Planning or completing changes; handling stakeholder feedback, updates to earlier documents, or parallel work. |
 | `docs/review-verification-checklist.md` | Running or explaining an assessment that pairs repeatable checks with independent review. |
 | `docs/approval-gates.md` | Recording, checking, or explaining `.sdlc/approvals.yaml` or `.sdlc/gates.yaml`. |

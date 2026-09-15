@@ -103,6 +103,13 @@ Check whether one change must finish before another can run, whether one result 
 another change's requirements or priority, and where separately built changes will be
 combined and tested.
 
+Concurrent work is the active part of one connected delivery graph. Each thread traces to
+the accepted product or feature outcome through its controlling spec, design, slice, or
+plan, and each names where it rejoins the whole. When new user input arrives, use
+[work-decomposition.md](work-decomposition.md) to revise the graph, attach a traced branch,
+leave later work unscheduled, or establish a separate work target. Do not let a new prompt
+silently create an unallocated active thread.
+
 Prefer parallel work inside one defined change. Run separate changes concurrently only when
 the result of one cannot change the other, file ownership is clear, and someone owns
 integration and review. Keep speculative later work reversible, timeboxed, and easy to

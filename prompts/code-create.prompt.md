@@ -13,30 +13,29 @@ A passing unit may lead directly to the next planned unit in the same turn.
 
 Read `.sdlc/wip.md`, process decisions, the accepted baseline, controlling slice, optional
 design or implementation plan, current code/tests, and repository check commands. Load
-`docs/artifact-contracts.md` for the Code and Evidence contract,
-`docs/test-ownership.md` for test-first implementation, and
-`docs/feedback-and-learning.md` when coordinated work is active. Load
-`docs/result-reporting.md` for the final report.
+`docs/artifact-contracts.md`, `docs/test-ownership.md`, and `docs/result-reporting.md`. Load
+`docs/feedback-and-learning.md` when coordinated work is active.
 
 Load only when the trigger applies:
 
 - assurance and cross-cutting concerns for an assigned check or risk;
 - project quality gates when its configuration or hook needs work;
+- `docs/work-decomposition.md` when new user input adds or redirects work during delivery;
 - simplicity-first for unnecessary machinery, refactoring, or simplification.
 
-Block unless the controlling slice or plan clearly says what to build, or the requested
-baseline-only maintenance clearly preserves observable behavior and protected contracts.
-Required approvals must exist and applicable authorities must be fit. A compact slice may
-authorize code without a separate design, plan, or `WORK-*` allocation.
+Block unless the controlling slice or plan clearly says what to build, or baseline-only
+maintenance preserves observable behavior and protected contracts. Required approvals and
+authorities must be fit. A compact slice needs no separate design, plan, or `WORK-*` allocation.
 When one exists, `.sdlc/wip.md` selects it. If coordinated work has a declared limit or
 checkpoint, enforce it. Confirm the expected files, first failing tests, smallest intended
 change, required behavior and tests, how each check will pass or fail, risks, reviewer,
 dependencies, and reasons to stop or change the controlling document.
 Reuse the repository's documented local gate and hook. When missing, add the smallest gate
 authorized by the plan and keep slow or environment-heavy checks in CI.
-Use `.sdlc/wip.md` to select the current `WORK-*` item when relevant and planned delivery unit. When coordinated work
-is active, enforce its group and parallel-work limit. Do not start additional work merely
-because an agent is available.
+Use WIP to select the current `WORK-*` and delivery unit. Enforce any group and parallel
+limit; agent availability does not justify more work. Before starting a direction introduced
+by the user, apply `docs/work-decomposition.md`: require a traced allocation in the
+controlling graph or a separately accepted work target.
 
 ## Implement
 

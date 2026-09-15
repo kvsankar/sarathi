@@ -20,7 +20,7 @@ Feedback Status: requested
 Current Work Group: WAVE-AUTH-BOUNDARY
 Current Work: WORK-AUTH-SIGNIN
 Parallel Limit: 2
-Active Slices: PR-AUTH-CODE, PR-AUTH-TESTS
+Active Work Items: PR-AUTH-CODE, PR-AUTH-TESTS
 `,
   );
   await writeFile(
@@ -49,11 +49,11 @@ bootstrap:
 
   await writeFile(
     join(root, ".sdlc", "wip.md"),
-    "Status Result: Mostly ready\nCurrent Command: coding\nParallel Limit: 0\n",
+    "Status Result: Mostly ready\nCurrent Command: coding\nParallel Limit: 0\nActive Work Items: WORK-ONE\n",
   );
   assert.deepEqual(
     (await validateWorkflowState(root)).map((entry) => entry.field),
-    ["Status Result", "Current Command", "Parallel Limit"],
+    ["Status Result", "Current Command", "Parallel Limit", "Active Work Items"],
   );
 });
 

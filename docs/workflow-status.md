@@ -113,7 +113,8 @@ Feedback From: stakeholder, real system, environment, or objective evidence sour
 Feedback Status: received | requested | unavailable | not-applicable
 Feedback Evidence: path, review, observation, or concise remaining-risk note
 Current Work Group: exact WAVE-AREA-NAME, or none
-Current Work: exact selected WORK-AREA-NAME, or none
+Current Work: exact selected WORK-AREA-NAME or PR-AREA-NAME, or none
+Active Work Items: comma-separated active WORK-/PR- identifiers, or none
 Parallel Limit: positive integer or not-recorded
 What Changed: concise evidence-backed result
 Documents To Update: earlier documents that need updating and their paths

@@ -303,6 +303,11 @@ optional plans explain multiple delivery boundaries and dependencies. Code is bu
 Red-Green-Refactor cycles. Each genuine delivery boundary is checked and independently
 reviewed before dependent work moves on.
 
+When work branches, every child and delivery unit traces upward to the accepted whole, every
+parent obligation is allocated downward, and parallel branches name where they rejoin for
+integration and acceptance. New user directions revise that graph, join it as traced work,
+remain unscheduled, or receive a separately accepted work target.
+
 Work uses three levels. The paired terms below are retained as machine-readable values for
 compatibility:
 

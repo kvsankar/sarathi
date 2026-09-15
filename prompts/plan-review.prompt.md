@@ -39,6 +39,10 @@ the dependency chain that controls completion, and declared integration review p
 feedback, contract, integration, or risk results could invalidate later work. Judge those
 points from the actual work; do not require a fixed number of PRs per review. A one-PR plan
 needs no empty dependency fields.
+
+Apply `docs/work-decomposition.md` connected-work rule. Reject untraced branches, coverage
+gaps, or parallel work without integration review.
+
 For a Decision/evidence outcome, judge the evidence method, decision owner, boundaries,
 timebox or stop condition, and next action rather than demanding a shippable result.
 
