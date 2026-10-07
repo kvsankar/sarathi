@@ -1,0 +1,167 @@
+<!doctype html>
+<!-- Infographic source. Render with the project-infographic skill:
+     render.py sarathi-infographic.html sarathi-infographic.png
+     Facts come from README.md and docs/enduring-model.md; update both together. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="infographic.css">
+<style>
+  .flow { grid-template-columns: 1fr 40px 0.95fr 40px 1.42fr 40px 1fr; }
+  .core-grid { display: grid; grid-template-rows: auto auto 1fr auto auto; gap: 12px; flex: 1; min-height: 0; }
+  .steps { grid-template-columns: repeat(3, 1fr); }
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .tiles.one { grid-template-columns: 1fr; }
+</style>
+</head>
+<body>
+
+<header class="title">
+  <h1>sarathi</h1>
+  <p>Build production software with AI coding agents</p>
+</header>
+
+<main class="flow">
+
+  <section class="zone input">
+    <h2>Start from</h2>
+    <div class="card">
+      <i data-icon="book-open-check"></i>
+      <div><h3>Accepted baseline</h3>
+        <p>what already must work, plus protected constraints</p></div>
+    </div>
+    <div class="card">
+      <i data-icon="target"></i>
+      <div><h3>Focused slice</h3>
+        <p>one intentional change and how people observe success</p></div>
+    </div>
+    <div class="sub">
+      <h4>One compact slice names</h4>
+      <div class="chips">
+        <span class="chip">Observable delta</span>
+        <span class="chip">Technical approach</span>
+        <span class="chip">Delivery boundary</span>
+        <span class="chip">Checks</span>
+        <span class="chip">Rollback</span>
+        <span class="chip">Review point</span>
+      </div>
+    </div>
+    <div class="sub">
+      <h4>Only when needed</h4>
+      <div class="tiles one">
+        <div class="tile"><i data-icon="drafting-compass"></i><div><b>Separate design</b><span>a technical choice needs independent review</span></div></div>
+        <div class="tile"><i data-icon="map"></i><div><b>Separate plan</b><span>several delivery units, dependencies, migration or risk</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="arrow"><i data-icon="arrow-right"></i></div>
+
+  <section class="zone core">
+    <h2>Split only when needed</h2>
+    <div class="card">
+      <i data-icon="circle-help"></i>
+      <div><h3>One coherent unit?</h3>
+        <p>can one engineer understand, review and plan it as one</p></div>
+    </div>
+    <div class="sub">
+      <h4>If not, split along</h4>
+      <div class="tiles one">
+        <div class="tile"><i data-icon="package"></i><div><b>Capability or outcome</b></div></div>
+        <div class="tile"><i data-icon="database"></i><div><b>Responsibility or data</b></div></div>
+        <div class="tile"><i data-icon="plug"></i><div><b>Interface or dependency</b></div></div>
+        <div class="tile"><i data-icon="shield-alert"></i><div><b>Risk or migration</b></div></div>
+      </div>
+    </div>
+    <div class="note"><i data-icon="ruler"></i><span><b>Size alone is not the test;</b> a split needs no extra documents.</span></div>
+    <div class="note"><i data-icon="circle-check"></i><span><b>Stop</b> when each part is understandable, testable and safe to integrate.</span></div>
+    <div class="note"><i data-icon="git-fork"></i><span><b>Every branch stays connected:</b> it traces to the accepted whole and names where it rejoins.</span></div>
+  </section>
+
+  <div class="arrow"><i data-icon="arrow-right"></i></div>
+
+  <section class="zone core">
+    <h2>Smallest safe change</h2>
+    <div class="core-grid">
+      <div class="steps">
+        <div class="step">
+          <div class="head"><span class="num">1</span><i data-icon="flask-conical"></i></div><h3>Red</h3>
+          <p>see a meaningful test fail</p>
+        </div>
+        <div class="step">
+          <div class="head"><span class="num">2</span><i data-icon="circle-check"></i></div><h3>Green</h3>
+          <p>the smallest change that passes it</p>
+        </div>
+        <div class="step">
+          <div class="head"><span class="num">3</span><i data-icon="wrench"></i></div><h3>Refactor</h3>
+          <p>improve the code while tests stay green</p>
+        </div>
+      </div>
+      <div class="sub">
+        <h4>Four actions at every stage</h4>
+        <div class="tiles">
+          <div class="tile"><i data-icon="pencil"></i><div><b>Create</b><span>write or revise the work</span></div></div>
+          <div class="tile"><i data-icon="list-checks"></i><div><b>Verify</b><span>repeatable checks, stated limits</span></div></div>
+          <div class="tile"><i data-icon="eye"></i><div><b>Review</b><span>independent judgment</span></div></div>
+          <div class="tile"><i data-icon="clipboard-check"></i><div><b>Assess</b><span>checks plus review</span></div></div>
+        </div>
+      </div>
+      <div class="sub">
+        <h4>Extra checks only for the risk</h4>
+        <div class="chips">
+          <span class="chip">Security</span>
+          <span class="chip">Privacy</span>
+          <span class="chip">Integration</span>
+          <span class="chip">Migration</span>
+          <span class="chip">Reliability</span>
+          <span class="chip">Performance</span>
+          <span class="chip">UI and accessibility</span>
+          <span class="chip">Release</span>
+          <span class="chip">Documentation</span>
+        </div>
+      </div>
+      <div class="note"><i data-icon="test-tube"></i><span><b>Testing runs through the loop:</b> the slice defines acceptance, a design or plan adds risk-specific proof, code records exact results.</span></div>
+      <div class="note"><i data-icon="git-pull-request"></i><span><b>Every delivery unit</b> is checked and independently reviewed before dependent work continues.</span></div>
+    </div>
+  </section>
+
+  <div class="arrow"><i data-icon="arrow-right"></i></div>
+
+  <section class="zone output">
+    <h2>Evidence and feedback</h2>
+    <div class="card">
+      <i data-icon="git-commit-horizontal"></i>
+      <div><h3>Tested working behavior</h3>
+        <p>exact results and an exact Git identity for each delivery unit</p></div>
+    </div>
+    <div class="card">
+      <i data-icon="message-square"></i>
+      <div><h3>Feedback recorded honestly</h3>
+        <p>received, requested, unavailable or not applicable; never invented</p></div>
+    </div>
+    <div class="card">
+      <i data-icon="bookmark"></i>
+      <div><h3>A short WIP bookmark</h3>
+        <p>last completed, current work, next action: resume without chat history</p></div>
+    </div>
+    <div class="card">
+      <i data-icon="layers"></i>
+      <div><h3>Reconcile at real boundaries</h3>
+        <p>at a release or feature family, fold the accepted deltas back into the baseline</p></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="loop"><i data-icon="refresh-cw"></i>Evidence and feedback adapt the remaining work: confirm, revise, replan or wait for required feedback</div>
+
+<footer class="strip">
+  <span class="item"><i data-icon="workflow"></i>No mandatory stage sequence</span>
+  <span class="item"><i data-icon="git-pull-request"></i>Review-sized Git boundaries</span>
+  <span class="item"><i data-icon="scale"></i>Checks report facts, review judges</span>
+  <span class="item"><i data-icon="lock"></i>Protected gates remain</span>
+  <span class="item"><i data-icon="history"></i>Resume without chat history</span>
+</footer>
+
+</body>
+</html>

@@ -296,6 +296,8 @@ Exact invocation syntax depends on the host tool:
 
 ## Workflow Model
 
+![The sarathi workflow: an accepted baseline and focused slice, splitting only when needed, red-green-refactor changes with checks and review, and evidence that adapts the remaining work](docs/images/sarathi-infographic.png)
+
 The core model is [accepted intent, useful changes, checks, review, and
 feedback](docs/enduring-model.md). The baseline explains existing accepted behavior. A slice
 defines an intentional delta. Optional designs explain difficult technical decisions;
